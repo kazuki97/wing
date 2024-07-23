@@ -1,121 +1,71 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
-    margin: 0;
-    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
     display: flex;
     height: 100vh;
 }
 
-#container {
-    display: flex;
-    width: 100%;
-}
-
-#sidebar {
-    width: 250px;
-    background-color: #343a40;
-    color: white;
+aside {
+    width: 200px;
+    background-color: #333;
+    color: #fff;
     padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-#sidebar h1 {
-    font-size: 20px;
-    margin-bottom: 20px;
-}
-
-#sidebar nav ul {
-    list-style-type: none;
+aside nav ul {
+    list-style: none;
     padding: 0;
 }
 
-#sidebar nav ul li {
+aside nav ul li {
     margin-bottom: 10px;
 }
 
-#sidebar nav ul li a {
-    color: white;
+aside nav ul li a {
+    color: #fff;
     text-decoration: none;
     display: block;
-    padding: 10px;
-    background-color: #495057;
-    border-radius: 5px;
 }
 
-#sidebar nav ul li a:hover {
-    background-color: #6c757d;
-}
-
-#main-content {
+main {
     flex: 1;
     padding: 20px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
 }
 
-.content-section {
+.section {
     display: none;
 }
 
-h2 {
-    margin-bottom: 10px;
-    color: #495057;
+.section.active {
+    display: block;
 }
 
-input, select, button {
-    margin: 5px 0;
-    padding: 10px;
+table {
     width: 100%;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    font-size: 16px;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+table th {
+    background-color: #f2f2f2;
 }
 
 button {
     background-color: #007bff;
     color: white;
+    padding: 10px 20px;
+    border: none;
     cursor: pointer;
-    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 button:hover {
     background-color: #0056b3;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.product-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.product-table th, .product-table td {
-    border: 1px solid #ced4da;
-    padding: 10px;
-    text-align: left;
-    font-size: 16px;
-}
-
-.product-table th {
-    background-color: #e9ecef;
-    color: #495057;
-}
-
-.editable {
-    display: flex;
-    align-items: center;
-}
-
-.editable input {
-    margin-left: 10px;
-    padding: 5px;
-    width: 60px;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    font-size: 16px;
 }
 
 .modal {
@@ -127,7 +77,8 @@ button:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
     padding-top: 60px;
 }
 
@@ -137,9 +88,6 @@ button:hover {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    max-width: 500px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .close {
@@ -147,7 +95,6 @@ button:hover {
     float: right;
     font-size: 28px;
     font-weight: bold;
-    transition: color 0.3s;
 }
 
 .close:hover,
@@ -155,20 +102,4 @@ button:hover {
     color: black;
     text-decoration: none;
     cursor: pointer;
-}
-
-#detail-title {
-    color: #495057;
-    margin-bottom: 10px;
-    font-size: 20px;
-}
-
-#detail-body {
-    font-size: 16px;
-    color: #495057;
-}
-
-#inventoryChart {
-    width: 100%;
-    height: 400px;
 }
