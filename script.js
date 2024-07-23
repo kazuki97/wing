@@ -20,6 +20,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    function saveCategoryToDB(category) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        store.put(category);
+    }
+
+    function saveCategories() {
+        for (const category in categories) {
+            saveCategoryToDB({
+                name: category,
+                products: categories[category]
+            });
+        }
+    }
+
+    function loadCategories() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const results = event.target.result;
+            categories = {};
+            results.forEach(category => {
+                categories[category.name] = category.products;
+            });
+            updateCategorySelect();
+            displayCategories();
+        };
+
+        request.onerror = (event) => {
+            console.error('Error loading categories:', event.target.error);
+        };
+    }
+
     const addCategoryButton = document.getElementById('add-category');
     const addProductButton = document.getElementById('add-product');
     const searchProductButton = document.getElementById('search-product');
@@ -69,41 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         inventorySection.style.display = 'none';
         barcodeSection.style.display = 'none';
         section.style.display = 'block';
-    }
-
-    function saveCategoryToDB(category) {
-        const transaction = db.transaction(['categories'], 'readwrite');
-        const store = transaction.objectStore('categories');
-        store.put(category);
-    }
-
-    function saveCategories() {
-        for (const category in categories) {
-            saveCategoryToDB({
-                name: category,
-                products: categories[category]
-            });
-        }
-    }
-
-    function loadCategories() {
-        const transaction = db.transaction(['categories'], 'readonly');
-        const store = transaction.objectStore('categories');
-        const request = store.getAll();
-
-        request.onsuccess = (event) => {
-            const results = event.target.result;
-            categories = {};
-            results.forEach(category => {
-                categories[category.name] = category.products;
-            });
-            updateCategorySelect();
-            displayCategories();
-        };
-
-        request.onerror = (event) => {
-            console.error('Error loading categories:', event.target.error);
-        };
     }
 
     linkHome.addEventListener('click', () => {
@@ -259,8 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateChart() {
-        const labels = inventoryData.map(item => item.name);
-        const data = inventoryData.map(item => item.quantity);
+        const labels = [];
+        const data = [];
+        for (const category in categories) {
+            categories[category].forEach(product => {
+                labels.push(product.name);
+                data.push(product.quantity);
+            });
+        }
         inventoryChart.data.labels = labels;
         inventoryChart.data.datasets[0].data = data;
         inventoryChart.update();
@@ -296,6 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     alert('該当する商品が見つかりません。');
                 }
+                barcodeVideo.style.display = 'none';
+                codeReader.reset();
+            } else if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+                alert(`Error: ${err}`);
                 barcodeVideo.style.display = 'none';
                 codeReader.reset();
             }
