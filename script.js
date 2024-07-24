@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     request.onsuccess = (event) => {
         db = event.target.result;
-        loadCategories();
+        console.log('Database initialized');
+        loadCategories();  // データベースが初期化された後に呼び出す
     };
 
     request.onupgradeneeded = (event) => {
@@ -327,6 +328,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null;
     }
-
-    loadCategories();
 });
