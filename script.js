@@ -1,149 +1,150 @@
 document.addEventListener('DOMContentLoaded', () => {
-    function displayCategories(searchCategory = null) {
-        const categoryDiv = document.getElementById('category-list');
-        categoryDiv.innerHTML = '';
-        for (const category in categories) {
-            const categoryRow = document.createElement('div');
-            categoryRow.innerHTML = `<h3>${category}</h3>`;
-            const productTable = document.createElement('table');
-            const tableHead = document.createElement('thead');
-            tableHead.innerHTML = `
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>編集</th>
-                    <th>詳細</th>
-                </tr>`;
-            const tableBody = document.createElement('tbody');
-            categories[category].forEach(product => {
-                const productRow = document.createElement('tr');
-                productRow.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td><button onclick="editProduct('${category}', '${product.name}')">編集</button></td>
-                    <td><button onclick="showProductDetails('${category}', '${product.name}')">詳細</button></td>
-                `;
-                tableBody.appendChild(productRow);
-            });
-            productTable.appendChild(tableHead);
-            productTable.appendChild(tableBody);
-            categoryRow.appendChild(productTable);
-            categoryDiv.appendChild(categoryRow);
-        }
-    }
-
-    function updateChart() {
-        const labels = inventoryData.map(item => item.name);
-        const data = inventoryData.map(item => item.quantity);
-        inventoryChart.data.labels = labels;
-        inventoryChart.data.datasets[0].data = data;
-        inventoryChart.update();
-    }
-
-    // IndexedDBの初期化
-    if (!window.indexedDB) {
-        console.log("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available.");
-    } else {
-        const request = window.indexedDB.open("inventoryDatabase", 1);
-        request.onerror = function(event) {
-            console.log("Error:", event.target.errorCode);
-        };
-        request.onsuccess = function(event) {
-            db = event.target.result;
-            loadFromIndexedDB();
-        };
-        request.onupgradeneeded = function(event) {
-            const db = event.target.result;
-            const objectStore = db.createObjectStore("categories", { keyPath: "name" });
-            objectStore.createIndex("name", "name", { unique: true });
-        };
-    }
-
-    function saveToIndexedDB() {
-        const transaction = db.transaction(["categories"], "readwrite");
-        const objectStore = transaction.objectStore("categories");
-        for (const category in categories) {
-            const request = objectStore.put({ name: category, products: categories[category] });
-            request.onerror = function(event) {
-                console.log("Error:", event.target.errorCode);
-            };
-            request.onsuccess = function(event) {
-                console.log("Category saved:", category);
-            };
-        }
-    }
-
-    function loadFromIndexedDB() {
-        const transaction = db.transaction(["categories"]);
-        const objectStore = transaction.objectStore("categories");
-        objectStore.openCursor().onsuccess = function(event) {
-            const cursor = event.target.result;
-            if (cursor) {
-                categories[cursor.key] = cursor.value.products;
-                cursor.continue();
-            } else {
-                displayCategories();
-                updateChart();
-            }
-        };
-    }
-
     const categories = {};
     const inventoryData = [];
     let db;
 
+    // IndexedDBの初期化
+    function initDB() {
+        const request = indexedDB.open('InventoryDB', 1);
+
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('categories')) {
+                const categoryStore = db.createObjectStore('categories', { keyPath: 'name' });
+                categoryStore.createIndex('name', 'name', { unique: true });
+            }
+        };
+
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            loadCategoriesFromDB();
+        };
+
+        request.onerror = (event) => {
+            console.error('IndexedDB error:', event.target.errorCode);
+        };
+    }
+
+    function loadCategoriesFromDB() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const categoryStore = transaction.objectStore('categories');
+        const request = categoryStore.getAll();
+
+        request.onsuccess = (event) => {
+            const storedCategories = event.target.result;
+            storedCategories.forEach(category => {
+                categories[category.name] = category.products;
+            });
+            displayCategories();
+            updateChart();
+        };
+
+        request.onerror = (event) => {
+            console.error('Failed to load categories:', event.target.errorCode);
+        };
+    }
+
+    function saveCategoryToDB(categoryName, products) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const categoryStore = transaction.objectStore('categories');
+        const category = { name: categoryName, products: products };
+        categoryStore.put(category);
+    }
+
+    // カテゴリの追加
     document.getElementById('add-category').addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
         if (categoryName && !categories[categoryName]) {
             categories[categoryName] = [];
-            document.getElementById('category-select').innerHTML += `<option value="${categoryName}">${categoryName}</option>`;
-            saveToIndexedDB();
+            saveCategoryToDB(categoryName, []);
+            displayCategories();
+            updateCategorySelect();
         }
     });
 
+    function displayCategories() {
+        const categoryList = document.getElementById('category-list');
+        categoryList.innerHTML = '';
+        for (const category in categories) {
+            const li = document.createElement('li');
+            li.textContent = category;
+            categoryList.appendChild(li);
+        }
+    }
+
+    function updateCategorySelect() {
+        const categorySelect = document.getElementById('category-select');
+        categorySelect.innerHTML = '';
+        for (const category in categories) {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categorySelect.appendChild(option);
+        }
+    }
+
+    // 商品の追加
     document.getElementById('add-product').addEventListener('click', () => {
-        const category = document.getElementById('category-select').value;
+        const categorySelect = document.getElementById('category-select');
+        const categoryName = categorySelect.value;
         const productName = document.getElementById('product-name').value;
-        const productQuantity = parseInt(document.getElementById('product-quantity').value);
-        if (category && productName && productQuantity) {
-            const product = { name: productName, quantity: productQuantity, history: [] };
-            categories[category].push(product);
-            saveToIndexedDB();
+        const productQuantity = document.getElementById('product-quantity').value;
+
+        if (categoryName && productName && productQuantity) {
+            const product = { name: productName, quantity: parseInt(productQuantity, 10), history: [] };
+            categories[categoryName].push(product);
+            saveCategoryToDB(categoryName, categories[categoryName]);
+            displayProducts(categoryName);
         }
     });
 
-    document.getElementById('search-category-button').addEventListener('click', () => {
+    function displayProducts(categoryName) {
+        const productList = document.getElementById('product-list');
+        productList.innerHTML = '';
+        if (categories[categoryName]) {
+            categories[categoryName].forEach(product => {
+                const li = document.createElement('li');
+                li.textContent = `${product.name} - ${product.quantity}`;
+                productList.appendChild(li);
+            });
+        }
+    }
+
+    // 在庫管理
+    document.getElementById('search-inventory').addEventListener('click', () => {
         const searchCategory = document.getElementById('search-category').value;
-        displayCategories(searchCategory);
+        displayInventory(searchCategory);
     });
 
-    // グラフの初期化
-    const ctx = document.getElementById('inventory-chart').getContext('2d');
-    const inventoryChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: '在庫数',
-                data: [],
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
+    function displayInventory(categoryName) {
+        const inventoryTable = document.getElementById('inventory-table').getElementsByTagName('tbody')[0];
+        inventoryTable.innerHTML = '';
+        if (categories[categoryName]) {
+            categories[categoryName].forEach(product => {
+                const row = inventoryTable.insertRow();
+                row.insertCell(0).textContent = product.name;
+                row.insertCell(1).textContent = product.quantity;
+                const editCell = row.insertCell(2);
+                const editButton = document.createElement('button');
+                editButton.textContent = '編集';
+                editButton.addEventListener('click', () => {
+                    // 編集機能を実装
+                });
+                editCell.appendChild(editButton);
+                const detailCell = row.insertCell(3);
+                const detailButton = document.createElement('button');
+                detailButton.textContent = '詳細';
+                detailButton.addEventListener('click', () => {
+                    // 詳細表示機能を実装
+                });
+                detailCell.appendChild(detailButton);
+            });
         }
-    });
+    }
 
-    // バーコードスキャン機能
+    // バーコードスキャン
     const codeReader = new ZXing.BrowserBarcodeReader();
     const startScanButton = document.getElementById('start-scan');
-    const barcodeInput = document.getElementById('barcode-input');
     const barcodeVideo = document.getElementById('barcode-video');
 
     startScanButton.addEventListener('click', () => {
@@ -157,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (newQuantity >= 0) {
                         const timestamp = new Date().toLocaleString();
                         product.quantity = newQuantity;
-                        product.history.push(`${timestamp}: バーコードスキャンで減少`);
+                        product.history.push({ timestamp, action: 'Barcode scan', quantity: newQuantity });
+                        saveCategoryToDB(categoryName, categories[categoryName]);
                         updateChart();
                     } else {
                         alert('在庫が不足しています。');
@@ -167,9 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 barcodeVideo.style.display = 'none';
                 codeReader.reset();
-            }
-            if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
             }
         });
     });
@@ -183,4 +182,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null;
     }
+
+    // グラフの更新
+    function updateChart() {
+        const ctx = document.getElementById('inventory-chart').getContext('2d');
+        const labels = [];
+        const data = [];
+        for (const category in categories) {
+            categories[category].forEach(product => {
+                labels.push(product.name);
+                data.push(product.quantity);
+            });
+        }
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '在庫数',
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    initDB();
+    displayCategories();
+    updateCategorySelect();
 });
