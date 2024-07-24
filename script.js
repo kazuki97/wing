@@ -1,5 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let categories = JSON.parse(localStorage.getItem('categories')) || {};
+    let categories = {};
+    let db;
+
+    const request = indexedDB.open('inventoryDB', 1);
+
+    request.onerror = (event) => {
+        console.error('Database error:', event.target.error);
+    };
+
+    request.onsuccess = (event) => {
+        db = event.target.result;
+        loadCategories();
+    };
+
+    request.onupgradeneeded = (event) => {
+        db = event.target.result;
+        if (!db.objectStoreNames.contains('categories')) {
+            db.createObjectStore('categories', { keyPath: 'name' });
+        }
+    };
+
+    function saveCategoryToDB(category) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        store.put(category);
+    }
+
+    function saveCategories() {
+        for (const category in categories) {
+            saveCategoryToDB({
+                name: category,
+                products: categories[category]
+            });
+        }
+    }
+
+    function loadCategories() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const results = event.target.result;
+            categories = {};
+            results.forEach(category => {
+                categories[category.name] = category.products;
+            });
+            updateCategorySelect();
+            displayCategories();
+        };
+
+        request.onerror = (event) => {
+            console.error('Error loading categories:', event.target.error);
+        };
+    }
 
     const addCategoryButton = document.getElementById('add-category');
     const addProductButton = document.getElementById('add-product');
@@ -77,7 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const categoryName = document.getElementById('category-name').value;
         if (categoryName && !categories[categoryName]) {
             categories[categoryName] = [];
-            localStorage.setItem('categories', JSON.stringify(categories));
+            saveCategoryToDB({
+                name: categoryName,
+                products: categories[categoryName]
+            });
             updateCategorySelect();
             displayCategories();
             document.getElementById('category-name').value = '';
@@ -100,7 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     history: [`${timestamp}: ${productQuantity}個追加`] 
                 };
                 categories[categoryName].push(product);
-                localStorage.setItem('categories', JSON.stringify(categories));
+                saveCategoryToDB({
+                    name: categoryName,
+                    products: categories[categoryName]
+                });
                 displayCategories();
                 document.getElementById('product-name').value = '';
                 document.getElementById('product-quantity').value = '';
@@ -172,7 +232,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         categories[category][index].quantity = newQuantity;
                         const timestamp = new Date().toLocaleString();
                         categories[category][index].history.push(`${timestamp}: 数量を${newQuantity}に変更`);
-                        localStorage.setItem('categories', JSON.stringify(categories));
+                        saveCategoryToDB({
+                            name: category,
+                            products: categories[category]
+                        });
                         displayCategories();
                     }
                 });
@@ -227,7 +290,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         const timestamp = new Date().toLocaleString();
                         product.quantity = newQuantity;
                         product.history.push(`${timestamp}: バーコードスキャンで1個減少`);
-                        localStorage.setItem('categories', JSON.stringify(categories));
+                        saveCategoryToDB({
+                            name: product.category,
+                            products: categories[product.category]
+                        });
                         displayCategories();
                         updateChart();
                     } else {
@@ -257,7 +323,5 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    updateCategorySelect();
-    displayCategories();
-    updateChart();
+    loadCategories();
 });
