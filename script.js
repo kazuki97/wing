@@ -1,198 +1,186 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const categoryListElement = document.getElementById('category-list');
-    const inventoryChartElement = document.getElementById('inventory-chart');
-    let db;
-
-    function initDatabase() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open('inventoryDB', 1);
-
-            request.onupgradeneeded = (event) => {
-                db = event.target.result;
-                const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
-                productStore.createIndex('category', 'category', { unique: false });
-                productStore.createIndex('barcode', 'barcode', { unique: true });
-            };
-
-            request.onsuccess = (event) => {
-                db = event.target.result;
-                resolve();
-            };
-
-            request.onerror = (event) => {
-                console.error('Database error:', event.target.errorCode);
-                reject(event);
-            };
-        });
-    }
-
-    function addProduct(product) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['products'], 'readwrite');
-            const store = transaction.objectStore('products');
-            const request = store.add(product);
-
-            request.onsuccess = () => {
-                loadCategories();
-                resolve();
-            };
-
-            request.onerror = (event) => {
-                console.error('Error adding product:', event);
-                reject(event);
-            };
-        });
-    }
-
-    function loadCategories() {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const categories = {};
-
-        index.openCursor().onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                const product = cursor.value;
-                if (!categories[product.category]) {
-                    categories[product.category] = [];
-                }
-                categories[product.category].push(product);
-                cursor.continue();
-            } else {
-                displayCategories(categories);
-            }
-        };
-    }
-
-    function displayCategories(categories) {
-        categoryListElement.innerHTML = '';
-        Object.keys(categories).forEach((category) => {
-            const categoryDiv = document.createElement('div');
-            categoryDiv.innerHTML = `<h3>${category}</h3>`;
-            categories[category].forEach((product) => {
-                const productRow = document.createElement('div');
+    function displayCategories(searchCategory = null) {
+        const categoryDiv = document.getElementById('category-list');
+        categoryDiv.innerHTML = '';
+        for (const category in categories) {
+            const categoryRow = document.createElement('div');
+            categoryRow.innerHTML = `<h3>${category}</h3>`;
+            const productTable = document.createElement('table');
+            const tableHead = document.createElement('thead');
+            tableHead.innerHTML = `
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>編集</th>
+                    <th>詳細</th>
+                </tr>`;
+            const tableBody = document.createElement('tbody');
+            categories[category].forEach(product => {
+                const productRow = document.createElement('tr');
                 productRow.innerHTML = `
-                    <span>${product.name}</span>
-                    <span>${product.quantity}</span>
-                    <button onclick="editProduct(${product.id})">編集</button>
-                    <button onclick="showDetails(${product.id})">詳細</button>
+                    <td>${product.name}</td>
+                    <td>${product.quantity}</td>
+                    <td><button onclick="editProduct('${category}', '${product.name}')">編集</button></td>
+                    <td><button onclick="showProductDetails('${category}', '${product.name}')">詳細</button></td>
                 `;
-                categoryDiv.appendChild(productRow);
+                tableBody.appendChild(productRow);
             });
-            categoryListElement.appendChild(categoryDiv);
-        });
+            productTable.appendChild(tableHead);
+            productTable.appendChild(tableBody);
+            categoryRow.appendChild(productTable);
+            categoryDiv.appendChild(categoryRow);
+        }
     }
 
     function updateChart() {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const inventoryData = {};
+        const labels = inventoryData.map(item => item.name);
+        const data = inventoryData.map(item => item.quantity);
+        inventoryChart.data.labels = labels;
+        inventoryChart.data.datasets[0].data = data;
+        inventoryChart.update();
+    }
 
-        store.openCursor().onsuccess = (event) => {
+    // IndexedDBの初期化
+    if (!window.indexedDB) {
+        console.log("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available.");
+    } else {
+        const request = window.indexedDB.open("inventoryDatabase", 1);
+        request.onerror = function(event) {
+            console.log("Error:", event.target.errorCode);
+        };
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            loadFromIndexedDB();
+        };
+        request.onupgradeneeded = function(event) {
+            const db = event.target.result;
+            const objectStore = db.createObjectStore("categories", { keyPath: "name" });
+            objectStore.createIndex("name", "name", { unique: true });
+        };
+    }
+
+    function saveToIndexedDB() {
+        const transaction = db.transaction(["categories"], "readwrite");
+        const objectStore = transaction.objectStore("categories");
+        for (const category in categories) {
+            const request = objectStore.put({ name: category, products: categories[category] });
+            request.onerror = function(event) {
+                console.log("Error:", event.target.errorCode);
+            };
+            request.onsuccess = function(event) {
+                console.log("Category saved:", category);
+            };
+        }
+    }
+
+    function loadFromIndexedDB() {
+        const transaction = db.transaction(["categories"]);
+        const objectStore = transaction.objectStore("categories");
+        objectStore.openCursor().onsuccess = function(event) {
             const cursor = event.target.result;
             if (cursor) {
-                const product = cursor.value;
-                if (!inventoryData[product.name]) {
-                    inventoryData[product.name] = 0;
-                }
-                inventoryData[product.name] += product.quantity;
+                categories[cursor.key] = cursor.value.products;
                 cursor.continue();
             } else {
-                const labels = Object.keys(inventoryData);
-                const data = Object.values(inventoryData);
-                const chartData = {
-                    labels: labels,
-                    datasets: [{
-                        label: '在庫数',
-                        data: data
-                    }]
-                };
-                const ctx = inventoryChartElement.getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: chartData
-                });
+                displayCategories();
+                updateChart();
             }
         };
     }
 
-    function findProductByBarcode(barcode) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['products'], 'readonly');
-            const store = transaction.objectStore('products');
-            const index = store.index('barcode');
-            const request = index.get(barcode);
+    const categories = {};
+    const inventoryData = [];
+    let db;
 
-            request.onsuccess = function(event) {
-                resolve(request.result ? request.result : null);
-            };
+    document.getElementById('add-category').addEventListener('click', () => {
+        const categoryName = document.getElementById('category-name').value;
+        if (categoryName && !categories[categoryName]) {
+            categories[categoryName] = [];
+            document.getElementById('category-select').innerHTML += `<option value="${categoryName}">${categoryName}</option>`;
+            saveToIndexedDB();
+        }
+    });
 
-            request.onerror = function(event) {
-                console.log('Error finding product by barcode:', event);
-                reject(null);
-            };
-        });
-    }
+    document.getElementById('add-product').addEventListener('click', () => {
+        const category = document.getElementById('category-select').value;
+        const productName = document.getElementById('product-name').value;
+        const productQuantity = parseInt(document.getElementById('product-quantity').value);
+        if (category && productName && productQuantity) {
+            const product = { name: productName, quantity: productQuantity, history: [] };
+            categories[category].push(product);
+            saveToIndexedDB();
+        }
+    });
 
-    function updateProduct(product) {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(['products'], 'readwrite');
-            const store = transaction.objectStore('products');
-            const request = store.put(product);
+    document.getElementById('search-category-button').addEventListener('click', () => {
+        const searchCategory = document.getElementById('search-category').value;
+        displayCategories(searchCategory);
+    });
 
-            request.onsuccess = function(event) {
-                loadCategories();
-                resolve();
-            };
+    // グラフの初期化
+    const ctx = document.getElementById('inventory-chart').getContext('2d');
+    const inventoryChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '在庫数',
+                data: [],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
 
-            request.onerror = function(event) {
-                console.log('Error updating product:', event);
-                reject(event);
-            };
-        });
-    }
-
-    // バーコードスキャン機能の実装
+    // バーコードスキャン機能
     const codeReader = new ZXing.BrowserBarcodeReader();
     const startScanButton = document.getElementById('start-scan');
     const barcodeInput = document.getElementById('barcode-input');
     const barcodeVideo = document.getElementById('barcode-video');
 
-    startScanButton.addEventListener('click', async () => {
+    startScanButton.addEventListener('click', () => {
         barcodeVideo.style.display = 'block';
-        codeReader.decodeFromVideoDevice(null, 'barcode-video', async (result, err) => {
+        codeReader.decodeFromVideoDevice(null, 'barcode-video', (result, err) => {
             if (result) {
                 alert(`Barcode detected: ${result.text}`);
-                try {
-                    const product = await findProductByBarcode(result.text);
-                    if (product) {
-                        const newQuantity = parseInt(product.quantity, 10) - 1;
-                        if (newQuantity >= 0) {
-                            const timestamp = new Date().toLocaleString();
-                            product.quantity = newQuantity;
-                            product.history.push(`${timestamp}: バーコードスキャンで数量が減少しました`);
-                            await updateProduct(product);
-                        } else {
-                            alert('在庫が不足しています');
-                        }
+                const product = findProductByBarcode(result.text);
+                if (product) {
+                    const newQuantity = parseInt(product.quantity, 10) - 1;
+                    if (newQuantity >= 0) {
+                        const timestamp = new Date().toLocaleString();
+                        product.quantity = newQuantity;
+                        product.history.push(`${timestamp}: バーコードスキャンで減少`);
+                        updateChart();
                     } else {
-                        alert('該当する商品が見つかりません');
+                        alert('在庫が不足しています。');
                     }
-                } catch (error) {
-                    console.error('Error handling barcode scan:', error);
+                } else {
+                    alert('該当する商品が見つかりません。');
                 }
                 barcodeVideo.style.display = 'none';
                 codeReader.reset();
             }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+            }
         });
     });
 
-    // データベースの初期化とカテゴリの読み込み
-    initDatabase().then(() => {
-        loadCategories();
-        updateChart();
-    }).catch((error) => {
-        console.error('Error initializing database:', error);
-    });
+    function findProductByBarcode(barcode) {
+        for (const category in categories) {
+            const product = categories[category].find(product => product.name === barcode);
+            if (product) {
+                return product;
+            }
+        }
+        return null;
+    }
 });
