@@ -36,6 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadCategories() {
+        if (!db) {
+            console.error('Database is not initialized');
+            return;
+        }
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
         const request = store.getAll();
@@ -325,3 +329,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadCategories();
 });
+
