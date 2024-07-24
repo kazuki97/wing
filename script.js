@@ -2,15 +2,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
+    console.log('DOM fully loaded and parsed');  // DOMの読み込み完了
+
     const request = indexedDB.open('inventoryDB', 1);
 
     request.onerror = (event) => {
-        console.error('Database error:', event.target.error);
+        console.error('Database error:', event.target.error);  // データベースエラー
     };
 
     request.onsuccess = (event) => {
         db = event.target.result;
-        console.log('Database initialized');
+        console.log('Database initialized', db);  // データベースの初期化完了
         loadCategories();  // データベースが初期化された後に呼び出す
     };
 
@@ -19,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('categories')) {
             db.createObjectStore('categories', { keyPath: 'name' });
         }
+        console.log('Database upgrade needed', db);  // データベースのアップグレード
     };
 
     function saveCategoryToDB(category) {
@@ -38,9 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadCategories() {
         if (!db) {
-            console.error('Database is not initialized');
+            console.error('Database is not initialized');  // データベースが初期化されていない
             return;
         }
+
+        console.log('Loading categories');  // カテゴリの読み込み開始
 
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
@@ -54,10 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateCategorySelect();
             displayCategories();
+            console.log('Categories loaded', categories);  // カテゴリの読み込み完了
         };
 
         request.onerror = (event) => {
-            console.error('Error loading categories:', event.target.error);
+            console.error('Error loading categories:', event.target.error);  // カテゴリの読み込みエラー
         };
     }
 
