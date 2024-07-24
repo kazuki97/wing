@@ -167,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             alert('カテゴリ名、商品名、数量を入力してください。');
-        }
     });
 
     searchProductButton.addEventListener('click', () => {
@@ -289,10 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (newQuantity >= 0) {
                         const timestamp = new Date().toLocaleString();
                         product.quantity = newQuantity;
-                        product.history.push(`${timestamp}: バーコードスキャンで1個減少`);
+                        product.history.push(`${timestamp}: バーコードスキャンにより${result.text}が1つ減少`);
                         saveCategoryToDB({
-                            name: product.category,
-                            products: categories[product.category]
+                            name: category,
+                            products: categories[category]
                         });
                         displayCategories();
                         updateChart();
@@ -302,11 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     alert('該当する商品が見つかりません。');
                 }
-                barcodeVideo.style.display = 'none';
-                codeReader.reset();
-            } else if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
-                alert(`Error: ${err}`);
                 barcodeVideo.style.display = 'none';
                 codeReader.reset();
             }
@@ -323,5 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    loadCategories();
+    // ページを離れる前にデータを保存
+    window.addEventListener('beforeunload', () => {
+        saveCategories();
+    });
 });
