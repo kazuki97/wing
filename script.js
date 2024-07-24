@@ -1,59 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const categories = {};
-    const dbName = "inventoryDB";
-    const storeName = "categories";
-
-    if (!window.indexedDB) {
-        console.log("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available.");
-        return;
-    }
-
-    function initDB() {
-        const request = indexedDB.open(dbName, 1);
-
-        request.onerror = function(event) {
-            console.error("Database error: " + event.target.errorCode);
-        };
-
-        request.onsuccess = function(event) {
-            console.log("Database opened successfully");
-            const db = event.target.result;
-            loadCategoriesFromDB(db);
-        };
-
-        request.onupgradeneeded = function(event) {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(storeName)) {
-                db.createObjectStore(storeName, { keyPath: "name" });
-            }
-        };
-    }
-
-    function saveCategoryToDB(categoryName, categoryData) {
-        const request = indexedDB.open(dbName, 1);
-
-        request.onsuccess = function(event) {
-            const db = event.target.result;
-            const transaction = db.transaction([storeName], "readwrite");
-            const objectStore = transaction.objectStore(storeName);
-            objectStore.put({ name: categoryName, products: categoryData });
-        };
-    }
-
-    function loadCategoriesFromDB(db) {
-        const transaction = db.transaction([storeName]);
-        const objectStore = transaction.objectStore(storeName);
-        const request = objectStore.getAll();
-
-        request.onsuccess = function(event) {
-            const data = event.target.result;
-            data.forEach(category => {
-                categories[category.name] = category.products;
-            });
-            displayCategories();
-            updateCategorySelect();
-        };
-    }
 
     function displayCategories(searchCategory = null) {
         const categoryDiv = document.getElementById('category-list');
@@ -152,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const timestamp = new Date().toLocaleString();
                         product.quantity = newQuantity;
                         product.history.push({ timestamp, action: 'Barcode scan', quantity: newQuantity });
-                        saveCategoryToDB(categoryName, categories[categoryName]);
                         updateChart();
                     } else {
                         alert('在庫が不足しています。');
@@ -170,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const categoryName = document.getElementById('category-name').value.trim();
         if (categoryName && !categories[categoryName]) {
             categories[categoryName] = [];
-            saveCategoryToDB(categoryName, categories[categoryName]);
             displayCategories();
             updateCategorySelect();
         }
@@ -185,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (categoryName && productName && !isNaN(productQuantity)) {
             const product = { name: productName, quantity: productQuantity, history: [] };
             categories[categoryName].push(product);
-            saveCategoryToDB(categoryName, categories[categoryName]);
             displayCategories();
             updateCategorySelect();
         }
@@ -196,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCategories(searchCategory);
     });
 
-    initDB();
     displayCategories();
     updateCategorySelect();
 });
