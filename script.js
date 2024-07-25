@@ -30,13 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(category);
     }
 
-    function saveCategories() {
-        for (const category in categories) {
-            saveCategoryToDB({
-                name: category,
-                products: categories[category]
-            });
-        }
+    function deleteCategoryFromDB(categoryName) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        store.delete(categoryName);
     }
 
     function loadCategories() {
@@ -214,6 +211,29 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryDivElement.className = 'category';
             categoryDivElement.textContent = category;
 
+            const editCategoryButton = document.createElement('button');
+            editCategoryButton.textContent = '編集';
+            editCategoryButton.addEventListener('click', () => {
+                const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
+                if (newCategoryName && newCategoryName !== category) {
+                    categories[newCategoryName] = categories[category];
+                    delete categories[category];
+                    saveCategoryToDB({ name: newCategoryName, products: categories[newCategoryName] });
+                    deleteCategoryFromDB(category);
+                    displayCategories();
+                }
+            });
+
+            const deleteCategoryButton = document.createElement('button');
+            deleteCategoryButton.textContent = '削除';
+            deleteCategoryButton.addEventListener('click', () => {
+                if (confirm(`カテゴリ「${category}」を削除してもよろしいですか？`)) {
+                    delete categories[category];
+                    deleteCategoryFromDB(category);
+                    displayCategories();
+                }
+            });
+
             const productTable = document.createElement('table');
             productTable.className = 'product-table';
 
@@ -265,6 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             productTable.appendChild(tableBody);
+            categoryDivElement.appendChild(editCategoryButton);
+            categoryDivElement.appendChild(deleteCategoryButton);
             categoryDiv.appendChild(categoryDivElement);
             categoryDiv.appendChild(productTable);
         }
