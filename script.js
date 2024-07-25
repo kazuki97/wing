@@ -1,3 +1,9 @@
+console.log("scripts.js has been loaded.");
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded event fired");
+
+
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
