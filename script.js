@@ -88,6 +88,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
 
+    const inventoryChart = new Chart(document.getElementById('inventoryChart'), {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '在庫数',
+                data: [],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    function showSection(section) {
+        homeSection.style.display = 'none';
+        categorySection.style.display = 'none';
+        productSection.style.display = 'none';
+        inventorySection.style.display = 'none';
+        barcodeSection.style.display = 'none';
+        section.style.display = 'block';
+    }
+
     linkHome.addEventListener('click', () => {
         showSection(homeSection);
         updateChart();
@@ -184,14 +214,27 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryDivElement.className = 'category';
             categoryDivElement.textContent = category;
 
-            const categoryControls = document.createElement('div');
-            categoryControls.className = 'category-controls';
-            categoryControls.innerHTML = `
-                <button class="edit-category-button" data-category="${category}">カテゴリ編集</button>
-                <button class="delete-category-button" data-category="${category}">カテゴリ削除</button>
+            const productTable = document.createElement('table');
+            productTable.className = 'product-table';
+
+            const tableHeader = document.createElement('tr');
+            tableHeader.innerHTML = `
+                <th>カテゴリ名</th>
+                <th>カテゴリ編集</th>
+                <th>カテゴリ削除</th>
+            `;
+            productTable.appendChild(tableHeader);
+
+            const tableBody = document.createElement('tbody');
+
+            const productRow = document.createElement('tr');
+            productRow.innerHTML = `
+                <td>${category}</td>
+                <td><button class="edit-category-button" data-category="${category}">カテゴリ編集</button></td>
+                <td><button class="delete-category-button" data-category="${category}">カテゴリ削除</button></td>
             `;
 
-            categoryControls.querySelector('.edit-category-button').addEventListener('click', (e) => {
+            productRow.querySelector('.edit-category-button').addEventListener('click', (e) => {
                 const category = e.target.dataset.category;
                 const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
                 if (newCategoryName && newCategoryName !== category) {
@@ -209,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            categoryControls.querySelector('.delete-category-button').addEventListener('click', (e) => {
+            productRow.querySelector('.delete-category-button').addEventListener('click', (e) => {
                 const category = e.target.dataset.category;
                 if (confirm(`カテゴリ "${category}" を削除してもよろしいですか？`)) {
                     delete categories[category];
@@ -221,18 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            categoryDivElement.appendChild(categoryControls);
+            tableBody.appendChild(productRow);
+            productTable.appendChild(tableBody);
             categoryDiv.appendChild(categoryDivElement);
+            categoryDiv.appendChild(productTable);
         }
-    }
-
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        section.style.display = 'block';
     }
 
     function updateChart() {
