@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
-    <script defer src="script.js"></script> <!-- deferを使用してスクリプトを非同期に読み込み -->
 </head>
 <body>
     <div id="app">
@@ -50,12 +49,14 @@
     </div>
 
     <!-- モーダルダイアログ -->
-    <div id="detail-modal" class="modal" style="display:none;">
+    <div id="detail-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="detail-title"></h2>
             <div id="detail-body"></div>
         </div>
     </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
