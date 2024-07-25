@@ -88,36 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
 
-    const inventoryChart = new Chart(document.getElementById('inventoryChart'), {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: '在庫数',
-                data: [],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        section.style.display = 'block';
-    }
-
     linkHome.addEventListener('click', () => {
         showSection(homeSection);
         updateChart();
@@ -254,6 +224,15 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryDivElement.appendChild(categoryControls);
             categoryDiv.appendChild(categoryDivElement);
         }
+    }
+
+    function showSection(section) {
+        homeSection.style.display = 'none';
+        categorySection.style.display = 'none';
+        productSection.style.display = 'none';
+        inventorySection.style.display = 'none';
+        barcodeSection.style.display = 'none';
+        section.style.display = 'block';
     }
 
     function updateChart() {
