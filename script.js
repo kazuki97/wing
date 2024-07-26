@@ -94,6 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
     linkCategory.addEventListener('click', () => showSection(categorySection));
     linkProduct.addEventListener('click', () => showSection(productSection));
     linkInventory.addEventListener('click', () => {
+        if (!db) {
+            console.error('Database is not initialized');
+            return;
+        }
         showSection(inventorySection);
         displayInventoryCategories();
     });
@@ -298,5 +302,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    loadCategories();
+    // 初期ロード
+    request.onsuccess = function(event) {
+        db = event.target.result;
+        loadCategories();
+    };
 });
