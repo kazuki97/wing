@@ -125,7 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const category in categories) {
             const categoryDivElement = document.createElement('div');
             categoryDivElement.className = 'category';
-            categoryDivElement.textContent = category;
+
+            const categoryNameElement = document.createElement('div');
+            categoryNameElement.className = 'category-name';
+            categoryNameElement.textContent = category;
 
             const editButton = document.createElement('button');
             editButton.textContent = 'カテゴリ編集';
@@ -157,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            categoryDivElement.appendChild(categoryNameElement);
             categoryDivElement.appendChild(editButton);
             categoryDivElement.appendChild(deleteButton);
             categoryDiv.appendChild(categoryDivElement);
