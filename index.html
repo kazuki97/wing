@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
     <script defer src="script.js"></script>
 </head>
 <body>
@@ -25,8 +23,6 @@
         </section>
         <section id="category-section" style="display:none;">
             <h1>カテゴリ設定</h1>
-            <input type="text" id="category-name" placeholder="カテゴリ名">
-            <button id="add-category">カテゴリ追加</button>
             <div id="category-list"></div>
         </section>
         <section id="product-section" style="display:none;">
@@ -40,7 +36,7 @@
             <h1>在庫管理</h1>
             <input type="text" id="search-category" placeholder="カテゴリを入力">
             <button id="search-product">検索</button>
-            <canvas id="inventoryChart"></canvas>
+            <div id="inventory-list"></div>
         </section>
         <section id="barcode-section" style="display:none;">
             <h1>バーコードスキャン</h1>
