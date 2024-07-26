@@ -118,14 +118,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    searchProductButton.addEventListener('click', () => {
-        const searchCategory = document.getElementById('search-category').value;
-        if (searchCategory && categories[searchCategory]) {
-            displayInventory(searchCategory);
-        } else {
-            alert('カテゴリ名を入力してください。またはカテゴリが存在しません。');
-        }
-    });
+    if (searchProductButton) {
+        searchProductButton.addEventListener('click', () => {
+            const searchCategory = document.getElementById('search-category').value;
+            if (searchCategory && categories[searchCategory]) {
+                displayInventory(searchCategory);
+            } else {
+                alert('カテゴリ名を入力してください。またはカテゴリが存在しません。');
+            }
+        });
+    }
 
     closeModal.addEventListener('click', () => {
         detailModal.style.display = 'none';
