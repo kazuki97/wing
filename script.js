@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const productSection = document.getElementById('product-section');
     const inventorySection = document.getElementById('inventory-section');
     const barcodeSection = document.getElementById('barcode-section');
+    const inventoryCategoryList = document.getElementById('inventory-category-list');
+    const inventoryProductList = document.getElementById('inventory-product-list');
+    const backToCategoriesButton = document.getElementById('back-to-categories');
+    const selectedCategoryTitle = document.getElementById('selected-category');
+    const productListDiv = document.getElementById('product-list');
 
     const linkHome = document.getElementById('link-home');
     const linkCategory = document.getElementById('link-category');
@@ -88,7 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     linkHome.addEventListener('click', () => showSection(homeSection));
     linkCategory.addEventListener('click', () => showSection(categorySection));
     linkProduct.addEventListener('click', () => showSection(productSection));
-    linkInventory.addEventListener('click', () => showSection(inventorySection));
+    linkInventory.addEventListener('click', () => {
+        showSection(inventorySection);
+        displayInventoryCategories();
+    });
     linkBarcode.addEventListener('click', () => showSection(barcodeSection));
 
     addCategoryButton.addEventListener('click', () => {
@@ -167,9 +175,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function displayInventoryCategories() {
+        inventoryCategoryList.innerHTML = '';
+        inventoryCategoryList.style.display = 'block';
+        inventoryProductList.style.display = 'none';
+        for (const category in categories) {
+            const categoryDivElement = document.createElement('div');
+            categoryDivElement.className = 'category';
+
+            const categoryNameElement = document.createElement('div');
+            categoryNameElement.className = 'category-name';
+            categoryNameElement.textContent = category;
+
+            categoryDivElement.addEventListener('click', () => {
+                selectedCategoryTitle.textContent = category;
+                displayInventory(category);
+            });
+
+            categoryDivElement.appendChild(categoryNameElement);
+            inventoryCategoryList.appendChild(categoryDivElement);
+        }
+    }
+
+    backToCategoriesButton.addEventListener('click', () => {
+        displayInventoryCategories();
+    });
+
     function displayInventory(category) {
-        const inventoryDiv = document.getElementById('inventory-list');
-        inventoryDiv.innerHTML = '';
+        productListDiv.innerHTML = '';
+        inventoryCategoryList.style.display = 'none';
+        inventoryProductList.style.display = 'block';
 
         if (categories[category]) {
             categories[category].forEach(product => {
@@ -194,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 productDiv.appendChild(editButton);
-                inventoryDiv.appendChild(productDiv);
+                productListDiv.appendChild(productDiv);
             });
         }
     }
