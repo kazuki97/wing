@@ -108,7 +108,8 @@ input[type="text"], input[type="number"], select {
 }
 
 /* カテゴリ設定用のスタイル */
-#category-list .category {
+#category-list .category,
+#inventory-category-list .category {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -119,11 +120,13 @@ input[type="text"], input[type="number"], select {
     background-color: #f9f9f9;
 }
 
-#category-list .category-name {
+#category-list .category-name,
+#inventory-category-list .category-name {
     font-size: 18px;
     font-weight: bold;
 }
 
-#category-list .category button {
+#category-list .category button,
+#inventory-category-list .category button {
     margin-left: 10px;
 }
