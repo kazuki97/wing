@@ -48,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
             results.forEach(category => {
                 categories[category.name] = category.products;
             });
-            updateCategorySelect();
             displayCategories();
         };
 
@@ -58,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const addCategoryButton = document.getElementById('add-category');
-    const addProductButton = document.getElementById('add-product');
     const searchProductButton = document.getElementById('search-product');
     const categorySelect = document.getElementById('category-select');
     const detailModal = document.getElementById('detail-modal');
@@ -101,38 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: categoryName,
                 products: categories[categoryName]
             });
-            updateCategorySelect();
             displayCategories();
             document.getElementById('category-name').value = '';
         } else {
             alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
-        }
-    });
-
-    addProductButton.addEventListener('click', () => {
-        const categoryName = categorySelect.value;
-        const productName = document.getElementById('product-name').value;
-        const productQuantity = document.getElementById('product-quantity').value;
-
-        if (categoryName && productName && productQuantity) {
-            if (categories[categoryName]) {
-                const timestamp = new Date().toLocaleString();
-                const product = { 
-                    name: productName, 
-                    quantity: productQuantity, 
-                    history: [`${timestamp}: ${productQuantity}個追加`] 
-                };
-                categories[categoryName].push(product);
-                saveCategoryToDB({
-                    name: categoryName,
-                    products: categories[categoryName]
-                });
-                displayCategories();
-                document.getElementById('product-name').value = '';
-                document.getElementById('product-quantity').value = '';
-            }
-        } else {
-            alert('カテゴリ名、商品名、数量を入力してください。');
         }
     });
 
@@ -148,16 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal.addEventListener('click', () => {
         detailModal.style.display = 'none';
     });
-
-    function updateCategorySelect() {
-        categorySelect.innerHTML = '';
-        for (const category in categories) {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
-            categorySelect.appendChild(option);
-        }
-    }
 
     function displayCategories() {
         const categoryDiv = document.getElementById('category-list');
