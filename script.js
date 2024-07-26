@@ -1,9 +1,3 @@
-console.log("scripts.js has been loaded.");
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOMContentLoaded event fired");
-
-
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
@@ -225,52 +219,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const tableHeader = document.createElement('tr');
             tableHeader.innerHTML = `
-                <th>カテゴリ名</th>
+                <th>商品名</th>
+                <th>数量</th>
+                <th>編集</th>
+                <th>詳細</th>
                 <th>カテゴリ編集</th>
                 <th>カテゴリ削除</th>
             `;
             productTable.appendChild(tableHeader);
 
             const tableBody = document.createElement('tbody');
+            categories[category].forEach((product, index) => {
+                const productRow = document.createElement('tr');
+                productRow.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.quantity}</td>
+                    <td><button class="edit-button" data-category="${category}" data-index="${index}">編集</button></td>
+                    <td><button class="detail-button" data-category="${category}" data-index="${index}">詳細</button></td>
+                    <td><button class="edit-category-button" data-category="${category}">カテゴリ編集</button></td>
+                    <td><button class="delete-category-button" data-category="${category}">カテゴリ削除</button></td>
+                `;
 
-            const productRow = document.createElement('tr');
-            productRow.innerHTML = `
-                <td>${category}</td>
-                <td><button class="edit-category-button" data-category="${category}">カテゴリ編集</button></td>
-                <td><button class="delete-category-button" data-category="${category}">カテゴリ削除</button></td>
-            `;
+                productRow.querySelector('.edit-button').addEventListener('click', (e) => {
+                    const category = e.target.dataset.category;
+                    const index = e.target.dataset.index;
+                    const newQuantity = prompt('新しい数量を入力してください:', categories[category][index].quantity);
+                    if (newQuantity !== null) {
+                        categories[category][index].quantity = newQuantity;
+                        const timestamp = new Date().toLocaleString();
+                        categories[category][index].history.push(`${timestamp}: 数量を${newQuantity}に変更`);
+                        saveCategoryToDB({
+                            name: category,
+                            products: categories[category]
+                        });
+                        displayCategories();
+                    }
+                });
 
-            productRow.querySelector('.edit-category-button').addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
-                if (newCategoryName && newCategoryName !== category) {
-                    categories[newCategoryName] = categories[category];
-                    delete categories[category];
-                    saveCategoryToDB({
-                        name: newCategoryName,
-                        products: categories[newCategoryName]
-                    });
-                    const transaction = db.transaction(['categories'], 'readwrite');
-                    const store = transaction.objectStore('categories');
-                    store.delete(category);
-                    updateCategorySelect();
-                    displayCategories();
-                }
+                productRow.querySelector('.detail-button').addEventListener('click', (e) => {
+                    const category = e.target.dataset.category;
+                    const index = e.target.dataset.index;
+                    const product = categories[category][index];
+                    detailTitle.textContent = `${product.name}の詳細`;
+                    detailBody.innerHTML = product.history.map(entry => `<p>${entry}</p>`).join('');
+                    detailModal.style.display = 'block';
+                });
+
+                productRow.querySelector('.edit-category-button').addEventListener('click', (e) => {
+                    const category = e.target.dataset.category;
+                    const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
+                    if (newCategoryName && newCategoryName !== category) {
+                        categories[newCategoryName] = categories[category];
+                        delete categories[category];
+                        saveCategoryToDB({
+                            name: newCategoryName,
+                            products: categories[newCategoryName]
+                        });
+                        const transaction = db.transaction(['categories'], 'readwrite');
+                        const store = transaction.objectStore('categories');
+                        store.delete(category);
+                        updateCategorySelect();
+                        displayCategories();
+                    }
+                });
+
+                productRow.querySelector('.delete-category-button').addEventListener('click', (e) => {
+                    const category = e.target.dataset.category;
+                    if (confirm(`カテゴリ "${category}" を削除してもよろしいですか？`)) {
+                        delete categories[category];
+                        const transaction = db.transaction(['categories'], 'readwrite');
+                        const store = transaction.objectStore('categories');
+                        store.delete(category);
+                        updateCategorySelect();
+                        displayCategories();
+                    }
+                });
+
+                tableBody.appendChild(productRow);
             });
 
-            productRow.querySelector('.delete-category-button').addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                if (confirm(`カテゴリ "${category}" を削除してもよろしいですか？`)) {
-                    delete categories[category];
-                    const transaction = db.transaction(['categories'], 'readwrite');
-                    const store = transaction.objectStore('categories');
-                    store.delete(category);
-                    updateCategorySelect();
-                    displayCategories();
-                }
-            });
-
-            tableBody.appendChild(productRow);
             productTable.appendChild(tableBody);
             categoryDiv.appendChild(categoryDivElement);
             categoryDiv.appendChild(productTable);
