@@ -2,18 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    console.log('DOM fully loaded and parsed');  // DOMの読み込み完了
+    console.log('DOM fully loaded and parsed');
 
     const request = indexedDB.open('inventoryDB', 1);
 
     request.onerror = (event) => {
-        console.error('Database error:', event.target.error);  // データベースエラー
+        console.error('Database error:', event.target.error);
     };
 
     request.onsuccess = (event) => {
         db = event.target.result;
-        console.log('Database initialized', db);  // データベースの初期化完了
-        loadCategories();  // データベースが初期化された後に呼び出す
+        console.log('Database initialized', db);
+        loadCategories();
     };
 
     request.onupgradeneeded = (event) => {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('categories')) {
             db.createObjectStore('categories', { keyPath: 'name' });
         }
-        console.log('Database upgrade needed', db);  // データベースのアップグレード
+        console.log('Database upgrade needed', db);
     };
 
     function saveCategoryToDB(category) {
@@ -30,22 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(category);
     }
 
-    function saveCategories() {
-        for (const category in categories) {
-            saveCategoryToDB({
-                name: category,
-                products: categories[category]
-            });
-        }
-    }
-
     function loadCategories() {
         if (!db) {
-            console.error('Database is not initialized');  // データベースが初期化されていない
+            console.error('Database is not initialized');
             return;
         }
 
-        console.log('Loading categories');  // カテゴリの読み込み開始
+        console.log('Loading categories');
 
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
@@ -59,11 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateCategorySelect();
             displayCategories();
-            console.log('Categories loaded', categories);  // カテゴリの読み込み完了
         };
 
         request.onerror = (event) => {
-            console.error('Error loading categories:', event.target.error);  // カテゴリの読み込みエラー
+            console.error('Error loading categories:', event.target.error);
         };
     }
 
@@ -88,27 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
 
-    const inventoryChart = new Chart(document.getElementById('inventoryChart'), {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: '在庫数',
-                data: [],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
     function showSection(section) {
         homeSection.style.display = 'none';
         categorySection.style.display = 'none';
@@ -118,26 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
-    linkHome.addEventListener('click', () => {
-        showSection(homeSection);
-        updateChart();
-    });
-
-    linkCategory.addEventListener('click', () => {
-        showSection(categorySection);
-    });
-
-    linkProduct.addEventListener('click', () => {
-        showSection(productSection);
-    });
-
-    linkInventory.addEventListener('click', () => {
-        showSection(inventorySection);
-    });
-
-    linkBarcode.addEventListener('click', () => {
-        showSection(barcodeSection);
-    });
+    linkHome.addEventListener('click', () => showSection(homeSection));
+    linkCategory.addEventListener('click', () => showSection(categorySection));
+    linkProduct.addEventListener('click', () => showSection(productSection));
+    linkInventory.addEventListener('click', () => showSection(inventorySection));
+    linkBarcode.addEventListener('click', () => showSection(barcodeSection));
 
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
@@ -185,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchProductButton.addEventListener('click', () => {
         const searchCategory = document.getElementById('search-category').value;
         if (searchCategory && categories[searchCategory]) {
-            displayCategories(searchCategory);
+            displayInventory(searchCategory);
         } else {
             alert('カテゴリ名を入力してください。またはカテゴリが存在しません。');
         }
@@ -205,102 +159,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function displayCategories(searchCategory = null) {
+    function displayCategories() {
         const categoryDiv = document.getElementById('category-list');
         categoryDiv.innerHTML = '';
         for (const category in categories) {
-            if (searchCategory && category !== searchCategory) continue;
             const categoryDivElement = document.createElement('div');
             categoryDivElement.className = 'category';
             categoryDivElement.textContent = category;
 
-            const productTable = document.createElement('table');
-            productTable.className = 'product-table';
+            const editButton = document.createElement('button');
+            editButton.textContent = 'カテゴリ編集';
+            editButton.addEventListener('click', () => {
+                const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
+                if (newCategoryName && newCategoryName !== category) {
+                    categories[newCategoryName] = categories[category];
+                    delete categories[category];
+                    saveCategoryToDB({
+                        name: newCategoryName,
+                        products: categories[newCategoryName]
+                    });
+                    const transaction = db.transaction(['categories'], 'readwrite');
+                    const store = transaction.objectStore('categories');
+                    store.delete(category);
+                    displayCategories();
+                }
+            });
 
-            const tableHeader = document.createElement('tr');
-            tableHeader.innerHTML = `
-                <th>商品名</th>
-                <th>数量</th>
-                <th>編集</th>
-                <th>詳細</th>
-                <th>カテゴリ編集</th>
-                <th>カテゴリ削除</th>
-            `;
-            productTable.appendChild(tableHeader);
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'カテゴリ削除';
+            deleteButton.addEventListener('click', () => {
+                if (confirm(`カテゴリ "${category}" を削除してもよろしいですか？`)) {
+                    delete categories[category];
+                    const transaction = db.transaction(['categories'], 'readwrite');
+                    const store = transaction.objectStore('categories');
+                    store.delete(category);
+                    displayCategories();
+                }
+            });
 
-            const tableBody = document.createElement('tbody');
-            categories[category].forEach((product, index) => {
-                const productRow = document.createElement('tr');
-                productRow.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td><button class="edit-button" data-category="${category}" data-index="${index}">編集</button></td>
-                    <td><button class="detail-button" data-category="${category}" data-index="${index}">詳細</button></td>
-                    <td><button class="edit-category-button" data-category="${category}">カテゴリ編集</button></td>
-                    <td><button class="delete-category-button" data-category="${category}">カテゴリ削除</button></td>
-                `;
+            categoryDivElement.appendChild(editButton);
+            categoryDivElement.appendChild(deleteButton);
+            categoryDiv.appendChild(categoryDivElement);
+        }
+    }
 
-                productRow.querySelector('.edit-button').addEventListener('click', (e) => {
-                    const category = e.target.dataset.category;
-                    const index = e.target.dataset.index;
-                    const newQuantity = prompt('新しい数量を入力してください:', categories[category][index].quantity);
+    function displayInventory(category) {
+        const inventoryDiv = document.getElementById('inventory-list');
+        inventoryDiv.innerHTML = '';
+
+        if (categories[category]) {
+            categories[category].forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.textContent = `${product.name} - 数量: ${product.quantity}`;
+
+                const editButton = document.createElement('button');
+                editButton.textContent = '数量編集';
+                editButton.addEventListener('click', () => {
+                    const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
                     if (newQuantity !== null) {
-                        categories[category][index].quantity = newQuantity;
+                        product.quantity = newQuantity;
                         const timestamp = new Date().toLocaleString();
-                        categories[category][index].history.push(`${timestamp}: 数量を${newQuantity}に変更`);
+                        product.history.push(`${timestamp}: 数量を${newQuantity}に変更`);
                         saveCategoryToDB({
                             name: category,
                             products: categories[category]
                         });
-                        displayCategories();
+                        displayInventory(category);
                     }
                 });
 
-                productRow.querySelector('.detail-button').addEventListener('click', (e) => {
-                    const category = e.target.dataset.category;
-                    const index = e.target.dataset.index;
-                    const product = categories[category][index];
-                    detailTitle.textContent = `${product.name}の詳細`;
-                    detailBody.innerHTML = product.history.map(entry => `<p>${entry}</p>`).join('');
-                    detailModal.style.display = 'block';
-                });
-
-                productRow.querySelector('.edit-category-button').addEventListener('click', (e) => {
-                    const category = e.target.dataset.category;
-                    const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
-                    if (newCategoryName && newCategoryName !== category) {
-                        categories[newCategoryName] = categories[category];
-                        delete categories[category];
-                        saveCategoryToDB({
-                            name: newCategoryName,
-                            products: categories[newCategoryName]
-                        });
-                        const transaction = db.transaction(['categories'], 'readwrite');
-                        const store = transaction.objectStore('categories');
-                        store.delete(category);
-                        updateCategorySelect();
-                        displayCategories();
-                    }
-                });
-
-                productRow.querySelector('.delete-category-button').addEventListener('click', (e) => {
-                    const category = e.target.dataset.category;
-                    if (confirm(`カテゴリ "${category}" を削除してもよろしいですか？`)) {
-                        delete categories[category];
-                        const transaction = db.transaction(['categories'], 'readwrite');
-                        const store = transaction.objectStore('categories');
-                        store.delete(category);
-                        updateCategorySelect();
-                        displayCategories();
-                    }
-                });
-
-                tableBody.appendChild(productRow);
+                productDiv.appendChild(editButton);
+                inventoryDiv.appendChild(productDiv);
             });
-
-            productTable.appendChild(tableBody);
-            categoryDiv.appendChild(categoryDivElement);
-            categoryDiv.appendChild(productTable);
         }
     }
 
@@ -318,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryChart.update();
     }
 
-    // バーコードスキャン機能
     const codeReader = new ZXing.BrowserBarcodeReader();
     const startScanButton = document.getElementById('start-scan');
     const barcodeInput = document.getElementById('barcode-input');
@@ -368,4 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null;
     }
+
+    loadCategories();
 });
