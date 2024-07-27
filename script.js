@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
         db = event.target.result;
         loadCategories();
-        displayInventoryCategories();  // 在庫管理セクションのカテゴリを表示
     };
 
     request.onupgradeneeded = (event) => {
@@ -84,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateCategorySelect();
             displayCategories();
-            displayInventoryCategories(); // 在庫管理セクションのカテゴリを更新
             document.getElementById('category-name').value = '';
         } else {
             alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
@@ -99,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const product = { category, name: productName, quantity: parseInt(quantity, 10) };
             saveProductToDB(product);
             displayProducts(category);
-            displayInventoryProducts(category); // 在庫管理セクションの製品を更新
             document.getElementById('product-name').value = '';
             document.getElementById('product-quantity').value = '';
         } else {
@@ -172,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         products: categories[newCategoryName]
                     });
                     displayCategories();
-                    displayInventoryCategories(); // 在庫管理セクションのカテゴリを更新
                 } else {
                     alert('カテゴリ名が無効です。');
                 }
@@ -188,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const store = transaction.objectStore('categories');
                     store.delete(categoryName);
                     displayCategories();
-                    displayInventoryCategories(); // 在庫管理セクションのカテゴリを更新
                 }
             });
 
