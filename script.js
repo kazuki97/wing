@@ -1,157 +1,139 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const homeLink = document.getElementById('homeLink');
-    const categoryLink = document.getElementById('categoryLink');
-    const productLink = document.getElementById('productLink');
-    const inventoryLink = document.getElementById('inventoryLink');
-    const scanLink = document.getElementById('scanLink');
+document.addEventListener("DOMContentLoaded", function() {
+    var addCategoryButton = document.getElementById('add-category');
+    if (addCategoryButton) {
+        addCategoryButton.addEventListener('click', addCategory);
+    }
     
-    const homeSection = document.getElementById('homeSection');
-    const categorySection = document.getElementById('categorySection');
-    const productSection = document.getElementById('productSection');
-    const inventorySection = document.getElementById('inventorySection');
-    const scanSection = document.getElementById('scanSection');
-
-    homeLink.addEventListener('click', function() {
-        showSection(homeSection);
+    var editCategoryButtons = document.querySelectorAll('.edit-category');
+    editCategoryButtons.forEach(function(button) {
+        button.addEventListener('click', editCategory);
     });
-
-    categoryLink.addEventListener('click', function() {
-        showSection(categorySection);
+    
+    var deleteCategoryButtons = document.querySelectorAll('.delete-category');
+    deleteCategoryButtons.forEach(function(button) {
+        button.addEventListener('click', deleteCategory);
     });
-
-    productLink.addEventListener('click', function() {
-        showSection(productSection);
-    });
-
-    inventoryLink.addEventListener('click', function() {
-        showSection(inventorySection);
-    });
-
-    scanLink.addEventListener('click', function() {
-        showSection(scanSection);
-    });
-
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        scanSection.style.display = 'none';
-        section.style.display = 'block';
+    
+    var addProductButton = document.getElementById('add-product');
+    if (addProductButton) {
+        addProductButton.addEventListener('click', addProduct);
     }
 
-    // カテゴリの追加
-    const addCategoryBtn = document.getElementById('addCategoryBtn');
-    const categoryName = document.getElementById('categoryName');
-    const categoryList = document.getElementById('categoryList');
-
-    addCategoryBtn.addEventListener('click', function() {
-        if (categoryName.value.trim() !== '') {
-            const categoryItem = document.createElement('div');
-            categoryItem.classList.add('category-item');
-            categoryItem.innerHTML = `
-                <span>${categoryName.value.trim()}</span>
-                <div>
-                    <button onclick="editCategory(this)">カテゴリ編集</button>
-                    <button onclick="deleteCategory(this)">カテゴリ削除</button>
-                </div>
-            `;
-            categoryList.appendChild(categoryItem);
-            categoryName.value = '';
-        }
+    var editProductButtons = document.querySelectorAll('.edit-product');
+    editProductButtons.forEach(function(button) {
+        button.addEventListener('click', editProduct);
     });
 
-    window.editCategory = function(button) {
-        const categoryItem = button.parentNode.parentNode;
-        const categorySpan = categoryItem.querySelector('span');
-        const newCategoryName = prompt('新しいカテゴリ名を入力してください:', categorySpan.textContent);
-        if (newCategoryName !== null && newCategoryName.trim() !== '') {
-            categorySpan.textContent = newCategoryName.trim();
-        }
-    };
-
-    window.deleteCategory = function(button) {
-        const categoryItem = button.parentNode.parentNode;
-        categoryList.removeChild(categoryItem);
-    };
-
-    // 商品の追加
-    const addProductBtn = document.getElementById('addProductBtn');
-    const productName = document.getElementById('productName');
-    const productQuantity = document.getElementById('productQuantity');
-    const productList = document.getElementById('productList');
-    const categorySelect = document.getElementById('categorySelect');
-
-    addProductBtn.addEventListener('click', function() {
-        if (productName.value.trim() !== '' && productQuantity.value.trim() !== '' && categorySelect.value !== '') {
-            const productItem = document.createElement('div');
-            productItem.classList.add('product-item');
-            productItem.innerHTML = `
-                <span>${productName.value.trim()} (${productQuantity.value.trim()}) - ${categorySelect.value}</span>
-                <div>
-                    <button onclick="editProduct(this)">商品編集</button>
-                    <button onclick="deleteProduct(this)">商品削除</button>
-                </div>
-            `;
-            productList.appendChild(productItem);
-            productName.value = '';
-            productQuantity.value = '';
-            categorySelect.value = '';
-        }
+    var deleteProductButtons = document.querySelectorAll('.delete-product');
+    deleteProductButtons.forEach(function(button) {
+        button.addEventListener('click', deleteProduct);
     });
 
-    window.editProduct = function(button) {
-        const productItem = button.parentNode.parentNode;
-        const productSpan = productItem.querySelector('span');
-        const [productName, productDetails] = productSpan.textContent.split(' (');
-        const [productQuantity, productCategory] = productDetails.split(') - ');
-
-        const newProductName = prompt('新しい商品名を入力してください:', productName.trim());
-        const newProductQuantity = prompt('新しい数量を入力してください:', productQuantity.trim());
-        const newProductCategory = prompt('新しいカテゴリを入力してください:', productCategory.trim());
-
-        if (newProductName !== null && newProductName.trim() !== '' && newProductQuantity !== null && newProductQuantity.trim() !== '' && newProductCategory !== null && newProductCategory.trim() !== '') {
-            productSpan.textContent = `${newProductName.trim()} (${newProductQuantity.trim()}) - ${newProductCategory.trim()}`;
-        }
-    };
-
-    window.deleteProduct = function(button) {
-        const productItem = button.parentNode.parentNode;
-        productList.removeChild(productItem);
-    };
-
-    // 在庫検索
-    const searchInventoryBtn = document.getElementById('searchInventoryBtn');
-    const inventoryCategory = document.getElementById('inventoryCategory');
-    const inventoryList = document.getElementById('inventoryList');
-
-    searchInventoryBtn.addEventListener('click', function() {
-        if (inventoryCategory.value.trim() !== '') {
-            // ここで在庫検索の処理を追加
-            // 仮の在庫データを表示
-            inventoryList.innerHTML = `
-                <div class="inventory-item">
-                    <span>商品A (10) - ${inventoryCategory.value.trim()}</span>
-                    <button onclick="editInventory(this)">在庫編集</button>
-                </div>
-                <div class="inventory-item">
-                    <span>商品B (20) - ${inventoryCategory.value.trim()}</span>
-                    <button onclick="editInventory(this)">在庫編集</button>
-                </div>
-            `;
-        }
-    });
-
-    window.editInventory = function(button) {
-        const inventoryItem = button.parentNode;
-        const inventorySpan = inventoryItem.querySelector('span');
-        const [productName, productDetails] = inventorySpan.textContent.split(' (');
-        const [productQuantity, productCategory] = productDetails.split(') - ');
-
-        const newProductQuantity = prompt('新しい数量を入力してください:', productQuantity.trim());
-
-        if (newProductQuantity !== null && newProductQuantity.trim() !== '') {
-            inventorySpan.textContent = `${productName.trim()} (${newProductQuantity.trim()}) - ${productCategory.trim()}`;
-        }
-    };
+    loadCategories();
+    loadProducts();
 });
+
+function addCategory() {
+    var categoryNameInput = document.getElementById('category-name');
+    var categoryName = categoryNameInput.value.trim();
+    if (categoryName === "") {
+        alert("カテゴリ名を入力してください。");
+        return;
+    }
+    var categoryList = document.getElementById('category-list');
+    var categoryItem = document.createElement('div');
+    categoryItem.className = 'category-item';
+    categoryItem.innerHTML = `
+        <span class="category-name">${categoryName}</span>
+        <button class="edit-category">カテゴリ編集</button>
+        <button class="delete-category">カテゴリ削除</button>
+    `;
+    categoryList.appendChild(categoryItem);
+
+    // リスナーを追加
+    categoryItem.querySelector('.edit-category').addEventListener('click', editCategory);
+    categoryItem.querySelector('.delete-category').addEventListener('click', deleteCategory);
+    categoryNameInput.value = "";
+}
+
+function editCategory(event) {
+    var categoryItem = event.target.closest('.category-item');
+    var categoryNameSpan = categoryItem.querySelector('.category-name');
+    var newCategoryName = prompt("新しいカテゴリ名を入力してください:", categoryNameSpan.textContent);
+    if (newCategoryName !== null && newCategoryName.trim() !== "") {
+        categoryNameSpan.textContent = newCategoryName.trim();
+    }
+}
+
+function deleteCategory(event) {
+    if (confirm("本当にこのカテゴリを削除しますか？")) {
+        var categoryItem = event.target.closest('.category-item');
+        categoryItem.remove();
+    }
+}
+
+function addProduct() {
+    var productNameInput = document.getElementById('product-name');
+    var productQuantityInput = document.getElementById('product-quantity');
+    var productCategorySelect = document.getElementById('product-category');
+    var productName = productNameInput.value.trim();
+    var productQuantity = productQuantityInput.value.trim();
+    var productCategory = productCategorySelect.value;
+
+    if (productName === "" || productQuantity === "" || productCategory === "") {
+        alert("全ての項目を入力してください。");
+        return;
+    }
+
+    var productList = document.getElementById('product-list');
+    var productItem = document.createElement('div');
+    productItem.className = 'product-item';
+    productItem.innerHTML = `
+        <span class="product-name">${productName}</span>
+        <span class="product-quantity">${productQuantity}</span>
+        <span class="product-category">${productCategory}</span>
+        <button class="edit-product">商品編集</button>
+        <button class="delete-product">商品削除</button>
+    `;
+    productList.appendChild(productItem);
+
+    // リスナーを追加
+    productItem.querySelector('.edit-product').addEventListener('click', editProduct);
+    productItem.querySelector('.delete-product').addEventListener('click', deleteProduct);
+    productNameInput.value = "";
+    productQuantityInput.value = "";
+    productCategorySelect.value = "";
+}
+
+function editProduct(event) {
+    var productItem = event.target.closest('.product-item');
+    var productNameSpan = productItem.querySelector('.product-name');
+    var productQuantitySpan = productItem.querySelector('.product-quantity');
+    var productCategorySpan = productItem.querySelector('.product-category');
+    var newProductName = prompt("新しい商品名を入力してください:", productNameSpan.textContent);
+    var newProductQuantity = prompt("新しい数量を入力してください:", productQuantitySpan.textContent);
+    var newProductCategory = prompt("新しいカテゴリを入力してください:", productCategorySpan.textContent);
+    
+    if (newProductName !== null && newProductName.trim() !== "" &&
+        newProductQuantity !== null && newProductQuantity.trim() !== "" &&
+        newProductCategory !== null && newProductCategory.trim() !== "") {
+        productNameSpan.textContent = newProductName.trim();
+        productQuantitySpan.textContent = newProductQuantity.trim();
+        productCategorySpan.textContent = newProductCategory.trim();
+    }
+}
+
+function deleteProduct(event) {
+    if (confirm("本当にこの商品を削除しますか？")) {
+        var productItem = event.target.closest('.product-item');
+        productItem.remove();
+    }
+}
+
+function loadCategories() {
+    // カテゴリを読み込む実装
+}
+
+function loadProducts() {
+    // 商品を読み込む実装
+}
