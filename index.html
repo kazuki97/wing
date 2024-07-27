@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="header">
+    <header>
         <h1>在庫管理システム</h1>
         <nav>
             <ul>
@@ -18,25 +19,36 @@
             </ul>
         </nav>
     </header>
-    <div class="container">
+    <main>
         <section id="home-section">
             <h2>ホーム</h2>
             <p>在庫管理システムへようこそ。</p>
         </section>
-        <section id="category-section" style="display: none;">
+        <section id="category-section" style="display:none;">
             <h2>カテゴリ設定</h2>
             <input type="text" id="category-name" placeholder="カテゴリ名">
             <button id="add-category">カテゴリ追加</button>
-            <div id="category-list">
-                <!-- カテゴリリストがここに表示されます -->
-            </div>
+            <h3>カテゴリ一覧</h3>
+            <table id="category-list">
+                <thead>
+                    <tr>
+                        <th>カテゴリ名</th>
+                        <th>編集</th>
+                        <th>削除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- カテゴリが動的に挿入されます -->
+                </tbody>
+            </table>
         </section>
-        <section id="product-section" style="display: none;">
+        <section id="product-section" style="display:none;">
             <h2>商品設定</h2>
             <select id="category-select"></select>
             <input type="text" id="product-name" placeholder="商品名">
             <input type="number" id="product-quantity" placeholder="数量">
             <button id="add-product">商品追加</button>
+            <h3>商品一覧</h3>
             <table id="product-table">
                 <thead>
                     <tr>
@@ -47,15 +59,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- 商品リストがここに表示されます -->
+                    <!-- 商品が動的に挿入されます -->
                 </tbody>
             </table>
         </section>
-        <section id="inventory-section" style="display: none;">
+        <section id="inventory-section" style="display:none;">
             <h2>在庫管理</h2>
             <div id="inventory-category-list">
-                <!-- 在庫カテゴリリストがここに表示されます -->
+                <!-- カテゴリボタンが動的に挿入されます -->
             </div>
+            <h3>在庫一覧</h3>
             <table id="inventory-product-table">
                 <thead>
                     <tr>
@@ -65,19 +78,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- 在庫商品リストがここに表示されます -->
+                    <!-- 商品が動的に挿入されます -->
                 </tbody>
             </table>
         </section>
-        <section id="barcode-section" style="display: none;">
+        <section id="barcode-section" style="display:none;">
             <h2>バーコードスキャン</h2>
             <p>バーコードスキャン機能はここに来ます。</p>
         </section>
-    </div>
-    <div id="detail-modal" class="modal">
-        <div class="modal-content">
+    </main>
+    <div id="detail-modal" style="display:none;">
+        <div>
             <span class="close">&times;</span>
-            <h2 id="detail-title">詳細</h2>
+            <h2 id="detail-title"></h2>
             <p id="detail-body"></p>
         </div>
     </div>
