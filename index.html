@@ -2,22 +2,21 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav>
         <ul>
-            <li><a id="link-home" href="#">ホーム</a></li>
-            <li><a id="link-category" href="#">カテゴリ設定</a></li>
-            <li><a id="link-product" href="#">商品設定</a></li>
-            <li><a id="link-inventory" href="#">在庫管理</a></li>
-            <li><a id="link-barcode" href="#">バーコードスキャン</a></li>
+            <li><a href="#" id="link-home">ホーム</a></li>
+            <li><a href="#" id="link-category">カテゴリ設定</a></li>
+            <li><a href="#" id="link-product">商品設定</a></li>
+            <li><a href="#" id="link-inventory">在庫管理</a></li>
+            <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
         </ul>
     </nav>
-    
-    <section id="home-section" style="display: block;">
+
+    <section id="home-section">
         <h1>ホーム</h1>
     </section>
 
@@ -30,7 +29,7 @@
 
     <section id="product-section" style="display: none;">
         <h1>商品設定</h1>
-        <select id="product-category"></select>
+        <select id="category-select"></select>
         <input type="text" id="product-name" placeholder="商品名">
         <input type="number" id="product-quantity" placeholder="数量">
         <button id="add-product">商品追加</button>
@@ -49,15 +48,13 @@
 
     <section id="inventory-section" style="display: none;">
         <h1>在庫管理</h1>
-        <!-- 在庫管理セクションの内容 -->
     </section>
 
     <section id="barcode-section" style="display: none;">
         <h1>バーコードスキャン</h1>
-        <!-- バーコードスキャンセクションの内容 -->
     </section>
 
-    <div id="detail-modal" class="modal" style="display: none;">
+    <div id="detail-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="detail-title"></h2>
