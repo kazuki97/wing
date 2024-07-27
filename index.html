@@ -22,12 +22,14 @@
         <section id="home-section">
             <h1>ホーム</h1>
         </section>
+
         <section id="category-section" style="display:none;">
             <h1>カテゴリ設定</h1>
             <input type="text" id="category-name" placeholder="カテゴリ名">
             <button id="add-category">カテゴリ追加</button>
             <div id="category-list"></div>
         </section>
+
         <section id="product-section" style="display:none;">
             <h1>商品設定</h1>
             <select id="category-select">
@@ -48,6 +50,7 @@
                 <tbody></tbody>
             </table>
         </section>
+
         <section id="inventory-section" style="display:none;">
             <h1>在庫管理</h1>
             <div id="inventory-category-list"></div>
@@ -62,17 +65,21 @@
                 <tbody></tbody>
             </table>
         </section>
+
         <section id="barcode-section" style="display:none;">
             <h1>バーコードスキャン</h1>
+            <!-- バーコードスキャン機能の内容をここに追加 -->
         </section>
     </main>
-    <div id="detail-modal" class="modal">
+
+    <div id="detail-modal" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="detail-title"></h2>
             <div id="detail-body"></div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
