@@ -1,125 +1,69 @@
-/* 全体のスタイル */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
+    background-color: #f4f4f4;
 }
 
-/* ナビゲーションバー */
-nav {
-    background-color: #343a40;
+header {
+    background-color: #333;
+    color: #fff;
     padding: 10px 0;
 }
 
 nav ul {
     list-style-type: none;
-    margin: 0;
     padding: 0;
-    text-align: center;
 }
 
 nav ul li {
     display: inline;
-    margin-right: 15px;
+    margin-right: 10px;
 }
 
 nav ul li a {
-    color: white;
+    color: #fff;
     text-decoration: none;
-    font-weight: bold;
 }
 
-nav ul li a:hover {
-    text-decoration: underline;
-}
-
-/* セクションのスタイル */
-section {
+main {
     padding: 20px;
 }
 
-h1 {
-    font-size: 24px;
-    margin-bottom: 20px;
+section {
+    display: none;
 }
 
-/* フォームとボタン */
-input[type="text"], input[type="number"], select {
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ced4da;
-    border-radius: 3px;
-    width: calc(100% - 22px); /* パディングとボーダー分を引く */
-    box-sizing: border-box;
+section.active {
+    display: block;
 }
 
 button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    background-color: #007bff;
+    padding: 10px;
+    margin: 5px;
+    background-color: #28a745;
     color: white;
-    font-size: 14px;
-    margin-top: 10px;
+    border: none;
+    cursor: pointer;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #218838;
 }
 
-/* カテゴリ設定のスタイル */
-.category-button {
-    display: inline-block;
-    margin-left: 10px;
-    padding: 5px 10px;
-    font-size: 14px;
-    background-color: #28a745; /* ボタンの色 */
-    color: white; /* ボタンのテキスト色 */
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    width: auto; /* ボタンの幅を文字の幅に合わせる */
-}
-
-.category-button.delete {
-    background-color: #dc3545; /* 削除ボタンの色 */
-}
-
-.category-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #f1f1f1; /* カテゴリ項目の背景色 */
-    border-radius: 3px;
-}
-
-.category-item span {
-    flex-grow: 1; /* カテゴリ名が広がるように設定 */
-    font-size: 16px; /* カテゴリ名のフォントサイズ */
-}
-
-/* テーブルのスタイル */
-table {
-    width: 100%;
-    border-collapse: collapse;
+#category-list, #inventory-category-list {
     margin-top: 20px;
 }
 
-th, td {
-    padding: 10px;
-    border: 1px solid #dee2e6;
-    text-align: left;
-}
-
-th {
+.category-item, .inventory-category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: #e9ecef;
+    padding: 10px;
+    margin-bottom: 5px;
 }
 
-/* モーダルのスタイル */
 .modal {
     display: none;
     position: fixed;
@@ -129,7 +73,7 @@ th {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
@@ -138,8 +82,6 @@ th {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    max-width: 500px;
-    border-radius: 5px;
 }
 
 .close {
@@ -149,8 +91,7 @@ th {
     font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
+.close:hover, .close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
