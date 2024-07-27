@@ -1,90 +1,47 @@
 <!DOCTYPE html>
-<html lang="ja">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
     <nav>
         <ul>
-            <li><a href="#home">ホーム</a></li>
-            <li><a href="#category">カテゴリ設定</a></li>
-            <li><a href="#product">商品設定</a></li>
-            <li><a href="#inventory">在庫管理</a></li>
-            <li><a href="#scan">バーコードスキャン</a></li>
+            <li><a href="#" id="homeLink">ホーム</a></li>
+            <li><a href="#" id="categoryLink">カテゴリ設定</a></li>
+            <li><a href="#" id="productLink">商品設定</a></li>
+            <li><a href="#" id="inventoryLink">在庫管理</a></li>
+            <li><a href="#" id="scanLink">バーコードスキャン</a></li>
         </ul>
     </nav>
-
-    <section id="home">
-        <h2>ホーム</h2>
+    <section id="homeSection">
+        <h1>ホーム</h1>
     </section>
-
-    <section id="category">
-        <h2>カテゴリ設定</h2>
-        <input type="text" id="category-name" placeholder="カテゴリ名">
-        <button id="add-category">カテゴリ追加</button>
-        <div id="category-list"></div>
+    <section id="categorySection" style="display:none;">
+        <h1>カテゴリ設定</h1>
+        <input type="text" id="categoryName" placeholder="カテゴリ名">
+        <button id="addCategoryBtn">カテゴリ追加</button>
+        <div id="categoryList"></div>
     </section>
-
-    <section id="product">
-        <h2>商品設定</h2>
-        <select id="product-category">
-            <option value="">カテゴリを選択</option>
-        </select>
-        <input type="text" id="product-name" placeholder="商品名">
-        <input type="number" id="product-quantity" placeholder="数量">
-        <button id="add-product">商品追加</button>
-        <table id="product-table">
-            <thead>
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>編集</th>
-                    <th>詳細</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- 商品リストがここに追加されます -->
-            </tbody>
-        </table>
+    <section id="productSection" style="display:none;">
+        <h1>商品設定</h1>
+        <select id="categorySelect"></select>
+        <input type="text" id="productName" placeholder="商品名">
+        <input type="number" id="productQuantity" placeholder="数量">
+        <button id="addProductBtn">商品追加</button>
+        <div id="productList"></div>
     </section>
-
-    <section id="inventory">
-        <h2>在庫管理</h2>
-        <input type="text" id="search-category" placeholder="カテゴリ名入力">
-        <button id="search-product">検索</button>
-        <table id="inventory-table">
-            <thead>
-                <tr>
-                    <th>商品名</th>
-                    <th>カテゴリ</th>
-                    <th>数量</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- 在庫リストがここに追加されます -->
-            </tbody>
-        </table>
+    <section id="inventorySection" style="display:none;">
+        <h1>在庫管理</h1>
+        <input type="text" id="inventoryCategory" placeholder="カテゴリ名を入力">
+        <button id="searchInventoryBtn">検索</button>
+        <div id="inventoryList"></div>
     </section>
-
-    <section id="scan">
-        <h2>バーコードスキャン</h2>
-        <video id="barcode-scanner" width="400" height="300"></video>
+    <section id="scanSection" style="display:none;">
+        <h1>バーコードスキャン</h1>
     </section>
-
-    <div id="detail-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="detail-title"></h2>
-            <div id="detail-body"></div>
-        </div>
-    </div>
-
     <script src="script.js"></script>
 </body>
-
 </html>
