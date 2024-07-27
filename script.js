@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addCategoryButton = document.getElementById('add-category');
-    const categorySelect = document.getElementById('product-category');
+    const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
@@ -51,36 +51,27 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
-    if (linkHome) {
-        linkHome.addEventListener('click', () => {
-            showSection(homeSection);
-        });
-    }
+    linkHome.addEventListener('click', () => {
+        showSection(homeSection);
+    });
 
-    if (linkCategory) {
-        linkCategory.addEventListener('click', () => {
-            showSection(categorySection);
-        });
-    }
+    linkCategory.addEventListener('click', () => {
+        showSection(categorySection);
+    });
 
-    if (linkProduct) {
-        linkProduct.addEventListener('click', () => {
-            showSection(productSection);
-            updateCategorySelect();
-        });
-    }
+    linkProduct.addEventListener('click', () => {
+        showSection(productSection);
+        updateCategorySelect();
+    });
 
-    if (linkInventory) {
-        linkInventory.addEventListener('click', () => {
-            showSection(inventorySection);
-        });
-    }
+    linkInventory.addEventListener('click', () => {
+        showSection(inventorySection);
+        displayInventoryCategories();
+    });
 
-    if (linkBarcode) {
-        linkBarcode.addEventListener('click', () => {
-            showSection(barcodeSection);
-        });
-    }
+    linkBarcode.addEventListener('click', () => {
+        showSection(barcodeSection);
+    });
 
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
@@ -258,5 +249,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         };
+    }
+
+    function displayInventoryCategories() {
+        const inventoryCategoryList = document.getElementById('inventory-category-list');
+        inventoryCategoryList.innerHTML = '';
+        for (const categoryName in categories) {
+            const button = document.createElement('button');
+            button.textContent = categoryName;
+            button.className = 'category-button';
+            button.addEventListener('click', () => {
+                displayInventoryProducts(categoryName);
+            });
+            inventoryCategoryList.appendChild(button);
+        }
+    }
+
+    function displayInventoryProducts(category) {
+        const inventoryProductsDiv = document.getElementById('inventory-products');
+        const selectedCategoryTitle = document.getElementById('selected-category');
+        selectedCategoryTitle.textContent = category;
+        const productTableBody = document.querySelector('#inventory-product-table tbody');
+        productTableBody.innerHTML = '';
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('category');
+        const request = index.getAll(IDBKeyRange.only(category));
+
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.quantity}</td>
+                    <td><button class="edit-button" data-id="${product.id}">編集</button></td>
+                `;
+                productTableBody.appendChild(row);
+            });
+
+            document.querySelectorAll('.edit-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const productId = parseInt(event.target.getAttribute('data-id'), 10);
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
+                        if (newQuantity) {
+                            product.quantity = parseInt(newQuantity, 10);
+                            saveProductToDB(product);
+                            displayInventoryProducts(category);
+                        } else {
+                            alert('入力が無効です。');
+                        }
+                    }
+                });
+            });
+        };
+        inventoryProductsDiv.style.display = 'block';
     }
 });
