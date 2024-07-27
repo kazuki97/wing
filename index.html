@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.0/chart.min.js"></script>
 </head>
 <body>
     <nav>
@@ -31,9 +30,7 @@
 
     <section id="product-section" style="display:none;">
         <h1>商品設定</h1>
-        <select id="category-select">
-            <option value="">カテゴリを選択</option>
-        </select>
+        <select id="category-select"></select>
         <input type="text" id="product-name" placeholder="商品名">
         <input type="number" id="product-quantity" placeholder="数量">
         <button id="add-product">商品追加</button>
@@ -43,13 +40,14 @@
         <h1>在庫管理</h1>
         <input type="text" id="search-category" placeholder="カテゴリ名入力">
         <button id="search-product">検索</button>
-        <div id="inventory-list"></div>
+        <div id="category-list"></div>
     </section>
 
     <section id="barcode-section" style="display:none;">
         <h1>バーコードスキャン</h1>
-        <button id="start-scan">スキャン開始</button>
         <video id="barcode-video" style="display:none;"></video>
+        <button id="start-scan">スキャン開始</button>
+        <input type="text" id="barcode-input" placeholder="バーコード番号を入力">
     </section>
 
     <div id="detail-modal" class="modal">
@@ -60,8 +58,10 @@
         </div>
     </div>
 
-    <canvas id="inventoryChart"></canvas>
+    <canvas id="inventoryChart" style="display:none;"></canvas>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.3"></script>
     <script src="script.js"></script>
 </body>
 </html>
