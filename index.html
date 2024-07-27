@@ -2,91 +2,94 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
+    <div class="header">
         <h1>在庫管理システム</h1>
-        <nav>
-            <ul>
-                <li><a href="#" id="link-home">ホーム</a></li>
-                <li><a href="#" id="link-category">カテゴリ設定</a></li>
-                <li><a href="#" id="link-product">商品設定</a></li>
-                <li><a href="#" id="link-inventory">在庫管理</a></li>
-                <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="home-section">
+    </div>
+    <nav>
+        <ul>
+            <li><a href="#" id="link-home">ホーム</a></li>
+            <li><a href="#" id="link-category">カテゴリ設定</a></li>
+            <li><a href="#" id="link-product">商品設定</a></li>
+            <li><a href="#" id="link-inventory">在庫管理</a></li>
+            <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div id="home-section">
             <h2>ホーム</h2>
             <p>在庫管理システムへようこそ。</p>
-        </section>
-
-        <section id="category-section" style="display:none;">
+        </div>
+        <div id="category-section" style="display: none;">
             <h2>カテゴリ設定</h2>
             <input type="text" id="category-name" placeholder="カテゴリ名">
             <button id="add-category">カテゴリ追加</button>
-            <table id="category-table">
-                <thead>
-                    <tr>
-                        <th>カテゴリ名</th>
-                        <th>編集</th>
-                        <th>削除</th>
-                    </tr>
-                </thead>
-                <tbody id="category-list"></tbody>
-            </table>
-        </section>
-
-        <section id="product-section" style="display:none;">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>カテゴリ名</th>
+                            <th>編集</th>
+                            <th>削除</th>
+                        </tr>
+                    </thead>
+                    <tbody id="category-list"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="product-section" style="display: none;">
             <h2>商品設定</h2>
+            <label for="category-select">カテゴリ</label>
             <select id="category-select"></select>
             <input type="text" id="product-name" placeholder="商品名">
             <input type="number" id="product-quantity" placeholder="数量">
             <button id="add-product">商品追加</button>
-            <table id="product-table">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>数量</th>
-                        <th>編集</th>
-                        <th>詳細</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
-
-        <section id="inventory-section" style="display:none;">
-            <h2>在庫管理</h2>
-            <div id="inventory-category-list"></div>
-            <table id="inventory-product-table">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>数量</th>
-                        <th>編集</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
-
-        <section id="barcode-section" style="display:none;">
-            <h2>バーコードスキャン</h2>
-            <p>バーコードスキャン機能はここに来ます。</p>
-        </section>
-
-        <div id="detail-modal" style="display:none;">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2 id="detail-title"></h2>
-                <p id="detail-body"></p>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>商品名</th>
+                            <th>数量</th>
+                            <th>編集</th>
+                            <th>詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table"></tbody>
+                </table>
             </div>
         </div>
-    </main>
+        <div id="inventory-section" style="display: none;">
+            <h2>在庫管理</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>カテゴリ</th>
+                            <th>商品名</th>
+                            <th>数量</th>
+                            <th>編集</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-product-table"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="barcode-section" style="display: none;">
+            <h2>バーコードスキャン</h2>
+            <p>バーコードスキャン機能はここに来ます。</p>
+        </div>
+    </div>
+    <div id="detail-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="detail-title"></h2>
+            <p id="detail-body"></p>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
