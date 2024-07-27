@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkInventory.addEventListener('click', () => {
         showSection(inventorySection);
-        displayInventoryCategories();
     });
 
     linkBarcode.addEventListener('click', () => {
@@ -141,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const option = document.createElement('option');
             option.value = categoryName;
             option.text = categoryName;
-            categorySelect.appendChild(option);
+            categorySelect.add(option);
         }
     }
 
@@ -157,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             span.textContent = categoryName;
 
             const editButton = document.createElement('button');
-            editButton.textContent = 'カテゴリ編集';
+            editButton.textContent = '編集';
             editButton.className = 'category-button';
             editButton.addEventListener('click', () => {
                 const newCategoryName = prompt('新しいカテゴリ名を入力してください:', categoryName);
@@ -175,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'カテゴリ削除';
+            deleteButton.textContent = '削除';
             deleteButton.className = 'category-button';
             deleteButton.addEventListener('click', () => {
                 if (confirm('本当にこのカテゴリを削除しますか？')) {
@@ -245,58 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p>数量: ${product.quantity}</p>
                         `;
                         detailModal.style.display = 'block';
-                    }
-                });
-            });
-        };
-    }
-
-    function displayInventoryCategories() {
-        const inventoryCategoryList = document.getElementById('inventory-category-list');
-        inventoryCategoryList.innerHTML = '';
-        for (const categoryName in categories) {
-            const button = document.createElement('button');
-            button.textContent = categoryName;
-            button.addEventListener('click', () => {
-                displayInventoryProducts(categoryName);
-            });
-            inventoryCategoryList.appendChild(button);
-        }
-    }
-
-    function displayInventoryProducts(category) {
-        const inventoryTableBody = document.querySelector('#inventory-table tbody');
-        inventoryTableBody.innerHTML = '';
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const request = index.getAll(IDBKeyRange.only(category));
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            products.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td><button class="edit-button" data-id="${product.id}">編集</button></td>
-                `;
-                inventoryTableBody.appendChild(row);
-            });
-
-            document.querySelectorAll('.edit-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const productId = parseInt(event.target.getAttribute('data-id'), 10);
-                    const product = products.find(p => p.id === productId);
-                    if (product) {
-                        const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
-                        if (newQuantity) {
-                            product.quantity = parseInt(newQuantity, 10);
-                            saveProductToDB(product);
-                            displayInventoryProducts(category);
-                        } else {
-                            alert('入力が無効です。');
-                        }
                     }
                 });
             });
