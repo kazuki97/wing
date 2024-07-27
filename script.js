@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('categories')) {
             db.createObjectStore('categories', { keyPath: 'name' });
         }
+        if (!db.objectStoreNames.contains('products')) {
+            db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
+        }
     };
 
     function saveCategoryToDB(category) {
@@ -49,6 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
         request.onerror = (event) => {
             console.error('Error loading categories:', event.target.error);
         };
+    }
+
+    function saveProductToDB(product) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        store.put(product);
     }
 
     const addCategoryButton = document.getElementById('add-category');
@@ -181,4 +190,70 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryDiv.appendChild(categoryDivElement);
         }
     }
+
+    const addProductButton = document.getElementById('add-product');
+    addProductButton.addEventListener('click', () => {
+        const productName = document.getElementById('product-name').value;
+        const productQuantity = document.getElementById('product-quantity').value;
+        const category = categorySelect.value;
+        if (productName && productQuantity && category) {
+            const product = {
+                name: productName,
+                quantity: Number(productQuantity),
+                category: category
+            };
+            categories[category].push(product);
+            saveProductToDB(product);
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-quantity').value = '';
+        } else {
+            alert('全てのフィールドに入力してください。');
+        }
+    });
+
+    const searchProductButton = document.getElementById('search-product');
+    searchProductButton.addEventListener('click', () => {
+        const searchCategoryName = document.getElementById('search-category').value;
+        const inventoryList = document.getElementById('inventory-list');
+        inventoryList.innerHTML = '';
+        if (searchCategoryName && categories[searchCategoryName]) {
+            const products = categories[searchCategoryName];
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.textContent = `${product.name} - 数量: ${product.quantity}`;
+                inventoryList.appendChild(productDiv);
+            });
+        } else {
+            alert('カテゴリ名を正しく入力してください。');
+        }
+    });
+
+    const startScanButton = document.getElementById('start-scan');
+    const barcodeVideo = document.getElementById('barcode-video');
+    const barcodeInput = document.getElementById('barcode-input');
+    let scanner;
+
+    startScanButton.addEventListener('click', () => {
+        if (!scanner) {
+            scanner = new ZXing.BrowserBarcodeReader();
+        }
+        scanner.decodeFromVideoDevice(null, barcodeVideo, (result, err) => {
+            if (result) {
+                barcodeInput.value = result.text;
+                scanner.reset();
+                barcodeVideo.style.display = 'none';
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+            }
+        });
+        barcodeVideo.style.display = 'block';
+    });
+
+    window.onclick = (event) => {
+        if (event.target === detailModal) {
+            detailModal.style.display = 'none';
+        }
+    };
 });
