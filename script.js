@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
         db = event.target.result;
         loadCategories();
-        loadProducts();
     };
 
     request.onupgradeneeded = (event) => {
@@ -67,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkInventory.addEventListener('click', () => {
         showSection(inventorySection);
+        displayInventoryCategories();
     });
 
     linkBarcode.addEventListener('click', () => {
@@ -132,25 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 categories[category.name] = category.products;
             });
             displayCategories();
-            updateCategorySelect();
-        };
-    }
-
-    function loadProducts() {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const request = store.getAll();
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            products.forEach(product => {
-                if (!categories[product.category]) {
-                    categories[product.category] = [];
-                }
-                categories[product.category].push(product);
-            });
-            updateCategorySelect();
-            displayProducts();
         };
     }
 
@@ -268,5 +249,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         };
+    }
+
+    function displayInventoryCategories() {
+        const inventoryCategoryList = document.getElementById('inventory-category-list');
+        inventoryCategoryList.innerHTML = '';
+        for (const categoryName in categories) {
+            const button = document.createElement('button');
+            button.textContent = categoryName;
+            button.className = 'inventory-category-button';
+            button.addEventListener('click', () => {
+                displayProducts(categoryName);
+            });
+            inventoryCategoryList.appendChild(button);
+        }
     }
 });
