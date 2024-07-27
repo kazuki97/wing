@@ -2,18 +2,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    console.log('DOM fully loaded and parsed');  // DOMの読み込み完了
+    console.log('DOM fully loaded and parsed');
 
     const request = indexedDB.open('inventoryDB', 1);
 
     request.onerror = (event) => {
-        console.error('Database error:', event.target.error);  // データベースエラー
+        console.error('Database error:', event.target.error);
     };
 
     request.onsuccess = (event) => {
         db = event.target.result;
-        console.log('Database initialized', db);  // データベースの初期化完了
-        loadCategories();  // データベースが初期化された後に呼び出す
+        console.log('Database initialized', db);
+        loadCategories();
     };
 
     request.onupgradeneeded = (event) => {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('categories')) {
             db.createObjectStore('categories', { keyPath: 'name' });
         }
-        console.log('Database upgrade needed', db);  // データベースのアップグレード
+        console.log('Database upgrade needed', db);
     };
 
     function saveCategoryToDB(category) {
@@ -30,22 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(category);
     }
 
-    function saveCategories() {
-        for (const category in categories) {
-            saveCategoryToDB({
-                name: category,
-                products: categories[category]
-            });
-        }
-    }
-
     function loadCategories() {
         if (!db) {
-            console.error('Database is not initialized');  // データベースが初期化されていない
+            console.error('Database is not initialized');
             return;
         }
 
-        console.log('Loading categories');  // カテゴリの読み込み開始
+        console.log('Loading categories');
 
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
@@ -59,11 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateCategorySelect();
             displayCategories();
-            console.log('Categories loaded', categories);  // カテゴリの読み込み完了
+            console.log('Categories loaded', categories);
         };
 
         request.onerror = (event) => {
-            console.error('Error loading categories:', event.target.error);  // カテゴリの読み込みエラー
+            console.error('Error loading categories:', event.target.error);
         };
     }
 
