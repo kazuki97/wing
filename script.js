@@ -29,8 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
-    const inventoryCategoryList = document.getElementById('inventory-category-list');
-    const inventoryTableBody = document.querySelector('#inventory-table tbody');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -68,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkInventory.addEventListener('click', () => {
         showSection(inventorySection);
-        displayInventoryCategories();
     });
 
     linkBarcode.addEventListener('click', () => {
@@ -134,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 categories[category.name] = category.products;
             });
             displayCategories();
+            displayInventoryCategories();
         };
     }
 
