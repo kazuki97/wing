@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addCategoryButton = document.getElementById('add-category');
-    const categorySelect = document.getElementById('category-select');
+    const categorySelect = document.getElementById('product-category');
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
