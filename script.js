@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
         db = event.target.result;
         loadCategories();
-        loadProducts();
+        displayInventoryCategories();
     };
 
     request.onupgradeneeded = (event) => {
@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkInventory.addEventListener('click', () => {
         showSection(inventorySection);
+        displayInventoryCategories();
     });
 
     linkBarcode.addEventListener('click', () => {
@@ -135,10 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function loadProducts() {
-        // Load products function to ensure products are loaded correctly.
-    }
-
     function updateCategorySelect() {
         categorySelect.innerHTML = '';
         for (const categoryName in categories) {
@@ -195,6 +192,30 @@ document.addEventListener('DOMContentLoaded', () => {
             div.appendChild(editButton);
             div.appendChild(deleteButton);
             categoryList.appendChild(div);
+        }
+    }
+
+    function displayInventoryCategories() {
+        const inventoryCategoryList = document.getElementById('inventory-category-list');
+        inventoryCategoryList.innerHTML = '';
+
+        for (const categoryName in categories) {
+            const div = document.createElement('div');
+            div.className = 'inventory-category-item';
+
+            const span = document.createElement('span');
+            span.textContent = categoryName;
+
+            const viewButton = document.createElement('button');
+            viewButton.textContent = '表示';
+            viewButton.className = 'category-button';
+            viewButton.addEventListener('click', () => {
+                displayProducts(categoryName);
+            });
+
+            div.appendChild(span);
+            div.appendChild(viewButton);
+            inventoryCategoryList.appendChild(div);
         }
     }
 
