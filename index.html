@@ -9,60 +9,61 @@
 <body>
     <nav>
         <ul>
-            <li><a href="#home">ホーム</a></li>
-            <li><a href="#category">カテゴリ設定</a></li>
-            <li><a href="#product">商品設定</a></li>
-            <li><a href="#inventory">在庫管理</a></li>
-            <li><a href="#barcode">バーコードスキャン</a></li>
+            <li><a id="link-home" href="#">ホーム</a></li>
+            <li><a id="link-category" href="#">カテゴリ設定</a></li>
+            <li><a id="link-product" href="#">商品設定</a></li>
+            <li><a id="link-inventory" href="#">在庫管理</a></li>
+            <li><a id="link-barcode" href="#">バーコードスキャン</a></li>
         </ul>
     </nav>
-
-    <section id="home">
+    
+    <section id="home-section" style="display: block;">
         <h1>ホーム</h1>
     </section>
 
-    <section id="category">
-        <h2>カテゴリ設定</h2>
+    <section id="category-section" style="display: none;">
+        <h1>カテゴリ設定</h1>
         <input type="text" id="category-name" placeholder="カテゴリ名">
         <button id="add-category">カテゴリ追加</button>
-        <div id="category-list">
-            <!-- カテゴリ一覧がここに表示される -->
-            <div class="category-item">
-                <span class="category-name">あ</span>
-                <button class="edit-category">カテゴリ編集</button>
-                <button class="delete-category">カテゴリ削除</button>
-            </div>
-            <div class="category-item">
-                <span class="category-name">い</span>
-                <button class="edit-category">カテゴリ編集</button>
-                <button class="delete-category">カテゴリ削除</button>
-            </div>
-        </div>
+        <div id="category-list"></div>
     </section>
 
-    <section id="product">
-        <h2>商品設定</h2>
-        <select id="product-category">
-            <option value="">カテゴリを選択</option>
-            <!-- カテゴリのオプションがここに表示される -->
-        </select>
+    <section id="product-section" style="display: none;">
+        <h1>商品設定</h1>
+        <select id="product-category"></select>
         <input type="text" id="product-name" placeholder="商品名">
         <input type="number" id="product-quantity" placeholder="数量">
         <button id="add-product">商品追加</button>
-        <div id="product-list">
-            <!-- 商品一覧がここに表示される -->
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>編集</th>
+                    <th>詳細</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <section id="inventory-section" style="display: none;">
+        <h1>在庫管理</h1>
+        <!-- 在庫管理セクションの内容 -->
+    </section>
+
+    <section id="barcode-section" style="display: none;">
+        <h1>バーコードスキャン</h1>
+        <!-- バーコードスキャンセクションの内容 -->
+    </section>
+
+    <div id="detail-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="detail-title"></h2>
+            <div id="detail-body"></div>
         </div>
-    </section>
-
-    <section id="inventory">
-        <h2>在庫管理</h2>
-        <!-- 在庫管理の内容 -->
-    </section>
-
-    <section id="barcode">
-        <h2>バーコードスキャン</h2>
-        <!-- バーコードスキャンの内容 -->
-    </section>
+    </div>
 
     <script src="script.js"></script>
 </body>
