@@ -1,20 +1,20 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在庫管理システム</title>
+    <title>Inventory Management</title>
     <link rel="stylesheet" href="styles.css">
-    <script defer src="script.js"></script>
 </head>
 <body>
     <nav>
         <ul>
-            <li><a href="#home" id="link-home">ホーム</a></li>
-            <li><a href="#category" id="link-category">カテゴリ設定</a></li>
-            <li><a href="#product" id="link-product">商品設定</a></li>
-            <li><a href="#inventory" id="link-inventory">在庫管理</a></li>
-            <li><a href="#barcode" id="link-barcode">バーコードスキャン</a></li>
+            <li><a href="#" id="link-home">ホーム</a></li>
+            <li><a href="#" id="link-category">カテゴリ設定</a></li>
+            <li><a href="#" id="link-product">商品設定</a></li>
+            <li><a href="#" id="link-inventory">在庫管理</a></li>
+            <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
         </ul>
     </nav>
 
@@ -39,7 +39,7 @@
 
     <section id="inventory-section" style="display:none;">
         <h1>在庫管理</h1>
-        <input type="text" id="search-category" placeholder="カテゴリ名入力">
+        <input type="text" id="search-category" placeholder="カテゴリ名">
         <button id="search-product">検索</button>
         <div id="inventory-list"></div>
     </section>
@@ -48,7 +48,6 @@
         <h1>バーコードスキャン</h1>
         <button id="start-scan">スキャン開始</button>
         <video id="barcode-video" style="display:none;"></video>
-        <input type="text" id="barcode-input" placeholder="バーコード番号">
     </section>
 
     <div id="detail-modal" class="modal">
@@ -59,6 +58,6 @@
         </div>
     </div>
 
-    <canvas id="inventoryChart" style="display:none;"></canvas>
+    <script src="script.js"></script>
 </body>
 </html>
