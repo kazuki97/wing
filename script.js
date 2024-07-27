@@ -1,122 +1,33 @@
-document.addEventListener('DOMContentLoaded', () => {
-    let categories = {};
+document.addEventListener('DOMContentLoaded', function() {
+    const dbName = 'inventoryDB';
+    const dbVersion = 1;
     let db;
 
-    const request = indexedDB.open('inventoryDB', 1);
+    function initDatabase() {
+        const request = indexedDB.open(dbName, dbVersion);
 
-    request.onerror = (event) => {
-        console.error('Database error:', event.target.error);
-    };
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
 
-    request.onsuccess = (event) => {
-        db = event.target.result;
-        loadCategories();
-    };
+            if (!db.objectStoreNames.contains('categories')) {
+                db.createObjectStore('categories', { keyPath: 'id', autoIncrement: true });
+            }
 
-    request.onupgradeneeded = (event) => {
-        db = event.target.result;
-        if (!db.objectStoreNames.contains('categories')) {
-            db.createObjectStore('categories', { keyPath: 'name' });
-        }
-        if (!db.objectStoreNames.contains('products')) {
-            const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
-            productStore.createIndex('category', 'category', { unique: false });
-        }
-    };
+            if (!db.objectStoreNames.contains('products')) {
+                const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
+                productStore.createIndex('categoryId', 'categoryId', { unique: false });
+            }
+        };
 
-    const addCategoryButton = document.getElementById('add-category');
-    const categorySelect = document.getElementById('category-select');
-    const addProductButton = document.getElementById('add-product');
-    const detailModal = document.getElementById('detail-modal');
-    const closeModal = document.querySelector('.close');
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            loadCategories();
+            loadProducts();
+        };
 
-    const homeSection = document.getElementById('home-section');
-    const categorySection = document.getElementById('category-section');
-    const productSection = document.getElementById('product-section');
-    const inventorySection = document.getElementById('inventory-section');
-    const barcodeSection = document.getElementById('barcode-section');
-
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        section.style.display = 'block';
-    }
-
-    linkHome.addEventListener('click', () => {
-        showSection(homeSection);
-    });
-
-    linkCategory.addEventListener('click', () => {
-        showSection(categorySection);
-    });
-
-    linkProduct.addEventListener('click', () => {
-        showSection(productSection);
-        updateCategorySelect();
-    });
-
-    linkInventory.addEventListener('click', () => {
-        showSection(inventorySection);
-    });
-
-    linkBarcode.addEventListener('click', () => {
-        showSection(barcodeSection);
-    });
-
-    addCategoryButton.addEventListener('click', () => {
-        const categoryName = document.getElementById('category-name').value;
-        if (categoryName && !categories[categoryName]) {
-            categories[categoryName] = [];
-            saveCategoryToDB({
-                name: categoryName,
-                products: categories[categoryName]
-            });
-            updateCategorySelect();
-            displayCategories();
-            document.getElementById('category-name').value = '';
-        } else {
-            alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
-        }
-    });
-
-    addProductButton.addEventListener('click', () => {
-        const category = categorySelect.value;
-        const productName = document.getElementById('product-name').value;
-        const quantity = document.getElementById('product-quantity').value;
-        if (category && productName && quantity) {
-            const product = { category, name: productName, quantity: parseInt(quantity, 10) };
-            saveProductToDB(product);
-            displayProducts(category);
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-quantity').value = '';
-        } else {
-            alert('すべてのフィールドを入力してください。');
-        }
-    });
-
-    closeModal.addEventListener('click', () => {
-        detailModal.style.display = 'none';
-    });
-
-    function saveCategoryToDB(category) {
-        const transaction = db.transaction(['categories'], 'readwrite');
-        const store = transaction.objectStore('categories');
-        store.put(category);
-    }
-
-    function saveProductToDB(product) {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-        store.put(product);
+        request.onerror = function(event) {
+            console.error('Database error:', event.target.error);
+        };
     }
 
     function loadCategories() {
@@ -124,129 +35,181 @@ document.addEventListener('DOMContentLoaded', () => {
         const store = transaction.objectStore('categories');
         const request = store.getAll();
 
-        request.onsuccess = (event) => {
-            const result = event.target.result;
-            categories = {};
-            result.forEach(category => {
-                categories[category.name] = category.products;
-            });
-            displayCategories();
+        request.onsuccess = function(event) {
+            const categories = event.target.result;
+            renderCategories(categories);
         };
     }
 
-    function updateCategorySelect() {
-        categorySelect.innerHTML = '';
-        for (const categoryName in categories) {
-            const option = document.createElement('option');
-            option.value = categoryName;
-            option.text = categoryName;
-            categorySelect.add(option);
-        }
-    }
-
-    function displayCategories() {
-        const categoryList = document.getElementById('category-list');
-        categoryList.innerHTML = '';
-
-        for (const categoryName in categories) {
-            const div = document.createElement('div');
-            div.className = 'category-item';
-
-            const span = document.createElement('span');
-            span.textContent = categoryName;
-
-            const editButton = document.createElement('button');
-            editButton.textContent = 'カテゴリ編集';
-            editButton.className = 'category-button';
-            editButton.addEventListener('click', () => {
-                const newCategoryName = prompt('新しいカテゴリ名を入力してください:', categoryName);
-                if (newCategoryName && !categories[newCategoryName]) {
-                    categories[newCategoryName] = categories[categoryName];
-                    delete categories[categoryName];
-                    saveCategoryToDB({
-                        name: newCategoryName,
-                        products: categories[newCategoryName]
-                    });
-                    displayCategories();
-                } else {
-                    alert('カテゴリ名が無効です。');
-                }
-            });
-
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'カテゴリ削除';
-            deleteButton.className = 'category-button';
-            deleteButton.addEventListener('click', () => {
-                if (confirm('本当にこのカテゴリを削除しますか？')) {
-                    delete categories[categoryName];
-                    const transaction = db.transaction(['categories'], 'readwrite');
-                    const store = transaction.objectStore('categories');
-                    store.delete(categoryName);
-                    displayCategories();
-                }
-            });
-
-            div.appendChild(span);
-            div.appendChild(editButton);
-            div.appendChild(deleteButton);
-            categoryList.appendChild(div);
-        }
-    }
-
-    function displayProducts(category) {
-        const productTableBody = document.querySelector('#product-table tbody');
-        productTableBody.innerHTML = '';
+    function loadProducts() {
         const transaction = db.transaction(['products'], 'readonly');
         const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const request = index.getAll(IDBKeyRange.only(category));
+        const request = store.getAll();
 
-        request.onsuccess = (event) => {
+        request.onsuccess = function(event) {
             const products = event.target.result;
-            products.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td><button class="edit-button" data-id="${product.id}">編集</button></td>
-                    <td><button class="detail-button" data-id="${product.id}">詳細</button></td>
-                `;
-                productTableBody.appendChild(row);
-            });
-
-            document.querySelectorAll('.edit-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const productId = parseInt(event.target.getAttribute('data-id'), 10);
-                    const product = products.find(p => p.id === productId);
-                    if (product) {
-                        const newProductName = prompt('新しい商品名を入力してください:', product.name);
-                        const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
-                        if (newProductName && newQuantity) {
-                            product.name = newProductName;
-                            product.quantity = parseInt(newQuantity, 10);
-                            saveProductToDB(product);
-                            displayProducts(category);
-                        } else {
-                            alert('入力が無効です。');
-                        }
-                    }
-                });
-            });
-
-            document.querySelectorAll('.detail-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const productId = parseInt(event.target.getAttribute('data-id'), 10);
-                    const product = products.find(p => p.id === productId);
-                    if (product) {
-                        document.getElementById('detail-title').textContent = product.name;
-                        document.getElementById('detail-body').innerHTML = `
-                            <p>カテゴリ: ${product.category}</p>
-                            <p>数量: ${product.quantity}</p>
-                        `;
-                        detailModal.style.display = 'block';
-                    }
-                });
-            });
+            renderProducts(products);
         };
     }
+
+    function addCategory(categoryName) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        const request = store.add({ name: categoryName });
+
+        request.onsuccess = function(event) {
+            loadCategories();
+        };
+    }
+
+    function addProduct(product) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        const request = store.add(product);
+
+        request.onsuccess = function(event) {
+            loadProducts();
+        };
+    }
+
+    function renderCategories(categories) {
+        const categoryList = document.getElementById('category-list');
+        const productCategorySelect = document.getElementById('product-category');
+        categoryList.innerHTML = '';
+        productCategorySelect.innerHTML = '<option value="">カテゴリを選択</option>';
+
+        categories.forEach(category => {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'category-item';
+            categoryDiv.innerHTML = `
+                <span>${category.name}</span>
+                <button class="edit-category" data-id="${category.id}">カテゴリ編集</button>
+                <button class="delete-category" data-id="${category.id}">カテゴリ削除</button>
+            `;
+            categoryList.appendChild(categoryDiv);
+
+            const categoryOption = document.createElement('option');
+            categoryOption.value = category.id;
+            categoryOption.textContent = category.name;
+            productCategorySelect.appendChild(categoryOption);
+        });
+    }
+
+    function renderProducts(products) {
+        const productTableBody = document.querySelector('#product-table tbody');
+        productTableBody.innerHTML = '';
+
+        products.forEach(product => {
+            const productRow = document.createElement('tr');
+            productRow.innerHTML = `
+                <td>${product.name}</td>
+                <td>${product.quantity}</td>
+                <td><button class="edit-product" data-id="${product.id}">編集</button></td>
+                <td><button class="detail-product" data-id="${product.id}">詳細</button></td>
+            `;
+            productTableBody.appendChild(productRow);
+        });
+    }
+
+    document.getElementById('add-category').addEventListener('click', function() {
+        const categoryName = document.getElementById('category-name').value;
+        if (categoryName) {
+            addCategory(categoryName);
+            document.getElementById('category-name').value = '';
+        }
+    });
+
+    document.getElementById('add-product').addEventListener('click', function() {
+        const productName = document.getElementById('product-name').value;
+        const productQuantity = document.getElementById('product-quantity').value;
+        const categoryId = document.getElementById('product-category').value;
+
+        if (productName && productQuantity && categoryId) {
+            const product = {
+                name: productName,
+                quantity: parseInt(productQuantity, 10),
+                categoryId: parseInt(categoryId, 10)
+            };
+            addProduct(product);
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-quantity').value = '';
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('edit-category')) {
+            const categoryId = event.target.dataset.id;
+            editCategory(categoryId);
+        } else if (event.target.classList.contains('delete-category')) {
+            const categoryId = event.target.dataset.id;
+            deleteCategory(categoryId);
+        } else if (event.target.classList.contains('edit-product')) {
+            const productId = event.target.dataset.id;
+            editProduct(productId);
+        } else if (event.target.classList.contains('detail-product')) {
+            const productId = event.target.dataset.id;
+            showProductDetails(productId);
+        }
+    });
+
+    function editCategory(categoryId) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        const request = store.get(parseInt(categoryId, 10));
+
+        request.onsuccess = function(event) {
+            const category = event.target.result;
+            const newCategoryName = prompt('カテゴリ名を編集', category.name);
+            if (newCategoryName) {
+                category.name = newCategoryName;
+                const updateRequest = store.put(category);
+                updateRequest.onsuccess = function() {
+                    loadCategories();
+                };
+            }
+        };
+    }
+
+    function deleteCategory(categoryId) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        const request = store.delete(parseInt(categoryId, 10));
+
+        request.onsuccess = function() {
+            loadCategories();
+        };
+    }
+
+    function editProduct(productId) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        const request = store.get(parseInt(productId, 10));
+
+        request.onsuccess = function(event) {
+            const product = event.target.result;
+            const newProductName = prompt('商品名を編集', product.name);
+            const newProductQuantity = prompt('数量を編集', product.quantity);
+            if (newProductName && newProductQuantity) {
+                product.name = newProductName;
+                product.quantity = parseInt(newProductQuantity, 10);
+                const updateRequest = store.put(product);
+                updateRequest.onsuccess = function() {
+                    loadProducts();
+                };
+            }
+        };
+    }
+
+    function showProductDetails(productId) {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const request = store.get(parseInt(productId, 10));
+
+        request.onsuccess = function(event) {
+            const product = event.target.result;
+            alert(`商品名: ${product.name}\n数量: ${product.quantity}`);
+        };
+    }
+
+    initDatabase();
 });
