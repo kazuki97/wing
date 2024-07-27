@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.header {
+header {
     background-color: #333;
     color: white;
     padding: 15px;
@@ -30,7 +30,7 @@ nav ul li a:hover {
     text-decoration: underline;
 }
 
-.container {
+main {
     width: 80%;
     margin: 20px auto;
 }
