@@ -2,12 +2,12 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management System</title>
+    <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
+        <h1>在庫管理システム</h1>
         <nav>
             <ul>
                 <li><a href="#" id="link-home">ホーム</a></li>
@@ -18,22 +18,30 @@
             </ul>
         </nav>
     </header>
-
     <main>
         <section id="home-section">
-            <h1>ホーム</h1>
+            <h2>ホーム</h2>
             <p>在庫管理システムへようこそ。</p>
         </section>
 
         <section id="category-section" style="display:none;">
-            <h1>カテゴリ設定</h1>
+            <h2>カテゴリ設定</h2>
             <input type="text" id="category-name" placeholder="カテゴリ名">
             <button id="add-category">カテゴリ追加</button>
-            <div id="category-list"></div>
+            <table id="category-table">
+                <thead>
+                    <tr>
+                        <th>カテゴリ名</th>
+                        <th>編集</th>
+                        <th>削除</th>
+                    </tr>
+                </thead>
+                <tbody id="category-list"></tbody>
+            </table>
         </section>
 
         <section id="product-section" style="display:none;">
-            <h1>商品設定</h1>
+            <h2>商品設定</h2>
             <select id="category-select"></select>
             <input type="text" id="product-name" placeholder="商品名">
             <input type="number" id="product-quantity" placeholder="数量">
@@ -52,7 +60,7 @@
         </section>
 
         <section id="inventory-section" style="display:none;">
-            <h1>在庫管理</h1>
+            <h2>在庫管理</h2>
             <div id="inventory-category-list"></div>
             <table id="inventory-product-table">
                 <thead>
@@ -67,19 +75,18 @@
         </section>
 
         <section id="barcode-section" style="display:none;">
-            <h1>バーコードスキャン</h1>
-            <!-- バーコードスキャンの内容 -->
+            <h2>バーコードスキャン</h2>
+            <p>バーコードスキャン機能はここに来ます。</p>
         </section>
-    </main>
 
-    <div id="detail-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="detail-title"></h2>
-            <p id="detail-body"></p>
+        <div id="detail-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="detail-title"></h2>
+                <p id="detail-body"></p>
+            </div>
         </div>
-    </div>
-
+    </main>
     <script src="script.js"></script>
 </body>
 </html>
