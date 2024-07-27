@@ -2,7 +2,47 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    console.log('DOM fully loaded and parsed');
+    const addCategoryButton = document.getElementById('add-category');
+    const addProductButton = document.getElementById('add-product');
+    const searchProductButton = document.getElementById('search-product');
+    const categorySelect = document.getElementById('category-select');
+    const detailModal = document.getElementById('detail-modal');
+    const detailTitle = document.getElementById('detail-title');
+    const detailBody = document.getElementById('detail-body');
+    const closeModal = document.querySelector('.close');
+
+    const homeSection = document.getElementById('home-section');
+    const categorySection = document.getElementById('category-section');
+    const productSection = document.getElementById('product-section');
+    const inventorySection = document.getElementById('inventory-section');
+    const barcodeSection = document.getElementById('barcode-section');
+
+    const linkHome = document.getElementById('link-home');
+    const linkCategory = document.getElementById('link-category');
+    const linkProduct = document.getElementById('link-product');
+    const linkInventory = document.getElementById('link-inventory');
+    const linkBarcode = document.getElementById('link-barcode');
+
+    const inventoryChart = new Chart(document.getElementById('inventoryChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '在庫数',
+                data: [],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
 
     const request = indexedDB.open('inventoryDB', 1);
 
@@ -30,22 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(category);
     }
 
-    function saveCategories() {
-        for (const category in categories) {
-            saveCategoryToDB({
-                name: category,
-                products: categories[category]
-            });
-        }
-    }
-
     function loadCategories() {
         if (!db) {
             console.error('Database is not initialized');
             return;
         }
-
-        console.log('Loading categories');
 
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
@@ -59,63 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateCategorySelect();
             displayCategories();
-            console.log('Categories loaded', categories);
         };
 
         request.onerror = (event) => {
             console.error('Error loading categories:', event.target.error);
         };
     }
-
-    const addCategoryButton = document.getElementById('add-category');
-    const addProductButton = document.getElementById('add-product');
-    const searchProductButton = document.getElementById('search-product');
-    const categorySelect = document.getElementById('category-select');
-    const detailModal = document.getElementById('detail-modal');
-    const detailTitle = document.getElementById('detail-title');
-    const detailBody = document.getElementById('detail-body');
-    const closeModal = document.querySelector('.close');
-
-    const homeSection = document.getElementById('home-section');
-    const categorySection = document.getElementById('category-section');
-    const productSection = document.getElementById('product-section');
-    const inventorySection = document.getElementById('inventory-section');
-    const barcodeSection = document.getElementById('barcode-section');
-
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        section.style.display = 'block';
-    }
-
-    linkHome.addEventListener('click', () => {
-        showSection(homeSection);
-    });
-
-    linkCategory.addEventListener('click', () => {
-        showSection(categorySection);
-    });
-
-    linkProduct.addEventListener('click', () => {
-        showSection(productSection);
-    });
-
-    linkInventory.addEventListener('click', () => {
-        showSection(inventorySection);
-    });
-
-    linkBarcode.addEventListener('click', () => {
-        showSection(barcodeSection);
-    });
 
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
@@ -281,4 +259,98 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryDiv.appendChild(productTable);
         }
     }
+
+    function updateChart() {
+        const labels = [];
+        const data = [];
+        for (const category in categories) {
+            categories[category].forEach(product => {
+                labels.push(product.name);
+                data.push(product.quantity);
+            });
+        }
+        inventoryChart.data.labels = labels;
+        inventoryChart.data.datasets[0].data = data;
+        inventoryChart.update();
+    }
+
+    // バーコードスキャン機能
+    const codeReader = new ZXing.BrowserBarcodeReader();
+    const startScanButton = document.getElementById('start-scan');
+    const barcodeVideo = document.getElementById('barcode-video');
+
+    startScanButton.addEventListener('click', () => {
+        barcodeVideo.style.display = 'block';
+        codeReader.decodeFromVideoDevice(null, 'barcode-video', (result, err) => {
+            if (result) {
+                alert(`Barcode detected: ${result.text}`);
+                const product = findProductByBarcode(result.text);
+                if (product) {
+                    const newQuantity = parseInt(product.quantity, 10) - 1;
+                    if (newQuantity >= 0) {
+                        const timestamp = new Date().toLocaleString();
+                        product.quantity = newQuantity;
+                        product.history.push(`${timestamp}: バーコードスキャンで1個減少`);
+                        saveCategoryToDB({
+                            name: product.category,
+                            products: categories[product.category]
+                        });
+                        displayCategories();
+                        updateChart();
+                    } else {
+                        alert('在庫が不足しています。');
+                    }
+                } else {
+                    alert('該当する商品が見つかりません。');
+                }
+                barcodeVideo.style.display = 'none';
+                codeReader.reset();
+            } else if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+                alert(`Error: ${err}`);
+                barcodeVideo.style.display = 'none';
+                codeReader.reset();
+            }
+        });
+    });
+
+    function findProductByBarcode(barcode) {
+        for (const category in categories) {
+            const product = categories[category].find(product => product.name === barcode);
+            if (product) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    function showSection(section) {
+        homeSection.style.display = 'none';
+        categorySection.style.display = 'none';
+        productSection.style.display = 'none';
+        inventorySection.style.display = 'none';
+        barcodeSection.style.display = 'none';
+        section.style.display = 'block';
+    }
+
+    linkHome.addEventListener('click', () => {
+        showSection(homeSection);
+        updateChart();
+    });
+
+    linkCategory.addEventListener('click', () => {
+        showSection(categorySection);
+    });
+
+    linkProduct.addEventListener('click', () => {
+        showSection(productSection);
+    });
+
+    linkInventory.addEventListener('click', () => {
+        showSection(inventorySection);
+    });
+
+    linkBarcode.addEventListener('click', () => {
+        showSection(barcodeSection);
+    });
 });
