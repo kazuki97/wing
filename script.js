@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const option = document.createElement('option');
             option.value = categoryName;
             option.text = categoryName;
-            categorySelect.add(option);
+            categorySelect.appendChild(option);
         }
     }
 
@@ -279,12 +279,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.innerHTML = `
                     <td>${product.name}</td>
                     <td>${product.quantity}</td>
-                    <td><button class="edit-inventory-button" data-id="${product.id}">編集</button></td>
+                    <td><button class="edit-button" data-id="${product.id}">編集</button></td>
                 `;
                 inventoryTableBody.appendChild(row);
             });
 
-            document.querySelectorAll('.edit-inventory-button').forEach(button => {
+            document.querySelectorAll('.edit-button').forEach(button => {
                 button.addEventListener('click', (event) => {
                     const productId = parseInt(event.target.getAttribute('data-id'), 10);
                     const product = products.find(p => p.id === productId);
