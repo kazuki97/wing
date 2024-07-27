@@ -51,26 +51,36 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
-    linkHome.addEventListener('click', () => {
-        showSection(homeSection);
-    });
+    if (linkHome) {
+        linkHome.addEventListener('click', () => {
+            showSection(homeSection);
+        });
+    }
 
-    linkCategory.addEventListener('click', () => {
-        showSection(categorySection);
-    });
+    if (linkCategory) {
+        linkCategory.addEventListener('click', () => {
+            showSection(categorySection);
+        });
+    }
 
-    linkProduct.addEventListener('click', () => {
-        showSection(productSection);
-        updateCategorySelect();
-    });
+    if (linkProduct) {
+        linkProduct.addEventListener('click', () => {
+            showSection(productSection);
+            updateCategorySelect();
+        });
+    }
 
-    linkInventory.addEventListener('click', () => {
-        showSection(inventorySection);
-    });
+    if (linkInventory) {
+        linkInventory.addEventListener('click', () => {
+            showSection(inventorySection);
+        });
+    }
 
-    linkBarcode.addEventListener('click', () => {
-        showSection(barcodeSection);
-    });
+    if (linkBarcode) {
+        linkBarcode.addEventListener('click', () => {
+            showSection(barcodeSection);
+        });
+    }
 
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
