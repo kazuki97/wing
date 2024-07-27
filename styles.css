@@ -35,53 +35,76 @@ nav ul li a:hover {
     margin: 20px auto;
 }
 
+input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    box-sizing: border-box;
+}
+
 button {
-    background-color: #4CAF50;
+    padding: 10px 20px;
+    background-color: green;
     color: white;
     border: none;
-    padding: 10px 20px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: darkgreen;
 }
 
-.table-container {
-    margin-top: 20px;
+.category-item, .product-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
 }
 
-.table-container table {
+.category-button, .product-button {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 10px;
+}
+
+.category-button:hover, .product-button:hover {
+    background-color: darkgreen;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
     width: 100%;
-    border-collapse: collapse;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
 }
 
-.table-container th, .table-container td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
 }
 
-.table-container th {
-    background-color: #f2f2f2;
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
 }
 
-.category-button {
-    margin-left: 10px;
-    padding: 5px 10px;
-}
-
-.category-button:hover {
-    background-color: #ddd;
-    cursor: pointer;
-}
-
-.product-button {
-    margin-left: 10px;
-    padding: 5px 10px;
-}
-
-.product-button:hover {
-    background-color: #ddd;
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
     cursor: pointer;
 }
