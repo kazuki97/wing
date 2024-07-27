@@ -27,6 +27,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
+    const detailModal = document.getElementById('detail-modal');
+    const closeModal = document.querySelector('.close');
+
+    const homeSection = document.getElementById('home-section');
+    const categorySection = document.getElementById('category-section');
+    const productSection = document.getElementById('product-section');
+    const inventorySection = document.getElementById('inventory-section');
+    const barcodeSection = document.getElementById('barcode-section');
+
+    const linkHome = document.getElementById('link-home');
+    const linkCategory = document.getElementById('link-category');
+    const linkProduct = document.getElementById('link-product');
+    const linkInventory = document.getElementById('link-inventory');
+    const linkBarcode = document.getElementById('link-barcode');
+
+    function showSection(section) {
+        homeSection.style.display = 'none';
+        categorySection.style.display = 'none';
+        productSection.style.display = 'none';
+        inventorySection.style.display = 'none';
+        barcodeSection.style.display = 'none';
+        section.style.display = 'block';
+    }
+
+    linkHome.addEventListener('click', () => {
+        showSection(homeSection);
+    });
+
+    linkCategory.addEventListener('click', () => {
+        showSection(categorySection);
+    });
+
+    linkProduct.addEventListener('click', () => {
+        showSection(productSection);
+        updateCategorySelect();
+    });
+
+    linkInventory.addEventListener('click', () => {
+        showSection(inventorySection);
+        displayInventoryCategories();
+    });
+
+    linkBarcode.addEventListener('click', () => {
+        showSection(barcodeSection);
+    });
 
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
@@ -57,6 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             alert('すべてのフィールドを入力してください。');
         }
+    });
+
+    closeModal.addEventListener('click', () => {
+        detailModal.style.display = 'none';
     });
 
     function saveCategoryToDB(category) {
