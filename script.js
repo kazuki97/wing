@@ -2,8 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    console.log('DOM fully loaded and parsed');
-
     const request = indexedDB.open('inventoryDB', 1);
 
     request.onerror = (event) => {
@@ -12,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     request.onsuccess = (event) => {
         db = event.target.result;
-        console.log('Database initialized', db);
         loadCategories();
     };
 
@@ -21,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('categories')) {
             db.createObjectStore('categories', { keyPath: 'name' });
         }
-        console.log('Database upgrade needed', db);
     };
 
     function saveCategoryToDB(category) {
@@ -30,22 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(category);
     }
 
-    function saveCategories() {
-        for (const category in categories) {
-            saveCategoryToDB({
-                name: category,
-                products: categories[category]
-            });
-        }
-    }
-
     function loadCategories() {
         if (!db) {
             console.error('Database is not initialized');
             return;
         }
-
-        console.log('Loading categories');
 
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
@@ -59,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateCategorySelect();
             displayCategories();
-            console.log('Categories loaded', categories);
         };
 
         request.onerror = (event) => {
@@ -86,27 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
 
-    const inventoryChart = new Chart(document.getElementById('inventoryChart'), {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: '在庫数',
-                data: [],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
     function showSection(section) {
         homeSection.style.display = 'none';
         categorySection.style.display = 'none';
@@ -118,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkHome.addEventListener('click', () => {
         showSection(homeSection);
-        updateChart();
     });
 
     linkCategory.addEventListener('click', () => {
@@ -167,11 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function displayCategories(searchCategory = null) {
+    function displayCategories() {
         const categoryDiv = document.getElementById('category-list');
         categoryDiv.innerHTML = '';
         for (const category in categories) {
-            if (searchCategory && category !== searchCategory) continue;
             const categoryDivElement = document.createElement('div');
             categoryDivElement.className = 'category';
             categoryDivElement.textContent = category;
@@ -180,80 +141,44 @@ document.addEventListener('DOMContentLoaded', () => {
             editButton.textContent = 'カテゴリ編集';
             editButton.className = 'edit-category-button';
             editButton.dataset.category = category;
+            editButton.addEventListener('click', (e) => {
+                const category = e.target.dataset.category;
+                const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
+                if (newCategoryName && newCategoryName !== category) {
+                    categories[newCategoryName] = categories[category];
+                    delete categories[category];
+                    saveCategoryToDB({
+                        name: newCategoryName,
+                        products: categories[newCategoryName]
+                    });
+                    const transaction = db.transaction(['categories'], 'readwrite');
+                    const store = transaction.objectStore('categories');
+                    store.delete(category);
+                    updateCategorySelect();
+                    displayCategories();
+                }
+            });
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'カテゴリ削除';
             deleteButton.className = 'delete-category-button';
             deleteButton.dataset.category = category;
+            deleteButton.addEventListener('click', (e) => {
+                const category = e.target.dataset.category;
+                if (confirm(`カテゴリ "${category}" を削除してもよろしいですか？`)) {
+                    delete categories[category];
+                    const transaction = db.transaction(['categories'], 'readwrite');
+                    const store = transaction.objectStore('categories');
+                    store.delete(category);
+                    updateCategorySelect();
+                    displayCategories();
+                }
+            });
 
             categoryDivElement.appendChild(editButton);
             categoryDivElement.appendChild(deleteButton);
 
             categoryDiv.appendChild(categoryDivElement);
         }
-    }
-
-    function updateChart() {
-        const labels = [];
-        const data = [];
-        for (const category in categories) {
-            categories[category].forEach(product => {
-                labels.push(product.name);
-                data.push(product.quantity);
-            });
-        }
-        inventoryChart.data.labels = labels;
-        inventoryChart.data.datasets[0].data = data;
-        inventoryChart.update();
-    }
-
-    const codeReader = new ZXing.BrowserBarcodeReader();
-    const startScanButton = document.getElementById('start-scan');
-    const barcodeInput = document.getElementById('barcode-input');
-    const barcodeVideo = document.getElementById('barcode-video');
-
-    startScanButton.addEventListener('click', () => {
-        barcodeVideo.style.display = 'block';
-        codeReader.decodeFromVideoDevice(null, 'barcode-video', (result, err) => {
-            if (result) {
-                alert(`Barcode detected: ${result.text}`);
-                const product = findProductByBarcode(result.text);
-                if (product) {
-                    const newQuantity = parseInt(product.quantity, 10) - 1;
-                    if (newQuantity >= 0) {
-                        const timestamp = new Date().toLocaleString();
-                        product.quantity = newQuantity;
-                        product.history.push(`${timestamp}: バーコードスキャンで1個減少`);
-                        saveCategoryToDB({
-                            name: product.category,
-                            products: categories[product.category]
-                        });
-                        displayCategories();
-                        updateChart();
-                    } else {
-                        alert('在庫が不足しています。');
-                    }
-                } else {
-                    alert('該当する商品が見つかりません。');
-                }
-                barcodeVideo.style.display = 'none';
-                codeReader.reset();
-            } else if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
-                alert(`Error: ${err}`);
-                barcodeVideo.style.display = 'none';
-                codeReader.reset();
-            }
-        });
-    });
-
-    function findProductByBarcode(barcode) {
-        for (const category in categories) {
-            const product = categories[category].find(product => product.name === barcode);
-            if (product) {
-                return product;
-            }
-        }
-        return null;
     }
 });
