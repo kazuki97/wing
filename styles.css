@@ -210,3 +210,14 @@ button.edit-category-button:hover, button.delete-category-button:hover {
     font-size: 24px;
     font-weight: bold;
 }
+
+.category-list, .product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.category, .product {
+    width: calc(33.333% - 10px);
+    text-align: center;
+}
