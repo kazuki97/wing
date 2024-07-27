@@ -1,57 +1,56 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
+    <script defer src="script.js"></script>
 </head>
-
 <body>
     <nav>
         <ul>
-            <li><a href="#" id="link-home">ホーム</a></li>
-            <li><a href="#" id="link-category">カテゴリ設定</a></li>
-            <li><a href="#" id="link-product">商品設定</a></li>
-            <li><a href="#" id="link-inventory">在庫管理</a></li>
-            <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
+            <li><a href="#home" id="link-home">ホーム</a></li>
+            <li><a href="#category" id="link-category">カテゴリ設定</a></li>
+            <li><a href="#product" id="link-product">商品設定</a></li>
+            <li><a href="#inventory" id="link-inventory">在庫管理</a></li>
+            <li><a href="#barcode" id="link-barcode">バーコードスキャン</a></li>
         </ul>
     </nav>
+
     <section id="home-section">
         <h1>ホーム</h1>
     </section>
-    <section id="category-section" style="display: none;">
+
+    <section id="category-section" style="display:none;">
         <h1>カテゴリ設定</h1>
         <input type="text" id="category-name" placeholder="カテゴリ名">
         <button id="add-category">カテゴリ追加</button>
         <div id="category-list"></div>
     </section>
-    <section id="product-section" style="display: none;">
+
+    <section id="product-section" style="display:none;">
         <h1>商品設定</h1>
-        <select id="category-select">
-            <option value="">カテゴリを選択</option>
-        </select>
+        <select id="category-select"></select>
         <input type="text" id="product-name" placeholder="商品名">
         <input type="number" id="product-quantity" placeholder="数量">
         <button id="add-product">商品追加</button>
     </section>
-    <section id="inventory-section" style="display: none;">
+
+    <section id="inventory-section" style="display:none;">
         <h1>在庫管理</h1>
-        <input type="text" id="search-category" placeholder="カテゴリ名">
+        <input type="text" id="search-category" placeholder="カテゴリ名入力">
         <button id="search-product">検索</button>
-        <div id="inventory-chart-container">
-            <canvas id="inventoryChart"></canvas>
-        </div>
+        <div id="inventory-list"></div>
     </section>
-    <section id="barcode-section" style="display: none;">
+
+    <section id="barcode-section" style="display:none;">
         <h1>バーコードスキャン</h1>
         <button id="start-scan">スキャン開始</button>
-        <video id="barcode-video" style="display: none;"></video>
-        <input type="text" id="barcode-input" placeholder="バーコード">
+        <video id="barcode-video" style="display:none;"></video>
+        <input type="text" id="barcode-input" placeholder="バーコード番号">
     </section>
+
     <div id="detail-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -59,7 +58,7 @@
             <div id="detail-body"></div>
         </div>
     </div>
-    <script src="script.js"></script>
-</body>
 
+    <canvas id="inventoryChart" style="display:none;"></canvas>
+</body>
 </html>
