@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
+    console.log('DOM fully loaded and parsed');
+
     const request = indexedDB.open('inventoryDB', 1);
 
     request.onerror = (event) => {
@@ -10,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     request.onsuccess = (event) => {
         db = event.target.result;
+        console.log('Database initialized', db);
         loadCategories();
     };
 
@@ -18,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('categories')) {
             db.createObjectStore('categories', { keyPath: 'name' });
         }
+        console.log('Database upgrade needed', db);
     };
 
     function saveCategoryToDB(category) {
@@ -41,6 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        console.log('Loading categories');
+
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
         const request = store.getAll();
@@ -53,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             updateCategorySelect();
             displayCategories();
+            console.log('Categories loaded', categories);
         };
 
         request.onerror = (event) => {
@@ -183,36 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryDivElement.appendChild(deleteButton);
 
             categoryDiv.appendChild(categoryDivElement);
-
-            editButton.addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                const newCategoryName = prompt('新しいカテゴリ名を入力してください:', category);
-                if (newCategoryName && newCategoryName !== category) {
-                    categories[newCategoryName] = categories[category];
-                    delete categories[category];
-                    saveCategoryToDB({
-                        name: newCategoryName,
-                        products: categories[newCategoryName]
-                    });
-                    const transaction = db.transaction(['categories'], 'readwrite');
-                    const store = transaction.objectStore('categories');
-                    store.delete(category);
-                    updateCategorySelect();
-                    displayCategories();
-                }
-            });
-
-            deleteButton.addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                if (confirm(`カテゴリ "${category}" を削除してもよろしいですか？`)) {
-                    delete categories[category];
-                    const transaction = db.transaction(['categories'], 'readwrite');
-                    const store = transaction.objectStore('categories');
-                    store.delete(category);
-                    updateCategorySelect();
-                    displayCategories();
-                }
-            });
         }
     }
 
@@ -230,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryChart.update();
     }
 
-    // バーコードスキャン機能
     const codeReader = new ZXing.BrowserBarcodeReader();
     const startScanButton = document.getElementById('start-scan');
     const barcodeInput = document.getElementById('barcode-input');
