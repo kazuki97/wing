@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
         db = event.target.result;
         loadCategories();
-        displayInventoryCategories();
     };
 
     request.onupgradeneeded = (event) => {
@@ -195,30 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function displayInventoryCategories() {
-        const inventoryCategoryList = document.getElementById('inventory-category-list');
-        inventoryCategoryList.innerHTML = '';
-
-        for (const categoryName in categories) {
-            const div = document.createElement('div');
-            div.className = 'inventory-category-item';
-
-            const span = document.createElement('span');
-            span.textContent = categoryName;
-
-            const viewButton = document.createElement('button');
-            viewButton.textContent = '表示';
-            viewButton.className = 'category-button';
-            viewButton.addEventListener('click', () => {
-                displayProducts(categoryName);
-            });
-
-            div.appendChild(span);
-            div.appendChild(viewButton);
-            inventoryCategoryList.appendChild(div);
-        }
-    }
-
     function displayProducts(category) {
         const productTableBody = document.querySelector('#product-table tbody');
         productTableBody.innerHTML = '';
@@ -274,5 +249,74 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         };
+    }
+
+    function displayInventoryCategories() {
+        const inventoryCategoryList = document.getElementById('inventory-category-list');
+        inventoryCategoryList.innerHTML = '';
+
+        for (const categoryName in categories) {
+            const button = document.createElement('button');
+            button.textContent = categoryName;
+            button.addEventListener('click', () => {
+                displayInventoryProducts(categoryName);
+            });
+            inventoryCategoryList.appendChild(button);
+        }
+    }
+
+    function displayInventoryProducts(category) {
+        const productTableBody = document.createElement('table');
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('category');
+        const request = index.getAll(IDBKeyRange.only(category));
+
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            productTableBody.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>商品名</th>
+                        <th>数量</th>
+                        <th>編集</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            const tbody = productTableBody.querySelector('tbody');
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.quantity}</td>
+                    <td><button class="edit-button" data-id="${product.id}">編集</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.querySelectorAll('.edit-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const productId = parseInt(event.target.getAttribute('data-id'), 10);
+                    const product = products.find(p => p.id === productId);
+                    if (product) {
+                        const newProductName = prompt('新しい商品名を入力してください:', product.name);
+                        const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
+                        if (newProductName && newQuantity) {
+                            product.name = newProductName;
+                            product.quantity = parseInt(newQuantity, 10);
+                            saveProductToDB(product);
+                            displayInventoryProducts(category);
+                        } else {
+                            alert('入力が無効です。');
+                        }
+                    }
+                });
+            });
+        };
+
+        const inventorySection = document.getElementById('inventory-section');
+        inventorySection.innerHTML = '';
+        inventorySection.appendChild(productTableBody);
     }
 });
