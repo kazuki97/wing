@@ -80,6 +80,7 @@ button:hover {
     border: none;
     border-radius: 3px;
     cursor: pointer;
+    width: auto; /* ボタンの幅を文字の幅に合わせる */
 }
 
 .category-button.delete {
@@ -149,7 +150,7 @@ th {
 }
 
 .close:hover,
-close:focus {
+.close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
