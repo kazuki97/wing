@@ -8,29 +8,29 @@
 </head>
 <body>
     <nav>
-        <a href="#" id="link-home">ホーム</a>
-        <a href="#" id="link-category">カテゴリ設定</a>
-        <a href="#" id="link-product">商品設定</a>
-        <a href="#" id="link-inventory">在庫管理</a>
-        <a href="#" id="link-barcode">バーコードスキャン</a>
+        <a href="#" id="home-link">ホーム</a>
+        <a href="#" id="category-link">カテゴリ設定</a>
+        <a href="#" id="product-link">商品設定</a>
+        <a href="#" id="inventory-link">在庫管理</a>
+        <a href="#" id="barcode-link">バーコードスキャン</a>
     </nav>
     <div class="container">
-        <div id="home-section" class="section active">
+        <section id="home-section" class="section active">
             <h1>ホーム</h1>
             <p>在庫管理システムへようこそ。</p>
-        </div>
-        <div id="category-section" class="section">
+        </section>
+        <section id="category-section" class="section">
             <h1>カテゴリ設定</h1>
             <input type="text" id="category-name" placeholder="カテゴリ名">
-            <button id="add-category">カテゴリ追加</button>
+            <button id="add-category-button">カテゴリ追加</button>
             <div id="category-list"></div>
-        </div>
-        <div id="product-section" class="section">
+        </section>
+        <section id="product-section" class="section">
             <h1>商品設定</h1>
             <select id="category-select"></select>
             <input type="text" id="product-name" placeholder="商品名">
             <input type="number" id="product-quantity" placeholder="数量">
-            <button id="add-product">商品追加</button>
+            <button id="add-product-button">商品追加</button>
             <table id="product-table">
                 <thead>
                     <tr>
@@ -42,8 +42,8 @@
                 </thead>
                 <tbody></tbody>
             </table>
-        </div>
-        <div id="inventory-section" class="section">
+        </section>
+        <section id="inventory-section" class="section">
             <h1>在庫管理</h1>
             <div id="inventory-category-list"></div>
             <table id="inventory-product-table">
@@ -56,18 +56,21 @@
                 </thead>
                 <tbody></tbody>
             </table>
-        </div>
-        <div id="barcode-section" class="section">
+        </section>
+        <section id="barcode-section" class="section">
             <h1>バーコードスキャン</h1>
-        </div>
+            <!-- バーコードスキャンの内容 -->
+        </section>
     </div>
-    <div id="detail-modal" class="modal">
+
+    <div id="detail-modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="detail-title"></h2>
-            <div id="detail-body"></div>
+            <p id="detail-body"></p>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
