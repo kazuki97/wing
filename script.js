@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    const request = indexedDB.open('inventoryDB', 2);
+    const request = indexedDB.open('inventoryDB', 1);
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
         db = event.target.result;
         loadCategories();
+        loadProducts();
     };
 
     request.onupgradeneeded = (event) => {
@@ -66,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkInventory.addEventListener('click', () => {
         showSection(inventorySection);
-        displayInventoryCategories();
     });
 
     linkBarcode.addEventListener('click', () => {
@@ -133,6 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             displayCategories();
         };
+    }
+
+    function loadProducts() {
+        // Load products function to ensure products are loaded correctly.
     }
 
     function updateCategorySelect() {
@@ -245,58 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p>数量: ${product.quantity}</p>
                         `;
                         detailModal.style.display = 'block';
-                    }
-                });
-            });
-        };
-    }
-
-    function displayInventoryCategories() {
-        const inventoryCategoryList = document.getElementById('inventory-category-list');
-        inventoryCategoryList.innerHTML = '';
-        for (const categoryName in categories) {
-            const button = document.createElement('button');
-            button.textContent = categoryName;
-            button.addEventListener('click', () => {
-                displayInventoryProducts(categoryName);
-            });
-            inventoryCategoryList.appendChild(button);
-        }
-    }
-
-    function displayInventoryProducts(category) {
-        const inventoryTableBody = document.querySelector('#inventory-table tbody');
-        inventoryTableBody.innerHTML = '';
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const request = index.getAll(IDBKeyRange.only(category));
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            products.forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td><button class="edit-button" data-id="${product.id}">編集</button></td>
-                `;
-                inventoryTableBody.appendChild(row);
-            });
-
-            document.querySelectorAll('.edit-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const productId = parseInt(event.target.getAttribute('data-id'), 10);
-                    const product = products.find(p => p.id === productId);
-                    if (product) {
-                        const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
-                        if (newQuantity) {
-                            product.quantity = parseInt(newQuantity, 10);
-                            saveProductToDB(product);
-                            displayInventoryProducts(category);
-                        } else {
-                            alert('入力が無効です。');
-                        }
                     }
                 });
             });
