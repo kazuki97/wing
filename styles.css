@@ -3,11 +3,11 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f7f7f7;
+    background-color: #f4f4f4;
 }
 
 nav {
-    background-color: #343a40;
+    background-color: #333;
     color: white;
     padding: 10px;
 }
@@ -17,7 +17,6 @@ nav ul {
     padding: 0;
     margin: 0;
     display: flex;
-    justify-content: space-around;
 }
 
 nav ul li {
@@ -27,7 +26,6 @@ nav ul li {
 nav ul li a {
     color: white;
     text-decoration: none;
-    font-weight: bold;
 }
 
 nav ul li a:hover {
@@ -36,21 +34,25 @@ nav ul li a:hover {
 
 section {
     padding: 20px;
+    background: white;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
 }
 
 button {
-    background-color: #007bff;
+    background-color: #4CAF50;
     color: white;
     border: none;
-    padding: 10px 15px;
-    margin: 5px 0;
+    padding: 10px 20px;
+    margin: 10px 0;
     cursor: pointer;
-    font-size: 14px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #45a049;
 }
 
 input[type="text"], input[type="number"], select {
@@ -58,25 +60,24 @@ input[type="text"], input[type="number"], select {
     margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 4px;
-    width: 100%;
+    width: calc(100% - 22px);
     box-sizing: border-box;
 }
 
-.product-table {
+table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
-.product-table th, .product-table td {
+table th, table td {
     border: 1px solid #ddd;
     padding: 8px;
-    text-align: center;
+    text-align: left;
 }
 
-.product-table th {
-    background-color: #007bff;
-    color: white;
+table th {
+    background-color: #f2f2f2;
 }
 
 .modal {
@@ -99,6 +100,7 @@ input[type="text"], input[type="number"], select {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
+    border-radius: 8px;
 }
 
 .close {
@@ -114,22 +116,16 @@ input[type="text"], input[type="number"], select {
     cursor: pointer;
 }
 
-.category-button {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-#category-list {
-    margin-top: 20px;
-}
-
-.category-item {
+#category-list .category-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-    background-color: #fff;
     margin-bottom: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#category-list .category-item span {
+    flex-grow: 1;
+}
+
+#category-list .category-item button {
+    margin-left: 10px;
 }
