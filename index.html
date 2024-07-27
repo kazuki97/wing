@@ -3,71 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在庫管理システム</title>
+    <title>Inventory Management</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="#" id="link-home">ホーム</a></li>
-                <li><a href="#" id="link-category">カテゴリ設定</a></li>
-                <li><a href="#" id="link-product">商品設定</a></li>
-                <li><a href="#" id="link-inventory">在庫管理</a></li>
-                <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="home-section">
-            <h1>ホーム</h1>
-        </section>
-        <section id="category-section" style="display: none;">
-            <h1>カテゴリ設定</h1>
-            <input type="text" id="category-name" placeholder="カテゴリ名">
-            <button id="add-category" class="category-button">カテゴリ追加</button>
-            <div id="category-list"></div>
-        </section>
-        <section id="product-section" style="display: none;">
-            <h1>商品設定</h1>
-            <select id="category-select">
-                <option value="">カテゴリを選択</option>
-            </select>
-            <input type="text" id="product-name" placeholder="商品名">
-            <input type="number" id="product-quantity" placeholder="数量">
-            <button id="add-product" class="category-button">商品追加</button>
-            <table id="product-table">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>数量</th>
-                        <th>編集</th>
-                        <th>詳細</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
-        <section id="inventory-section" style="display: none;">
-            <h1>在庫管理</h1>
-            <div id="inventory-category-list"></div>
-            <table id="inventory-table">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>数量</th>
-                        <th>編集</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
-        <section id="barcode-section" style="display: none;">
-            <h1>バーコードスキャン</h1>
-        </section>
-    </main>
+    <nav>
+        <ul>
+            <li><a href="#" id="link-home">ホーム</a></li>
+            <li><a href="#" id="link-category">カテゴリ設定</a></li>
+            <li><a href="#" id="link-product">商品設定</a></li>
+            <li><a href="#" id="link-inventory">在庫管理</a></li>
+            <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
+        </ul>
+    </nav>
 
-    <div id="detail-modal" class="modal" style="display: none;">
+    <section id="home-section">
+        <h1>ホーム</h1>
+    </section>
+
+    <section id="category-section" style="display:none;">
+        <h1>カテゴリ設定</h1>
+        <input type="text" id="category-name" placeholder="カテゴリ名">
+        <button id="add-category">カテゴリ追加</button>
+        <div id="category-list"></div>
+    </section>
+
+    <section id="product-section" style="display:none;">
+        <h1>商品設定</h1>
+        <select id="category-select"></select>
+        <input type="text" id="product-name" placeholder="商品名">
+        <input type="number" id="product-quantity" placeholder="数量">
+        <button id="add-product">商品追加</button>
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>編集</th>
+                    <th>詳細</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <section id="inventory-section" style="display:none;">
+        <h1>在庫管理</h1>
+        <div id="inventory-categories"></div>
+        <div id="inventory-products"></div>
+    </section>
+
+    <section id="barcode-section" style="display:none;">
+        <h1>バーコードスキャン</h1>
+    </section>
+
+    <div id="detail-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="detail-title"></h2>
