@@ -88,27 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
 
-    const inventoryChart = new Chart(document.getElementById('inventoryChart'), {
-        type: 'bar',
-        data: {
-            labels: [],
-            datasets: [{
-                label: '在庫数',
-                data: [],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
     function showSection(section) {
         homeSection.style.display = 'none';
         categorySection.style.display = 'none';
@@ -120,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkHome.addEventListener('click', () => {
         showSection(homeSection);
-        updateChart();
     });
 
     linkCategory.addEventListener('click', () => {
@@ -302,70 +280,5 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryDiv.appendChild(categoryDivElement);
             categoryDiv.appendChild(productTable);
         }
-    }
-
-    function updateChart() {
-        const labels = [];
-        const data = [];
-        for (const category in categories) {
-            categories[category].forEach(product => {
-                labels.push(product.name);
-                data.push(product.quantity);
-            });
-        }
-        inventoryChart.data.labels = labels;
-        inventoryChart.data.datasets[0].data = data;
-        inventoryChart.update();
-    }
-
-    // バーコードスキャン機能
-    const codeReader = new ZXing.BrowserBarcodeReader();
-    const startScanButton = document.getElementById('start-scan');
-    const barcodeInput = document.getElementById('barcode-input');
-    const barcodeVideo = document.getElementById('barcode-video');
-
-    startScanButton.addEventListener('click', () => {
-        barcodeVideo.style.display = 'block';
-        codeReader.decodeFromVideoDevice(null, 'barcode-video', (result, err) => {
-            if (result) {
-                alert(`Barcode detected: ${result.text}`);
-                const product = findProductByBarcode(result.text);
-                if (product) {
-                    const newQuantity = parseInt(product.quantity, 10) - 1;
-                    if (newQuantity >= 0) {
-                        const timestamp = new Date().toLocaleString();
-                        product.quantity = newQuantity;
-                        product.history.push(`${timestamp}: バーコードスキャンで1個減少`);
-                        saveCategoryToDB({
-                            name: product.category,
-                            products: categories[product.category]
-                        });
-                        displayCategories();
-                        updateChart();
-                    } else {
-                        alert('在庫が不足しています。');
-                    }
-                } else {
-                    alert('該当する商品が見つかりません。');
-                }
-                barcodeVideo.style.display = 'none';
-                codeReader.reset();
-            } else if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err);
-                alert(`Error: ${err}`);
-                barcodeVideo.style.display = 'none';
-                codeReader.reset();
-            }
-        });
-    });
-
-    function findProductByBarcode(barcode) {
-        for (const category in categories) {
-            const product = categories[category].find(product => product.name === barcode);
-            if (product) {
-                return product;
-            }
-        }
-        return null;
     }
 });
