@@ -30,7 +30,7 @@ nav ul li a:hover {
     text-decoration: underline;
 }
 
-main {
+.container {
     width: 80%;
     margin: 20px auto;
 }
