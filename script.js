@@ -2,8 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    // データベースのバージョンを1つ上げる
-    const request = indexedDB.open('inventoryDB', 2);
+    const request = indexedDB.open('inventoryDB', 2); // バージョンを上げる
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
