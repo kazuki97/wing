@@ -3,36 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management</title>
+    <title>Inventory Management System</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <nav>
             <ul>
-                <li><a id="link-home" href="#">ホーム</a></li>
-                <li><a id="link-category" href="#">カテゴリ設定</a></li>
-                <li><a id="link-product" href="#">商品設定</a></li>
-                <li><a id="link-inventory" href="#">在庫管理</a></li>
-                <li><a id="link-barcode" href="#">バーコードスキャン</a></li>
+                <li><a href="#" id="link-home">ホーム</a></li>
+                <li><a href="#" id="link-category">カテゴリ設定</a></li>
+                <li><a href="#" id="link-product">商品設定</a></li>
+                <li><a href="#" id="link-inventory">在庫管理</a></li>
+                <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
             </ul>
         </nav>
     </header>
 
     <main>
-        <section id="home-section" class="section">
+        <section id="home-section">
             <h1>ホーム</h1>
             <p>在庫管理システムへようこそ。</p>
         </section>
 
-        <section id="category-section" class="section">
+        <section id="category-section" style="display:none;">
             <h1>カテゴリ設定</h1>
             <input type="text" id="category-name" placeholder="カテゴリ名">
             <button id="add-category">カテゴリ追加</button>
             <div id="category-list"></div>
         </section>
 
-        <section id="product-section" class="section">
+        <section id="product-section" style="display:none;">
             <h1>商品設定</h1>
             <select id="category-select"></select>
             <input type="text" id="product-name" placeholder="商品名">
@@ -51,7 +51,7 @@
             </table>
         </section>
 
-        <section id="inventory-section" class="section">
+        <section id="inventory-section" style="display:none;">
             <h1>在庫管理</h1>
             <div id="inventory-category-list"></div>
             <table id="inventory-product-table">
@@ -66,9 +66,9 @@
             </table>
         </section>
 
-        <section id="barcode-section" class="section">
+        <section id="barcode-section" style="display:none;">
             <h1>バーコードスキャン</h1>
-            <p>バーコードスキャン機能はここに来ます。</p>
+            <!-- バーコードスキャンの内容 -->
         </section>
     </main>
 
