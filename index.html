@@ -6,7 +6,6 @@
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
     <script defer src="script.js"></script>
 </head>
 <body>
@@ -40,24 +39,13 @@
             <h1>在庫管理</h1>
             <input type="text" id="search-category" placeholder="カテゴリを入力">
             <button id="search-product">検索</button>
-            <div id="inventory-category-list"></div>
-            <div id="inventory-product-list" style="display:none;"></div>
-            <button id="back-to-categories" style="display:none;">カテゴリに戻る</button>
+            <div id="inventory-list"></div>
         </section>
         <section id="barcode-section" style="display:none;">
             <h1>バーコードスキャン</h1>
             <button id="start-scan">スキャン開始</button>
             <video id="barcode-video" style="display:none;"></video>
         </section>
-    </div>
-
-    <!-- モーダルダイアログ -->
-    <div id="detail-modal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="detail-title"></h2>
-            <div id="detail-body"></div>
-        </div>
     </div>
 </body>
 </html>
