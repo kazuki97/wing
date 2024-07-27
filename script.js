@@ -2,6 +2,71 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
+    console.log('DOM fully loaded and parsed');  // DOMの読み込み完了
+
+    const request = indexedDB.open('inventoryDB', 1);
+
+    request.onerror = (event) => {
+        console.error('Database error:', event.target.error);  // データベースエラー
+    };
+
+    request.onsuccess = (event) => {
+        db = event.target.result;
+        console.log('Database initialized', db);  // データベースの初期化完了
+        loadCategories();  // データベースが初期化された後に呼び出す
+    };
+
+    request.onupgradeneeded = (event) => {
+        db = event.target.result;
+        if (!db.objectStoreNames.contains('categories')) {
+            db.createObjectStore('categories', { keyPath: 'name' });
+        }
+        console.log('Database upgrade needed', db);  // データベースのアップグレード
+    };
+
+    function saveCategoryToDB(category) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        store.put(category);
+    }
+
+    function saveCategories() {
+        for (const category in categories) {
+            saveCategoryToDB({
+                name: category,
+                products: categories[category]
+            });
+        }
+    }
+
+    function loadCategories() {
+        if (!db) {
+            console.error('Database is not initialized');  // データベースが初期化されていない
+            return;
+        }
+
+        console.log('Loading categories');  // カテゴリの読み込み開始
+
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const results = event.target.result;
+            categories = {};
+            results.forEach(category => {
+                categories[category.name] = category.products;
+            });
+            updateCategorySelect();
+            displayCategories();
+            console.log('Categories loaded', categories);  // カテゴリの読み込み完了
+        };
+
+        request.onerror = (event) => {
+            console.error('Error loading categories:', event.target.error);  // カテゴリの読み込みエラー
+        };
+    }
+
     const addCategoryButton = document.getElementById('add-category');
     const addProductButton = document.getElementById('add-product');
     const searchProductButton = document.getElementById('search-product');
@@ -23,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
 
-    const inventoryChart = new Chart(document.getElementById('inventoryChart').getContext('2d'), {
+    const inventoryChart = new Chart(document.getElementById('inventoryChart'), {
         type: 'bar',
         data: {
             labels: [],
@@ -44,56 +109,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const request = indexedDB.open('inventoryDB', 1);
-
-    request.onerror = (event) => {
-        console.error('Database error:', event.target.error);
-    };
-
-    request.onsuccess = (event) => {
-        db = event.target.result;
-        console.log('Database initialized', db);
-        loadCategories();
-    };
-
-    request.onupgradeneeded = (event) => {
-        db = event.target.result;
-        if (!db.objectStoreNames.contains('categories')) {
-            db.createObjectStore('categories', { keyPath: 'name' });
-        }
-        console.log('Database upgrade needed', db);
-    };
-
-    function saveCategoryToDB(category) {
-        const transaction = db.transaction(['categories'], 'readwrite');
-        const store = transaction.objectStore('categories');
-        store.put(category);
+    function showSection(section) {
+        homeSection.style.display = 'none';
+        categorySection.style.display = 'none';
+        productSection.style.display = 'none';
+        inventorySection.style.display = 'none';
+        barcodeSection.style.display = 'none';
+        section.style.display = 'block';
     }
 
-    function loadCategories() {
-        if (!db) {
-            console.error('Database is not initialized');
-            return;
-        }
+    linkHome.addEventListener('click', () => {
+        showSection(homeSection);
+        updateChart();
+    });
 
-        const transaction = db.transaction(['categories'], 'readonly');
-        const store = transaction.objectStore('categories');
-        const request = store.getAll();
+    linkCategory.addEventListener('click', () => {
+        showSection(categorySection);
+    });
 
-        request.onsuccess = (event) => {
-            const results = event.target.result;
-            categories = {};
-            results.forEach(category => {
-                categories[category.name] = category.products;
-            });
-            updateCategorySelect();
-            displayCategories();
-        };
+    linkProduct.addEventListener('click', () => {
+        showSection(productSection);
+    });
 
-        request.onerror = (event) => {
-            console.error('Error loading categories:', event.target.error);
-        };
-    }
+    linkInventory.addEventListener('click', () => {
+        showSection(inventorySection);
+    });
+
+    linkBarcode.addEventListener('click', () => {
+        showSection(barcodeSection);
+    });
 
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
@@ -277,6 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // バーコードスキャン機能
     const codeReader = new ZXing.BrowserBarcodeReader();
     const startScanButton = document.getElementById('start-scan');
+    const barcodeInput = document.getElementById('barcode-input');
     const barcodeVideo = document.getElementById('barcode-video');
 
     startScanButton.addEventListener('click', () => {
@@ -323,34 +368,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null;
     }
-
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        section.style.display = 'block';
-    }
-
-    linkHome.addEventListener('click', () => {
-        showSection(homeSection);
-        updateChart();
-    });
-
-    linkCategory.addEventListener('click', () => {
-        showSection(categorySection);
-    });
-
-    linkProduct.addEventListener('click', () => {
-        showSection(productSection);
-    });
-
-    linkInventory.addEventListener('click', () => {
-        showSection(inventorySection);
-    });
-
-    linkBarcode.addEventListener('click', () => {
-        showSection(barcodeSection);
-    });
 });
