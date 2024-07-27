@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="script.js"></script>
 </head>
 <body>
@@ -46,6 +45,13 @@
             <button id="start-scan">スキャン開始</button>
             <video id="barcode-video" style="display:none;"></video>
         </section>
+    </div>
+    <div id="detail-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="detail-title"></h2>
+            <div id="detail-body"></div>
+        </div>
     </div>
 </body>
 </html>
