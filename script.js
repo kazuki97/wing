@@ -146,15 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayCategories() {
-        const categoryList = document.getElementById('category-list');
+        const categoryList = document.getElementById('category-list').getElementsByTagName('tbody')[0];
         categoryList.innerHTML = '';
 
         for (const categoryName in categories) {
-            const div = document.createElement('div');
-            div.className = 'category-item';
+            const row = categoryList.insertRow();
 
-            const span = document.createElement('span');
-            span.textContent = categoryName;
+            row.insertCell(0).textContent = categoryName;
 
             const editButton = document.createElement('button');
             editButton.textContent = '編集';
@@ -173,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('カテゴリ名が無効です。');
                 }
             });
+            row.insertCell(1).appendChild(editButton);
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = '削除';
@@ -186,12 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayCategories();
                 }
             });
-
-            div.appendChild(span);
-            div.appendChild(editButton);
-            div.appendChild(deleteButton);
-
-            categoryList.appendChild(div);
+            row.insertCell(2).appendChild(deleteButton);
         }
     }
 
