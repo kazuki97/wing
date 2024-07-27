@@ -16,42 +16,43 @@
             <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
         </ul>
     </nav>
-
     <section id="home-section">
         <h1>ホーム</h1>
     </section>
-
-    <section id="category-section" style="display: none;">
+    <section id="category-section" style="display:none;">
         <h1>カテゴリ設定</h1>
-        <input type="text" id="category-name" placeholder="カテゴリ名">
-        <button id="add-category">カテゴリ追加</button>
+        <div>
+            <input type="text" id="category-name" placeholder="カテゴリ名">
+            <button id="add-category">カテゴリ追加</button>
+        </div>
         <div id="category-list"></div>
     </section>
-
-    <section id="product-section" style="display: none;">
+    <section id="product-section" style="display:none;">
         <h1>商品設定</h1>
-        <select id="category-select">
-            <option value="">カテゴリを選択</option>
-        </select>
-        <input type="text" id="product-name" placeholder="商品名">
-        <input type="number" id="product-quantity" placeholder="数量">
-        <button id="add-product">商品追加</button>
-        <div id="product-list"></div>
+        <div>
+            <select id="category-select"></select>
+            <input type="text" id="product-name" placeholder="商品名">
+            <input type="number" id="product-quantity" placeholder="数量">
+            <button id="add-product">商品追加</button>
+        </div>
     </section>
-
-    <section id="inventory-section" style="display: none;">
+    <section id="inventory-section" style="display:none;">
         <h1>在庫管理</h1>
-        <input type="text" id="search-category" placeholder="カテゴリを入力">
-        <button id="search-product">検索</button>
-        <div id="inventory-list"></div>
+        <div>
+            <input type="text" id="search-category" placeholder="カテゴリ名を入力">
+            <button id="search-product">検索</button>
+        </div>
+        <div id="inventory-chart-container">
+            <canvas id="inventoryChart"></canvas>
+        </div>
     </section>
-
-    <section id="barcode-section" style="display: none;">
+    <section id="barcode-section" style="display:none;">
         <h1>バーコードスキャン</h1>
         <button id="start-scan">スキャン開始</button>
-        <video id="barcode-video" style="display:none;"></video>
+        <div id="barcode-video-container">
+            <video id="barcode-video" width="300" height="200" style="display:none;"></video>
+        </div>
     </section>
-
     <div id="detail-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -59,8 +60,8 @@
             <div id="detail-body"></div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.5/umd/index.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
