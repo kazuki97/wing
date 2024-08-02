@@ -101,6 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('product-quantity').value = '';
         } else {
             alert('すべてのフィールドを入力してください。');
+        }
+    });
+
     closeModal.addEventListener('click', () => {
         detailModal.style.display = 'none';
     });
