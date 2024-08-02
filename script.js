@@ -224,6 +224,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 row.insertCell(2).appendChild(editButton);
 
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '削除';
+                deleteButton.className = 'product-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm('この商品を削除しますか？')) {
+                        const transaction = db.transaction(['products'], 'readwrite');
+                        const store = transaction.objectStore('products');
+                        store.delete(product.id);
+                        displayProducts(category);
+                    }
+                });
+                row.insertCell(3).appendChild(deleteButton);
+
                 const detailButton = document.createElement('button');
                 detailButton.textContent = '詳細';
                 detailButton.className = 'product-button';
@@ -232,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('detail-body').textContent = `カテゴリ: ${product.category}\n数量: ${product.quantity}`;
                     detailModal.style.display = 'block';
                 });
-                row.insertCell(3).appendChild(detailButton);
+                row.insertCell(4).appendChild(detailButton);
             });
         };
     }
@@ -281,6 +294,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 row.insertCell(2).appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '削除';
+                deleteButton.className = 'product-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm('この商品を削除しますか？')) {
+                        const transaction = db.transaction(['products'], 'readwrite');
+                        const store = transaction.objectStore('products');
+                        store.delete(product.id);
+                        displayInventoryProducts(category);
+                    }
+                });
+                row.insertCell(3).appendChild(deleteButton);
             });
         };
     }
