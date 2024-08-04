@@ -416,7 +416,5 @@ document.addEventListener('DOMContentLoaded', () => {
         request.onerror = (event) => {
             console.error('Cursor error:', event.target.error);
         };
-
-        Quagga.stop();
     }
 });
