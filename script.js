@@ -341,11 +341,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(err);
                 return;
             }
+            console.log("Initialization finished. Ready to start");
             Quagga.start();
+        });
+
+        Quagga.onProcessed((result) => {
+            const drawingCtx = Quagga.canvas.ctx.overlay;
+            const drawingCanvas = Quagga.canvas.dom.overlay;
+
+            if (result) {
+                if (result.boxes) {
+                    drawingCtx.clearRect(0, 0, drawingCanvas.getAttribute("width"), drawingCanvas.getAttribute("height"));
+                    result.boxes.filter(box => box !== result.box).forEach(box => {
+                        Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                    });
+                }
+
+                if (result.box) {
+                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "blue", lineWidth: 2 });
+                }
+
+                if (result.codeResult && result.codeResult.code) {
+                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+                }
+            }
         });
 
         Quagga.onDetected((data) => {
             const barcode = data.codeResult.code;
+            console.log(`Barcode detected: ${barcode}`);
             const transaction = db.transaction(['products'], 'readwrite');
             const store = transaction.objectStore('products');
             const request = store.openCursor();
