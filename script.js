@@ -333,8 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
             },
             decoder: {
-                readers: ["code_128_reader"]
-            }
+                readers: ["ean_reader"] // EANバーコードリーダーを使用
+            },
+            locate: true // バーコードの位置を特定
         }, (err) => {
             if (err) {
                 console.error(err);
