@@ -21,7 +21,7 @@ header {
 }
 
 header h1 {
-    font-size: 24px;
+    font-size: 28px;
     margin: 0;
     letter-spacing: 2px;
 }
@@ -76,6 +76,13 @@ section h2 {
     padding-bottom: 5px;
 }
 
+section p {
+    font-size: 18px;
+    color: #666;
+    margin-top: 10px;
+}
+
+/* フォーム要素 */
 input, button, select {
     display: block;
     margin: 10px 0;
