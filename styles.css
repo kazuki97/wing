@@ -176,9 +176,10 @@ td {
 
 /* 在庫管理ボタン */
 .inventory-category-button {
-    display: block;
-    width: 200px; /* 任意の幅に調整 */
-    margin: 10px auto;
+    display: inline-block;
+    width: 100px; /* 正方形にするため幅と高さを同じにする */
+    height: 100px;
+    margin: 10px;
     padding: 15px;
     background-color: #007bff;
     color: #ffffff;
@@ -188,6 +189,7 @@ td {
     border-radius: 5px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    line-height: 70px; /* ボタン内のテキストを中央に配置 */
 }
 
 .inventory-category-button:hover {
