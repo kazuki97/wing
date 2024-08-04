@@ -417,22 +417,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Cursor error:', event.target.error);
         };
     }
-
-    // 警告メッセージをフィルタリングするスクリプトを追加
-    (function() {
-        const originalConsoleWarn = console.warn;
-
-        console.warn = function(...args) {
-            if (args.length > 0 && typeof args[0] === 'string') {
-                if (args[0].includes('link preload but not used within a few seconds') ||
-                    args[0].includes('request credentials mode does not match') ||
-                    args[0].includes('404 (Not Found)')) {
-                    // 特定の警告メッセージを無視する
-                    return;
-                }
-            }
-            // 他の警告メッセージは通常通り表示する
-            originalConsoleWarn.apply(console, args);
-        };
-    })();
 });
