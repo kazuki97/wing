@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
+    let lastScannedCode = null;
+    let lastScannedTime = 0;
 
     const request = indexedDB.open('inventoryDB', 2);
 
@@ -369,36 +371,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Quagga.onDetected((data) => {
             const barcode = data.codeResult.code;
-            console.log(`Barcode detected: ${barcode}`);
-            const transaction = db.transaction(['products'], 'readwrite');
-            const store = transaction.objectStore('products');
-            const request = store.openCursor();
+            const currentTime = new Date().getTime();
 
-            request.onsuccess = (event) => {
-                const cursor = event.target.result;
-                if (cursor) {
-                    if (cursor.value.barcode === barcode) {
-                        const product = cursor.value;
-                        if (product.quantity > 0) {
-                            product.quantity -= 1;
-                            store.put(product);
-                            alert(`商品名: ${product.name} の在庫が1減少しました。現在の在庫数: ${product.quantity}`);
-                            displayInventoryProducts(product.category);
-                        } else {
-                            alert(`商品名: ${product.name} は在庫がありません。`);
-                        }
-                    }
-                    cursor.continue();
-                } else {
-                    console.log('No more entries!');
+            if (barcode === lastScannedCode && (currentTime - lastScannedTime) < 1000) {
+                if (confirm(`同じ商品（バーコード: ${barcode}）がスキャンされましたがよろしいですか？`)) {
+                    processScannedCode(barcode);
                 }
-            };
+                return;
+            }
 
-            request.onerror = (event) => {
-                console.error('Cursor error:', event.target.error);
-            };
+            lastScannedCode = barcode;
+            lastScannedTime = currentTime;
 
-            Quagga.stop();
+            console.log(`Barcode detected: ${barcode}`);
+            processScannedCode(barcode);
         });
     });
+
+    function processScannedCode(barcode) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        const request = store.openCursor();
+
+        request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                if (cursor.value.barcode === barcode) {
+                    const product = cursor.value;
+                    if (product.quantity > 0) {
+                        product.quantity -= 1;
+                        store.put(product);
+                        alert(`商品名: ${product.name} の在庫が1減少しました。現在の在庫数: ${product.quantity}`);
+                        displayInventoryProducts(product.category);
+                    } else {
+                        alert(`商品名: ${product.name} は在庫がありません。`);
+                    }
+                }
+                cursor.continue();
+            } else {
+                console.log('No more entries!');
+            }
+        };
+
+        request.onerror = (event) => {
+            console.error('Cursor error:', event.target.error);
+        };
+
+        Quagga.stop();
+    }
 });
