@@ -41,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkProduct = document.getElementById('link-product');
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
+    const startScanButton = document.getElementById('start-scan');
+    const scannerContainer = document.getElementById('scanner-container');
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -106,6 +108,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeModal.addEventListener('click', () => {
         detailModal.style.display = 'none';
+    });
+
+    startScanButton.addEventListener('click', () => {
+        Quagga.init({
+            inputStream: {
+                name: 'Live',
+                type: 'LiveStream',
+                target: scannerContainer,
+                constraints: {
+                    width: 640,
+                    height: 480,
+                    facingMode: 'environment'
+                },
+            },
+            decoder: {
+                readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'code_39_reader', 'code_39_vin_reader', 'codabar_reader', 'upc_reader', 'upc_e_reader', 'i2of5_reader']
+            },
+        }, (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            Quagga.start();
+        });
+
+        Quagga.onDetected((data) => {
+            const code = data.codeResult.code;
+            alert(`バーコードが検出されました: ${code}`);
+            Quagga.stop();
+        });
     });
 
     function saveCategoryToDB(category) {
@@ -224,6 +256,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 row.insertCell(2).appendChild(editButton);
 
+                const detailButton = document.createElement('button');
+                detailButton.textContent = '詳細';
+                detailButton.className = 'product-button';
+                detailButton.addEventListener('click', () => {
+                    document.getElementById('detail-title').textContent = product.name;
+                    document.getElementById('detail-body').textContent = `カテゴリ: ${product.category}\n数量: ${product.quantity}`;
+                    detailModal.style.display = 'block';
+                });
+                row.insertCell(3).appendChild(detailButton);
+
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
                 deleteButton.className = 'product-button';
@@ -235,17 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayProducts(category);
                     }
                 });
-                row.insertCell(3).appendChild(deleteButton);
-
-                const detailButton = document.createElement('button');
-                detailButton.textContent = '詳細';
-                detailButton.className = 'product-button';
-                detailButton.addEventListener('click', () => {
-                    document.getElementById('detail-title').textContent = product.name;
-                    document.getElementById('detail-body').textContent = `カテゴリ: ${product.category}\n数量: ${product.quantity}`;
-                    detailModal.style.display = 'block';
-                });
-                row.insertCell(4).appendChild(detailButton);
+                row.insertCell(4).appendChild(deleteButton);
             });
         };
     }
