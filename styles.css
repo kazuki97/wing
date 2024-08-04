@@ -87,13 +87,13 @@ input, button, select {
     display: block;
     margin: 10px 0;
     padding: 10px;
-    width: calc(100% - 40px);
+    width: 90%;
     border: 1px solid #333;
     border-radius: 5px;
     font-size: 16px;
     background-color: #2c2c2c;
     color: #e0e0e0;
-    margin-left: 20px;
+    margin-left: 5%;
 }
 
 input:focus, select:focus {
@@ -107,9 +107,8 @@ button {
     border: none;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
-    width: calc(100% - 40px);
-    margin-left: 20px;
-    text-align: center;
+    width: 90%;
+    margin-left: 5%;
 }
 
 button:hover {
@@ -119,10 +118,10 @@ button:hover {
 
 /* テーブル */
 table {
-    width: calc(100% - 40px);
+    width: 90%;
     border-collapse: collapse;
     margin-top: 20px;
-    margin-left: 20px;
+    margin-left: 5%;
 }
 
 th, td {
@@ -145,7 +144,7 @@ td {
 #category-list {
     display: flex;
     flex-direction: column;
-    margin: 20px;
+    margin: 20px 5%;
 }
 
 .category-item {
@@ -157,7 +156,7 @@ td {
     padding: 10px;
     margin: 5px 0;
     border-radius: 5px;
-    max-width: calc(100% - 40px);
+    width: 100%;
 }
 
 .category-item button {
@@ -168,7 +167,6 @@ td {
     transition: background-color 0.3s, transform 0.3s;
     padding: 5px 10px;
     margin-left: 10px;
-    text-align: center;
 }
 
 .category-item button:hover {
