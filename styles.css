@@ -190,14 +190,14 @@ td {
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     line-height: 70px; /* ボタン内のテキストを中央に配置 */
+    font-size: 18px; /* テキストが中央に見えるようにフォントサイズを調整 */
 }
 
-.inventory-category-button:hover {
-    background-color: #0056b3;
-}
-
-.inventory-category-button:active {
-    background-color: #003f7f;
+.inventory-category-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
 }
 
 /* モバイル対応 */
@@ -235,6 +235,12 @@ td {
         flex: 1;
         text-align: left;
         color: #007bff;
+    }
+
+    .inventory-category-button {
+        width: 80px;
+        height: 80px;
+        font-size: 14px;
     }
 }
 
