@@ -95,14 +95,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = categorySelect.value;
         const productName = document.getElementById('product-name').value;
         const quantity = document.getElementById('product-quantity').value;
+        const price = document.getElementById('product-price').value;
+        const cost = document.getElementById('product-cost').value;
         const barcode = document.getElementById('product-barcode').value;
 
-        if (category && productName && quantity && barcode) {
-            const product = { category, name: productName, quantity: parseInt(quantity, 10), barcode };
+        if (category && productName && quantity && price && cost && barcode) {
+            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
             saveProductToDB(product);
             displayProducts(category);
             document.getElementById('product-name').value = '';
             document.getElementById('product-quantity').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-cost').value = '';
             document.getElementById('product-barcode').value = '';
         } else {
             alert('すべてのフィールドを入力してください。');
@@ -215,7 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const row = productTableBody.insertRow();
                 row.insertCell(0).textContent = product.name;
                 row.insertCell(1).textContent = product.quantity;
-                row.insertCell(2).textContent = product.barcode;
+                row.insertCell(2).textContent = product.price.toFixed(2);
+                row.insertCell(3).textContent = product.cost.toFixed(2);
+                row.insertCell(4).textContent = product.barcode;
 
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
@@ -228,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayProducts(category);
                     }
                 });
-                row.insertCell(3).appendChild(editButton);
+                row.insertCell(5).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
@@ -241,17 +247,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayProducts(category);
                     }
                 });
-                row.insertCell(4).appendChild(deleteButton);
+                row.insertCell(6).appendChild(deleteButton);
 
                 const detailButton = document.createElement('button');
                 detailButton.textContent = '詳細';
                 detailButton.className = 'product-button';
                 detailButton.addEventListener('click', () => {
                     document.getElementById('detail-title').textContent = product.name;
-                    document.getElementById('detail-body').textContent = `カテゴリ: ${product.category}\n数量: ${product.quantity}\nバーコード: ${product.barcode}`;
+                    document.getElementById('detail-body').textContent = `カテゴリ: ${product.category}\n数量: ${product.quantity}\n価格: ¥${product.price.toFixed(2)}\n原価: ¥${product.cost.toFixed(2)}\nバーコード: ${product.barcode}`;
                     detailModal.style.display = 'block';
                 });
-                row.insertCell(5).appendChild(detailButton);
+                row.insertCell(7).appendChild(detailButton);
             });
         };
     }
@@ -280,14 +286,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const products = event.target.result;
-            const inventoryProductTableBody = document.getElementById('inventory-product-table').getElementsByTagName('tbody')[0];
+            const inventoryProductTableBody = document.getElementById('inventory-product-list');
             inventoryProductTableBody.innerHTML = '';
 
             products.forEach(product => {
-                const row = inventoryProductTableBody.insertRow();
-                row.insertCell(0).textContent = product.name;
-                row.insertCell(1).textContent = product.quantity;
-                row.insertCell(2).textContent = product.barcode;
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+
+                const nameElement = document.createElement('p');
+                nameElement.textContent = product.name;
+                div.appendChild(nameElement);
+
+                const quantityElement = document.createElement('p');
+                quantityElement.textContent = `数量: ${product.quantity}`;
+                div.appendChild(quantityElement);
 
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
@@ -300,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayInventoryProducts(category);
                     }
                 });
-                row.insertCell(3).appendChild(editButton);
+                div.appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
@@ -313,7 +325,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayInventoryProducts(category);
                     }
                 });
-                row.insertCell(4).appendChild(deleteButton);
+                div.appendChild(deleteButton);
+
+                inventoryProductTableBody.appendChild(div);
             });
         };
     }
