@@ -36,8 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    const salesCategoryContainer = document.getElementById('sales-category-container');
-    const salesProductContainer = document.getElementById('sales-product-container');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -135,6 +133,54 @@ document.addEventListener('DOMContentLoaded', () => {
     manualAddSalesButton.addEventListener('click', () => {
         displaySalesCategories();
     });
+
+    function displaySalesCategories() {
+        const salesCategoryContainer = document.createElement('div');
+        salesCategoryContainer.id = 'sales-category-container';
+        salesCategoryContainer.innerHTML = '<p>カテゴリを選択してください</p>';
+        inventorySection.appendChild(salesCategoryContainer);
+
+        for (const categoryName in categories) {
+            const button = document.createElement('button');
+            button.textContent = categoryName;
+            button.className = 'inventory-category-button';
+            button.addEventListener('click', () => {
+                displaySalesProducts(categoryName);
+            });
+            salesCategoryContainer.appendChild(button);
+        }
+    }
+
+    function displaySalesProducts(categoryName) {
+        const salesCategoryContainer = document.getElementById('sales-category-container');
+        salesCategoryContainer.innerHTML = '<p>商品を選択してください</p>';
+
+        const products = categories[categoryName];
+        products.forEach(product => {
+            const button = document.createElement('button');
+            button.textContent = `${product.name} - ${product.price}円`;
+            button.className = 'inventory-category-button';
+            button.addEventListener('click', () => {
+                const quantity = prompt('売上数量を入力してください:', 1);
+                if (quantity !== null && !isNaN(quantity)) {
+                    const selectedDate = prompt('日付を入力してください（例: 2024-08-11）:', new Date().toISOString().split('T')[0]);
+                    const sale = {
+                        productName: product.name,
+                        quantity: parseInt(quantity, 10),
+                        totalPrice: product.price * quantity,
+                        profit: (product.price - product.cost) * quantity,
+                        date: selectedDate || new Date().toISOString().split('T')[0]
+                    };
+                    saveSaleToDB(sale);
+                    alert(`売上が追加されました: 商品名: ${product.name}, 数量: ${quantity}, 売上金額: ${sale.totalPrice}, 利益: ${sale.profit}, 日付: ${sale.date}`);
+                    displaySales();
+                } else {
+                    alert('無効な数量です。');
+                }
+            });
+            salesCategoryContainer.appendChild(button);
+        });
+    }
 
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
@@ -360,62 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(1).textContent = sale.quantity;
                 row.insertCell(2).textContent = sale.totalPrice;
                 row.insertCell(3).textContent = sale.profit;
-                row.insertCell(4).textContent = sale.date;  // 日付を表示
-            });
-        };
-    }
-
-    function displaySalesCategories() {
-        salesCategoryContainer.innerHTML = '';
-        salesProductContainer.innerHTML = '';
-        salesCategoryContainer.style.display = 'block';
-        salesProductContainer.style.display = 'none';
-
-        for (const categoryName in categories) {
-            const button = document.createElement('button');
-            button.textContent = categoryName;
-            button.className = 'inventory-category-button';
-            button.addEventListener('click', () => {
-                displaySalesProducts(categoryName);
-            });
-            salesCategoryContainer.appendChild(button);
-        }
-    }
-
-    function displaySalesProducts(category) {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const request = index.getAll(category);
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            salesProductContainer.innerHTML = '';
-            salesProductContainer.style.display = 'block';
-
-            products.forEach(product => {
-                const button = document.createElement('button');
-                button.textContent = `${product.name} - ${product.price}円`;
-                button.className = 'inventory-category-button';
-                button.addEventListener('click', () => {
-                    const quantity = prompt('売上数量を入力してください:', 1);
-                    if (quantity !== null && !isNaN(quantity)) {
-                        const selectedDate = prompt('日付を入力してください（例: 2024-08-11）:', new Date().toISOString().split('T')[0]);
-                        const sale = {
-                            productName: product.name,
-                            quantity: parseInt(quantity, 10),
-                            totalPrice: product.price * quantity,
-                            profit: (product.price - product.cost) * quantity,
-                            date: selectedDate || new Date().toISOString().split('T')[0]  // 日付を保存
-                        };
-                        saveSaleToDB(sale);
-                        alert(`売上が追加されました: 商品名: ${product.name}, 数量: ${quantity}, 売上金額: ${sale.totalPrice}, 利益: ${sale.profit}, 日付: ${sale.date}`);
-                        displaySales();
-                    } else {
-                        alert('無効な数量です。');
-                    }
-                });
-                salesProductContainer.appendChild(button);
+                row.insertCell(4).textContent = sale.date; // 日付の表示を追加
             });
         };
     }
@@ -509,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             quantity: 1,
                             totalPrice: product.price,
                             profit: product.price - product.cost,
-                            date: new Date().toISOString().split('T')[0]  // 日付を追加
+                            date: new Date().toISOString().split('T')[0] // 日付の追加
                         };
                         saveSaleToDB(sale);
 
