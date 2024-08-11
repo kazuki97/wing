@@ -134,11 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const salesCategoryContainer = document.getElementById('salesCategoryContainer');
         if (salesCategoryContainer) {
             salesCategoryContainer.innerHTML = '';
-            salesCategoryContainer.style.display = 'block';
-            
+            salesCategoryContainer.style.display = 'flex';
+            salesCategoryContainer.style.flexWrap = 'wrap';
+            salesCategoryContainer.style.justifyContent = 'center';
+
             for (const categoryName in categories) {
                 const categoryButton = document.createElement('button');
                 categoryButton.textContent = categoryName;
+                categoryButton.className = 'inventory-category-button'; // 四角のボタンを使用
                 categoryButton.addEventListener('click', () => {
                     displaySalesProducts(categoryName);
                 });
