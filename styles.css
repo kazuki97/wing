@@ -40,16 +40,17 @@ nav ul li {
 }
 
 nav ul li a {
-    color: #e0e0e0;
+    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
     padding: 10px 15px;
     border-radius: 5px;
+    background-color: #17a2b8; /* シアン色 */
     transition: background-color 0.3s, transform 0.3s;
 }
 
 nav ul li a:hover {
-    background-color: #333;
+    background-color: #138496; /* ホバー時のシアン色 */
     transform: scale(1.05);
 }
 
@@ -110,6 +111,31 @@ button:hover {
     transform: scale(1.05);
 }
 
+/* カテゴリや商品の管理ボタンに異なる色を設定 */
+#add-category, #manualAddSalesButton {
+    background-color: #28a745; /* 緑色 */
+}
+
+#add-category:hover, #manualAddSalesButton:hover {
+    background-color: #218838; /* ホバー時の緑色 */
+}
+
+#add-product {
+    background-color: #ffc107; /* 黄色 */
+}
+
+#add-product:hover {
+    background-color: #e0a800; /* ホバー時の黄色 */
+}
+
+#start-scan {
+    background-color: #dc3545; /* 赤色 */
+}
+
+#start-scan:hover {
+    background-color: #c82333; /* ホバー時の赤色 */
+}
+
 /* テーブル */
 table {
     width: 90%;
@@ -125,13 +151,17 @@ th, td {
 }
 
 th {
-    background-color: #007bff;
+    background-color: #343a40; /* ダークグレー */
     color: white;
 }
 
 td {
     background-color: #2c2c2c;
     color: #e0e0e0;
+}
+
+td:hover {
+    background-color: #3e3e3e; /* ホバー時の背景色 */
 }
 
 /* カテゴリリスト */
@@ -171,11 +201,11 @@ td {
 /* 在庫管理ボタン */
 .inventory-category-button {
     display: inline-block;
-    width: 100px; /* 正方形にするため幅と高さを同じにする */
+    width: 100px;
     height: 100px;
     margin: 10px;
     padding: 15px;
-    background-color: #007bff;
+    background-color: #6f42c1; /* 紫色 */
     color: #ffffff;
     text-align: center;
     text-decoration: none;
@@ -183,8 +213,12 @@ td {
     border-radius: 5px;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    line-height: 70px; /* ボタン内のテキストを中央に配置 */
-    font-size: 18px; /* テキストが中央に見えるようにフォントサイズを調整 */
+    line-height: 70px;
+    font-size: 18px;
+}
+
+.inventory-category-button:hover {
+    background-color: #5a32a3; /* ホバー時の紫色 */
 }
 
 .inventory-category-container {
@@ -212,7 +246,7 @@ td {
     padding: 10px;
     margin: 5px;
     border-radius: 5px;
-    width: calc(100% - 20px); /* 固定幅を設定 */
+    width: calc(100% - 20px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
