@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    const salesCategoryContainer = document.getElementById('sales-category-container'); // 修正部分
+    const salesCategoryContainer = document.getElementById('sales-category-container');
+    const salesProductContainer = document.getElementById('sales-product-container');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -345,8 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displaySalesCategories() {
         salesCategoryContainer.innerHTML = '';
-        salesCategoryContainer.style.display = 'block';
-
         for (const categoryName in categories) {
             const button = document.createElement('button');
             button.textContent = categoryName;
@@ -354,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => {
                 displaySalesProducts(categoryName);
             });
-
             salesCategoryContainer.appendChild(button);
         }
     }
@@ -367,28 +365,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const products = event.target.result;
-            const salesProductContainer = document.getElementById('sales-product-container');
             salesProductContainer.innerHTML = '';
-            salesProductContainer.style.display = 'block';
-
             products.forEach(product => {
                 const button = document.createElement('button');
                 button.textContent = `${product.name} - ${product.price}円`;
                 button.className = 'sales-product-button';
                 button.addEventListener('click', () => {
-                    const quantity = prompt('売上数量を入力してください:');
-                    if (quantity !== null && quantity > 0) {
-                        const sale = {
-                            productName: product.name,
-                            quantity: parseInt(quantity, 10),
-                            totalPrice: product.price * quantity,
-                            profit: (product.price - product.cost) * quantity,
-                            date: new Date().toISOString().split('T')[0]
-                        };
-                        saveSaleToDB(sale);
-                        displaySales();
-                        alert(`売上が追加されました: 商品名: ${product.name}, 数量: ${quantity}, 売上金額: ${sale.totalPrice}円, 利益: ${sale.profit}円`);
-                    }
+                    const sale = {
+                        productName: product.name,
+                        quantity: 1,
+                        totalPrice: product.price,
+                        profit: product.price - product.cost,
+                        date: new Date().toISOString().split('T')[0]
+                    };
+                    saveSaleToDB(sale);
+                    alert(`売上が追加されました: 商品名: ${product.name}, 金額: ${sale.totalPrice}円`);
+                    displaySales();
                 });
                 salesProductContainer.appendChild(button);
             });
