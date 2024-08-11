@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
+    const manualAddSalesButton = document.getElementById('manualAddSalesButton');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -49,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
     const linkSales = document.getElementById('link-sales');
-    const manualAddSalesButton = document.getElementById('manual-add-sales'); // 売上追加ボタン
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -132,21 +132,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     manualAddSalesButton.addEventListener('click', () => {
         const productName = prompt('商品名を入力してください:');
-        const quantity = parseInt(prompt('数量を入力してください:'), 10);
-        const price = parseFloat(prompt('価格を入力してください:'));
-        const cost = parseFloat(prompt('原価を入力してください:'));
+        const quantity = prompt('売上数量を入力してください:');
+        if (productName && quantity) {
+            const transaction = db.transaction(['products'], 'readonly');
+            const store = transaction.objectStore('products');
+            const index = store.index('name');
+            const request = index.get(productName);
 
-        if (productName && !isNaN(quantity) && !isNaN(price) && !isNaN(cost)) {
-            const sale = {
-                productName,
-                quantity,
-                totalPrice: price * quantity,
-                profit: (price - cost) * quantity
+            request.onsuccess = (event) => {
+                const product = event.target.result;
+                if (product) {
+                    const sale = {
+                        productName: product.name,
+                        quantity: parseInt(quantity, 10),
+                        totalPrice: product.price * quantity,
+                        profit: (product.price - product.cost) * quantity
+                    };
+                    saveSaleToDB(sale);
+                    alert(`売上が追加されました: 商品名: ${product.name}, 数量: ${quantity}, 売上金額: ${sale.totalPrice}, 利益: ${sale.profit}`);
+                    displaySales();
+                } else {
+                    alert('商品が見つかりませんでした。');
+                }
             };
-            saveSaleToDB(sale);
-            displaySales();
         } else {
-            alert('すべてのフィールドを正しく入力してください。');
+            alert('商品名と数量を入力してください。');
         }
     });
 
@@ -184,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSales() {
-        displaySales(); // 売上データをロードする
+        displaySales();
     }
 
     function updateCategorySelect() {
