@@ -36,10 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    const manualSalesCategory = document.getElementById('manual-sales-category');
-    const manualSalesCategoryList = document.getElementById('manual-sales-category-list');
-    const manualSalesProduct = document.getElementById('manual-sales-product');
-    const manualSalesProductList = document.getElementById('manual-sales-product-list');
+    const salesCategoryContainer = document.getElementById('sales-category-container');
+    const salesProductList = document.getElementById('sales-product-list');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -89,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkSales.addEventListener('click', () => {
         showSection(salesSection);
+        displaySalesCategories();
         displaySales();
     });
 
@@ -135,10 +134,64 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     manualAddSalesButton.addEventListener('click', () => {
-        manualSalesCategory.style.display = 'block';
-        manualSalesProduct.style.display = 'none';
-        displayManualSalesCategories();
+        salesCategoryContainer.style.display = 'block';
+        displaySalesCategories();
     });
+
+    function displaySalesCategories() {
+        salesCategoryContainer.innerHTML = '';
+        for (const categoryName in categories) {
+            const button = document.createElement('button');
+            button.textContent = categoryName;
+            button.className = 'sales-category-button';
+            button.addEventListener('click', () => {
+                displaySalesProducts(categoryName);
+            });
+            salesCategoryContainer.appendChild(button);
+        }
+    }
+
+    function displaySalesProducts(category) {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('category');
+        const request = index.getAll(category);
+
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            salesProductList.innerHTML = '';
+            products.forEach(product => {
+                const row = document.createElement('div');
+                row.className = 'sales-product-item';
+                row.innerHTML = `
+                    <p>${product.name} - ${product.price}円</p>
+                    <button class="sales-button">販売</button>
+                `;
+                salesProductList.appendChild(row);
+
+                const salesButton = row.querySelector('.sales-button');
+                salesButton.addEventListener('click', () => {
+                    if (product.quantity > 0) {
+                        product.quantity -= 1;
+                        saveProductToDB(product);
+
+                        const sale = {
+                            productName: product.name,
+                            quantity: 1,
+                            totalPrice: product.price,
+                            profit: product.price - product.cost
+                        };
+                        saveSaleToDB(sale);
+
+                        alert(`商品名: ${product.name} が1個販売されました。現在の在庫: ${product.quantity}`);
+                        displaySalesProducts(category);
+                    } else {
+                        alert(`商品名: ${product.name} の在庫がありません。`);
+                    }
+                });
+            });
+        };
+    }
 
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
@@ -320,93 +373,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${product.quantity}</p>
                     <p>${product.price}</p>
                     <p>${product.barcode}</p>
-                    <button class="edit-button">編集</button>
-                    <button class="delete-button">削除</button>
                 `;
                 inventoryProductTableBody.appendChild(row);
-
-                const editButton = row.querySelector('.edit-button');
-                editButton.addEventListener('click', () => {
-                    const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
-                    if (newQuantity !== null) {
-                        product.quantity = parseInt(newQuantity, 10);
-                        saveProductToDB(product);
-                        displayInventoryProducts(category);
-                    }
-                });
-
-                const deleteButton = row.querySelector('.delete-button');
-                deleteButton.addEventListener('click', () => {
-                    if (confirm('この商品を削除しますか？')) {
-                        const transaction = db.transaction(['products'], 'readwrite');
-                        const store = transaction.objectStore('products');
-                        store.delete(product.id);
-                        displayInventoryProducts(category);
-                    }
-                });
             });
         };
-    }
-
-    function displayManualSalesCategories() {
-        manualSalesCategoryList.innerHTML = '';
-
-        for (const categoryName in categories) {
-            const button = document.createElement('button');
-            button.textContent = categoryName;
-            button.className = 'manual-sales-category-button';
-            button.addEventListener('click', () => {
-                displayManualSalesProducts(categoryName);
-            });
-
-            manualSalesCategoryList.appendChild(button);
-        }
-    }
-
-    function displayManualSalesProducts(category) {
-        manualSalesProduct.style.display = 'block';
-        manualSalesProductList.innerHTML = '';
-
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const request = index.getAll(category);
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            products.forEach(product => {
-                const button = document.createElement('button');
-                button.textContent = product.name;
-                button.className = 'manual-sales-product-button';
-                button.addEventListener('click', () => {
-                    processManualSale(product);
-                });
-
-                manualSalesProductList.appendChild(button);
-            });
-        };
-    }
-
-    function processManualSale(product) {
-        const quantity = prompt(`売上数量を入力してください（在庫: ${product.quantity}）:`);
-        if (quantity !== null && parseInt(quantity) > 0 && parseInt(quantity) <= product.quantity) {
-            product.quantity -= parseInt(quantity);
-            saveProductToDB(product);
-
-            const sale = {
-                productName: product.name,
-                quantity: parseInt(quantity, 10),
-                totalPrice: product.price * quantity,
-                profit: (product.price - product.cost) * quantity
-            };
-            saveSaleToDB(sale);
-
-            alert(`売上が追加されました: 商品名: ${product.name}, 数量: ${quantity}, 売上金額: ${sale.totalPrice}, 利益: ${sale.profit}`);
-            displaySales();
-            displayInventoryProducts(product.category);
-        } else {
-            alert('無効な数量が入力されました。');
-        }
     }
 
     function displaySales() {
