@@ -193,7 +193,26 @@ td {
     font-size: 18px; /* テキストが中央に見えるようにフォントサイズを調整 */
 }
 
-.inventory-category-container {
+/* 手動で追加時のカテゴリボタン */
+.sales-category-button {
+    display: inline-block;
+    width: 90%; /* 横長にする */
+    height: 50px;
+    margin: 10px;
+    padding: 15px;
+    background-color: #007bff;
+    color: #ffffff;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    line-height: 20px; /* テキストの位置を調整 */
+    font-size: 18px; /* フォントサイズを調整 */
+}
+
+.inventory-category-container, .sales-category-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
