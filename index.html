@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在庫管理システム</title>
+    <title>WINGアプリ</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
-        <h1>在庫管理システム</h1>
+        <h1>WINGアプリ</h1>
         <nav>
             <ul>
                 <li><a href="#" id="link-home">ホーム</a></li>
@@ -17,13 +17,14 @@
                 <li><a href="#" id="link-product">商品設定</a></li>
                 <li><a href="#" id="link-inventory">在庫管理</a></li>
                 <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
+                <li><a href="#" id="link-sales">売上管理</a></li>
             </ul>
         </nav>
     </header>
     <main>
         <section id="home-section">
             <h2>ホーム</h2>
-            <p>在庫管理システムへようこそ。</p>
+            <p>WINGアプリへようこそ。</p>
         </section>
         <section id="category-section" style="display:none;">
             <h2>カテゴリ設定</h2>
@@ -36,8 +37,8 @@
             <select id="category-select"></select>
             <input type="text" id="product-name" placeholder="商品名">
             <input type="number" id="product-quantity" placeholder="数量">
-            <input type="number" id="product-price" placeholder="価格">
-            <input type="number" id="product-cost" placeholder="原価">
+            <input type="text" id="product-price" placeholder="価格">
+            <input type="text" id="product-cost" placeholder="原価">
             <input type="text" id="product-barcode" placeholder="バーコード">
             <button id="add-product">商品追加</button>
             <table id="product-table">
@@ -49,7 +50,6 @@
                         <th>原価</th>
                         <th>バーコード</th>
                         <th>編集</th>
-                        <th>詳細</th>
                         <th>削除</th>
                     </tr>
                 </thead>
@@ -65,6 +65,20 @@
             <h2>バーコードスキャン</h2>
             <button id="start-scan">スキャン開始</button>
             <div id="scanner-container"></div>
+        </section>
+        <section id="sales-section" style="display:none;">
+            <h2>売上管理</h2>
+            <table id="sales-table">
+                <thead>
+                    <tr>
+                        <th>商品名</th>
+                        <th>売上数量</th>
+                        <th>売上金額</th>
+                        <th>利益</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </section>
     </main>
     <div id="detail-modal" style="display:none;">
