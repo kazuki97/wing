@@ -36,8 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    const manualSalesModal = document.getElementById('manual-sales-modal');
-    const closeManualSalesModalButton = document.querySelector('.close-manual-sales-modal');
+    const manualSalesCategory = document.getElementById('manual-sales-category');
+    const manualSalesCategoryList = document.getElementById('manual-sales-category-list');
+    const manualSalesProduct = document.getElementById('manual-sales-product');
+    const manualSalesProductList = document.getElementById('manual-sales-product-list');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -133,69 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     manualAddSalesButton.addEventListener('click', () => {
-        manualSalesModal.style.display = 'block';
-        updateManualCategorySelect();
+        manualSalesCategory.style.display = 'block';
+        manualSalesProduct.style.display = 'none';
+        displayManualSalesCategories();
     });
-
-    closeManualSalesModalButton.addEventListener('click', () => {
-        manualSalesModal.style.display = 'none';
-    });
-
-    function updateManualCategorySelect() {
-        const manualCategorySelect = document.getElementById('manual-category-select');
-        manualCategorySelect.innerHTML = '';
-        for (const categoryName in categories) {
-            const option = document.createElement('option');
-            option.value = categoryName;
-            option.text = categoryName;
-            manualCategorySelect.add(option);
-        }
-        manualCategorySelect.addEventListener('change', () => {
-            displayManualProducts(manualCategorySelect.value);
-        });
-        displayManualProducts(manualCategorySelect.value);
-    }
-
-    function displayManualProducts(category) {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const request = index.getAll(category);
-        const manualProductList = document.getElementById('manual-product-list');
-        manualProductList.innerHTML = '';
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.textContent = `${product.name} - ${product.price}円`;
-                const sellButton = document.createElement('button');
-                sellButton.textContent = '販売';
-                sellButton.addEventListener('click', () => {
-                    if (product.quantity > 0) {
-                        product.quantity -= 1;
-                        store.put(product);
-
-                        const sale = {
-                            productName: product.name,
-                            quantity: 1,
-                            totalPrice: product.price,
-                            profit: product.price - product.cost
-                        };
-                        saveSaleToDB(sale);
-
-                        alert(`商品名: ${product.name} の在庫が1減少し、売上に追加されました。`);
-                        displaySales();
-                    } else {
-                        alert(`商品名: ${product.name} は在庫がありません。`);
-                    }
-                });
-
-                productDiv.appendChild(sellButton);
-                manualProductList.appendChild(productDiv);
-            });
-        };
-    }
 
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
@@ -403,6 +346,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         };
+    }
+
+    function displayManualSalesCategories() {
+        manualSalesCategoryList.innerHTML = '';
+
+        for (const categoryName in categories) {
+            const button = document.createElement('button');
+            button.textContent = categoryName;
+            button.className = 'manual-sales-category-button';
+            button.addEventListener('click', () => {
+                displayManualSalesProducts(categoryName);
+            });
+
+            manualSalesCategoryList.appendChild(button);
+        }
+    }
+
+    function displayManualSalesProducts(category) {
+        manualSalesProduct.style.display = 'block';
+        manualSalesProductList.innerHTML = '';
+
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('category');
+        const request = index.getAll(category);
+
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            products.forEach(product => {
+                const button = document.createElement('button');
+                button.textContent = product.name;
+                button.className = 'manual-sales-product-button';
+                button.addEventListener('click', () => {
+                    processManualSale(product);
+                });
+
+                manualSalesProductList.appendChild(button);
+            });
+        };
+    }
+
+    function processManualSale(product) {
+        const quantity = prompt(`売上数量を入力してください（在庫: ${product.quantity}）:`);
+        if (quantity !== null && parseInt(quantity) > 0 && parseInt(quantity) <= product.quantity) {
+            product.quantity -= parseInt(quantity);
+            saveProductToDB(product);
+
+            const sale = {
+                productName: product.name,
+                quantity: parseInt(quantity, 10),
+                totalPrice: product.price * quantity,
+                profit: (product.price - product.cost) * quantity
+            };
+            saveSaleToDB(sale);
+
+            alert(`売上が追加されました: 商品名: ${product.name}, 数量: ${quantity}, 売上金額: ${sale.totalPrice}, 利益: ${sale.profit}`);
+            displaySales();
+            displayInventoryProducts(product.category);
+        } else {
+            alert('無効な数量が入力されました。');
+        }
     }
 
     function displaySales() {
