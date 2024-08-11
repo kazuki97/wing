@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINGアプリ</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -21,25 +20,31 @@
             </ul>
         </nav>
     </header>
+
     <main>
+        <!-- ホームセクション -->
         <section id="home-section">
             <h2>ホーム</h2>
-            <p>WINGアプリへようこそ。</p>
+            <p>WINGアプリへようこそ！</p>
         </section>
-        <section id="category-section" style="display:none;">
+
+        <!-- カテゴリ設定セクション -->
+        <section id="category-section" style="display: none;">
             <h2>カテゴリ設定</h2>
-            <input type="text" id="category-name" placeholder="カテゴリ名">
+            <input type="text" id="category-name" placeholder="カテゴリ名を入力してください">
             <button id="add-category">カテゴリ追加</button>
             <div id="category-list"></div>
         </section>
-        <section id="product-section" style="display:none;">
+
+        <!-- 商品設定セクション -->
+        <section id="product-section" style="display: none;">
             <h2>商品設定</h2>
             <select id="category-select"></select>
-            <input type="text" id="product-name" placeholder="商品名">
-            <input type="number" id="product-quantity" placeholder="数量">
-            <input type="text" id="product-price" placeholder="価格">
-            <input type="text" id="product-cost" placeholder="原価">
-            <input type="text" id="product-barcode" placeholder="バーコード">
+            <input type="text" id="product-name" placeholder="商品名を入力してください">
+            <input type="number" id="product-quantity" placeholder="数量を入力してください">
+            <input type="number" id="product-price" placeholder="価格を入力してください">
+            <input type="number" id="product-cost" placeholder="原価を入力してください">
+            <input type="text" id="product-barcode" placeholder="バーコードを入力してください">
             <button id="add-product">商品追加</button>
             <table id="product-table">
                 <thead>
@@ -53,24 +58,31 @@
                         <th>削除</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+                </tbody>
             </table>
         </section>
-        <section id="inventory-section" style="display:none;">
+
+        <!-- 在庫管理セクション -->
+        <section id="inventory-section" style="display: none;">
             <h2>在庫管理</h2>
-            <div class="inventory-category-container" id="inventory-category-list"></div>
-            <div class="inventory-table" id="inventory-product-list"></div>
+            <div id="inventory-category-list" class="inventory-category-container"></div>
+            <div id="inventory-product-list" class="inventory-table"></div>
         </section>
-        <section id="barcode-section" style="display:none;">
+
+        <!-- バーコードスキャンセクション -->
+        <section id="barcode-section" style="display: none;">
             <h2>バーコードスキャン</h2>
-            <button id="start-scan">スキャン開始</button>
             <div id="scanner-container"></div>
+            <button id="start-scan">スキャン開始</button>
         </section>
-        <section id="sales-section" style="display:none;">
+
+        <!-- 売上管理セクション -->
+        <section id="sales-section" style="display: none;">
             <h2>売上管理</h2>
             <button id="manualAddSalesButton">手動で売上を追加</button>
-            <div id="sales-category-container"></div>
-            <div id="sales-product-container"></div>
+            <div id="salesCategoryContainer"></div>
+            <div id="salesProductContainer"></div>
             <table id="sales-table">
                 <thead>
                     <tr>
@@ -81,18 +93,20 @@
                         <th>日付</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+                </tbody>
             </table>
         </section>
+
     </main>
-    <div id="detail-modal" style="display:none;">
+
+    <div id="detail-modal" style="display: none;">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2 id="detail-title"></h2>
-            <p id="detail-body"></p>
+            <p>詳細情報</p>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+
     <script src="script.js"></script>
 </body>
 </html>
