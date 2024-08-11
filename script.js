@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
+    const manualAddSalesButton = document.getElementById('manual-add-sales');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
 
@@ -125,6 +126,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    manualAddSalesButton.addEventListener('click', () => {
+        const productName = prompt('商品名を入力してください:');
+        const quantity = parseInt(prompt('数量を入力してください:'), 10);
+
+        if (productName && !isNaN(quantity)) {
+            const transaction = db.transaction(['products'], 'readonly');
+            const store = transaction.objectStore('products');
+            const index = store.index('category');
+            const request = index.getAll();
+
+            request.onsuccess = (event) => {
+                const products = event.target.result;
+                let product = products.find(p => p.name === productName);
+                if (product && product.quantity >= quantity) {
+                    product.quantity -= quantity;
+                    const sale = {
+                        productName: product.name,
+                        quantity: quantity,
+                        totalPrice: product.price * quantity,
+                        profit: (product.price - product.cost) * quantity
+                    };
+                    saveProductToDB(product);
+                    saveSaleToDB(sale);
+                    alert(`売上が追加されました。商品名: ${product.name}, 数量: ${quantity}, 合計金額: ${sale.totalPrice}円`);
+                    displaySales();
+                } else {
+                    alert('在庫が不足しています。または商品名が存在しません。');
+                }
+            };
+        } else {
+            alert('商品名と数量を正しく入力してください。');
+        }
+    });
+
     closeModal.addEventListener('click', () => {
         detailModal.style.display = 'none';
     });
@@ -159,6 +194,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 categories[category.name] = category.products;
             });
             displayCategories();
+        };
+    }
+
+    function loadSales() {
+        const transaction = db.transaction(['sales'], 'readonly');
+        const store = transaction.objectStore('sales');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const sales = event.target.result;
+            const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+            salesTableBody.innerHTML = '';
+
+            sales.forEach(sale => {
+                const row = salesTableBody.insertRow();
+                row.insertCell(0).textContent = sale.productName;
+                row.insertCell(1).textContent = sale.quantity;
+                row.insertCell(2).textContent = sale.totalPrice;
+                row.insertCell(3).textContent = sale.profit;
+            });
         };
     }
 
