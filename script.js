@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastScannedCode = null;
     let lastScannedTime = 0;
 
-    const request = indexedDB.open('inventoryDB', 2);
+    const request = indexedDB.open('inventoryDB', 3);
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
         db = event.target.result;
         loadCategories();
+        loadSales();
     };
 
     request.onupgradeneeded = (event) => {
@@ -23,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('products')) {
             const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
             productStore.createIndex('category', 'category', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('sales')) {
+            db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
         }
     };
 
@@ -37,12 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const productSection = document.getElementById('product-section');
     const inventorySection = document.getElementById('inventory-section');
     const barcodeSection = document.getElementById('barcode-section');
+    const salesSection = document.getElementById('sales-section');
 
     const linkHome = document.getElementById('link-home');
     const linkCategory = document.getElementById('link-category');
     const linkProduct = document.getElementById('link-product');
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
+    const linkSales = document.getElementById('link-sales');
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -50,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         productSection.style.display = 'none';
         inventorySection.style.display = 'none';
         barcodeSection.style.display = 'none';
+        salesSection.style.display = 'none';
         section.style.display = 'block';
     }
 
@@ -73,6 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkBarcode.addEventListener('click', () => {
         showSection(barcodeSection);
+    });
+
+    linkSales.addEventListener('click', () => {
+        showSection(salesSection);
+        displaySales();
     });
 
     addCategoryButton.addEventListener('click', () => {
@@ -127,6 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['products'], 'readwrite');
         const store = transaction.objectStore('products');
         store.put(product);
+    }
+
+    function saveSaleToDB(sale) {
+        const transaction = db.transaction(['sales'], 'readwrite');
+        const store = transaction.objectStore('sales');
+        store.put(sale);
     }
 
     function loadCategories() {
@@ -219,8 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const row = productTableBody.insertRow();
                 row.insertCell(0).textContent = product.name;
                 row.insertCell(1).textContent = product.quantity;
-                row.insertCell(2).textContent = product.price.toFixed(2);
-                row.insertCell(3).textContent = product.cost.toFixed(2);
+                row.insertCell(2).textContent = product.price;
+                row.insertCell(3).textContent = product.cost;
                 row.insertCell(4).textContent = product.barcode;
 
                 const editButton = document.createElement('button');
@@ -248,16 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 row.insertCell(6).appendChild(deleteButton);
-
-                const detailButton = document.createElement('button');
-                detailButton.textContent = '詳細';
-                detailButton.className = 'product-button';
-                detailButton.addEventListener('click', () => {
-                    document.getElementById('detail-title').textContent = product.name;
-                    document.getElementById('detail-body').textContent = `カテゴリ: ${product.category}\n数量: ${product.quantity}\n価格: ¥${product.price.toFixed(2)}\n原価: ¥${product.cost.toFixed(2)}\nバーコード: ${product.barcode}`;
-                    detailModal.style.display = 'block';
-                });
-                row.insertCell(7).appendChild(detailButton);
             });
         };
     }
@@ -290,20 +298,19 @@ document.addEventListener('DOMContentLoaded', () => {
             inventoryProductTableBody.innerHTML = '';
 
             products.forEach(product => {
-                const div = document.createElement('div');
-                div.className = 'inventory-item';
+                const row = document.createElement('div');
+                row.className = 'inventory-item';
+                row.innerHTML = `
+                    <p>${product.name}</p>
+                    <p>${product.quantity}</p>
+                    <p>${product.price}</p>
+                    <p>${product.barcode}</p>
+                    <button class="edit-button">編集</button>
+                    <button class="delete-button">削除</button>
+                `;
+                inventoryProductTableBody.appendChild(row);
 
-                const nameElement = document.createElement('p');
-                nameElement.textContent = product.name;
-                div.appendChild(nameElement);
-
-                const quantityElement = document.createElement('p');
-                quantityElement.textContent = `数量: ${product.quantity}`;
-                div.appendChild(quantityElement);
-
-                const editButton = document.createElement('button');
-                editButton.textContent = '編集';
-                editButton.className = 'product-button';
+                const editButton = row.querySelector('.edit-button');
                 editButton.addEventListener('click', () => {
                     const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
                     if (newQuantity !== null) {
@@ -312,11 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayInventoryProducts(category);
                     }
                 });
-                div.appendChild(editButton);
 
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = '削除';
-                deleteButton.className = 'product-button';
+                const deleteButton = row.querySelector('.delete-button');
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この商品を削除しますか？')) {
                         const transaction = db.transaction(['products'], 'readwrite');
@@ -325,9 +329,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayInventoryProducts(category);
                     }
                 });
-                div.appendChild(deleteButton);
+            });
+        };
+    }
 
-                inventoryProductTableBody.appendChild(div);
+    function displaySales() {
+        const transaction = db.transaction(['sales'], 'readonly');
+        const store = transaction.objectStore('sales');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const sales = event.target.result;
+            const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+            salesTableBody.innerHTML = '';
+
+            sales.forEach(sale => {
+                const row = salesTableBody.insertRow();
+                row.insertCell(0).textContent = sale.productName;
+                row.insertCell(1).textContent = sale.quantity;
+                row.insertCell(2).textContent = sale.totalPrice;
+                row.insertCell(3).textContent = sale.profit;
             });
         };
     }
@@ -415,6 +436,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (product.quantity > 0) {
                         product.quantity -= 1;
                         store.put(product);
+
+                        const sale = {
+                            productName: product.name,
+                            quantity: 1,
+                            totalPrice: product.price,
+                            profit: product.price - product.cost
+                        };
+                        saveSaleToDB(sale);
+
                         alert(`商品名: ${product.name} の在庫が1減少しました。現在の在庫数: ${product.quantity}`);
                         displayInventoryProducts(product.category);
                     } else {
