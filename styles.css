@@ -76,12 +76,6 @@ section h2 {
     padding-bottom: 5px;
 }
 
-section p {
-    font-size: 18px;
-    color: #b0b0b0;
-    margin-top: 10px;
-}
-
 /* フォーム要素 */
 input, button, select {
     display: block;
