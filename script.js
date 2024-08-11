@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
     const linkSales = document.getElementById('link-sales');
+    const manualAddSalesButton = document.getElementById('manual-add-sales'); // 売上追加ボタン
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -129,6 +130,26 @@ document.addEventListener('DOMContentLoaded', () => {
         detailModal.style.display = 'none';
     });
 
+    manualAddSalesButton.addEventListener('click', () => {
+        const productName = prompt('商品名を入力してください:');
+        const quantity = parseInt(prompt('数量を入力してください:'), 10);
+        const price = parseFloat(prompt('価格を入力してください:'));
+        const cost = parseFloat(prompt('原価を入力してください:'));
+
+        if (productName && !isNaN(quantity) && !isNaN(price) && !isNaN(cost)) {
+            const sale = {
+                productName,
+                quantity,
+                totalPrice: price * quantity,
+                profit: (price - cost) * quantity
+            };
+            saveSaleToDB(sale);
+            displaySales();
+        } else {
+            alert('すべてのフィールドを正しく入力してください。');
+        }
+    });
+
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
         const store = transaction.objectStore('categories');
@@ -163,23 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSales() {
-        const transaction = db.transaction(['sales'], 'readonly');
-        const store = transaction.objectStore('sales');
-        const request = store.getAll();
-
-        request.onsuccess = (event) => {
-            const sales = event.target.result;
-            const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-            salesTableBody.innerHTML = '';
-
-            sales.forEach(sale => {
-                const row = salesTableBody.insertRow();
-                row.insertCell(0).textContent = sale.productName;
-                row.insertCell(1).textContent = sale.quantity;
-                row.insertCell(2).textContent = sale.totalPrice;
-                row.insertCell(3).textContent = sale.profit;
-            });
-        };
+        displaySales(); // 売上データをロードする
     }
 
     function updateCategorySelect() {
