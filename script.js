@@ -423,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 editButton.innerHTML = '<img src="pen-icon.png" alt="編集">';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
-                    row.contentEditable = true;
                     row.classList.add('editable');
                     row.querySelectorAll('td').forEach((cell, cellIndex) => {
                         if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
@@ -438,7 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 input.addEventListener('blur', () => {
                                     const newValue = input.value;
                                     cell.textContent = newValue;
-                                    row.contentEditable = false;
                                     row.classList.remove('editable');
                                     if (cellIndex === 1) {
                                         sale.productName = newValue;
