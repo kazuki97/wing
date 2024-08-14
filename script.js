@@ -417,6 +417,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(2).textContent = sale.totalPrice;
                 row.insertCell(3).textContent = sale.profit;
                 row.insertCell(4).textContent = sale.date;
+
+                const editButton = document.createElement('button');
+                editButton.textContent = '編集';
+                editButton.className = 'product-button';
+                editButton.addEventListener('click', () => {
+                    const newQuantity = prompt('新しい数量を入力してください:', sale.quantity);
+                    const newDate = prompt('新しい日付を入力してください (YYYY-MM-DD):', sale.date);
+                    if (newQuantity !== null && newDate !== null) {
+                        sale.quantity = parseInt(newQuantity, 10);
+                        sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity); // 単価×数量
+                        sale.profit = sale.quantity * (sale.profit / sale.quantity); // 利益も数量に合わせる
+                        sale.date = newDate;
+                        saveSaleToDB(sale);
+                        displaySales();
+                    }
+                });
+                row.insertCell(5).appendChild(editButton);
             });
         };
     }
