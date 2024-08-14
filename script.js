@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             span.textContent = categoryName;
 
             const editButton = document.createElement('button');
-            editButton.textContent = '編集';
+            editButton.innerHTML = '✏️';
             editButton.className = 'category-button';
             editButton.addEventListener('click', () => {
                 const newCategoryName = prompt('新しいカテゴリ名を入力してください:', categoryName);
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const deleteButton = document.createElement('button');
-            deleteButton.textContent = '削除';
+            deleteButton.innerHTML = '🗑️';
             deleteButton.className = 'category-button';
             deleteButton.addEventListener('click', () => {
                 if (confirm('このカテゴリを削除しますか？')) {
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(4).textContent = product.barcode;
 
                 const editButton = document.createElement('button');
-                editButton.textContent = '編集';
+                editButton.innerHTML = '✏️';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
                     const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(5).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.textContent = '削除';
+                deleteButton.innerHTML = '🗑️';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この商品を削除しますか？')) {
@@ -372,8 +372,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${product.quantity}</p>
                     <p>${product.price}</p>
                     <p>${product.barcode}</p>
-                    <button class="edit-button">編集</button>
-                    <button class="delete-button">削除</button>
+                    <button class="edit-button">✏️</button>
+                    <button class="delete-button">🗑️</button>
                 `;
                 inventoryProductTableBody.appendChild(row);
 
@@ -420,9 +420,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(5).textContent = sale.date;
 
                 const editButton = document.createElement('button');
-                editButton.innerHTML = '<img src="pen-icon.png" alt="編集">';
+                editButton.innerHTML = '✏️';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
+                    row.contentEditable = true;
                     row.classList.add('editable');
                     row.querySelectorAll('td').forEach((cell, cellIndex) => {
                         if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
@@ -437,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 input.addEventListener('blur', () => {
                                     const newValue = input.value;
                                     cell.textContent = newValue;
+                                    row.contentEditable = false;
                                     row.classList.remove('editable');
                                     if (cellIndex === 1) {
                                         sale.productName = newValue;
@@ -460,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(6).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '<img src="trash-icon.png" alt="削除">';
+                deleteButton.innerHTML = '🗑️';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この売上を削除しますか？')) {
