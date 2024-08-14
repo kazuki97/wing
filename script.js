@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const categoryName in categories) {
                 const categoryButton = document.createElement('button');
                 categoryButton.textContent = categoryName;
-                categoryButton.className = 'inventory-category-button'; // このクラスをスタイル適用のために追加
+                categoryButton.className = 'inventory-category-button';
                 categoryButton.addEventListener('click', () => {
                     displaySalesProducts(categoryName);
                 });
@@ -419,64 +419,72 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(4).textContent = sale.profit;
                 row.insertCell(5).textContent = sale.date;
 
-                // 編集ボタンをアイコンで表示
                 const editButton = document.createElement('button');
-                editButton.innerHTML = '<i class="fas fa-pen"></i>';
+                editButton.innerHTML = '<img src="pen-icon.png" alt="編集">';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
-                    editSale(sale);
+                    row.contentEditable = true;
+                    row.classList.add('editable');
+                    row.querySelectorAll('td').forEach((cell, cellIndex) => {
+                        if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
+                            cell.addEventListener('click', () => {
+                                const originalValue = cell.textContent;
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = originalValue;
+                                cell.innerHTML = '';
+                                cell.appendChild(input);
+                                input.focus();
+                                input.addEventListener('blur', () => {
+                                    const newValue = input.value;
+                                    cell.textContent = newValue;
+                                    row.contentEditable = false;
+                                    row.classList.remove('editable');
+                                    if (cellIndex === 1) {
+                                        sale.productName = newValue;
+                                    } else if (cellIndex === 2) {
+                                        sale.quantity = parseInt(newValue, 10);
+                                        sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
+                                    } else if (cellIndex === 3) {
+                                        sale.totalPrice = parseFloat(newValue);
+                                    } else if (cellIndex === 4) {
+                                        sale.profit = parseFloat(newValue);
+                                    } else if (cellIndex === 5) {
+                                        sale.date = newValue;
+                                    }
+                                    saveSaleToDB(sale);
+                                    displaySales();
+                                });
+                            });
+                        }
+                    });
                 });
                 row.insertCell(6).appendChild(editButton);
 
-                // 削除ボタンをアイコンで表示
                 const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteButton.innerHTML = '<img src="trash-icon.png" alt="削除">';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
-                    deleteSale(sale);
+                    if (confirm('この売上を削除しますか？')) {
+                        const transaction = db.transaction(['sales'], 'readwrite');
+                        const store = transaction.objectStore('sales');
+                        store.delete(sale.id);
+                        const inventoryTransaction = db.transaction(['products'], 'readwrite');
+                        const inventoryStore = inventoryTransaction.objectStore('products');
+                        const productRequest = inventoryStore.get(sale.productId);
+
+                        productRequest.onsuccess = (event) => {
+                            const product = event.target.result;
+                            product.quantity += sale.quantity;
+                            inventoryStore.put(product);
+                            displaySales();
+                            displayInventoryProducts(product.category);
+                        };
+                    }
                 });
                 row.insertCell(7).appendChild(deleteButton);
             });
         };
-    }
-
-    function editSale(sale) {
-        const newProductName = prompt('新しい商品名を入力してください:', sale.productName);
-        const newQuantity = prompt('新しい数量を入力してください:', sale.quantity);
-        const newDate = prompt('新しい日付を入力してください (YYYY-MM-DD):', sale.date);
-
-        if (newProductName && newQuantity !== null && newDate !== null) {
-            sale.productName = newProductName;
-            sale.quantity = parseInt(newQuantity, 10);
-            sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity); // 単価×数量
-            sale.profit = sale.quantity * (sale.profit / sale.quantity); // 利益も数量に合わせる
-            sale.date = newDate;
-            saveSaleToDB(sale);
-            displaySales();
-        }
-    }
-
-    function deleteSale(sale) {
-        if (confirm('この売上を削除しますか？')) {
-            const transaction = db.transaction(['sales'], 'readwrite');
-            const store = transaction.objectStore('sales');
-            store.delete(sale.id);
-
-            // 在庫の数量を元に戻す
-            const productTransaction = db.transaction(['products'], 'readwrite');
-            const productStore = productTransaction.objectStore('products');
-            const productRequest = productStore.index('name').get(sale.productName);
-
-            productRequest.onsuccess = (event) => {
-                const product = event.target.result;
-                if (product) {
-                    product.quantity += sale.quantity;
-                    productStore.put(product);
-                }
-            };
-
-            displaySales();
-        }
     }
 
     // バーコードスキャン機能
@@ -496,9 +504,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
             },
             decoder: {
-                readers: ["ean_reader"] // EANバーコードリーダーを使用
+                readers: ["ean_reader"]
             },
-            locate: true // バーコードの位置を特定
+            locate: true
         }, (err) => {
             if (err) {
                 console.error(err);
@@ -568,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             quantity: 1,
                             totalPrice: product.price,
                             profit: product.price - product.cost,
-                            date: new Date().toISOString().split('T')[0] // 今日の日付を追加
+                            date: new Date().toISOString().split('T')[0]
                         };
                         saveSaleToDB(sale);
 
