@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
-    let lastScannedCode = null;
-    let lastScannedTime = 0;
 
     const request = indexedDB.open('inventoryDB', 3);
 
@@ -522,6 +520,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     row.insertCell(7).appendChild(deleteButton);
                 });
+        };
+    }
+
+    function loadCategories() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            categories = {};
+            const result = event.target.result;
+            result.forEach(category => {
+                categories[category.name] = category.products;
+            });
+            displayCategories();
         };
     }
 
