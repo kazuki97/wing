@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
-    let lastScannedCode = null;
-    let lastScannedTime = 0;
 
     const request = indexedDB.open('inventoryDB', 3);
 
@@ -484,116 +482,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 row.insertCell(7).appendChild(deleteButton);
             });
-        };
-    }
-
-    // バーコードスキャン機能
-    const startScanButton = document.getElementById('start-scan');
-    const scannerContainer = document.getElementById('scanner-container');
-
-    startScanButton.addEventListener('click', () => {
-        Quagga.init({
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: scannerContainer,
-                constraints: {
-                    width: 640,
-                    height: 480,
-                    facingMode: "environment"
-                },
-            },
-            decoder: {
-                readers: ["ean_reader"]
-            },
-            locate: true
-        }, (err) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            console.log("Initialization finished. Ready to start");
-            Quagga.start();
-        });
-
-        Quagga.onProcessed((result) => {
-            const drawingCtx = Quagga.canvas.ctx.overlay;
-            const drawingCanvas = Quagga.canvas.dom.overlay;
-
-            if (result) {
-                if (result.boxes) {
-                    drawingCtx.clearRect(0, 0, drawingCanvas.getAttribute("width"), drawingCanvas.getAttribute("height"));
-                    result.boxes.filter(box => box !== result.box).forEach(box => {
-                        Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
-                    });
-                }
-
-                if (result.box) {
-                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "blue", lineWidth: 2 });
-                }
-
-                if (result.codeResult && result.codeResult.code) {
-                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
-                }
-            }
-        });
-
-        Quagga.onDetected((data) => {
-            const barcode = data.codeResult.code;
-            const currentTime = new Date().getTime();
-
-            if (barcode === lastScannedCode && (currentTime - lastScannedTime) < 1000) {
-                if (confirm(`同じ商品（バーコード: ${barcode}）がスキャンされましたがよろしいですか？`)) {
-                    processScannedCode(barcode);
-                }
-                return;
-            }
-
-            lastScannedCode = barcode;
-            lastScannedTime = currentTime;
-
-            console.log(`Barcode detected: ${barcode}`);
-            processScannedCode(barcode);
-        });
-    });
-
-    function processScannedCode(barcode) {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-        const request = store.openCursor();
-
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                if (cursor.value.barcode === barcode) {
-                    const product = cursor.value;
-                    if (product.quantity > 0) {
-                        product.quantity -= 1;
-                        store.put(product);
-
-                        const sale = {
-                            productName: product.name,
-                            quantity: 1,
-                            totalPrice: product.price,
-                            profit: product.price - product.cost,
-                            date: new Date().toISOString().split('T')[0]
-                        };
-                        saveSaleToDB(sale);
-
-                        alert(`商品名: ${product.name} の在庫が1減少しました。現在の在庫数: ${product.quantity}`);
-                        displayInventoryProducts(product.category);
-                    } else {
-                        alert(`商品名: ${product.name} は在庫がありません。`);
-                    }
-                }
-                cursor.continue();
-            } else {
-                console.log('No more entries!');
-            }
-        };
-
-        request.onerror = (event) => {
-            console.error('Cursor error:', event.target.error);
         };
     }
 });
