@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displaySales() {
         const year = yearFilter.value;
-        const month = monthFilter.value.padStart(2, '0');
+        const month = monthFilter.value;
 
         const transaction = db.transaction(['sales'], 'readonly');
         const store = transaction.objectStore('sales');
