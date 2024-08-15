@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db = event.target.result;
         loadCategories();
         loadSales();
-        populateYearFilter();
-        populateMonthFilter();
+        populateYearAndMonthSelect();  // 年と月のセレクトボックスを初期化
     };
 
     request.onupgradeneeded = (event) => {
@@ -32,8 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const yearFilter = document.getElementById('year-filter');
-    const monthFilter = document.getElementById('month-filter');
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
@@ -134,9 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         detailModal.style.display = 'none';
     });
 
-    yearFilter.addEventListener('change', displaySales);
-    monthFilter.addEventListener('change', displaySales);
-
     manualAddSalesButton.addEventListener('click', () => {
         const salesCategoryContainer = document.getElementById('salesCategoryContainer');
         const salesProductContainer = document.getElementById('salesProductContainer');
@@ -160,25 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('salesCategoryContainer が見つかりませんでした。');
         }
     });
-
-    function populateYearFilter() {
-        const currentYear = new Date().getFullYear();
-        for (let year = 2020; year <= currentYear; year++) {
-            const option = document.createElement('option');
-            option.value = year;
-            option.textContent = year;
-            yearFilter.appendChild(option);
-        }
-    }
-
-    function populateMonthFilter() {
-        for (let month = 1; month <= 12; month++) {
-            const option = document.createElement('option');
-            option.value = month;
-            option.textContent = month;
-            monthFilter.appendChild(option);
-        }
-    }
 
     function displaySalesProducts(categoryName) {
         const salesProductContainer = document.getElementById('salesProductContainer');
@@ -427,9 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displaySales() {
-        const year = yearFilter.value;
-        const month = monthFilter.value;
-
         const transaction = db.transaction(['sales'], 'readonly');
         const store = transaction.objectStore('sales');
         const request = store.getAll();
@@ -439,88 +411,107 @@ document.addEventListener('DOMContentLoaded', () => {
             const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
             salesTableBody.innerHTML = '';
 
-            sales
-                .filter(sale => {
-                    const saleDate = new Date(sale.date);
-                    const saleYear = saleDate.getFullYear().toString();
-                    const saleMonth = (saleDate.getMonth() + 1).toString().padStart(2, '0');
-                    return (!year || saleYear === year) && (!month || saleMonth === month);
-                })
-                .forEach((sale, index) => {
-                    const row = salesTableBody.insertRow();
-                    row.insertCell(0).textContent = index + 1;
-                    row.insertCell(1).textContent = sale.date;
-                    row.insertCell(2).textContent = sale.productName;
-                    row.insertCell(3).textContent = sale.quantity;
-                    row.insertCell(4).textContent = sale.totalPrice;
-                    row.insertCell(5).textContent = sale.profit;
+            sales.forEach((sale, index) => {
+                const row = salesTableBody.insertRow();
+                row.insertCell(0).textContent = index + 1;
+                row.insertCell(1).textContent = sale.date;
+                row.insertCell(2).textContent = sale.productName;
+                row.insertCell(3).textContent = sale.quantity;
+                row.insertCell(4).textContent = sale.totalPrice;
+                row.insertCell(5).textContent = sale.profit;
 
-                    const editButton = document.createElement('button');
-                    editButton.innerHTML = '✏️';
-                    editButton.className = 'product-button';
-                    editButton.addEventListener('click', () => {
-                        row.contentEditable = true;
-                        row.classList.add('editable');
-                        row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                            if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                                cell.addEventListener('click', () => {
-                                    const originalValue = cell.textContent;
-                                    const input = document.createElement('input');
-                                    input.type = 'text';
-                                    input.value = originalValue;
-                                    cell.innerHTML = '';
-                                    cell.appendChild(input);
-                                    input.focus();
-                                    input.addEventListener('blur', () => {
-                                        const newValue = input.value;
-                                        cell.textContent = newValue;
-                                        row.contentEditable = false;
-                                        row.classList.remove('editable');
-                                        if (cellIndex === 2) {
-                                            sale.productName = newValue;
-                                        } else if (cellIndex === 3) {
-                                            sale.quantity = parseInt(newValue, 10);
-                                            sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                        } else if (cellIndex === 4) {
-                                            sale.totalPrice = parseFloat(newValue);
-                                        } else if (cellIndex === 5) {
-                                            sale.profit = parseFloat(newValue);
-                                        } else if (cellIndex === 1) {
-                                            sale.date = newValue;
-                                        }
-                                        saveSaleToDB(sale);
-                                        displaySales();
-                                    });
+                const editButton = document.createElement('button');
+                editButton.innerHTML = '✏️';
+                editButton.className = 'product-button';
+                editButton.addEventListener('click', () => {
+                    row.contentEditable = true;
+                    row.classList.add('editable');
+                    row.querySelectorAll('td').forEach((cell, cellIndex) => {
+                        if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
+                            cell.addEventListener('click', () => {
+                                const originalValue = cell.textContent;
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = originalValue;
+                                cell.innerHTML = '';
+                                cell.appendChild(input);
+                                input.focus();
+                                input.addEventListener('blur', () => {
+                                    const newValue = input.value;
+                                    cell.textContent = newValue;
+                                    row.contentEditable = false;
+                                    row.classList.remove('editable');
+                                    if (cellIndex === 2) {
+                                        sale.productName = newValue;
+                                    } else if (cellIndex === 3) {
+                                        sale.quantity = parseInt(newValue, 10);
+                                        sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
+                                    } else if (cellIndex === 4) {
+                                        sale.totalPrice = parseFloat(newValue);
+                                    } else if (cellIndex === 5) {
+                                        sale.profit = parseFloat(newValue);
+                                    } else if (cellIndex === 1) {
+                                        sale.date = newValue;
+                                    }
+                                    saveSaleToDB(sale);
+                                    displaySales();
                                 });
-                            }
-                        });
-                    });
-                    row.insertCell(6).appendChild(editButton);
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.innerHTML = '🗑️';
-                    deleteButton.className = 'product-button';
-                    deleteButton.addEventListener('click', () => {
-                        if (confirm('この売上を削除しますか？')) {
-                            const transaction = db.transaction(['sales'], 'readwrite');
-                            const store = transaction.objectStore('sales');
-                            store.delete(sale.id);
-                            const inventoryTransaction = db.transaction(['products'], 'readwrite');
-                            const inventoryStore = inventoryTransaction.objectStore('products');
-                            const productRequest = inventoryStore.get(sale.productId);
-
-                            productRequest.onsuccess = (event) => {
-                                const product = event.target.result;
-                                product.quantity += sale.quantity;
-                                inventoryStore.put(product);
-                                displaySales();
-                                displayInventoryProducts(product.category);
-                            };
+                            });
                         }
                     });
-                    row.insertCell(7).appendChild(deleteButton);
                 });
+                row.insertCell(6).appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '🗑️';
+                deleteButton.className = 'product-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm('この売上を削除しますか？')) {
+                        const transaction = db.transaction(['sales'], 'readwrite');
+                        const store = transaction.objectStore('sales');
+                        store.delete(sale.id);
+                        const inventoryTransaction = db.transaction(['products'], 'readwrite');
+                        const inventoryStore = inventoryTransaction.objectStore('products');
+                        const productRequest = inventoryStore.get(sale.productId);
+
+                        productRequest.onsuccess = (event) => {
+                            const product = event.target.result;
+                            product.quantity += sale.quantity;
+                            inventoryStore.put(product);
+                            displaySales();
+                            displayInventoryProducts(product.category);
+                        };
+                    }
+                });
+                row.insertCell(7).appendChild(deleteButton);
+            });
         };
+    }
+
+    // 年と月のセレクトボックスを初期化する関数
+    function populateYearAndMonthSelect() {
+        const yearSelect = document.getElementById('year-select');
+        const monthSelect = document.getElementById('month-select');
+
+        const currentYear = new Date().getFullYear();
+        yearSelect.innerHTML = ''; // 初期化
+        monthSelect.innerHTML = ''; // 初期化
+
+        // 過去5年分の年を追加
+        for (let i = 0; i < 5; i++) {
+            const yearOption = document.createElement('option');
+            yearOption.value = currentYear - i;
+            yearOption.textContent = currentYear - i;
+            yearSelect.appendChild(yearOption);
+        }
+
+        // 1月から12月までの月を追加
+        for (let i = 1; i <= 12; i++) {
+            const monthOption = document.createElement('option');
+            monthOption.value = i;
+            monthOption.textContent = i;
+            monthSelect.appendChild(monthOption);
+        }
     }
 
     // バーコードスキャン機能
