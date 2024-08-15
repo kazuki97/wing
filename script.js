@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
+    const yearSelect = document.getElementById('year-select');
+    const monthSelect = document.getElementById('month-select');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -85,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkSales.addEventListener('click', () => {
         showSection(salesSection);
+        populateYearAndMonthSelectors();
         displaySales();
     });
 
@@ -400,7 +403,32 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    function populateYearAndMonthSelectors() {
+        const currentYear = new Date().getFullYear();
+        const startYear = 2020; // 必要に応じて変更
+
+        for (let year = startYear; year <= currentYear; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.text = year;
+            yearSelect.add(option);
+        }
+
+        for (let month = 1; month <= 12; month++) {
+            const option = document.createElement('option');
+            option.value = month.toString().padStart(2, '0');
+            option.text = month;
+            monthSelect.add(option);
+        }
+
+        yearSelect.addEventListener('change', displaySales);
+        monthSelect.addEventListener('change', displaySales);
+    }
+
     function displaySales() {
+        const selectedYear = yearSelect.value;
+        const selectedMonth = monthSelect.value;
+
         const transaction = db.transaction(['sales'], 'readonly');
         const store = transaction.objectStore('sales');
         const request = store.getAll();
@@ -410,14 +438,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
             salesTableBody.innerHTML = '';
 
-            sales.forEach((sale, index) => {
+            const filteredSales = sales.filter(sale => {
+                const saleDate = new Date(sale.date);
+                return saleDate.getFullYear() === parseInt(selectedYear) && saleDate.getMonth() + 1 === parseInt(selectedMonth);
+            });
+
+            filteredSales.forEach((sale, index) => {
                 const row = salesTableBody.insertRow();
                 row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = sale.productName;
-                row.insertCell(2).textContent = sale.quantity;
-                row.insertCell(3).textContent = sale.totalPrice;
-                row.insertCell(4).textContent = sale.profit;
-                row.insertCell(5).textContent = sale.date;
+                row.insertCell(1).textContent = sale.date;
+                row.insertCell(2).textContent = sale.productName;
+                row.insertCell(3).textContent = sale.quantity;
+                row.insertCell(4).textContent = sale.totalPrice;
+                row.insertCell(5).textContent = sale.profit;
 
                 const editButton = document.createElement('button');
                 editButton.innerHTML = '✏️';
@@ -440,16 +473,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                     cell.textContent = newValue;
                                     row.contentEditable = false;
                                     row.classList.remove('editable');
-                                    if (cellIndex === 1) {
+                                    if (cellIndex === 2) {
                                         sale.productName = newValue;
-                                    } else if (cellIndex === 2) {
+                                    } else if (cellIndex === 3) {
                                         sale.quantity = parseInt(newValue, 10);
                                         sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                    } else if (cellIndex === 3) {
-                                        sale.totalPrice = parseFloat(newValue);
                                     } else if (cellIndex === 4) {
-                                        sale.profit = parseFloat(newValue);
+                                        sale.totalPrice = parseFloat(newValue);
                                     } else if (cellIndex === 5) {
+                                        sale.profit = parseFloat(newValue);
+                                    } else if (cellIndex === 1) {
                                         sale.date = newValue;
                                     }
                                     saveSaleToDB(sale);
