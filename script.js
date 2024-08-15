@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateYearFilter() {
         const currentYear = new Date().getFullYear();
+        yearFilter.innerHTML = ''; // Clear previous options
         for (let year = 2020; year <= currentYear; year++) {
             const option = document.createElement('option');
             option.value = year;
@@ -172,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateMonthFilter() {
+        monthFilter.innerHTML = ''; // Clear previous options
         for (let month = 1; month <= 12; month++) {
             const option = document.createElement('option');
             option.value = month;
