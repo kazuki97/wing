@@ -399,20 +399,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displaySales() {
-        const dateRangeStart = document.getElementById('date-range-start').value;
-        const dateRangeEnd = document.getElementById('date-range-end').value;
-
+        const searchMonth = document.getElementById('search-month');
+        const searchButton = document.getElementById('search-button');
+        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
         const transaction = db.transaction(['sales'], 'readonly');
         const store = transaction.objectStore('sales');
         const request = store.getAll();
 
         request.onsuccess = (event) => {
             const sales = event.target.result;
-            const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
             salesTableBody.innerHTML = '';
 
-            sales.forEach((sale, index) => {
-                if ((!dateRangeStart || sale.date >= dateRangeStart) && (!dateRangeEnd || sale.date <= dateRangeEnd)) {
+            searchButton.addEventListener('click', () => {
+                const searchValue = searchMonth.value;
+                const filteredSales = sales.filter(sale => {
+                    return sale.date.startsWith(searchValue);
+                });
+
+                filteredSales.forEach((sale, index) => {
                     const row = salesTableBody.insertRow();
                     row.insertCell(0).textContent = index + 1;
                     row.insertCell(1).textContent = sale.date;
@@ -443,16 +447,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                         row.contentEditable = false;
                                         row.classList.remove('editable');
                                         if (cellIndex === 1) {
-                                            sale.date = newValue;
-                                        } else if (cellIndex === 2) {
                                             sale.productName = newValue;
-                                        } else if (cellIndex === 3) {
+                                        } else if (cellIndex === 2) {
                                             sale.quantity = parseInt(newValue, 10);
                                             sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                        } else if (cellIndex === 4) {
+                                        } else if (cellIndex === 3) {
                                             sale.totalPrice = parseFloat(newValue);
-                                        } else if (cellIndex === 5) {
+                                        } else if (cellIndex === 4) {
                                             sale.profit = parseFloat(newValue);
+                                        } else if (cellIndex === 5) {
+                                            sale.date = newValue;
                                         }
                                         saveSaleToDB(sale);
                                         displaySales();
@@ -485,12 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
                     row.insertCell(7).appendChild(deleteButton);
-                }
+                });
             });
         };
     }
-
-    document.getElementById('searchByDateRange').addEventListener('click', () => {
-        displaySales();
-    });
 });
