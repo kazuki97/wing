@@ -81,12 +81,15 @@
             <h2>売上管理</h2>
             <label for="date-range-start">開始日:</label>
             <input type="date" id="date-range-start">
-            
+
             <label for="date-range-end">終了日:</label>
             <input type="date" id="date-range-end">
-            
-            <button id="range-search">範囲検索</button>
+
+            <button id="searchByDateRange">範囲検索</button>
             <button id="manualAddSalesButton">手動で売上を追加</button>
+
+            <div id="salesCategoryContainer" class="inventory-category-container"></div>
+            <div id="salesProductContainer" class="inventory-table"></div>
 
             <table id="sales-table">
                 <thead>
