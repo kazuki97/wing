@@ -44,12 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-    const linkSales = document.getElementById('link-sales');
+    const linkHome = document.getElementById('linkHome');
+    const linkCategory = document.getElementById('linkCategory');
+    const linkProduct = document.getElementById('linkProduct');
+    const linkInventory = document.getElementById('linkInventory');
+    const linkBarcode = document.getElementById('linkBarcode');
+    const linkSales = document.getElementById('linkSales');
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -226,7 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSales() {
-        displaySales();
+        const transaction = db.transaction(['sales'], 'readonly');
+        const store = transaction.objectStore('sales');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const sales = event.target.result;
+            displaySales(sales);
+        };
     }
 
     function updateCategorySelect() {
@@ -413,14 +420,14 @@ document.addEventListener('DOMContentLoaded', () => {
             sales.forEach((sale, index) => {
                 const row = salesTableBody.insertRow();
                 row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = sale.productName;
-                row.insertCell(2).textContent = sale.quantity;
-                row.insertCell(3).textContent = sale.totalPrice;
-                row.insertCell(4).textContent = sale.profit;
-                row.insertCell(5).textContent = sale.date;
+                row.insertCell(1).textContent = sale.date;
+                row.insertCell(2).textContent = sale.productName;
+                row.insertCell(3).textContent = sale.quantity;
+                row.insertCell(4).textContent = sale.totalPrice;
+                row.insertCell(5).textContent = sale.profit;
 
                 const editButton = document.createElement('button');
-                editButton.innerHTML = '<img src="pen-icon.png" alt="編集">';
+                editButton.textContent = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
                     row.classList.add('editable');
@@ -460,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(6).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '<img src="trash-icon.png" alt="削除">';
+                deleteButton.textContent = '削除';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この売上を削除しますか？')) {
