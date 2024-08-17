@@ -54,32 +54,52 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
-    document.getElementById('linkHome').addEventListener('click', () => {
-        showSection(homeSection);
-    });
+    // すべてのリンク要素が存在することを確認し、イベントリスナーを追加
+    const linkHome = document.getElementById('linkHome');
+    const linkCategory = document.getElementById('linkCategory');
+    const linkProduct = document.getElementById('linkProduct');
+    const linkInventory = document.getElementById('linkInventory');
+    const linkBarcode = document.getElementById('linkBarcode');
+    const linkSales = document.getElementById('linkSales');
 
-    document.getElementById('linkCategory').addEventListener('click', () => {
-        showSection(categorySection);
-    });
+    if (linkHome) {
+        linkHome.addEventListener('click', () => {
+            showSection(homeSection);
+        });
+    }
 
-    document.getElementById('linkProduct').addEventListener('click', () => {
-        showSection(productSection);
-        updateCategorySelect();
-    });
+    if (linkCategory) {
+        linkCategory.addEventListener('click', () => {
+            showSection(categorySection);
+        });
+    }
 
-    document.getElementById('linkInventory').addEventListener('click', () => {
-        showSection(inventorySection);
-        displayInventoryCategories();
-    });
+    if (linkProduct) {
+        linkProduct.addEventListener('click', () => {
+            showSection(productSection);
+            updateCategorySelect();
+        });
+    }
 
-    document.getElementById('linkBarcode').addEventListener('click', () => {
-        showSection(barcodeSection);
-    });
+    if (linkInventory) {
+        linkInventory.addEventListener('click', () => {
+            showSection(inventorySection);
+            displayInventoryCategories();
+        });
+    }
 
-    document.getElementById('linkSales').addEventListener('click', () => {
-        showSection(salesSection);
-        displaySales();
-    });
+    if (linkBarcode) {
+        linkBarcode.addEventListener('click', () => {
+            showSection(barcodeSection);
+        });
+    }
+
+    if (linkSales) {
+        linkSales.addEventListener('click', () => {
+            showSection(salesSection);
+            displaySales();
+        });
+    }
 
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
@@ -178,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function displaySales(salesList) {
+    function displaySales(salesList = []) {
         const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
         salesTableBody.innerHTML = '';
 
@@ -242,6 +262,76 @@ document.addEventListener('DOMContentLoaded', () => {
                     const store = transaction.objectStore('sales');
                     store.delete(sale.id);
                     displaySales(salesList);
+                }
+            });
+            row.insertCell(7).appendChild(deleteButton);
+        });
+    }
+
+    function displayFilteredSales(sales) {
+        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+        salesTableBody.innerHTML = '';
+
+        sales.forEach((sale, index) => {
+            const row = salesTableBody.insertRow();
+            row.insertCell(0).textContent = index + 1;
+            row.insertCell(1).textContent = sale.date;
+            row.insertCell(2).textContent = sale.productName;
+            row.insertCell(3).textContent = sale.quantity;
+            row.insertCell(4).textContent = sale.totalPrice;
+            row.insertCell(5).textContent = sale.profit;
+
+            const editButton = document.createElement('button');
+            editButton.innerHTML = '✏️';
+            editButton.className = 'product-button';
+            editButton.addEventListener('click', () => {
+                row.contentEditable = true;
+                row.classList.add('editable');
+                row.querySelectorAll('td').forEach((cell, cellIndex) => {
+                    if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
+                        cell.addEventListener('click', () => {
+                            const originalValue = cell.textContent;
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.value = originalValue;
+                            cell.innerHTML = '';
+                            cell.appendChild(input);
+                            input.focus();
+                            input.addEventListener('blur', () => {
+                                const newValue = input.value;
+                                cell.textContent = newValue;
+                                row.contentEditable = false;
+                                row.classList.remove('editable');
+                                if (cellIndex === 1) {
+                                    sale.date = newValue;
+                                } else if (cellIndex === 2) {
+                                    sale.productName = newValue;
+                                } else if (cellIndex === 3) {
+                                    sale.quantity = parseInt(newValue, 10);
+                                    sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
+                                } else if (cellIndex === 4) {
+                                    sale.totalPrice = parseFloat(newValue);
+                                } else if (cellIndex === 5) {
+                                    sale.profit = parseFloat(newValue);
+                                }
+                                saveSaleToDB(sale);
+                                displaySales();
+                            });
+                        });
+                    }
+                });
+            });
+            row.insertCell(6).appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '🗑️';
+            deleteButton.className = 'product-button';
+            deleteButton.addEventListener('click', () => {
+                if (confirm('この売上を削除しますか？')) {
+                    const transaction = db.transaction(['sales'], 'readwrite');
+                    const store = transaction.objectStore('sales');
+                    store.delete(sale.id);
+                    displaySales();
                 }
             });
             row.insertCell(7).appendChild(deleteButton);
@@ -463,74 +553,81 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function displaySales(salesList) {
-        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-        salesTableBody.innerHTML = '';
+    function displaySales() {
+        const transaction = db.transaction(['sales'], 'readonly');
+        const store = transaction.objectStore('sales');
+        const request = store.getAll();
 
-        salesList.forEach((sale, index) => {
-            const row = salesTableBody.insertRow();
-            row.insertCell(0).textContent = index + 1;
-            row.insertCell(1).textContent = sale.date;
-            row.insertCell(2).textContent = sale.productName;
-            row.insertCell(3).textContent = sale.quantity;
-            row.insertCell(4).textContent = sale.totalPrice;
-            row.insertCell(5).textContent = sale.profit;
+        request.onsuccess = (event) => {
+            const sales = event.target.result;
+            const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+            salesTableBody.innerHTML = '';
 
-            const editButton = document.createElement('button');
-            editButton.innerHTML = '✏️';
-            editButton.className = 'product-button';
-            editButton.addEventListener('click', () => {
-                row.contentEditable = true;
-                row.classList.add('editable');
-                row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                    if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                        cell.addEventListener('click', () => {
-                            const originalValue = cell.textContent;
-                            const input = document.createElement('input');
-                            input.type = 'text';
-                            input.value = originalValue;
-                            cell.innerHTML = '';
-                            cell.appendChild(input);
-                            input.focus();
-                            input.addEventListener('blur', () => {
-                                const newValue = input.value;
-                                cell.textContent = newValue;
-                                row.contentEditable = false;
-                                row.classList.remove('editable');
-                                if (cellIndex === 1) {
-                                    sale.date = newValue;
-                                } else if (cellIndex === 2) {
-                                    sale.productName = newValue;
-                                } else if (cellIndex === 3) {
-                                    sale.quantity = parseInt(newValue, 10);
-                                    sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                } else if (cellIndex === 4) {
-                                    sale.totalPrice = parseFloat(newValue);
-                                } else if (cellIndex === 5) {
-                                    sale.profit = parseFloat(newValue);
-                                }
-                                saveSaleToDB(sale);
-                                displaySales(salesList);
+            sales.forEach((sale, index) => {
+                const row = salesTableBody.insertRow();
+                row.insertCell(0).textContent = index + 1;
+                row.insertCell(1).textContent = sale.date;
+                row.insertCell(2).textContent = sale.productName;
+                row.insertCell(3).textContent = sale.quantity;
+                row.insertCell(4).textContent = sale.totalPrice;
+                row.insertCell(5).textContent = sale.profit;
+
+                const editButton = document.createElement('button');
+                editButton.innerHTML = '✏️';
+                editButton.className = 'product-button';
+                editButton.addEventListener('click', () => {
+                    row.contentEditable = true;
+                    row.classList.add('editable');
+                    row.querySelectorAll('td').forEach((cell, cellIndex) => {
+                        if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
+                            cell.addEventListener('click', () => {
+                                const originalValue = cell.textContent;
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = originalValue;
+                                cell.innerHTML = '';
+                                cell.appendChild(input);
+                                input.focus();
+                                input.addEventListener('blur', () => {
+                                    const newValue = input.value;
+                                    cell.textContent = newValue;
+                                    row.contentEditable = false;
+                                    row.classList.remove('editable');
+                                    if (cellIndex === 1) {
+                                        sale.date = newValue;
+                                    } else if (cellIndex === 2) {
+                                        sale.productName = newValue;
+                                    } else if (cellIndex === 3) {
+                                        sale.quantity = parseInt(newValue, 10);
+                                        sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
+                                    } else if (cellIndex === 4) {
+                                        sale.totalPrice = parseFloat(newValue);
+                                    } else if (cellIndex === 5) {
+                                        sale.profit = parseFloat(newValue);
+                                    }
+                                    saveSaleToDB(sale);
+                                    displaySales();
+                                });
                             });
-                        });
+                        }
+                    });
+                });
+                row.insertCell(6).appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '🗑️';
+                deleteButton.className = 'product-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm('この売上を削除しますか？')) {
+                        const transaction = db.transaction(['sales'], 'readwrite');
+                        const store = transaction.objectStore('sales');
+                        store.delete(sale.id);
+                        displaySales();
                     }
                 });
+                row.insertCell(7).appendChild(deleteButton);
             });
-            row.insertCell(6).appendChild(editButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '🗑️';
-            deleteButton.className = 'product-button';
-            deleteButton.addEventListener('click', () => {
-                if (confirm('この売上を削除しますか？')) {
-                    const transaction = db.transaction(['sales'], 'readwrite');
-                    const store = transaction.objectStore('sales');
-                    store.delete(sale.id);
-                    displaySales(salesList);
-                }
-            });
-            row.insertCell(7).appendChild(deleteButton);
-        });
+        };
     }
 
     function displayFilteredSales(sales) {
