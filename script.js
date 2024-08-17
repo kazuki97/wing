@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
+    // すべてのリンク要素が存在することを確認し、イベントリスナーを追加
     const linkHome = document.getElementById('linkHome');
     const linkCategory = document.getElementById('linkCategory');
     const linkProduct = document.getElementById('linkProduct');
@@ -100,47 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    addCategoryButton.addEventListener('click', () => {
-        const categoryName = document.getElementById('category-name').value;
-        if (categoryName && !categories[categoryName]) {
-            categories[categoryName] = [];
-            saveCategoryToDB({
-                name: categoryName,
-                products: categories[categoryName]
-            });
-            updateCategorySelect();
-            displayCategories();
-            document.getElementById('category-name').value = '';
-        } else {
-            alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
-        }
-    });
-
-    addProductButton.addEventListener('click', () => {
-        const category = categorySelect.value;
-        const productName = document.getElementById('product-name').value;
-        const quantity = document.getElementById('product-quantity').value;
-        const price = document.getElementById('product-price').value;
-        const cost = document.getElementById('product-cost').value;
-        const barcode = document.getElementById('product-barcode').value;
-
-        if (category && productName && quantity && price && cost && barcode) {
-            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
-            saveProductToDB(product);
-            displayProducts(category);
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-quantity').value = '';
-            document.getElementById('product-price').value = '';
-            document.getElementById('product-cost').value = '';
-            document.getElementById('product-barcode').value = '';
-        } else {
-            alert('すべてのフィールドを入力してください。');
-        }
-    });
-
-    closeModal.addEventListener('click', () => {
-        detailModal.style.display = 'none';
-    });
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            detailModal.style.display = 'none';
+        });
+    }
 
     manualAddSalesButton.addEventListener('click', () => {
         const salesCategoryContainer = document.getElementById('salesCategoryContainer');
