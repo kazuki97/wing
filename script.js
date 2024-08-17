@@ -44,7 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
-    // すべてのリンク要素が存在することを確認し、イベントリスナーを追加
+    function showSection(section) {
+        homeSection.style.display = 'none';
+        categorySection.style.display = 'none';
+        productSection.style.display = 'none';
+        inventorySection.style.display = 'none';
+        barcodeSection.style.display = 'none';
+        salesSection.style.display = 'none';
+        section.style.display = 'block';
+    }
+
     const linkHome = document.getElementById('linkHome');
     const linkCategory = document.getElementById('linkCategory');
     const linkProduct = document.getElementById('linkProduct');
