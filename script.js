@@ -49,6 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkBarcode = document.getElementById('link-barcode');
     const linkSales = document.getElementById('link-sales');
 
+    const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+    const searchBar = document.getElementById('search-bar');
+    const searchButton = document.getElementById('search-button');
+    const datePickerStart = document.getElementById('date-picker-start');
+    const datePickerEnd = document.getElementById('date-picker-end');
+    const rangeSearchButton = document.getElementById('range-search-button');
+
     function showSection(section) {
         homeSection.style.display = 'none';
         categorySection.style.display = 'none';
@@ -149,6 +156,33 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             console.error('salesCategoryContainer が見つかりませんでした。');
+        }
+    });
+
+    searchButton.addEventListener('click', () => {
+        const searchValue = searchBar.value.trim();
+        if (searchValue) {
+            const transaction = db.transaction(['sales'], 'readonly');
+            const store = transaction.objectStore('sales');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const sales = event.target.result.filter(sale => sale.date.startsWith(searchValue));
+                displaySales(sales);
+            };
+        }
+    });
+
+    rangeSearchButton.addEventListener('click', () => {
+        const startDate = datePickerStart.value;
+        const endDate = datePickerEnd.value;
+        if (startDate && endDate) {
+            const transaction = db.transaction(['sales'], 'readonly');
+            const store = transaction.objectStore('sales');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const sales = event.target.result.filter(sale => sale.date >= startDate && sale.date <= endDate);
+                displaySales(sales);
+            };
         }
     });
 
@@ -411,11 +445,11 @@ document.addEventListener('DOMContentLoaded', () => {
             sales.forEach((sale, index) => {
                 const row = salesTableBody.insertRow();
                 row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = sale.productName;
-                row.insertCell(2).textContent = sale.quantity;
-                row.insertCell(3).textContent = sale.totalPrice;
-                row.insertCell(4).textContent = sale.profit;
-                row.insertCell(5).textContent = sale.date;
+                row.insertCell(1).textContent = sale.date;
+                row.insertCell(2).textContent = sale.productName;
+                row.insertCell(3).textContent = sale.quantity;
+                row.insertCell(4).textContent = sale.totalPrice;
+                row.insertCell(5).textContent = sale.profit;
 
                 const editButton = document.createElement('button');
                 editButton.innerHTML = '✏️';
