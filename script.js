@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // ボタンやリンク要素の取得
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
@@ -44,16 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        salesSection.style.display = 'none';
-        section.style.display = 'block';
-    }
-
     const linkHome = document.getElementById('linkHome');
     const linkCategory = document.getElementById('linkCategory');
     const linkProduct = document.getElementById('linkProduct');
@@ -61,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkBarcode = document.getElementById('linkBarcode');
     const linkSales = document.getElementById('linkSales');
 
+    // 必要なボタンやリンクが存在するかチェックし、イベントリスナーを設定
     if (linkHome) {
         linkHome.addEventListener('click', () => {
             showSection(homeSection);
@@ -100,102 +92,115 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    addCategoryButton.addEventListener('click', () => {
-        const categoryName = document.getElementById('category-name').value;
-        if (categoryName && !categories[categoryName]) {
-            categories[categoryName] = [];
-            saveCategoryToDB({
-                name: categoryName,
-                products: categories[categoryName]
-            });
-            updateCategorySelect();
-            displayCategories();
-            document.getElementById('category-name').value = '';
-        } else {
-            alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
-        }
-    });
-
-    addProductButton.addEventListener('click', () => {
-        const category = categorySelect.value;
-        const productName = document.getElementById('product-name').value;
-        const quantity = document.getElementById('product-quantity').value;
-        const price = document.getElementById('product-price').value;
-        const cost = document.getElementById('product-cost').value;
-        const barcode = document.getElementById('product-barcode').value;
-
-        if (category && productName && quantity && price && cost && barcode) {
-            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
-            saveProductToDB(product);
-            displayProducts(category);
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-quantity').value = '';
-            document.getElementById('product-price').value = '';
-            document.getElementById('product-cost').value = '';
-            document.getElementById('product-barcode').value = '';
-        } else {
-            alert('すべてのフィールドを入力してください。');
-        }
-    });
-
-    closeModal.addEventListener('click', () => {
-        detailModal.style.display = 'none';
-    });
-
-    manualAddSalesButton.addEventListener('click', () => {
-        const salesCategoryContainer = document.getElementById('salesCategoryContainer');
-        const salesProductContainer = document.getElementById('salesProductContainer');
-
-        if (salesCategoryContainer) {
-            salesCategoryContainer.innerHTML = '';
-            salesCategoryContainer.style.display = 'flex';
-            salesCategoryContainer.style.flexWrap = 'wrap';
-            salesCategoryContainer.style.gap = '10px';
-
-            for (const categoryName in categories) {
-                const categoryButton = document.createElement('button');
-                categoryButton.textContent = categoryName;
-                categoryButton.className = 'inventory-category-button';
-                categoryButton.addEventListener('click', () => {
-                    displaySalesProducts(categoryName);
+    // 他のイベントリスナー設定
+    if (addCategoryButton) {
+        addCategoryButton.addEventListener('click', () => {
+            const categoryName = document.getElementById('category-name').value;
+            if (categoryName && !categories[categoryName]) {
+                categories[categoryName] = [];
+                saveCategoryToDB({
+                    name: categoryName,
+                    products: categories[categoryName]
                 });
-                salesCategoryContainer.appendChild(categoryButton);
+                updateCategorySelect();
+                displayCategories();
+                document.getElementById('category-name').value = '';
+            } else {
+                alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
             }
-        } else {
-            console.error('salesCategoryContainer が見つかりませんでした。');
-        }
-    });
+        });
+    }
 
-    searchButton.addEventListener('click', () => {
-        const monthFilter = document.getElementById('month-filter').value;
-        if (monthFilter) {
-            const transaction = db.transaction(['sales'], 'readonly');
-            const store = transaction.objectStore('sales');
-            const request = store.getAll();
+    if (addProductButton) {
+        addProductButton.addEventListener('click', () => {
+            const category = categorySelect.value;
+            const productName = document.getElementById('product-name').value;
+            const quantity = document.getElementById('product-quantity').value;
+            const price = document.getElementById('product-price').value;
+            const cost = document.getElementById('product-cost').value;
+            const barcode = document.getElementById('product-barcode').value;
 
-            request.onsuccess = (event) => {
-                const sales = event.target.result;
-                const filteredSales = sales.filter(sale => sale.date.startsWith(monthFilter));
-                displaySales(filteredSales);
-            };
-        }
-    });
+            if (category && productName && quantity && price && cost && barcode) {
+                const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
+                saveProductToDB(product);
+                displayProducts(category);
+                document.getElementById('product-name').value = '';
+                document.getElementById('product-quantity').value = '';
+                document.getElementById('product-price').value = '';
+                document.getElementById('product-cost').value = '';
+                document.getElementById('product-barcode').value = '';
+            } else {
+                alert('すべてのフィールドを入力してください。');
+            }
+        });
+    }
 
-    rangeSearchButton.addEventListener('click', () => {
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-        if (startDate && endDate) {
-            const transaction = db.transaction(['sales'], 'readonly');
-            const store = transaction.objectStore('sales');
-            const request = store.getAll();
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            detailModal.style.display = 'none';
+        });
+    }
 
-            request.onsuccess = (event) => {
-                const sales = event.target.result;
-                const filteredSales = sales.filter(sale => sale.date >= startDate && sale.date <= endDate);
-                displaySales(filteredSales);
-            };
-        }
-    });
+    if (manualAddSalesButton) {
+        manualAddSalesButton.addEventListener('click', () => {
+            const salesCategoryContainer = document.getElementById('salesCategoryContainer');
+            const salesProductContainer = document.getElementById('salesProductContainer');
+
+            if (salesCategoryContainer) {
+                salesCategoryContainer.innerHTML = '';
+                salesCategoryContainer.style.display = 'flex';
+                salesCategoryContainer.style.flexWrap = 'wrap';
+                salesCategoryContainer.style.gap = '10px';
+
+                for (const categoryName in categories) {
+                    const categoryButton = document.createElement('button');
+                    categoryButton.textContent = categoryName;
+                    categoryButton.className = 'inventory-category-button';
+                    categoryButton.addEventListener('click', () => {
+                        displaySalesProducts(categoryName);
+                    });
+                    salesCategoryContainer.appendChild(categoryButton);
+                }
+            } else {
+                console.error('salesCategoryContainer が見つかりませんでした。');
+            }
+        });
+    }
+
+    if (searchButton) {
+        searchButton.addEventListener('click', () => {
+            const monthFilter = document.getElementById('month-filter').value;
+            if (monthFilter) {
+                const transaction = db.transaction(['sales'], 'readonly');
+                const store = transaction.objectStore('sales');
+                const request = store.getAll();
+
+                request.onsuccess = (event) => {
+                    const sales = event.target.result;
+                    const filteredSales = sales.filter(sale => sale.date.startsWith(monthFilter));
+                    displaySales(filteredSales);
+                };
+            }
+        });
+    }
+
+    if (rangeSearchButton) {
+        rangeSearchButton.addEventListener('click', () => {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            if (startDate && endDate) {
+                const transaction = db.transaction(['sales'], 'readonly');
+                const store = transaction.objectStore('sales');
+                const request = store.getAll();
+
+                request.onsuccess = (event) => {
+                    const sales = event.target.result;
+                    const filteredSales = sales.filter(sale => sale.date >= startDate && sale.date <= endDate);
+                    displaySales(filteredSales);
+                };
+            }
+        });
+    }
 
     function displaySales(salesList = []) {
         const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
