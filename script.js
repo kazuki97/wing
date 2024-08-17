@@ -44,16 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        salesSection.style.display = 'none';
-        section.style.display = 'block';
-    }
-
     // すべてのリンク要素が存在することを確認し、イベントリスナーを追加
     const linkHome = document.getElementById('linkHome');
     const linkCategory = document.getElementById('linkCategory');
@@ -66,16 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
         linkHome.addEventListener('click', () => {
             showSection(homeSection);
         });
-    } else {
-        console.error("linkHome要素が見つかりませんでした。");
     }
 
     if (linkCategory) {
         linkCategory.addEventListener('click', () => {
             showSection(categorySection);
         });
-    } else {
-        console.error("linkCategory要素が見つかりませんでした。");
     }
 
     if (linkProduct) {
@@ -83,8 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(productSection);
             updateCategorySelect();
         });
-    } else {
-        console.error("linkProduct要素が見つかりませんでした。");
     }
 
     if (linkInventory) {
@@ -92,16 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(inventorySection);
             displayInventoryCategories();
         });
-    } else {
-        console.error("linkInventory要素が見つかりませんでした。");
     }
 
     if (linkBarcode) {
         linkBarcode.addEventListener('click', () => {
             showSection(barcodeSection);
         });
-    } else {
-        console.error("linkBarcode要素が見つかりませんでした。");
     }
 
     if (linkSales) {
@@ -109,8 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(salesSection);
             displaySales();
         });
-    } else {
-        console.error("linkSales要素が見つかりませんでした。");
     }
 
     addCategoryButton.addEventListener('click', () => {
@@ -274,6 +252,76 @@ document.addEventListener('DOMContentLoaded', () => {
                     const store = transaction.objectStore('sales');
                     store.delete(sale.id);
                     displaySales(salesList);
+                }
+            });
+            row.insertCell(7).appendChild(deleteButton);
+        });
+    }
+
+    function displayFilteredSales(sales) {
+        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+        salesTableBody.innerHTML = '';
+
+        sales.forEach((sale, index) => {
+            const row = salesTableBody.insertRow();
+            row.insertCell(0).textContent = index + 1;
+            row.insertCell(1).textContent = sale.date;
+            row.insertCell(2).textContent = sale.productName;
+            row.insertCell(3).textContent = sale.quantity;
+            row.insertCell(4).textContent = sale.totalPrice;
+            row.insertCell(5).textContent = sale.profit;
+
+            const editButton = document.createElement('button');
+            editButton.innerHTML = '✏️';
+            editButton.className = 'product-button';
+            editButton.addEventListener('click', () => {
+                row.contentEditable = true;
+                row.classList.add('editable');
+                row.querySelectorAll('td').forEach((cell, cellIndex) => {
+                    if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
+                        cell.addEventListener('click', () => {
+                            const originalValue = cell.textContent;
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.value = originalValue;
+                            cell.innerHTML = '';
+                            cell.appendChild(input);
+                            input.focus();
+                            input.addEventListener('blur', () => {
+                                const newValue = input.value;
+                                cell.textContent = newValue;
+                                row.contentEditable = false;
+                                row.classList.remove('editable');
+                                if (cellIndex === 1) {
+                                    sale.date = newValue;
+                                } else if (cellIndex === 2) {
+                                    sale.productName = newValue;
+                                } else if (cellIndex === 3) {
+                                    sale.quantity = parseInt(newValue, 10);
+                                    sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
+                                } else if (cellIndex === 4) {
+                                    sale.totalPrice = parseFloat(newValue);
+                                } else if (cellIndex === 5) {
+                                    sale.profit = parseFloat(newValue);
+                                }
+                                saveSaleToDB(sale);
+                                displaySales();
+                            });
+                        });
+                    }
+                });
+            });
+            row.insertCell(6).appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '🗑️';
+            deleteButton.className = 'product-button';
+            deleteButton.addEventListener('click', () => {
+                if (confirm('この売上を削除しますか？')) {
+                    const transaction = db.transaction(['sales'], 'readwrite');
+                    const store = transaction.objectStore('sales');
+                    store.delete(sale.id);
+                    displaySales();
                 }
             });
             row.insertCell(7).appendChild(deleteButton);
@@ -570,5 +618,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(7).appendChild(deleteButton);
             });
         };
+    }
+
+    function displayFilteredSales(sales) {
+        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+        salesTableBody.innerHTML = '';
+
+        sales.forEach((sale, index) => {
+            const row = salesTableBody.insertRow();
+            row.insertCell(0).textContent = index + 1;
+            row.insertCell(1).textContent = sale.date;
+            row.insertCell(2).textContent = sale.productName;
+            row.insertCell(3).textContent = sale.quantity;
+            row.insertCell(4).textContent = sale.totalPrice;
+            row.insertCell(5).textContent = sale.profit;
+
+            const editButton = document.createElement('button');
+            editButton.innerHTML = '✏️';
+            editButton.className = 'product-button';
+            editButton.addEventListener('click', () => {
+                row.contentEditable = true;
+                row.classList.add('editable');
+                row.querySelectorAll('td').forEach((cell, cellIndex) => {
+                    if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
+                        cell.addEventListener('click', () => {
+                            const originalValue = cell.textContent;
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.value = originalValue;
+                            cell.innerHTML = '';
+                            cell.appendChild(input);
+                            input.focus();
+                            input.addEventListener('blur', () => {
+                                const newValue = input.value;
+                                cell.textContent = newValue;
+                                row.contentEditable = false;
+                                row.classList.remove('editable');
+                                if (cellIndex === 1) {
+                                    sale.date = newValue;
+                                } else if (cellIndex === 2) {
+                                    sale.productName = newValue;
+                                } else if (cellIndex === 3) {
+                                    sale.quantity = parseInt(newValue, 10);
+                                    sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
+                                } else if (cellIndex === 4) {
+                                    sale.totalPrice = parseFloat(newValue);
+                                } else if (cellIndex === 5) {
+                                    sale.profit = parseFloat(newValue);
+                                }
+                                saveSaleToDB(sale);
+                                displaySales();
+                            });
+                        });
+                    }
+                });
+            });
+            row.insertCell(6).appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '🗑️';
+            deleteButton.className = 'product-button';
+            deleteButton.addEventListener('click', () => {
+                if (confirm('この売上を削除しますか？')) {
+                    const transaction = db.transaction(['sales'], 'readwrite');
+                    const store = transaction.objectStore('sales');
+                    store.delete(sale.id);
+                    displaySales();
+                }
+            });
+            row.insertCell(7).appendChild(deleteButton);
+        });
     }
 });
