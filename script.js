@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ボタンやリンク要素の取得
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
@@ -45,6 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
+    function showSection(section) {
+        homeSection.style.display = 'none';
+        categorySection.style.display = 'none';
+        productSection.style.display = 'none';
+        inventorySection.style.display = 'none';
+        barcodeSection.style.display = 'none';
+        salesSection.style.display = 'none';
+        section.style.display = 'block';
+    }
+
+    // すべてのリンク要素が存在することを確認し、イベントリスナーを追加
     const linkHome = document.getElementById('linkHome');
     const linkCategory = document.getElementById('linkCategory');
     const linkProduct = document.getElementById('linkProduct');
@@ -52,17 +62,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkBarcode = document.getElementById('linkBarcode');
     const linkSales = document.getElementById('linkSales');
 
-    // 必要なボタンやリンクが存在するかチェックし、イベントリスナーを設定
     if (linkHome) {
         linkHome.addEventListener('click', () => {
             showSection(homeSection);
         });
+    } else {
+        console.error("linkHome要素が見つかりませんでした。");
     }
 
     if (linkCategory) {
         linkCategory.addEventListener('click', () => {
             showSection(categorySection);
         });
+    } else {
+        console.error("linkCategory要素が見つかりませんでした。");
     }
 
     if (linkProduct) {
@@ -70,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(productSection);
             updateCategorySelect();
         });
+    } else {
+        console.error("linkProduct要素が見つかりませんでした。");
     }
 
     if (linkInventory) {
@@ -77,12 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(inventorySection);
             displayInventoryCategories();
         });
+    } else {
+        console.error("linkInventory要素が見つかりませんでした。");
     }
 
     if (linkBarcode) {
         linkBarcode.addEventListener('click', () => {
             showSection(barcodeSection);
         });
+    } else {
+        console.error("linkBarcode要素が見つかりませんでした。");
     }
 
     if (linkSales) {
@@ -90,117 +109,106 @@ document.addEventListener('DOMContentLoaded', () => {
             showSection(salesSection);
             displaySales();
         });
+    } else {
+        console.error("linkSales要素が見つかりませんでした。");
     }
 
-    // 他のイベントリスナー設定
-    if (addCategoryButton) {
-        addCategoryButton.addEventListener('click', () => {
-            const categoryName = document.getElementById('category-name').value;
-            if (categoryName && !categories[categoryName]) {
-                categories[categoryName] = [];
-                saveCategoryToDB({
-                    name: categoryName,
-                    products: categories[categoryName]
+    addCategoryButton.addEventListener('click', () => {
+        const categoryName = document.getElementById('category-name').value;
+        if (categoryName && !categories[categoryName]) {
+            categories[categoryName] = [];
+            saveCategoryToDB({
+                name: categoryName,
+                products: categories[categoryName]
+            });
+            updateCategorySelect();
+            displayCategories();
+            document.getElementById('category-name').value = '';
+        } else {
+            alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
+        }
+    });
+
+    addProductButton.addEventListener('click', () => {
+        const category = categorySelect.value;
+        const productName = document.getElementById('product-name').value;
+        const quantity = document.getElementById('product-quantity').value;
+        const price = document.getElementById('product-price').value;
+        const cost = document.getElementById('product-cost').value;
+        const barcode = document.getElementById('product-barcode').value;
+
+        if (category && productName && quantity && price && cost && barcode) {
+            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
+            saveProductToDB(product);
+            displayProducts(category);
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-quantity').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-cost').value = '';
+            document.getElementById('product-barcode').value = '';
+        } else {
+            alert('すべてのフィールドを入力してください。');
+        }
+    });
+
+    closeModal.addEventListener('click', () => {
+        detailModal.style.display = 'none';
+    });
+
+    manualAddSalesButton.addEventListener('click', () => {
+        const salesCategoryContainer = document.getElementById('salesCategoryContainer');
+        const salesProductContainer = document.getElementById('salesProductContainer');
+
+        if (salesCategoryContainer) {
+            salesCategoryContainer.innerHTML = '';
+            salesCategoryContainer.style.display = 'flex';
+            salesCategoryContainer.style.flexWrap = 'wrap';
+            salesCategoryContainer.style.gap = '10px';
+
+            for (const categoryName in categories) {
+                const categoryButton = document.createElement('button');
+                categoryButton.textContent = categoryName;
+                categoryButton.className = 'inventory-category-button';
+                categoryButton.addEventListener('click', () => {
+                    displaySalesProducts(categoryName);
                 });
-                updateCategorySelect();
-                displayCategories();
-                document.getElementById('category-name').value = '';
-            } else {
-                alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
+                salesCategoryContainer.appendChild(categoryButton);
             }
-        });
-    }
+        } else {
+            console.error('salesCategoryContainer が見つかりませんでした。');
+        }
+    });
 
-    if (addProductButton) {
-        addProductButton.addEventListener('click', () => {
-            const category = categorySelect.value;
-            const productName = document.getElementById('product-name').value;
-            const quantity = document.getElementById('product-quantity').value;
-            const price = document.getElementById('product-price').value;
-            const cost = document.getElementById('product-cost').value;
-            const barcode = document.getElementById('product-barcode').value;
+    searchButton.addEventListener('click', () => {
+        const monthFilter = document.getElementById('month-filter').value;
+        if (monthFilter) {
+            const transaction = db.transaction(['sales'], 'readonly');
+            const store = transaction.objectStore('sales');
+            const request = store.getAll();
 
-            if (category && productName && quantity && price && cost && barcode) {
-                const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
-                saveProductToDB(product);
-                displayProducts(category);
-                document.getElementById('product-name').value = '';
-                document.getElementById('product-quantity').value = '';
-                document.getElementById('product-price').value = '';
-                document.getElementById('product-cost').value = '';
-                document.getElementById('product-barcode').value = '';
-            } else {
-                alert('すべてのフィールドを入力してください。');
-            }
-        });
-    }
+            request.onsuccess = (event) => {
+                const sales = event.target.result;
+                const filteredSales = sales.filter(sale => sale.date.startsWith(monthFilter));
+                displaySales(filteredSales);
+            };
+        }
+    });
 
-    if (closeModal) {
-        closeModal.addEventListener('click', () => {
-            detailModal.style.display = 'none';
-        });
-    }
+    rangeSearchButton.addEventListener('click', () => {
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        if (startDate && endDate) {
+            const transaction = db.transaction(['sales'], 'readonly');
+            const store = transaction.objectStore('sales');
+            const request = store.getAll();
 
-    if (manualAddSalesButton) {
-        manualAddSalesButton.addEventListener('click', () => {
-            const salesCategoryContainer = document.getElementById('salesCategoryContainer');
-            const salesProductContainer = document.getElementById('salesProductContainer');
-
-            if (salesCategoryContainer) {
-                salesCategoryContainer.innerHTML = '';
-                salesCategoryContainer.style.display = 'flex';
-                salesCategoryContainer.style.flexWrap = 'wrap';
-                salesCategoryContainer.style.gap = '10px';
-
-                for (const categoryName in categories) {
-                    const categoryButton = document.createElement('button');
-                    categoryButton.textContent = categoryName;
-                    categoryButton.className = 'inventory-category-button';
-                    categoryButton.addEventListener('click', () => {
-                        displaySalesProducts(categoryName);
-                    });
-                    salesCategoryContainer.appendChild(categoryButton);
-                }
-            } else {
-                console.error('salesCategoryContainer が見つかりませんでした。');
-            }
-        });
-    }
-
-    if (searchButton) {
-        searchButton.addEventListener('click', () => {
-            const monthFilter = document.getElementById('month-filter').value;
-            if (monthFilter) {
-                const transaction = db.transaction(['sales'], 'readonly');
-                const store = transaction.objectStore('sales');
-                const request = store.getAll();
-
-                request.onsuccess = (event) => {
-                    const sales = event.target.result;
-                    const filteredSales = sales.filter(sale => sale.date.startsWith(monthFilter));
-                    displaySales(filteredSales);
-                };
-            }
-        });
-    }
-
-    if (rangeSearchButton) {
-        rangeSearchButton.addEventListener('click', () => {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            if (startDate && endDate) {
-                const transaction = db.transaction(['sales'], 'readonly');
-                const store = transaction.objectStore('sales');
-                const request = store.getAll();
-
-                request.onsuccess = (event) => {
-                    const sales = event.target.result;
-                    const filteredSales = sales.filter(sale => sale.date >= startDate && sale.date <= endDate);
-                    displaySales(filteredSales);
-                };
-            }
-        });
-    }
+            request.onsuccess = (event) => {
+                const sales = event.target.result;
+                const filteredSales = sales.filter(sale => sale.date >= startDate && sale.date <= endDate);
+                displaySales(filteredSales);
+            };
+        }
+    });
 
     function displaySales(salesList = []) {
         const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
@@ -266,76 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const store = transaction.objectStore('sales');
                     store.delete(sale.id);
                     displaySales(salesList);
-                }
-            });
-            row.insertCell(7).appendChild(deleteButton);
-        });
-    }
-
-    function displayFilteredSales(sales) {
-        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-        salesTableBody.innerHTML = '';
-
-        sales.forEach((sale, index) => {
-            const row = salesTableBody.insertRow();
-            row.insertCell(0).textContent = index + 1;
-            row.insertCell(1).textContent = sale.date;
-            row.insertCell(2).textContent = sale.productName;
-            row.insertCell(3).textContent = sale.quantity;
-            row.insertCell(4).textContent = sale.totalPrice;
-            row.insertCell(5).textContent = sale.profit;
-
-            const editButton = document.createElement('button');
-            editButton.innerHTML = '✏️';
-            editButton.className = 'product-button';
-            editButton.addEventListener('click', () => {
-                row.contentEditable = true;
-                row.classList.add('editable');
-                row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                    if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                        cell.addEventListener('click', () => {
-                            const originalValue = cell.textContent;
-                            const input = document.createElement('input');
-                            input.type = 'text';
-                            input.value = originalValue;
-                            cell.innerHTML = '';
-                            cell.appendChild(input);
-                            input.focus();
-                            input.addEventListener('blur', () => {
-                                const newValue = input.value;
-                                cell.textContent = newValue;
-                                row.contentEditable = false;
-                                row.classList.remove('editable');
-                                if (cellIndex === 1) {
-                                    sale.date = newValue;
-                                } else if (cellIndex === 2) {
-                                    sale.productName = newValue;
-                                } else if (cellIndex === 3) {
-                                    sale.quantity = parseInt(newValue, 10);
-                                    sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                } else if (cellIndex === 4) {
-                                    sale.totalPrice = parseFloat(newValue);
-                                } else if (cellIndex === 5) {
-                                    sale.profit = parseFloat(newValue);
-                                }
-                                saveSaleToDB(sale);
-                                displaySales();
-                            });
-                        });
-                    }
-                });
-            });
-            row.insertCell(6).appendChild(editButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '🗑️';
-            deleteButton.className = 'product-button';
-            deleteButton.addEventListener('click', () => {
-                if (confirm('この売上を削除しますか？')) {
-                    const transaction = db.transaction(['sales'], 'readwrite');
-                    const store = transaction.objectStore('sales');
-                    store.delete(sale.id);
-                    displaySales();
                 }
             });
             row.insertCell(7).appendChild(deleteButton);
@@ -632,75 +570,5 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(7).appendChild(deleteButton);
             });
         };
-    }
-
-    function displayFilteredSales(sales) {
-        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-        salesTableBody.innerHTML = '';
-
-        sales.forEach((sale, index) => {
-            const row = salesTableBody.insertRow();
-            row.insertCell(0).textContent = index + 1;
-            row.insertCell(1).textContent = sale.date;
-            row.insertCell(2).textContent = sale.productName;
-            row.insertCell(3).textContent = sale.quantity;
-            row.insertCell(4).textContent = sale.totalPrice;
-            row.insertCell(5).textContent = sale.profit;
-
-            const editButton = document.createElement('button');
-            editButton.innerHTML = '✏️';
-            editButton.className = 'product-button';
-            editButton.addEventListener('click', () => {
-                row.contentEditable = true;
-                row.classList.add('editable');
-                row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                    if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                        cell.addEventListener('click', () => {
-                            const originalValue = cell.textContent;
-                            const input = document.createElement('input');
-                            input.type = 'text';
-                            input.value = originalValue;
-                            cell.innerHTML = '';
-                            cell.appendChild(input);
-                            input.focus();
-                            input.addEventListener('blur', () => {
-                                const newValue = input.value;
-                                cell.textContent = newValue;
-                                row.contentEditable = false;
-                                row.classList.remove('editable');
-                                if (cellIndex === 1) {
-                                    sale.date = newValue;
-                                } else if (cellIndex === 2) {
-                                    sale.productName = newValue;
-                                } else if (cellIndex === 3) {
-                                    sale.quantity = parseInt(newValue, 10);
-                                    sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                } else if (cellIndex === 4) {
-                                    sale.totalPrice = parseFloat(newValue);
-                                } else if (cellIndex === 5) {
-                                    sale.profit = parseFloat(newValue);
-                                }
-                                saveSaleToDB(sale);
-                                displaySales();
-                            });
-                        });
-                    }
-                });
-            });
-            row.insertCell(6).appendChild(editButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '🗑️';
-            deleteButton.className = 'product-button';
-            deleteButton.addEventListener('click', () => {
-                if (confirm('この売上を削除しますか？')) {
-                    const transaction = db.transaction(['sales'], 'readwrite');
-                    const store = transaction.objectStore('sales');
-                    store.delete(sale.id);
-                    displaySales();
-                }
-            });
-            row.insertCell(7).appendChild(deleteButton);
-        });
     }
 });
