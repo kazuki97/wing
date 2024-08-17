@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         sale.profit = parseFloat(newValue);
                                     }
                                     saveSaleToDB(sale);
-                                    displaySales();
+                                    displaySales(salesList);
                                 });
                             });
                         }
@@ -501,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const transaction = db.transaction(['sales'], 'readwrite');
                         const store = transaction.objectStore('sales');
                         store.delete(sale.id);
-                        displaySales();
+                        displaySales(salesList);
                     }
                 });
                 row.insertCell(7).appendChild(deleteButton);
