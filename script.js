@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
-    // すべてのリンク要素が存在することを確認し、イベントリスナーを追加
     const linkHome = document.getElementById('linkHome');
     const linkCategory = document.getElementById('linkCategory');
     const linkProduct = document.getElementById('linkProduct');
