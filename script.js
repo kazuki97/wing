@@ -42,6 +42,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
+    const linkHome = document.getElementById('link-home'); // 変数の再定義
+    const linkCategory = document.getElementById('link-category'); // 変数の再定義
+    const linkProduct = document.getElementById('link-product'); // 変数の再定義
+    const linkInventory = document.getElementById('link-inventory'); // 変数の再定義
+    const linkBarcode = document.getElementById('link-barcode'); // 変数の再定義
+    const linkSales = document.getElementById('link-sales'); // 変数の再定義
+
     const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
     const searchBar = document.getElementById('search-bar');
     const searchButton = document.getElementById('search-button');
