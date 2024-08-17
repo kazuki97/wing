@@ -1,23 +1,16 @@
-/* リセットスタイル */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #121212;
-    color: #e0e0e0;
+    background-color: #1b1b1b;
+    color: #f5f5f5;
 }
 
 /* ヘッダー */
 header {
-    background-color: #1f1f1f;
-    color: #e0e0e0;
+    background-color: #262626;
+    color: #f5f5f5;
     padding: 20px 0;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
 }
 
 header h1 {
@@ -45,13 +38,14 @@ nav ul li a {
     font-weight: bold;
     padding: 10px 15px;
     border-radius: 5px;
-    background-color: #17a2b8; /* シアン色 */
-    transition: background-color 0.3s, transform 0.3s;
+    background-color: #4a4a4a;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 
 nav ul li a:hover {
-    background-color: #138496; /* ホバー時のシアン色 */
+    background-color: #333333;
     transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* メインコンテンツ */
@@ -59,9 +53,9 @@ main {
     padding: 20px;
     max-width: 1200px;
     margin: 20px auto;
-    background-color: #1f1f1f;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    border-radius: 10px;
+    background-color: #262626;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+    border-radius: 15px;
 }
 
 /* セクション */
@@ -72,8 +66,8 @@ section {
 section h2 {
     font-size: 24px;
     margin-bottom: 10px;
-    color: #007bff;
-    border-bottom: 2px solid #007bff;
+    color: #ffd700;
+    border-bottom: 2px solid #ffd700;
     padding-bottom: 5px;
 }
 
@@ -83,22 +77,22 @@ input, button, select {
     margin: 10px 0;
     padding: 10px;
     width: 90%;
-    border: 1px solid #333;
+    border: 1px solid #555555;
     border-radius: 5px;
     font-size: 16px;
-    background-color: #2c2c2c;
-    color: #e0e0e0;
+    background-color: #333333;
+    color: #f5f5f5;
     margin-left: 5%;
 }
 
 input:focus, select:focus {
-    border-color: #007bff;
+    border-color: #ffd700;
     outline: none;
 }
 
 button {
-    background-color: #007bff;
-    color: white;
+    background-color: #444444;
+    color: #ffd700;
     border: none;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
@@ -107,7 +101,8 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #ffd700;
+    color: #333333;
     transform: scale(1.05);
 }
 
@@ -151,17 +146,17 @@ th, td {
 }
 
 th {
-    background-color: #343a40; /* ダークグレー */
-    color: white;
+    background-color: #333333; /* ダークグレー */
+    color: #ffd700;
 }
 
 td {
-    background-color: #2c2c2c;
-    color: #e0e0e0;
+    background-color: #2a2a2a;
+    color: #f5f5f5;
 }
 
 td:hover {
-    background-color: #3e3e3e; /* ホバー時の背景色 */
+    background-color: #444444; /* ホバー時の背景色 */
 }
 
 /* カテゴリリスト */
@@ -175,8 +170,8 @@ td:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #2c2c2c;
-    color: #e0e0e0;
+    background-color: #333333;
+    color: #f5f5f5;
     padding: 10px;
     margin: 5px 0;
     border-radius: 5px;
@@ -184,8 +179,8 @@ td:hover {
 }
 
 .category-item button {
-    background-color: #007bff;
-    color: white;
+    background-color: #555555;
+    color: #f5f5f5;
     border: none;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
@@ -194,7 +189,8 @@ td:hover {
 }
 
 .category-item button:hover {
-    background-color: #0056b3;
+    background-color: #ffd700;
+    color: #333333;
     transform: scale(1.05);
 }
 
@@ -205,8 +201,8 @@ td:hover {
     height: 100px;
     margin: 10px;
     padding: 15px;
-    background-color: #6f42c1; /* 紫色 */
-    color: #ffffff;
+    background-color: #444444;
+    color: #ffd700;
     text-align: center;
     text-decoration: none;
     border: none;
@@ -218,7 +214,8 @@ td:hover {
 }
 
 .inventory-category-button:hover {
-    background-color: #5a32a3; /* ホバー時の紫色 */
+    background-color: #ffd700; /* ホバー時の色 */
+    color: #333333;
 }
 
 .inventory-category-container {
@@ -241,8 +238,8 @@ td:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #2c2c2c;
-    color: #e0e0e0;
+    background-color: #2a2a2a;
+    color: #f5f5f5;
     padding: 10px;
     margin: 5px;
     border-radius: 5px;
@@ -295,7 +292,7 @@ td:hover {
         font-weight: bold;
         flex: 1;
         text-align: left;
-        color: #007bff;
+        color: #ffd700;
     }
 
     .inventory-category-button {
@@ -315,10 +312,10 @@ td:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #1f1f1f;
+    background-color: #262626;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
     z-index: 1000;
 }
 
@@ -332,9 +329,9 @@ td:hover {
     right: 10px;
     font-size: 24px;
     cursor: pointer;
-    color: #007bff;
+    color: #ffd700;
 }
 
 .close:hover {
-    color: #0056b3;
+    color: #ffae42;
 }
