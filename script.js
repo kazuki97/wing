@@ -399,8 +399,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displaySales() {
-        const dateStart = document.getElementById('date-range-start').value;
-        const dateEnd = document.getElementById('date-range-end').value;
+        const dateRangeStart = document.getElementById('date-range-start').value;
+        const dateRangeEnd = document.getElementById('date-range-end').value;
 
         const transaction = db.transaction(['sales'], 'readonly');
         const store = transaction.objectStore('sales');
@@ -412,14 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
             salesTableBody.innerHTML = '';
 
             sales.forEach((sale, index) => {
-                const saleDate = new Date(sale.date);
-                const startDate = dateStart ? new Date(dateStart) : null;
-                const endDate = dateEnd ? new Date(dateEnd) : null;
-
-                if (
-                    (!startDate || saleDate >= startDate) &&
-                    (!endDate || saleDate <= endDate)
-                ) {
+                if ((!dateRangeStart || sale.date >= dateRangeStart) && (!dateRangeEnd || sale.date <= dateRangeEnd)) {
                     const row = salesTableBody.insertRow();
                     row.insertCell(0).textContent = index + 1;
                     row.insertCell(1).textContent = sale.date;
@@ -450,16 +443,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                         row.contentEditable = false;
                                         row.classList.remove('editable');
                                         if (cellIndex === 1) {
-                                            sale.productName = newValue;
+                                            sale.date = newValue;
                                         } else if (cellIndex === 2) {
+                                            sale.productName = newValue;
+                                        } else if (cellIndex === 3) {
                                             sale.quantity = parseInt(newValue, 10);
                                             sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                        } else if (cellIndex === 3) {
-                                            sale.totalPrice = parseFloat(newValue);
                                         } else if (cellIndex === 4) {
-                                            sale.profit = parseFloat(newValue);
+                                            sale.totalPrice = parseFloat(newValue);
                                         } else if (cellIndex === 5) {
-                                            sale.date = newValue;
+                                            sale.profit = parseFloat(newValue);
                                         }
                                         saveSaleToDB(sale);
                                         displaySales();
@@ -496,4 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
+
+    document.getElementById('searchByDateRange').addEventListener('click', () => {
+        displaySales();
+    });
 });
