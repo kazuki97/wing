@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 検索機能の実装
     searchButton.addEventListener('click', () => {
         const searchValue = searchBar.value.trim();
         if (searchValue) {
@@ -161,9 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             request.onsuccess = (event) => {
                 const sales = event.target.result.filter(sale => {
-                    // 日付を正確にフィルタリングするためにフォーマットを修正
                     const saleDate = new Date(sale.date);
-                    const yearMonth = saleDate.toISOString().slice(0, 7); // 'YYYY-MM' 形式に変換
+                    const yearMonth = saleDate.toISOString().slice(0, 7);
                     return yearMonth === searchValue;
                 });
                 displaySales(sales);
@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 範囲検索機能の実装
     rangeSearchButton.addEventListener('click', () => {
         const startDate = new Date(datePickerStart.value);
         const endDate = new Date(datePickerEnd.value);
