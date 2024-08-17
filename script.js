@@ -42,13 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-    const linkSales = document.getElementById('link-sales');
-
     const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
     const searchBar = document.getElementById('search-bar');
     const searchButton = document.getElementById('search-button');
@@ -168,8 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             request.onsuccess = (event) => {
                 const sales = event.target.result.filter(sale => {
+                    // 日付を正確にフィルタリングするためにフォーマットを修正
                     const saleDate = new Date(sale.date);
-                    const yearMonth = saleDate.getFullYear() + '-' + ('0' + (saleDate.getMonth() + 1)).slice(-2);
+                    const yearMonth = saleDate.toISOString().slice(0, 7); // 'YYYY-MM' 形式に変換
                     return yearMonth === searchValue;
                 });
                 displaySales(sales);
