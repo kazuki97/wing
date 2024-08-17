@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINGアプリ</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <header>
         <h1>WINGアプリ</h1>
@@ -18,6 +20,7 @@
             <button id="linkSales">売上管理</button>
         </nav>
     </header>
+
     <main>
         <section id="home-section" class="content-section">
             <h2>ホーム</h2>
@@ -26,31 +29,20 @@
 
         <section id="category-section" class="content-section" style="display: none;">
             <h2>カテゴリ設定</h2>
-            <div>
-                <label for="category-name">カテゴリ名:</label>
-                <input type="text" id="category-name">
-                <button id="add-category">カテゴリを追加</button>
-            </div>
+            <input type="text" id="category-name" placeholder="カテゴリ名を入力">
+            <button id="add-category">カテゴリを追加</button>
             <div id="category-list"></div>
         </section>
 
         <section id="product-section" class="content-section" style="display: none;">
             <h2>商品設定</h2>
-            <div>
-                <label for="category-select">カテゴリ:</label>
-                <select id="category-select"></select>
-                <label for="product-name">商品名:</label>
-                <input type="text" id="product-name">
-                <label for="product-quantity">数量:</label>
-                <input type="number" id="product-quantity">
-                <label for="product-price">価格:</label>
-                <input type="number" id="product-price">
-                <label for="product-cost">原価:</label>
-                <input type="number" id="product-cost">
-                <label for="product-barcode">バーコード:</label>
-                <input type="text" id="product-barcode">
-                <button id="add-product">商品を追加</button>
-            </div>
+            <select id="category-select"></select>
+            <input type="text" id="product-name" placeholder="商品名を入力">
+            <input type="number" id="product-quantity" placeholder="数量を入力">
+            <input type="number" id="product-price" placeholder="価格を入力">
+            <input type="number" id="product-cost" placeholder="原価を入力">
+            <input type="text" id="product-barcode" placeholder="バーコードを入力">
+            <button id="add-product">商品を追加</button>
             <table id="product-table">
                 <thead>
                     <tr>
@@ -75,24 +67,17 @@
 
         <section id="barcode-section" class="content-section" style="display: none;">
             <h2>バーコードスキャン</h2>
-            <!-- バーコードスキャン機能のコンテンツを追加 -->
+            <!-- バーコードスキャン機能の実装はここに記述します -->
         </section>
 
         <section id="sales-section" class="content-section" style="display: none;">
             <h2>売上管理</h2>
-            <div>
-                <label for="month-filter">月:</label>
-                <input type="text" id="month-filter" placeholder="YYYY-MM">
-                <button id="searchButton">検索</button>
-                <label for="start-date">開始日:</label>
-                <input type="date" id="start-date">
-                <label for="end-date">終了日:</label>
-                <input type="date" id="end-date">
-                <button id="rangeSearchButton">範囲検索</button>
-            </div>
+            <input type="month" id="month-filter">
+            <button id="searchButton">検索</button>
+            <input type="date" id="start-date">
+            <input type="date" id="end-date">
+            <button id="rangeSearchButton">範囲検索</button>
             <button id="manualAddSalesButton">手動で売上を追加</button>
-            <div id="salesCategoryContainer"></div>
-            <div id="salesProductContainer"></div>
             <table id="sales-table">
                 <thead>
                     <tr>
@@ -109,7 +94,16 @@
                 <tbody></tbody>
             </table>
         </section>
+
+        <div id="detail-modal" class="modal">
+            <span class="close">&times;</span>
+            <div class="modal-content">
+                <!-- 詳細表示用の内容をここに記述 -->
+            </div>
+        </div>
     </main>
+
     <script src="script.js"></script>
 </body>
+
 </html>
