@@ -79,15 +79,15 @@
         <!-- 売上管理セクション -->
         <section id="sales-section" style="display:none;">
             <h2>売上管理</h2>
-            <label for="year-filter">年:</label>
-            <select id="year-filter"></select>
-
-            <label for="month-filter">月:</label>
-            <select id="month-filter"></select>
-
+            <label for="date-range-start">開始日:</label>
+            <input type="date" id="date-range-start">
+            
+            <label for="date-range-end">終了日:</label>
+            <input type="date" id="date-range-end">
+            
+            <button id="range-search">範囲検索</button>
             <button id="manualAddSalesButton">手動で売上を追加</button>
-            <div id="salesCategoryContainer" class="inventory-category-container"></div>
-            <div id="salesProductContainer" class="inventory-table"></div>
+
             <table id="sales-table">
                 <thead>
                     <tr>
@@ -103,20 +103,6 @@
                 </thead>
                 <tbody></tbody>
             </table>
-
-            <!-- 追加した検索フィルタリングと範囲検索セクション -->
-            <div id="sales-filter">
-                <label for="search-bar">年月でフィルタリング（例: 2024-08）:</label>
-                <input type="text" id="search-bar" placeholder="YYYY-MM">
-                <button id="search-button">検索</button>
-
-                <label for="date-picker-start">開始日:</label>
-                <input type="date" id="date-picker-start">
-
-                <label for="date-picker-end">終了日:</label>
-                <input type="date" id="date-picker-end">
-                <button id="range-search-button">範囲検索</button>
-            </div>
         </section>
     </main>
 
