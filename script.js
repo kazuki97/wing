@@ -413,14 +413,14 @@ document.addEventListener('DOMContentLoaded', () => {
             sales.forEach((sale, index) => {
                 const row = salesTableBody.insertRow();
                 row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = sale.date;
-                row.insertCell(2).textContent = sale.productName;
-                row.insertCell(3).textContent = sale.quantity;
-                row.insertCell(4).textContent = sale.totalPrice;
-                row.insertCell(5).textContent = sale.profit;
+                row.insertCell(1).textContent = sale.productName;
+                row.insertCell(2).textContent = sale.quantity;
+                row.insertCell(3).textContent = sale.totalPrice;
+                row.insertCell(4).textContent = sale.profit;
+                row.insertCell(5).textContent = sale.date;
 
                 const editButton = document.createElement('button');
-                editButton.textContent = '編集';
+                editButton.innerHTML = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
                     row.classList.add('editable');
@@ -439,16 +439,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                     cell.textContent = newValue;
                                     row.classList.remove('editable');
                                     if (cellIndex === 1) {
-                                        sale.date = newValue;
-                                    } else if (cellIndex === 2) {
                                         sale.productName = newValue;
-                                    } else if (cellIndex === 3) {
+                                    } else if (cellIndex === 2) {
                                         sale.quantity = parseInt(newValue, 10);
                                         sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                    } else if (cellIndex === 4) {
+                                    } else if (cellIndex === 3) {
                                         sale.totalPrice = parseFloat(newValue);
-                                    } else if (cellIndex === 5) {
+                                    } else if (cellIndex === 4) {
                                         sale.profit = parseFloat(newValue);
+                                    } else if (cellIndex === 5) {
+                                        sale.date = newValue;
                                     }
                                     saveSaleToDB(sale);
                                     displaySales();
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(6).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.textContent = '削除';
+                deleteButton.innerHTML = '削除';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この売上を削除しますか？')) {
