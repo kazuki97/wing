@@ -36,8 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
-    const searchButton = document.getElementById('searchButton');
-    const rangeSearchButton = document.getElementById('rangeSearchButton');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -156,105 +154,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    searchButton.addEventListener('click', () => {
-        const monthFilter = document.getElementById('month-filter').value;
-        if (monthFilter) {
-            const transaction = db.transaction(['sales'], 'readonly');
-            const store = transaction.objectStore('sales');
-            const request = store.getAll();
+    function displaySalesProducts(categoryName) {
+        const salesProductContainer = document.getElementById('salesProductContainer');
+        if (salesProductContainer) {
+            salesProductContainer.innerHTML = '';
+            const transaction = db.transaction(['products'], 'readonly');
+            const store = transaction.objectStore('products');
+            const index = store.index('category');
+            const request = index.getAll(categoryName);
 
             request.onsuccess = (event) => {
-                const sales = event.target.result;
-                const filteredSales = sales.filter(sale => sale.date.startsWith(monthFilter));
-                displaySales(filteredSales);
-            };
-        }
-    });
+                const products = event.target.result;
 
-    rangeSearchButton.addEventListener('click', () => {
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-        if (startDate && endDate) {
-            const transaction = db.transaction(['sales'], 'readonly');
-            const store = transaction.objectStore('sales');
-            const request = store.getAll();
-
-            request.onsuccess = (event) => {
-                const sales = event.target.result;
-                const filteredSales = sales.filter(sale => sale.date >= startDate && sale.date <= endDate);
-                displaySales(filteredSales);
-            };
-        }
-    });
-
-    function displaySales(salesList = []) {
-        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-        salesTableBody.innerHTML = '';
-
-        salesList.forEach((sale, index) => {
-            const row = salesTableBody.insertRow();
-            row.insertCell(0).textContent = index + 1;
-            row.insertCell(1).textContent = sale.date;
-            row.insertCell(2).textContent = sale.productName;
-            row.insertCell(3).textContent = sale.quantity;
-            row.insertCell(4).textContent = sale.totalPrice;
-            row.insertCell(5).textContent = sale.profit;
-
-            const editButton = document.createElement('button');
-            editButton.innerHTML = '✏️';
-            editButton.className = 'product-button';
-            editButton.addEventListener('click', () => {
-                row.contentEditable = true;
-                row.classList.add('editable');
-                row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                    if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                        cell.addEventListener('click', () => {
-                            const originalValue = cell.textContent;
-                            const input = document.createElement('input');
-                            input.type = 'text';
-                            input.value = originalValue;
-                            cell.innerHTML = '';
-                            cell.appendChild(input);
-                            input.focus();
-                            input.addEventListener('blur', () => {
-                                const newValue = input.value;
-                                cell.textContent = newValue;
-                                row.contentEditable = false;
-                                row.classList.remove('editable');
-                                if (cellIndex === 1) {
-                                    sale.date = newValue;
-                                } else if (cellIndex === 2) {
-                                    sale.productName = newValue;
-                                } else if (cellIndex === 3) {
-                                    sale.quantity = parseInt(newValue, 10);
-                                    sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                } else if (cellIndex === 4) {
-                                    sale.totalPrice = parseFloat(newValue);
-                                } else if (cellIndex === 5) {
-                                    sale.profit = parseFloat(newValue);
-                                }
-                                saveSaleToDB(sale);
-                                displaySales(salesList);
-                            });
-                        });
-                    }
+                products.forEach(product => {
+                    const productButton = document.createElement('button');
+                    productButton.textContent = `${product.name} - ${product.price}円`;
+                    productButton.addEventListener('click', () => {
+                        const quantity = prompt('売上数量を入力してください:');
+                        const saleDate = prompt('日付を入力してください (YYYY-MM-DD):');
+                        if (quantity && saleDate) {
+                            const sale = {
+                                productName: product.name,
+                                quantity: parseInt(quantity, 10),
+                                totalPrice: product.price * quantity,
+                                profit: (product.price - product.cost) * quantity,
+                                date: saleDate
+                            };
+                            saveSaleToDB(sale);
+                            displaySales();
+                        }
+                    });
+                    salesProductContainer.appendChild(productButton);
                 });
-            });
-            row.insertCell(6).appendChild(editButton);
-
-            const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '🗑️';
-            deleteButton.className = 'product-button';
-            deleteButton.addEventListener('click', () => {
-                if (confirm('この売上を削除しますか？')) {
-                    const transaction = db.transaction(['sales'], 'readwrite');
-                    const store = transaction.objectStore('sales');
-                    store.delete(sale.id);
-                    displaySales(salesList);
-                }
-            });
-            row.insertCell(7).appendChild(deleteButton);
-        });
+            };
+        } else {
+            console.error('salesProductContainer が見つかりませんでした。');
+        }
     }
 
     function saveCategoryToDB(category) {
@@ -291,14 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSales() {
-        const transaction = db.transaction(['sales'], 'readonly');
-        const store = transaction.objectStore('sales');
-        const request = store.getAll();
-
-        request.onsuccess = (event) => {
-            const sales = event.target.result;
-            displaySales(sales);
-        };
+        displaySales();
     }
 
     function updateCategorySelect() {
@@ -323,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             span.textContent = categoryName;
 
             const editButton = document.createElement('button');
-            editButton.innerHTML = '✏️';
+            editButton.textContent = '編集';
             editButton.className = 'category-button';
             editButton.addEventListener('click', () => {
                 const newCategoryName = prompt('新しいカテゴリ名を入力してください:', categoryName);
@@ -341,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const deleteButton = document.createElement('button');
-            deleteButton.innerHTML = '🗑️';
+            deleteButton.textContent = '削除';
             deleteButton.className = 'category-button';
             deleteButton.addEventListener('click', () => {
                 if (confirm('このカテゴリを削除しますか？')) {
@@ -381,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(4).textContent = product.barcode;
 
                 const editButton = document.createElement('button');
-                editButton.innerHTML = '✏️';
+                editButton.textContent = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
                     const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
@@ -394,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(5).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '🗑️';
+                deleteButton.textContent = '削除';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この商品を削除しますか？')) {
@@ -444,8 +372,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${product.quantity}</p>
                     <p>${product.price}</p>
                     <p>${product.barcode}</p>
-                    <button class="edit-button">✏️</button>
-                    <button class="delete-button">🗑️</button>
+                    <button class="edit-button">編集</button>
+                    <button class="delete-button">削除</button>
                 `;
                 inventoryProductTableBody.appendChild(row);
 
@@ -492,10 +420,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(5).textContent = sale.profit;
 
                 const editButton = document.createElement('button');
-                editButton.innerHTML = '✏️';
+                editButton.textContent = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
-                    row.contentEditable = true;
                     row.classList.add('editable');
                     row.querySelectorAll('td').forEach((cell, cellIndex) => {
                         if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
@@ -510,7 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 input.addEventListener('blur', () => {
                                     const newValue = input.value;
                                     cell.textContent = newValue;
-                                    row.contentEditable = false;
                                     row.classList.remove('editable');
                                     if (cellIndex === 1) {
                                         sale.date = newValue;
@@ -534,14 +460,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(6).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '🗑️';
+                deleteButton.textContent = '削除';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この売上を削除しますか？')) {
                         const transaction = db.transaction(['sales'], 'readwrite');
                         const store = transaction.objectStore('sales');
                         store.delete(sale.id);
-                        displaySales();
+                        const inventoryTransaction = db.transaction(['products'], 'readwrite');
+                        const inventoryStore = inventoryTransaction.objectStore('products');
+                        const productRequest = inventoryStore.get(sale.productId);
+
+                        productRequest.onsuccess = (event) => {
+                            const product = event.target.result;
+                            product.quantity += sale.quantity;
+                            inventoryStore.put(product);
+                            displaySales();
+                            displayInventoryProducts(product.category);
+                        };
                     }
                 });
                 row.insertCell(7).appendChild(deleteButton);
