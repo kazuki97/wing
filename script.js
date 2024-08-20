@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.querySelector('.close');
+    const searchButton = document.getElementById('searchButton');
+    const rangeSearchButton = document.getElementById('rangeSearchButton');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -44,12 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
-    const linkHome = document.getElementById('linkHome');
-    const linkCategory = document.getElementById('linkCategory');
-    const linkProduct = document.getElementById('linkProduct');
-    const linkInventory = document.getElementById('linkInventory');
-    const linkBarcode = document.getElementById('linkBarcode');
-    const linkSales = document.getElementById('linkSales');
+    const linkHome = document.getElementById('link-home');
+    const linkCategory = document.getElementById('link-category');
+    const linkProduct = document.getElementById('link-product');
+    const linkInventory = document.getElementById('link-inventory');
+    const linkBarcode = document.getElementById('link-barcode');
+    const linkSales = document.getElementById('link-sales');
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -61,34 +63,34 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
-    linkHome.addEventListener('click', () => {
+    linkHome?.addEventListener('click', () => {
         showSection(homeSection);
     });
 
-    linkCategory.addEventListener('click', () => {
+    linkCategory?.addEventListener('click', () => {
         showSection(categorySection);
     });
 
-    linkProduct.addEventListener('click', () => {
+    linkProduct?.addEventListener('click', () => {
         showSection(productSection);
         updateCategorySelect();
     });
 
-    linkInventory.addEventListener('click', () => {
+    linkInventory?.addEventListener('click', () => {
         showSection(inventorySection);
         displayInventoryCategories();
     });
 
-    linkBarcode.addEventListener('click', () => {
+    linkBarcode?.addEventListener('click', () => {
         showSection(barcodeSection);
     });
 
-    linkSales.addEventListener('click', () => {
+    linkSales?.addEventListener('click', () => {
         showSection(salesSection);
         displaySales();
     });
 
-    addCategoryButton.addEventListener('click', () => {
+    addCategoryButton?.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
         if (categoryName && !categories[categoryName]) {
             categories[categoryName] = [];
@@ -104,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    addProductButton.addEventListener('click', () => {
+    addProductButton?.addEventListener('click', () => {
         const category = categorySelect.value;
         const productName = document.getElementById('product-name').value;
         const quantity = document.getElementById('product-quantity').value;
@@ -126,11 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    closeModal.addEventListener('click', () => {
+    closeModal?.addEventListener('click', () => {
         detailModal.style.display = 'none';
     });
 
-    manualAddSalesButton.addEventListener('click', () => {
+    manualAddSalesButton?.addEventListener('click', () => {
         const salesCategoryContainer = document.getElementById('salesCategoryContainer');
         const salesProductContainer = document.getElementById('salesProductContainer');
 
@@ -226,14 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSales() {
-        const transaction = db.transaction(['sales'], 'readonly');
-        const store = transaction.objectStore('sales');
-        const request = store.getAll();
-
-        request.onsuccess = (event) => {
-            const sales = event.target.result;
-            displaySales(sales);
-        };
+        displaySales();
     }
 
     function updateCategorySelect() {
@@ -420,14 +415,14 @@ document.addEventListener('DOMContentLoaded', () => {
             sales.forEach((sale, index) => {
                 const row = salesTableBody.insertRow();
                 row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = sale.date;
-                row.insertCell(2).textContent = sale.productName;
-                row.insertCell(3).textContent = sale.quantity;
-                row.insertCell(4).textContent = sale.totalPrice;
-                row.insertCell(5).textContent = sale.profit;
+                row.insertCell(1).textContent = sale.productName;
+                row.insertCell(2).textContent = sale.quantity;
+                row.insertCell(3).textContent = sale.totalPrice;
+                row.insertCell(4).textContent = sale.profit;
+                row.insertCell(5).textContent = sale.date;
 
                 const editButton = document.createElement('button');
-                editButton.textContent = '編集';
+                editButton.innerHTML = '<img src="pen-icon.png" alt="編集">';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
                     row.classList.add('editable');
@@ -467,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(6).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
-                deleteButton.textContent = '削除';
+                deleteButton.innerHTML = '<img src="trash-icon.png" alt="削除">';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この売上を削除しますか？')) {
@@ -496,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startScanButton = document.getElementById('start-scan');
     const scannerContainer = document.getElementById('scanner-container');
 
-    startScanButton.addEventListener('click', () => {
+    startScanButton?.addEventListener('click', () => {
         Quagga.init({
             inputStream: {
                 name: "Live",
