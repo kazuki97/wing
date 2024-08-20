@@ -12,12 +12,12 @@
     <header>
         <h1>WINGアプリ</h1>
         <nav>
-            <button id="linkHome">ホーム</button>
-            <button id="linkCategory">カテゴリ設定</button>
-            <button id="linkProduct">商品設定</button>
-            <button id="linkInventory">在庫管理</button>
-            <button id="linkBarcode">バーコードスキャン</button>
-            <button id="linkSales">売上管理</button>
+            <button id="link-home">ホーム</button>
+            <button id="link-category">カテゴリ設定</button>
+            <button id="link-product">商品設定</button>
+            <button id="link-inventory">在庫管理</button>
+            <button id="link-barcode">バーコードスキャン</button>
+            <button id="link-sales">売上管理</button>
         </nav>
     </header>
 
@@ -67,7 +67,8 @@
 
         <section id="barcode-section" class="content-section" style="display: none;">
             <h2>バーコードスキャン</h2>
-            <!-- バーコードスキャン機能の実装はここに記述します -->
+            <div id="scanner-container"></div>
+            <button id="start-scan">スキャン開始</button>
         </section>
 
         <section id="sales-section" class="content-section" style="display: none;">
