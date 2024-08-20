@@ -131,8 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     manualAddSalesButton.addEventListener('click', () => {
-        const salesCategoryContainer = document.getElementById('salesCategoryContainer');
-        const salesProductContainer = document.getElementById('salesProductContainer');
+        const salesCategoryContainer = document.getElementById('sales-category-container');
+        const salesProductContainer = document.getElementById('sales-product-container');
 
         if (salesCategoryContainer) {
             salesCategoryContainer.innerHTML = '';
@@ -150,12 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 salesCategoryContainer.appendChild(categoryButton);
             }
         } else {
-            console.error('salesCategoryContainer が見つかりませんでした。');
+            console.error('sales-category-container が見つかりませんでした。');
         }
     });
 
     function displaySalesProducts(categoryName) {
-        const salesProductContainer = document.getElementById('salesProductContainer');
+        const salesProductContainer = document.getElementById('sales-product-container');
         if (salesProductContainer) {
             salesProductContainer.innerHTML = '';
             const transaction = db.transaction(['products'], 'readonly');
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             };
         } else {
-            console.error('salesProductContainer が見つかりませんでした。');
+            console.error('sales-product-container が見つかりませんでした。');
         }
     }
 
@@ -226,7 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSales() {
-        displaySales();
+        const transaction = db.transaction(['sales'], 'readonly');
+        const store = transaction.objectStore('sales');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const sales = event.target.result;
+            displaySales(sales);
+        };
     }
 
     function updateCategorySelect() {
@@ -400,92 +407,118 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function displaySales() {
-        const transaction = db.transaction(['sales'], 'readonly');
-        const store = transaction.objectStore('sales');
-        const request = store.getAll();
+    function displaySales(salesList = []) {
+        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
+        salesTableBody.innerHTML = '';
+
+        salesList.forEach((sale, index) => {
+            const row = salesTableBody.insertRow();
+            row.insertCell(0).textContent = index + 1;
+            row.insertCell(1).textContent = sale.date;
+            row.insertCell(2).textContent = sale.productName;
+            row.insertCell(3).textContent = sale.quantity;
+            row.insertCell(4).textContent = sale.totalPrice;
+            row.insertCell(5).textContent = sale.profit;
+
+            const editButton = document.createElement('button');
+            editButton.textContent = '編集';
+            editButton.className = 'product-button';
+            editButton.addEventListener('click', () => {
+                const newDate = prompt('新しい日付を入力してください:', sale.date);
+                const newQuantity = prompt('新しい数量を入力してください:', sale.quantity);
+                const newTotalPrice = prompt('新しい売上金額を入力してください:', sale.totalPrice);
+                const newProfit = prompt('新しい利益を入力してください:', sale.profit);
+
+                if (newDate && newQuantity && newTotalPrice && newProfit) {
+                    sale.date = newDate;
+                    sale.quantity = parseInt(newQuantity, 10);
+                    sale.totalPrice = parseFloat(newTotalPrice);
+                    sale.profit = parseFloat(newProfit);
+                    saveSaleToDB(sale);
+                    displaySales(salesList);
+                }
+            });
+            row.insertCell(6).appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '削除';
+            deleteButton.className = 'product-button';
+            deleteButton.addEventListener('click', () => {
+                if (confirm('この売上を削除しますか？')) {
+                    const transaction = db.transaction(['sales'], 'readwrite');
+                    const store = transaction.objectStore('sales');
+                    store.delete(sale.id);
+                    displaySales(salesList);
+                }
+            });
+            row.insertCell(7).appendChild(deleteButton);
+        });
+    }
+
+    manualAddSalesButton.addEventListener('click', () => {
+        const salesCategoryContainer = document.getElementById('sales-category-container');
+        const salesProductContainer = document.getElementById('sales-product-container');
+
+        if (salesCategoryContainer) {
+            salesCategoryContainer.innerHTML = '';
+            salesCategoryContainer.style.display = 'flex';
+            salesCategoryContainer.style.flexWrap = 'wrap';
+            salesCategoryContainer.style.gap = '10px';
+
+            for (const categoryName in categories) {
+                const categoryButton = document.createElement('button');
+                categoryButton.textContent = categoryName;
+                categoryButton.className = 'inventory-category-button';
+                categoryButton.addEventListener('click', () => {
+                    displaySalesProducts(categoryName);
+                });
+                salesCategoryContainer.appendChild(categoryButton);
+            }
+        } else {
+            console.error('sales-category-container が見つかりませんでした。');
+        }
+    });
+
+    function processScannedCode(barcode) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        const request = store.openCursor();
 
         request.onsuccess = (event) => {
-            const sales = event.target.result;
-            const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-            salesTableBody.innerHTML = '';
+            const cursor = event.target.result;
+            if (cursor) {
+                if (cursor.value.barcode === barcode) {
+                    const product = cursor.value;
+                    if (product.quantity > 0) {
+                        product.quantity -= 1;
+                        store.put(product);
 
-            sales.forEach((sale, index) => {
-                const row = salesTableBody.insertRow();
-                row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = sale.productName;
-                row.insertCell(2).textContent = sale.quantity;
-                row.insertCell(3).textContent = sale.totalPrice;
-                row.insertCell(4).textContent = sale.profit;
-                row.insertCell(5).textContent = sale.date;
-
-                const editButton = document.createElement('button');
-                editButton.innerHTML = '編集';
-                editButton.className = 'product-button';
-                editButton.addEventListener('click', () => {
-                    row.classList.add('editable');
-                    row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                        if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                            cell.addEventListener('click', () => {
-                                const originalValue = cell.textContent;
-                                const input = document.createElement('input');
-                                input.type = 'text';
-                                input.value = originalValue;
-                                cell.innerHTML = '';
-                                cell.appendChild(input);
-                                input.focus();
-                                input.addEventListener('blur', () => {
-                                    const newValue = input.value;
-                                    cell.textContent = newValue;
-                                    row.classList.remove('editable');
-                                    if (cellIndex === 1) {
-                                        sale.productName = newValue;
-                                    } else if (cellIndex === 2) {
-                                        sale.quantity = parseInt(newValue, 10);
-                                        sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                    } else if (cellIndex === 3) {
-                                        sale.totalPrice = parseFloat(newValue);
-                                    } else if (cellIndex === 4) {
-                                        sale.profit = parseFloat(newValue);
-                                    } else if (cellIndex === 5) {
-                                        sale.date = newValue;
-                                    }
-                                    saveSaleToDB(sale);
-                                    displaySales();
-                                });
-                            });
-                        }
-                    });
-                });
-                row.insertCell(6).appendChild(editButton);
-
-                const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '削除';
-                deleteButton.className = 'product-button';
-                deleteButton.addEventListener('click', () => {
-                    if (confirm('この売上を削除しますか？')) {
-                        const transaction = db.transaction(['sales'], 'readwrite');
-                        const store = transaction.objectStore('sales');
-                        store.delete(sale.id);
-                        const inventoryTransaction = db.transaction(['products'], 'readwrite');
-                        const inventoryStore = inventoryTransaction.objectStore('products');
-                        const productRequest = inventoryStore.get(sale.productId);
-
-                        productRequest.onsuccess = (event) => {
-                            const product = event.target.result;
-                            product.quantity += sale.quantity;
-                            inventoryStore.put(product);
-                            displaySales();
-                            displayInventoryProducts(product.category);
+                        const sale = {
+                            productName: product.name,
+                            quantity: 1,
+                            totalPrice: product.price,
+                            profit: product.price - product.cost,
+                            date: new Date().toISOString().split('T')[0]
                         };
+                        saveSaleToDB(sale);
+
+                        alert(`商品名: ${product.name} の在庫が1減少しました。現在の在庫数: ${product.quantity}`);
+                        displayInventoryProducts(product.category);
+                    } else {
+                        alert(`商品名: ${product.name} は在庫がありません。`);
                     }
-                });
-                row.insertCell(7).appendChild(deleteButton);
-            });
+                }
+                cursor.continue();
+            } else {
+                console.log('No more entries!');
+            }
+        };
+
+        request.onerror = (event) => {
+            console.error('Cursor error:', event.target.error);
         };
     }
 
-    // バーコードスキャン機能
     const startScanButton = document.getElementById('start-scan');
     const scannerContainer = document.getElementById('scanner-container');
 
@@ -554,44 +587,4 @@ document.addEventListener('DOMContentLoaded', () => {
             processScannedCode(barcode);
         });
     });
-
-    function processScannedCode(barcode) {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-        const request = store.openCursor();
-
-        request.onsuccess = (event) => {
-            const cursor = event.target.result;
-            if (cursor) {
-                if (cursor.value.barcode === barcode) {
-                    const product = cursor.value;
-                    if (product.quantity > 0) {
-                        product.quantity -= 1;
-                        store.put(product);
-
-                        const sale = {
-                            productName: product.name,
-                            quantity: 1,
-                            totalPrice: product.price,
-                            profit: product.price - product.cost,
-                            date: new Date().toISOString().split('T')[0]
-                        };
-                        saveSaleToDB(sale);
-
-                        alert(`商品名: ${product.name} の在庫が1減少しました。現在の在庫数: ${product.quantity}`);
-                        displayInventoryProducts(product.category);
-                    } else {
-                        alert(`商品名: ${product.name} は在庫がありません。`);
-                    }
-                }
-                cursor.continue();
-            } else {
-                console.log('No more entries!');
-            }
-        };
-
-        request.onerror = (event) => {
-            console.error('Cursor error:', event.target.error);
-        };
-    }
 });
