@@ -495,7 +495,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const request = store.getAll();
 
             request.onsuccess = (event) => {
-                const sales = event.target.result.filter(sale => sale.date.startsWith(selectedMonth));
+                const sales = event.target.result.filter(sale => {
+                    // 日付の月が選択された月と一致するかをチェック
+                    const saleMonth = sale.date.slice(0, 7);  // YYYY-MM の形式を取得
+                    return saleMonth === selectedMonth;
+                });
                 const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
                 salesTableBody.innerHTML = '';
 
