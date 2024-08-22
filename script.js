@@ -468,17 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const transaction = db.transaction(['sales'], 'readwrite');
                         const store = transaction.objectStore('sales');
                         store.delete(sale.id);
-                        const inventoryTransaction = db.transaction(['products'], 'readwrite');
-                        const inventoryStore = inventoryTransaction.objectStore('products');
-                        const productRequest = inventoryStore.get(sale.productId);
-
-                        productRequest.onsuccess = (event) => {
-                            const product = event.target.result;
-                            product.quantity += sale.quantity;
-                            inventoryStore.put(product);
-                            displaySales();
-                            displayInventoryProducts(product.category);
-                        };
+                        displaySales();
                     }
                 });
                 row.insertCell(7).appendChild(deleteButton);
@@ -570,4 +560,49 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('月を選択してください。');
         }
     });
+
+    // サファリでカレンダーを使えるようにするためのPolyfill
+    if (!isDateInputSupported()) {
+        setupCustomDateInputs();
+    }
+
+    // 日付入力がサポートされているかを確認
+    function isDateInputSupported() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'month');
+        const invalidValue = 'invalidValue';
+        input.setAttribute('value', invalidValue);
+        return (input.value !== invalidValue);
+    }
+
+    // カスタム日付入力フィールドの設定
+    function setupCustomDateInputs() {
+        const monthFilter = document.getElementById('month-filter');
+        const startDate = document.getElementById('start-date');
+        const endDate = document.getElementById('end-date');
+
+        if (monthFilter) {
+            monthFilter.type = 'text';
+            monthFilter.placeholder = 'YYYY-MM';
+            monthFilter.addEventListener('focus', () => {
+                monthFilter.setAttribute('type', 'month');
+            });
+        }
+
+        if (startDate) {
+            startDate.type = 'text';
+            startDate.placeholder = 'YYYY-MM-DD';
+            startDate.addEventListener('focus', () => {
+                startDate.setAttribute('type', 'date');
+            });
+        }
+
+        if (endDate) {
+            endDate.type = 'text';
+            endDate.placeholder = 'YYYY-MM-DD';
+            endDate.addEventListener('focus', () => {
+                endDate.setAttribute('type', 'date');
+            });
+        }
+    }
 });
