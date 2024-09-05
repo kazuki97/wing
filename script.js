@@ -37,13 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('searchButton');
     const rangeSearchButton = document.getElementById('rangeSearchButton');
     const monthFilter = document.getElementById('month-filter');
-    const startScanButton = document.getElementById('start-scan');
-    const barcodeSection = document.getElementById('barcode-section');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
     const productSection = document.getElementById('product-section');
     const inventorySection = document.getElementById('inventory-section');
+    const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
     const linkHome = document.getElementById('link-home');
@@ -58,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         categorySection.style.display = 'none';
         productSection.style.display = 'none';
         inventorySection.style.display = 'none';
-        salesSection.style.display = 'none';
         barcodeSection.style.display = 'none';
+        salesSection.style.display = 'none';
         section.style.display = 'block';
     }
 
@@ -156,38 +155,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    startScanButton.addEventListener('click', () => {
-        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-            Quagga.init({
-                inputStream: {
-                    type: "LiveStream",
-                    constraints: {
-                        width: 640,
-                        height: 480,
-                        facingMode: "environment" // 背面カメラを使用
-                    },
-                    target: document.querySelector('#scanner-container') // ビデオの表示先
-                },
-                decoder: {
-                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
-                }
-            }, (err) => {
-                if (err) {
-                    console.error(err);
-                    alert("カメラの初期化中にエラーが発生しました");
-                    return;
-                }
-                Quagga.start();
-            });
+    function displaySalesProducts(categoryName) {
+        const salesProductContainer = document.getElementById('salesProductContainer');
+        if (salesProductContainer) {
+            salesProductContainer.innerHTML = '';
+            const transaction = db.transaction(['products'], 'readonly');
+            const store = transaction.objectStore('products');
+            const index = store.index('category');
+            const request = index.getAll(categoryName);
 
-            Quagga.onDetected((data) => {
-                alert(`バーコードが検出されました: ${data.codeResult.code}`);
-                Quagga.stop(); // スキャンが完了したらカメラを停止
-            });
+            request.onsuccess = (event) => {
+                const products = event.target.result;
+
+                products.forEach(product => {
+                    const productButton = document.createElement('button');
+                    productButton.textContent = `${product.name} - ${product.price}円`;
+                    productButton.addEventListener('click', () => {
+                        const quantity = prompt('売上数量を入力してください:');
+                        const saleDate = prompt('日付を入力してください (YYYY-MM-DD):');
+                        if (quantity && saleDate) {
+                            const sale = {
+                                productName: product.name,
+                                quantity: parseInt(quantity, 10),
+                                totalPrice: product.price * quantity,
+                                profit: (product.price - product.cost) * quantity,
+                                date: saleDate
+                            };
+                            saveSaleToDB(sale);
+                            displaySales();
+                        }
+                    });
+                    salesProductContainer.appendChild(productButton);
+                });
+            };
         } else {
-            alert("このデバイスではカメラを使用できません。");
+            console.error('salesProductContainer が見つかりませんでした。');
         }
-    });
+    }
 
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
@@ -471,4 +475,38 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
+
+    // カメラを使用したバーコードスキャン機能の実装
+    const startScanButton = document.getElementById('start-scan');
+    startScanButton.addEventListener('click', () => {
+        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // 背面カメラを使用
+                    },
+                    target: document.querySelector('#scanner-container') // ビデオの表示先
+                },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                }
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                Quagga.start();
+            });
+
+            Quagga.onDetected((data) => {
+                alert(`Barcode detected: ${data.codeResult.code}`);
+                Quagga.stop();
+            });
+        } else {
+            alert('カメラがサポートされていません。');
+        }
+    });
 });
