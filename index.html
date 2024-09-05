@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINGアプリ</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- QuaggaJSの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
 </head>
 
 <body>
@@ -67,7 +68,9 @@
 
         <section id="barcode-section" class="content-section" style="display: none;">
             <h2>バーコードスキャン</h2>
-            <!-- バーコードスキャン機能の実装はここに記述します -->
+            <p>カメラを使用してバーコードをスキャンします。</p>
+            <button id="start-scan">スキャンを開始</button>
+            <div id="scanner-container"></div>
         </section>
 
         <section id="sales-section" class="content-section" style="display: none;">
@@ -78,8 +81,8 @@
             <input type="date" id="end-date">
             <button id="rangeSearchButton">範囲検索</button>
             <button id="manualAddSalesButton">手動で売上を追加</button>
-            <div id="salesCategoryContainer"></div> <!-- このコンテナを追加 -->
-            <div id="salesProductContainer"></div> <!-- このコンテナを追加 -->
+            <div id="salesCategoryContainer"></div>
+            <div id="salesProductContainer"></div>
             <table id="sales-table">
                 <thead>
                     <tr>
@@ -100,12 +103,11 @@
         <div id="detail-modal" class="modal">
             <span class="close">&times;</span>
             <div class="modal-content">
-                <!-- 詳細表示用の内容をここに記述 -->
+                <!-- 詳細表示用の内容 -->
             </div>
         </div>
     </main>
 
     <script src="script.js"></script>
 </body>
-
 </html>
