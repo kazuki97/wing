@@ -37,12 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('searchButton');
     const rangeSearchButton = document.getElementById('rangeSearchButton');
     const monthFilter = document.getElementById('month-filter');
+    const startScanButton = document.getElementById('start-scan');
+    const barcodeSection = document.getElementById('barcode-section');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
     const productSection = document.getElementById('product-section');
     const inventorySection = document.getElementById('inventory-section');
-    const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
     const linkHome = document.getElementById('link-home');
@@ -57,8 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
         categorySection.style.display = 'none';
         productSection.style.display = 'none';
         inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
         salesSection.style.display = 'none';
+        barcodeSection.style.display = 'none';
         section.style.display = 'block';
     }
 
@@ -476,133 +477,37 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // 修正部分: 月のフィルタリング機能を実装
-    searchButton.addEventListener('click', () => {
-        const selectedMonth = monthFilter.value;
-        if (selectedMonth) {
-            const transaction = db.transaction(['sales'], 'readonly');
-            const store = transaction.objectStore('sales');
-            const request = store.getAll();
+    // QuaggaJSを使ったバーコードスキャンの実装
+    startScanButton.addEventListener('click', () => {
+        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // 背面カメラを使用
+                    },
+                    target: document.querySelector('#scanner-container') // ビデオの表示先
+                },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                }
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                    alert("カメラの初期化中にエラーが発生しました");
+                    return;
+                }
+                Quagga.start();
+            });
 
-            request.onsuccess = (event) => {
-                const sales = event.target.result.filter(sale => {
-                    // 日付の月が選択された月と一致するかをチェック
-                    const saleMonth = sale.date.slice(0, 7);  // YYYY-MM の形式を取得
-                    return saleMonth === selectedMonth;
-                });
-                const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-                salesTableBody.innerHTML = '';
-
-                sales.forEach((sale, index) => {
-                    const row = salesTableBody.insertRow();
-                    row.insertCell(0).textContent = index + 1;
-                    row.insertCell(1).textContent = sale.date;
-                    row.insertCell(2).textContent = sale.productName;
-                    row.insertCell(3).textContent = sale.quantity;
-                    row.insertCell(4).textContent = sale.totalPrice;
-                    row.insertCell(5).textContent = sale.profit;
-
-                    const editButton = document.createElement('button');
-                    editButton.textContent = '編集';
-                    editButton.className = 'product-button';
-                    editButton.addEventListener('click', () => {
-                        row.classList.add('editable');
-                        row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                            if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                                cell.addEventListener('click', () => {
-                                    const originalValue = cell.textContent;
-                                    const input = document.createElement('input');
-                                    input.type = 'text';
-                                    input.value = originalValue;
-                                    cell.innerHTML = '';
-                                    cell.appendChild(input);
-                                    input.focus();
-                                    input.addEventListener('blur', () => {
-                                        const newValue = input.value;
-                                        cell.textContent = newValue;
-                                        row.classList.remove('editable');
-                                        if (cellIndex === 1) {
-                                            sale.date = newValue;
-                                        } else if (cellIndex === 2) {
-                                            sale.productName = newValue;
-                                        } else if (cellIndex === 3) {
-                                            sale.quantity = parseInt(newValue, 10);
-                                            sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                        } else if (cellIndex === 4) {
-                                            sale.totalPrice = parseFloat(newValue);
-                                        } else if (cellIndex === 5) {
-                                            sale.profit = parseFloat(newValue);
-                                        }
-                                        saveSaleToDB(sale);
-                                        displaySales();
-                                    });
-                                });
-                            }
-                        });
-                    });
-                    row.insertCell(6).appendChild(editButton);
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = '削除';
-                    deleteButton.className = 'product-button';
-                    deleteButton.addEventListener('click', () => {
-                        if (confirm('この売上を削除しますか？')) {
-                            const transaction = db.transaction(['sales'], 'readwrite');
-                            const store = transaction.objectStore('sales');
-                            store.delete(sale.id);
-                            displaySales();
-                        }
-                    });
-                    row.insertCell(7).appendChild(deleteButton);
-                });
-            };
+            Quagga.onDetected((data) => {
+                alert(`バーコードが検出されました: ${data.codeResult.code}`);
+                Quagga.stop(); // スキャンが完了したらカメラを停止
+            });
         } else {
-            alert('月を選択してください。');
+            alert("このデバイスではカメラを使用できません。");
         }
     });
-
-    // サファリでカレンダーを使えるようにするためのPolyfill
-    if (!isDateInputSupported()) {
-        setupCustomDateInputs();
-    }
-
-    // 日付入力がサポートされているかを確認
-    function isDateInputSupported() {
-        const input = document.createElement('input');
-        input.setAttribute('type', 'month');
-        const invalidValue = 'invalidValue';
-        input.setAttribute('value', invalidValue);
-        return (input.value !== invalidValue);
-    }
-
-    // カスタム日付入力フィールドの設定
-    function setupCustomDateInputs() {
-        const monthFilter = document.getElementById('month-filter');
-        const startDate = document.getElementById('start-date');
-        const endDate = document.getElementById('end-date');
-
-        if (monthFilter) {
-            monthFilter.type = 'text';
-            monthFilter.placeholder = 'YYYY-MM';
-            monthFilter.addEventListener('focus', () => {
-                monthFilter.setAttribute('type', 'month');
-            });
-        }
-
-        if (startDate) {
-            startDate.type = 'text';
-            startDate.placeholder = 'YYYY-MM-DD';
-            startDate.addEventListener('focus', () => {
-                startDate.setAttribute('type', 'date');
-            });
-        }
-
-        if (endDate) {
-            endDate.type = 'text';
-            endDate.placeholder = 'YYYY-MM-DD';
-            endDate.addEventListener('focus', () => {
-                endDate.setAttribute('type', 'date');
-            });
-        }
-    }
 });
