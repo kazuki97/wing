@@ -156,43 +156,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function displaySalesProducts(categoryName) {
-        const salesProductContainer = document.getElementById('salesProductContainer');
-        if (salesProductContainer) {
-            salesProductContainer.innerHTML = '';
-            const transaction = db.transaction(['products'], 'readonly');
-            const store = transaction.objectStore('products');
-            const index = store.index('category');
-            const request = index.getAll(categoryName);
+    startScanButton.addEventListener('click', () => {
+        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // 背面カメラを使用
+                    },
+                    target: document.querySelector('#scanner-container') // ビデオの表示先
+                },
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                }
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                    alert("カメラの初期化中にエラーが発生しました");
+                    return;
+                }
+                Quagga.start();
+            });
 
-            request.onsuccess = (event) => {
-                const products = event.target.result;
-
-                products.forEach(product => {
-                    const productButton = document.createElement('button');
-                    productButton.textContent = `${product.name} - ${product.price}円`;
-                    productButton.addEventListener('click', () => {
-                        const quantity = prompt('売上数量を入力してください:');
-                        const saleDate = prompt('日付を入力してください (YYYY-MM-DD):');
-                        if (quantity && saleDate) {
-                            const sale = {
-                                productName: product.name,
-                                quantity: parseInt(quantity, 10),
-                                totalPrice: product.price * quantity,
-                                profit: (product.price - product.cost) * quantity,
-                                date: saleDate
-                            };
-                            saveSaleToDB(sale);
-                            displaySales();
-                        }
-                    });
-                    salesProductContainer.appendChild(productButton);
-                });
-            };
+            Quagga.onDetected((data) => {
+                alert(`バーコードが検出されました: ${data.codeResult.code}`);
+                Quagga.stop(); // スキャンが完了したらカメラを停止
+            });
         } else {
-            console.error('salesProductContainer が見つかりませんでした。');
+            alert("このデバイスではカメラを使用できません。");
         }
-    }
+    });
 
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
@@ -476,38 +471,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
-
-    // QuaggaJSを使ったバーコードスキャンの実装
-    startScanButton.addEventListener('click', () => {
-        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-            Quagga.init({
-                inputStream: {
-                    type: "LiveStream",
-                    constraints: {
-                        width: 640,
-                        height: 480,
-                        facingMode: "environment" // 背面カメラを使用
-                    },
-                    target: document.querySelector('#scanner-container') // ビデオの表示先
-                },
-                decoder: {
-                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
-                }
-            }, (err) => {
-                if (err) {
-                    console.error(err);
-                    alert("カメラの初期化中にエラーが発生しました");
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected((data) => {
-                alert(`バーコードが検出されました: ${data.codeResult.code}`);
-                Quagga.stop(); // スキャンが完了したらカメラを停止
-            });
-        } else {
-            alert("このデバイスではカメラを使用できません。");
-        }
-    });
 });
