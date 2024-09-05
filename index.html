@@ -6,7 +6,7 @@
     <title>WINGアプリ</title>
     <link rel="stylesheet" href="styles.css">
     <!-- QuaggaJSの読み込み -->
-    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 
 <body>
@@ -68,9 +68,8 @@
 
         <section id="barcode-section" class="content-section" style="display: none;">
             <h2>バーコードスキャン</h2>
-            <p>カメラを使用してバーコードをスキャンします。</p>
+            <div id="scanner-container" style="width: 640px; height: 480px; border: 1px solid black;"></div>
             <button id="start-scan">スキャンを開始</button>
-            <div id="scanner-container"></div>
         </section>
 
         <section id="sales-section" class="content-section" style="display: none;">
@@ -103,7 +102,7 @@
         <div id="detail-modal" class="modal">
             <span class="close">&times;</span>
             <div class="modal-content">
-                <!-- 詳細表示用の内容 -->
+                <!-- 詳細表示用の内容をここに記述 -->
             </div>
         </div>
     </main>
