@@ -37,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById('searchButton');
     const rangeSearchButton = document.getElementById('rangeSearchButton');
     const monthFilter = document.getElementById('month-filter');
+    const scannerContainer = document.getElementById('scanner-container');
+    const startScanButton = document.getElementById('start-scan');
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -155,42 +157,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function displaySalesProducts(categoryName) {
-        const salesProductContainer = document.getElementById('salesProductContainer');
-        if (salesProductContainer) {
-            salesProductContainer.innerHTML = '';
-            const transaction = db.transaction(['products'], 'readonly');
-            const store = transaction.objectStore('products');
-            const index = store.index('category');
-            const request = index.getAll(categoryName);
+    // 追加部分：バーコードをスキャンしたら在庫を減らし、売上に追加
+    startScanButton.addEventListener('click', () => {
+        Quagga.init({
+            inputStream: {
+                type: "LiveStream",
+                target: scannerContainer
+            },
+            decoder: {
+                readers: ["ean_reader"]  // EANバーコード用
+            }
+        }, (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            Quagga.start();
+        });
 
-            request.onsuccess = (event) => {
-                const products = event.target.result;
+        Quagga.onDetected((result) => {
+            const barcode = result.codeResult.code;
+            findProductByBarcode(barcode);
+        });
+    });
 
-                products.forEach(product => {
-                    const productButton = document.createElement('button');
-                    productButton.textContent = `${product.name} - ${product.price}円`;
-                    productButton.addEventListener('click', () => {
-                        const quantity = prompt('売上数量を入力してください:');
-                        const saleDate = prompt('日付を入力してください (YYYY-MM-DD):');
-                        if (quantity && saleDate) {
-                            const sale = {
-                                productName: product.name,
-                                quantity: parseInt(quantity, 10),
-                                totalPrice: product.price * quantity,
-                                profit: (product.price - product.cost) * quantity,
-                                date: saleDate
-                            };
-                            saveSaleToDB(sale);
-                            displaySales();
-                        }
-                    });
-                    salesProductContainer.appendChild(productButton);
-                });
-            };
-        } else {
-            console.error('salesProductContainer が見つかりませんでした。');
-        }
+    // バーコードで商品を検索
+    function findProductByBarcode(barcode) {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('barcode');
+        const request = index.get(barcode);
+
+        request.onsuccess = (event) => {
+            const product = event.target.result;
+            if (product) {
+                const quantity = prompt(`バーコード: ${barcode}\n商品名: ${product.name}\n購入数量を入力してください:`);
+                if (quantity) {
+                    updateProductQuantity(product, quantity);
+                    addSaleToDB(product, quantity);
+                }
+            } else {
+                alert('該当する商品が見つかりませんでした。');
+            }
+        };
+    }
+
+    // 商品の在庫を減らす
+    function updateProductQuantity(product, quantity) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        product.quantity -= parseInt(quantity, 10);
+        store.put(product);
+    }
+
+    // 売上管理に追加
+    function addSaleToDB(product, quantity) {
+        const sale = {
+            productName: product.name,
+            quantity: parseInt(quantity, 10),
+            totalPrice: product.price * quantity,
+            profit: (product.price - product.cost) * quantity,
+            date: new Date().toISOString().split('T')[0]
+        };
+
+        const transaction = db.transaction(['sales'], 'readwrite');
+        const store = transaction.objectStore('sales');
+        store.put(sale);
+        displaySales();  // 売上テーブルを更新
     }
 
     function saveCategoryToDB(category) {
@@ -475,43 +508,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
-
-    // QuaggaJSを使ったバーコードスキャン機能の設定
-    const scannerContainer = document.getElementById('scanner-container');
-    const startScanButton = document.getElementById('start-scan');
-
-    startScanButton.addEventListener('click', () => {
-        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: scannerContainer,
-                    constraints: {
-                        width: 640,
-                        height: 480,
-                        facingMode: "environment" // 背面カメラを指定
-                    }
-                },
-                decoder: {
-                    readers: ["ean_reader"] // 対応するバーコードの種類
-                }
-            }, (err) => {
-                if (err) {
-                    console.error("QuaggaJS initialisation failed: ", err);
-                    return;
-                }
-                Quagga.start();
-            });
-
-            // スキャン結果を処理
-            Quagga.onDetected((result) => {
-                const code = result.codeResult.code;
-                alert(`バーコードが検出されました: ${code}`);
-                Quagga.stop(); // スキャンを停止
-            });
-        } else {
-            alert("カメラがサポートされていません");
-        }
-    });
 });
