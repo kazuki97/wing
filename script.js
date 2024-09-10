@@ -475,38 +475,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
-
-    // カメラを使用したバーコードスキャン機能の実装
-    const startScanButton = document.getElementById('start-scan');
-    startScanButton.addEventListener('click', () => {
-        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-            Quagga.init({
-                inputStream: {
-                    type: "LiveStream",
-                    constraints: {
-                        width: 640,
-                        height: 480,
-                        facingMode: "environment" // 背面カメラを使用
-                    },
-                    target: document.querySelector('#scanner-container') // ビデオの表示先
-                },
-                decoder: {
-                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
-                }
-            }, (err) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected((data) => {
-                alert(`Barcode detected: ${data.codeResult.code}`);
-                Quagga.stop();
-            });
-        } else {
-            alert('カメラがサポートされていません。');
-        }
-    });
 });
