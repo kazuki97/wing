@@ -475,4 +475,43 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
+
+    // QuaggaJSを使ったバーコードスキャン機能の設定
+    const scannerContainer = document.getElementById('scanner-container');
+    const startScanButton = document.getElementById('start-scan');
+
+    startScanButton.addEventListener('click', () => {
+        if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: scannerContainer,
+                    constraints: {
+                        width: 640,
+                        height: 480,
+                        facingMode: "environment" // 背面カメラを指定
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader"] // 対応するバーコードの種類
+                }
+            }, (err) => {
+                if (err) {
+                    console.error("QuaggaJS initialisation failed: ", err);
+                    return;
+                }
+                Quagga.start();
+            });
+
+            // スキャン結果を処理
+            Quagga.onDetected((result) => {
+                const code = result.codeResult.code;
+                alert(`バーコードが検出されました: ${code}`);
+                Quagga.stop(); // スキャンを停止
+            });
+        } else {
+            alert("カメラがサポートされていません");
+        }
+    });
 });
