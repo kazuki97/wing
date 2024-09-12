@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    const request = indexedDB.open('inventoryDB', 3);
+    const request = indexedDB.open('inventoryDB', 4); // バージョンを変更してアップグレード
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
@@ -22,7 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('products')) {
             const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
             productStore.createIndex('category', 'category', { unique: false });
-            productStore.createIndex('barcode', 'barcode', { unique: true });
+            productStore.createIndex('barcode', 'barcode', { unique: true }); // インデックスを作成
+        } else {
+            const productStore = event.target.transaction.objectStore('products');
+            if (!productStore.indexNames.contains('barcode')) {
+                productStore.createIndex('barcode', 'barcode', { unique: true }); // 既存のストアにインデックスを追加
+            }
         }
         if (!db.objectStoreNames.contains('sales')) {
             db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
@@ -160,44 +165,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 追加部分：バーコードをスキャンしたら在庫を減らし、売上に追加
     startScanButton.addEventListener('click', () => {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            // カメラアクセスが可能か確認
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then((stream) => {
-                    Quagga.init({
-                        inputStream: {
-                            type: "LiveStream",
-                            target: scannerContainer, // スキャン領域
-                            constraints: {
-                                width: 640,
-                                height: 480,
-                                facingMode: "environment" // 背面カメラを指定
-                            }
-                        },
-                        decoder: {
-                            readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader", "code_39_reader", "code_93_reader"]
-                        }
-                    }, (err) => {
-                        if (err) {
-                            console.error("QuaggaJS init error: ", err);
-                            return;
-                        }
-                        Quagga.start();
-                    });
+        Quagga.init({
+            inputStream: {
+                type: "LiveStream",
+                target: scannerContainer
+            },
+            decoder: {
+                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]  // 多様なバーコード形式に対応
+            }
+        }, (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            Quagga.start();
+        });
 
-                    Quagga.onDetected((result) => {
-                        const barcode = result.codeResult.code;
-                        console.log(`バーコードが検出されました: ${barcode}`);
-                        findProductByBarcode(barcode); // バーコードで商品を検索
-                    });
-                })
-                .catch((error) => {
-                    alert('カメラのアクセスが許可されていません。ブラウザの設定を確認してください。');
-                    console.error("カメラアクセスエラー: ", error);
-                });
-        } else {
-            alert('このブラウザではカメラアクセスがサポートされていません。');
-        }
+        Quagga.onDetected((result) => {
+            const barcode = result.codeResult.code;
+            findProductByBarcode(barcode);
+        });
     });
 
     // バーコードで商品を検索
