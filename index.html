@@ -8,7 +8,6 @@
     <!-- QuaggaJSの読み込み -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
-
 <body>
     <header>
         <h1>WINGアプリ</h1>
@@ -21,20 +20,18 @@
             <button id="link-sales">売上管理</button>
         </nav>
     </header>
-
     <main>
+        <!-- 各セクション -->
         <section id="home-section" class="content-section">
             <h2>ホーム</h2>
             <p>ようこそ、WINGアプリへ！</p>
         </section>
-
         <section id="category-section" class="content-section" style="display: none;">
             <h2>カテゴリ設定</h2>
             <input type="text" id="category-name" placeholder="カテゴリ名を入力">
             <button id="add-category">カテゴリを追加</button>
             <div id="category-list"></div>
         </section>
-
         <section id="product-section" class="content-section" style="display: none;">
             <h2>商品設定</h2>
             <select id="category-select"></select>
@@ -59,19 +56,16 @@
                 <tbody></tbody>
             </table>
         </section>
-
         <section id="inventory-section" class="content-section" style="display: none;">
             <h2>在庫管理</h2>
             <div id="inventory-category-list"></div>
             <div id="inventory-product-list"></div>
         </section>
-
         <section id="barcode-section" class="content-section" style="display: none;">
             <h2>バーコードスキャン</h2>
             <div id="scanner-container" style="width: 640px; height: 480px; border: 1px solid black;"></div>
             <button id="start-scan">スキャンを開始</button>
         </section>
-
         <section id="sales-section" class="content-section" style="display: none;">
             <h2>売上管理</h2>
             <input type="month" id="month-filter">
@@ -98,15 +92,14 @@
                 <tbody></tbody>
             </table>
         </section>
-
-        <div id="detail-modal" class="modal">
-            <span class="close">&times;</span>
+        <!-- エラーモーダル -->
+        <div id="errorModal" class="modal">
             <div class="modal-content">
-                <!-- 詳細表示用の内容をここに記述 -->
+                <p id="errorMessage"></p>
+                <button id="closeErrorModal">閉じる</button>
             </div>
         </div>
     </main>
-
     <script src="script.js"></script>
 </body>
 </html>
