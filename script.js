@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    const request = indexedDB.open('inventoryDB', 4); // バージョンを変更してアップグレード
+    const request = indexedDB.open('inventoryDB', 4);
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
@@ -22,11 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('products')) {
             const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
             productStore.createIndex('category', 'category', { unique: false });
-            productStore.createIndex('barcode', 'barcode', { unique: true }); // インデックスを作成
+            productStore.createIndex('barcode', 'barcode', { unique: true });
         } else {
             const productStore = event.target.transaction.objectStore('products');
             if (!productStore.indexNames.contains('barcode')) {
-                productStore.createIndex('barcode', 'barcode', { unique: true }); // 既存のストアにインデックスを追加
+                productStore.createIndex('barcode', 'barcode', { unique: true });
             }
         }
         if (!db.objectStoreNames.contains('sales')) {
@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthFilter = document.getElementById('month-filter');
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
+    const errorModal = document.getElementById('error-modal'); // エラーモーダル
+    const closeErrorModalButton = document.getElementById('close-error-modal'); // エラーモーダルを閉じるボタン
 
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
@@ -171,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 target: scannerContainer
             },
             decoder: {
-                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]  // 多様なバーコード形式に対応
+                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
             }
         }, (err) => {
             if (err) {
@@ -203,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     addSaleToDB(product, quantity);
                 }
             } else {
-                alert('該当する商品が見つかりませんでした。');
+                showErrorModal(`該当する商品が見つかりませんでした: ${barcode}`);  // エラーモーダルを表示
             }
         };
     }
@@ -231,6 +233,18 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(sale);
         displaySales();  // 売上テーブルを更新
     }
+
+    // エラーモーダルを表示
+    function showErrorModal(message) {
+        const errorMessage = document.getElementById('error-message');
+        errorMessage.textContent = message;
+        errorModal.style.display = 'block';
+    }
+
+    // エラーモーダルを閉じる
+    closeErrorModalButton.addEventListener('click', () => {
+        errorModal.style.display = 'none';
+    });
 
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
