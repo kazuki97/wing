@@ -163,11 +163,25 @@ document.addEventListener('DOMContentLoaded', () => {
         Quagga.init({
             inputStream: {
                 type: "LiveStream",
-                target: scannerContainer
+                target: scannerContainer,
+                constraints: {
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment"  // 背面カメラを使用
+                }
             },
             decoder: {
-                readers: ["ean_reader"]  // EANバーコード用
-            }
+                readers: [
+                    "ean_reader", 
+                    "code_128_reader", 
+                    "code_39_reader", 
+                    "upc_reader", 
+                    "ean_8_reader", 
+                    "codabar_reader", 
+                    "i2of5_reader"
+                ], // 主要なバーコードフォーマットに対応
+            },
+            locate: true, // 検出精度を高める
         }, (err) => {
             if (err) {
                 console.error(err);
