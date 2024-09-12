@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
 
-    const request = indexedDB.open('inventoryDB', 4); // バージョンを変更してアップグレード
+    const request = indexedDB.open('inventoryDB', 4);
 
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
@@ -22,11 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('products')) {
             const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
             productStore.createIndex('category', 'category', { unique: false });
-            productStore.createIndex('barcode', 'barcode', { unique: true }); // インデックスを作成
+            productStore.createIndex('barcode', 'barcode', { unique: true });
         } else {
             const productStore = event.target.transaction.objectStore('products');
             if (!productStore.indexNames.contains('barcode')) {
-                productStore.createIndex('barcode', 'barcode', { unique: true }); // 既存のストアにインデックスを追加
+                productStore.createIndex('barcode', 'barcode', { unique: true });
             }
         }
         if (!db.objectStoreNames.contains('sales')) {
@@ -60,9 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkBarcode = document.getElementById('link-barcode');
     const linkSales = document.getElementById('link-sales');
 
-    const errorModal = document.getElementById('error-modal');
-    const closeErrorModal = document.getElementById('close-error-modal');
-
     function showSection(section) {
         homeSection.style.display = 'none';
         categorySection.style.display = 'none';
@@ -72,11 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         salesSection.style.display = 'none';
         section.style.display = 'block';
     }
-
-    // 閉じるボタンのイベントリスナー追加
-    closeErrorModal.addEventListener('click', () => {
-        errorModal.style.display = 'none';
-    });
 
     linkHome.addEventListener('click', () => {
         showSection(homeSection);
@@ -211,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     addSaleToDB(product, quantity);
                 }
             } else {
-                errorModal.style.display = 'block';  // モーダルを表示
+                showErrorModal('該当する商品が見つかりませんでした。');
             }
         };
     }
@@ -521,5 +513,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(7).appendChild(deleteButton);
             });
         };
+    }
+
+    function showErrorModal(message) {
+        const errorMessage = document.getElementById('errorMessage');
+        const closeErrorModalButton = document.getElementById('closeErrorModal');
+
+        if (errorMessage && closeErrorModalButton) {
+            errorMessage.textContent = message;
+            detailModal.style.display = 'block';
+
+            closeErrorModalButton.addEventListener('click', () => {
+                detailModal.style.display = 'none';
+            });
+        } else {
+            alert(message);
+        }
     }
 });
