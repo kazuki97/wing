@@ -160,40 +160,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 追加部分：バーコードをスキャンしたら在庫を減らし、売上に追加
     startScanButton.addEventListener('click', () => {
-        Quagga.init({
-            inputStream: {
-                type: "LiveStream",
-                target: scannerContainer,
-                constraints: {
-                    width: 640,
-                    height: 480,
-                    facingMode: "environment"  // 背面カメラを使用
-                }
-            },
-            decoder: {
-                readers: [
-                    "ean_reader", 
-                    "code_128_reader", 
-                    "code_39_reader", 
-                    "upc_reader", 
-                    "ean_8_reader", 
-                    "codabar_reader", 
-                    "i2of5_reader"
-                ], // 主要なバーコードフォーマットに対応
-            },
-            locate: true, // 検出精度を高める
-        }, (err) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            Quagga.start();
-        });
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            // カメラアクセスが可能か確認
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    Quagga.init({
+                        inputStream: {
+                            type: "LiveStream",
+                            target: scannerContainer, // スキャン領域
+                            constraints: {
+                                width: 640,
+                                height: 480,
+                                facingMode: "environment" // 背面カメラを指定
+                            }
+                        },
+                        decoder: {
+                            readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader", "code_39_reader", "code_93_reader"]
+                        }
+                    }, (err) => {
+                        if (err) {
+                            console.error("QuaggaJS init error: ", err);
+                            return;
+                        }
+                        Quagga.start();
+                    });
 
-        Quagga.onDetected((result) => {
-            const barcode = result.codeResult.code;
-            findProductByBarcode(barcode);
-        });
+                    Quagga.onDetected((result) => {
+                        const barcode = result.codeResult.code;
+                        console.log(`バーコードが検出されました: ${barcode}`);
+                        findProductByBarcode(barcode); // バーコードで商品を検索
+                    });
+                })
+                .catch((error) => {
+                    alert('カメラのアクセスが許可されていません。ブラウザの設定を確認してください。');
+                    console.error("カメラアクセスエラー: ", error);
+                });
+        } else {
+            alert('このブラウザではカメラアクセスがサポートされていません。');
+        }
     });
 
     // バーコードで商品を検索
