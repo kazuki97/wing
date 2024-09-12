@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('products')) {
             const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
             productStore.createIndex('category', 'category', { unique: false });
+            productStore.createIndex('barcode', 'barcode', { unique: true });
         }
         if (!db.objectStoreNames.contains('sales')) {
             db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
