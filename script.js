@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
+    let isScanning = false; // 追加: スキャン中かどうかを管理
 
     const request = indexedDB.open('inventoryDB', 4);
 
@@ -164,7 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 追加部分：バーコードをスキャンしたら在庫を減らし、売上に追加
     startScanButton.addEventListener('click', () => {
+        if (isScanning) return; // 追加: 既にスキャン中なら無視
+        isScanning = true; // スキャン中に設定
+
         Quagga.init({
             inputStream: {
                 type: "LiveStream",
@@ -183,11 +188,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Quagga.onDetected((result) => {
             const barcode = result.codeResult.code;
-            Quagga.stop();  // スキャン成功時にQuaggaを停止
+            Quagga.stop(); // バーコードを1度読み取ったら停止
             findProductByBarcode(barcode);
         });
     });
 
+    // バーコードで商品を検索
     function findProductByBarcode(barcode) {
         const transaction = db.transaction(['products'], 'readonly');
         const store = transaction.objectStore('products');
@@ -201,20 +207,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
-                    Quagga.start();  // 商品が見つかった場合にスキャンを再開
+                    isScanning = false; // スキャン完了後、スキャン可能に設定
                 } else {
                     showErrorModal('数量が無効です。');
-                    Quagga.start();  // キャンセル後もスキャンを再開
+                    isScanning = false; // キャンセル後にスキャン可能に設定
                 }
             } else {
                 showErrorModal('該当する商品が見つかりませんでした。');
                 document.getElementById('closeErrorModal').addEventListener('click', () => {
-                    Quagga.start();  // エラー後にスキャンを再開
+                    isScanning = false; // エラーモーダルを閉じたらスキャン可能に設定
                 });
             }
         };
     }
 
+    // 商品の在庫を減らす
     function updateProductQuantity(product, quantity) {
         const transaction = db.transaction(['products'], 'readwrite');
         const store = transaction.objectStore('products');
@@ -222,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(product);
     }
 
+    // 売上管理に追加
     function addSaleToDB(product, quantity) {
         const sale = {
             productName: product.name,
