@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
-    const closeModal = document.querySelector('.close');
+    const closeModal = document.getElementById('closeErrorModal'); // モーダルの閉じるボタン
     const searchButton = document.getElementById('searchButton');
     const rangeSearchButton = document.getElementById('rangeSearchButton');
     const monthFilter = document.getElementById('month-filter');
@@ -135,8 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // モーダルの閉じるボタンにイベントリスナーを追加
     closeModal.addEventListener('click', () => {
-        detailModal.style.display = 'none';
+        const errorModal = document.getElementById('errorModal');
+        errorModal.style.display = 'none';
     });
 
     manualAddSalesButton.addEventListener('click', () => {
@@ -171,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 target: scannerContainer
             },
             decoder: {
-                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]  // 多様なバーコード形式に対応
+                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
             }
         }, (err) => {
             if (err) {
@@ -229,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['sales'], 'readwrite');
         const store = transaction.objectStore('sales');
         store.put(sale);
-        displaySales();  // 売上テーブルを更新
+        displaySales();
     }
 
     function saveCategoryToDB(category) {
@@ -517,14 +519,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showErrorModal(message) {
         const errorMessage = document.getElementById('errorMessage');
+        const errorModal = document.getElementById('errorModal');
         const closeErrorModalButton = document.getElementById('closeErrorModal');
 
-        if (errorMessage && closeErrorModalButton) {
+        if (errorMessage && errorModal && closeErrorModalButton) {
             errorMessage.textContent = message;
-            detailModal.style.display = 'block';
+            errorModal.style.display = 'block';
 
             closeErrorModalButton.addEventListener('click', () => {
-                detailModal.style.display = 'none';
+                errorModal.style.display = 'none';
             });
         } else {
             alert(message);
