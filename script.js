@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
     const detailModal = document.getElementById('detail-modal');
-    const closeModal = document.getElementById('closeErrorModal'); // モーダルの閉じるボタン
+    const closeModal = document.getElementById('closeErrorModal');
     const searchButton = document.getElementById('searchButton');
     const rangeSearchButton = document.getElementById('rangeSearchButton');
     const monthFilter = document.getElementById('month-filter');
@@ -135,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // モーダルの閉じるボタンにイベントリスナーを追加
     closeModal.addEventListener('click', () => {
         const errorModal = document.getElementById('errorModal');
         errorModal.style.display = 'none';
@@ -165,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 追加部分：バーコードをスキャンしたら在庫を減らし、売上に追加
     startScanButton.addEventListener('click', () => {
         Quagga.init({
             inputStream: {
@@ -185,11 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Quagga.onDetected((result) => {
             const barcode = result.codeResult.code;
+            Quagga.stop();  // スキャン成功時にQuaggaを停止
             findProductByBarcode(barcode);
         });
     });
 
-    // バーコードで商品を検索
     function findProductByBarcode(barcode) {
         const transaction = db.transaction(['products'], 'readonly');
         const store = transaction.objectStore('products');
@@ -203,14 +201,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
+                    Quagga.start();  // 商品が見つかった場合にスキャンを再開
+                } else {
+                    showErrorModal('数量が無効です。');
+                    Quagga.start();  // キャンセル後もスキャンを再開
                 }
             } else {
                 showErrorModal('該当する商品が見つかりませんでした。');
+                document.getElementById('closeErrorModal').addEventListener('click', () => {
+                    Quagga.start();  // エラー後にスキャンを再開
+                });
             }
         };
     }
 
-    // 商品の在庫を減らす
     function updateProductQuantity(product, quantity) {
         const transaction = db.transaction(['products'], 'readwrite');
         const store = transaction.objectStore('products');
@@ -218,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(product);
     }
 
-    // 売上管理に追加
     function addSaleToDB(product, quantity) {
         const sale = {
             productName: product.name,
