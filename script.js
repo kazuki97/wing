@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
-    let isScanning = false; // スキャン中かどうかを管理
+    let isScanning = false;
 
     const request = indexedDB.open('inventoryDB', 4);
 
@@ -123,14 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const barcode = document.getElementById('product-barcode').value;
 
         if (category && productName && quantity && price && cost && barcode) {
-            const product = {
-                category,
-                name: productName,
-                quantity: parseInt(quantity, 10),
-                price: parseFloat(price),
-                cost: parseFloat(cost),
-                barcode
-            };
+            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
             saveProductToDB(product);
             displayProducts(category);
             document.getElementById('product-name').value = '';
@@ -163,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 categoryButton.textContent = categoryName;
                 categoryButton.className = 'inventory-category-button';
                 categoryButton.addEventListener('click', () => {
-                    displaySalesProducts(categoryName);
+                    displaySalesProducts(categoryName);  // 修正: 正しい商品を表示
                 });
                 salesCategoryContainer.appendChild(categoryButton);
             }
@@ -172,9 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // カテゴリに関連する商品を表示する関数の修正
     function displaySalesProducts(categoryName) {
         const salesProductContainer = document.getElementById('salesProductContainer');
-        salesProductContainer.innerHTML = ''; 
+        salesProductContainer.innerHTML = '';
         const transaction = db.transaction(['products'], 'readonly');
         const store = transaction.objectStore('products');
         const index = store.index('category');
@@ -204,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // バーコードをスキャンしたら在庫を減らし、売上に追加
     startScanButton.addEventListener('click', () => {
         if (isScanning) return;
         isScanning = true;
