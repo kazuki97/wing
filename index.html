@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WINGアプリ</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- QuaggaJSの読み込み -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 <body>
@@ -21,17 +20,21 @@
         </nav>
     </header>
     <main>
-        <!-- 各セクション -->
+        <!-- ホームセクション -->
         <section id="home-section" class="content-section">
             <h2>ホーム</h2>
             <p>ようこそ、WINGアプリへ！</p>
         </section>
+
+        <!-- カテゴリ設定 -->
         <section id="category-section" class="content-section" style="display: none;">
             <h2>カテゴリ設定</h2>
             <input type="text" id="category-name" placeholder="カテゴリ名を入力">
             <button id="add-category">カテゴリを追加</button>
             <div id="category-list"></div>
         </section>
+
+        <!-- 商品設定 -->
         <section id="product-section" class="content-section" style="display: none;">
             <h2>商品設定</h2>
             <select id="category-select"></select>
@@ -56,16 +59,22 @@
                 <tbody></tbody>
             </table>
         </section>
+
+        <!-- 在庫管理 -->
         <section id="inventory-section" class="content-section" style="display: none;">
             <h2>在庫管理</h2>
             <div id="inventory-category-list"></div>
             <div id="inventory-product-list"></div>
         </section>
+
+        <!-- バーコードスキャン -->
         <section id="barcode-section" class="content-section" style="display: none;">
             <h2>バーコードスキャン</h2>
             <div id="scanner-container" style="width: 640px; height: 480px; border: 1px solid black;"></div>
             <button id="start-scan">スキャンを開始</button>
         </section>
+
+        <!-- 売上管理 -->
         <section id="sales-section" class="content-section" style="display: none;">
             <h2>売上管理</h2>
             <input type="month" id="month-filter">
@@ -92,6 +101,7 @@
                 <tbody></tbody>
             </table>
         </section>
+
         <!-- エラーモーダル -->
         <div id="errorModal" class="modal">
             <div class="modal-content">
