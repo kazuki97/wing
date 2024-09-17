@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
-    let isScanning = false; // 追加: スキャン中かどうかを管理
+    let isScanning = false; // スキャン中かどうかを管理
 
     const request = indexedDB.open('inventoryDB', 4);
 
@@ -123,7 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const barcode = document.getElementById('product-barcode').value;
 
         if (category && productName && quantity && price && cost && barcode) {
-            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
+            const product = {
+                category,
+                name: productName,
+                quantity: parseInt(quantity, 10),
+                price: parseFloat(price),
+                cost: parseFloat(cost),
+                barcode
+            };
             saveProductToDB(product);
             displayProducts(category);
             document.getElementById('product-name').value = '';
@@ -165,10 +172,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 追加部分：バーコードをスキャンしたら在庫を減らし、売上に追加
+    function displaySalesProducts(categoryName) {
+        const salesProductContainer = document.getElementById('salesProductContainer');
+        salesProductContainer.innerHTML = ''; 
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('category');
+        const request = index.getAll(categoryName);
+
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            if (products.length === 0) {
+                alert('該当する商品がありません。');
+                return;
+            }
+            products.forEach(product => {
+                const productButton = document.createElement('button');
+                productButton.textContent = product.name;
+                productButton.className = 'inventory-product-button';
+                productButton.addEventListener('click', () => {
+                    const quantity = prompt(`商品名: ${product.name}\n購入数量を入力してください:`);
+                    if (quantity) {
+                        updateProductQuantity(product, quantity);
+                        addSaleToDB(product, quantity);
+                    } else {
+                        alert('数量を入力してください。');
+                    }
+                });
+                salesProductContainer.appendChild(productButton);
+            });
+        };
+    }
+
     startScanButton.addEventListener('click', () => {
-        if (isScanning) return; // 追加: 既にスキャン中なら無視
-        isScanning = true; // スキャン中に設定
+        if (isScanning) return;
+        isScanning = true;
 
         Quagga.init({
             inputStream: {
@@ -188,12 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Quagga.onDetected((result) => {
             const barcode = result.codeResult.code;
-            Quagga.stop(); // バーコードを1度読み取ったら停止
+            Quagga.stop();
             findProductByBarcode(barcode);
         });
     });
 
-    // バーコードで商品を検索
     function findProductByBarcode(barcode) {
         const transaction = db.transaction(['products'], 'readonly');
         const store = transaction.objectStore('products');
@@ -207,21 +244,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
-                    isScanning = false; // スキャン完了後、スキャン可能に設定
+                    isScanning = false;
                 } else {
                     showErrorModal('数量が無効です。');
-                    isScanning = false; // キャンセル後にスキャン可能に設定
+                    isScanning = false;
                 }
             } else {
                 showErrorModal('該当する商品が見つかりませんでした。');
                 document.getElementById('closeErrorModal').addEventListener('click', () => {
-                    isScanning = false; // エラーモーダルを閉じたらスキャン可能に設定
+                    isScanning = false;
                 });
             }
         };
     }
 
-    // 商品の在庫を減らす
     function updateProductQuantity(product, quantity) {
         const transaction = db.transaction(['products'], 'readwrite');
         const store = transaction.objectStore('products');
@@ -229,7 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
         store.put(product);
     }
 
-    // 売上管理に追加
     function addSaleToDB(product, quantity) {
         const sale = {
             productName: product.name,
