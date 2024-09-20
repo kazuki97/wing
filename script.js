@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
     let isScanning = false;
-    let currentTransactionType = ''; // 追加: EC か 店舗かを保持
 
     const request = indexedDB.open('inventoryDB', 4);
 
@@ -14,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db = event.target.result;
         loadCategories();
         loadSales();
+        loadOverallInventory(); // 全体在庫のロード
     };
 
     request.onupgradeneeded = (event) => {
@@ -25,17 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
             productStore.createIndex('category', 'category', { unique: false });
             productStore.createIndex('barcode', 'barcode', { unique: true });
-        } else {
-            const productStore = event.target.transaction.objectStore('products');
-            if (!productStore.indexNames.contains('barcode')) {
-                productStore.createIndex('barcode', 'barcode', { unique: true });
-            }
+        }
+        if (!db.objectStoreNames.contains('overallInventory')) {
+            db.createObjectStore('overallInventory', { keyPath: 'name' }); // 全体在庫用のデータベース
         }
         if (!db.objectStoreNames.contains('sales')) {
             db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
-        }
-        if (!db.objectStoreNames.contains('inventory')) {
-            db.createObjectStore('inventory', { keyPath: 'id', autoIncrement: true }); // 全体在庫
         }
     };
 
@@ -43,12 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
-    const detailModal = document.getElementById('detail-modal');
-    const closeModal = document.getElementById('closeErrorModal');
-    const searchButton = document.getElementById('searchButton');
-    const rangeSearchButton = document.getElementById('rangeSearchButton');
-    const monthFilter = document.getElementById('month-filter');
-    const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
 
     const homeSection = document.getElementById('home-section');
@@ -57,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inventorySection = document.getElementById('inventory-section');
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
+    const overallInventorySection = document.getElementById('overall-inventory-section');
 
     const linkHome = document.getElementById('link-home');
     const linkCategory = document.getElementById('link-category');
@@ -64,7 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
     const linkSales = document.getElementById('link-sales');
+    const linkOverallInventory = document.getElementById('link-overall-inventory'); // 全体在庫リンク
 
+    // セクションの表示を管理
     function showSection(section) {
         homeSection.style.display = 'none';
         categorySection.style.display = 'none';
@@ -72,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inventorySection.style.display = 'none';
         barcodeSection.style.display = 'none';
         salesSection.style.display = 'none';
+        overallInventorySection.style.display = 'none';
         section.style.display = 'block';
     }
 
@@ -102,6 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
         displaySales();
     });
 
+    linkOverallInventory.addEventListener('click', () => {
+        showSection(overallInventorySection);
+        displayOverallInventory();
+    });
+
+    // カテゴリ追加
     addCategoryButton.addEventListener('click', () => {
         const categoryName = document.getElementById('category-name').value;
         if (categoryName && !categories[categoryName]) {
@@ -118,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 商品追加
     addProductButton.addEventListener('click', () => {
         const category = categorySelect.value;
         const productName = document.getElementById('product-name').value;
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const barcode = document.getElementById('product-barcode').value;
 
         if (category && productName && quantity && price && cost && barcode) {
-            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
+            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode, overallInventoryName: category + "全体在庫" };
             saveProductToDB(product);
             displayProducts(category);
             document.getElementById('product-name').value = '';
@@ -140,23 +140,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    closeModal.addEventListener('click', () => {
-        const errorModal = document.getElementById('errorModal');
-        errorModal.style.display = 'none';
-    });
+    // 全体在庫表示
+    function displayOverallInventory() {
+        const overallInventoryList = document.getElementById('overall-inventory-list');
+        overallInventoryList.innerHTML = '';
+        const transaction = db.transaction(['overallInventory'], 'readonly');
+        const store = transaction.objectStore('overallInventory');
+        const request = store.getAll();
 
-    // ECか店舗販売かの選択
+        request.onsuccess = (event) => {
+            const overallInventories = event.target.result;
+            overallInventories.forEach(inventory => {
+                const div = document.createElement('div');
+                div.textContent = `${inventory.name}: ${inventory.quantity}`;
+                overallInventoryList.appendChild(div);
+            });
+        };
+    }
+
+    // 全体在庫を保存
+    function saveOverallInventory(name, quantity) {
+        const transaction = db.transaction(['overallInventory'], 'readwrite');
+        const store = transaction.objectStore('overallInventory');
+        const request = store.get(name);
+
+        request.onsuccess = (event) => {
+            let overallInventory = event.target.result;
+            if (overallInventory) {
+                overallInventory.quantity += quantity;
+            } else {
+                overallInventory = { name, quantity };
+            }
+            store.put(overallInventory);
+        };
+    }
+
+    // バーコードスキャン時に全体在庫を更新
+    function updateOverallInventory(product, quantity) {
+        const transaction = db.transaction(['overallInventory'], 'readwrite');
+        const store = transaction.objectStore('overallInventory');
+        const request = store.get(product.overallInventoryName); // 全体在庫名を取得
+
+        request.onsuccess = (event) => {
+            const overallInventory = event.target.result;
+            if (overallInventory) {
+                overallInventory.quantity -= quantity;
+                store.put(overallInventory);
+            }
+        };
+    }
+
+    // バーコードスキャン処理
     startScanButton.addEventListener('click', () => {
-        currentTransactionType = prompt('ECか店舗かを選択してください。ECの場合は「EC」、店舗販売の場合は「店舗」と入力してください。');
-        if (currentTransactionType !== 'EC' && currentTransactionType !== '店舗') {
-            alert('無効な選択です。もう一度選択してください。');
-            return;
-        }
-        startBarcodeScan();
-    });
-
-    // バーコードをスキャン
-    function startBarcodeScan() {
         if (isScanning) return;
         isScanning = true;
 
@@ -181,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             Quagga.stop();
             findProductByBarcode(barcode);
         });
-    }
+    });
 
     function findProductByBarcode(barcode) {
         const transaction = db.transaction(['products'], 'readonly');
@@ -196,10 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
-                    updateTotalInventory(product, quantity);  // 全体在庫を減らす処理を追加
-                    if (currentTransactionType === 'EC') {
-                        addShippingCostToDB();
-                    }
+                    updateOverallInventory(product, parseInt(quantity, 10)); // 全体在庫も更新
                     isScanning = false;
                 } else {
                     showErrorModal('数量が無効です。');
@@ -212,37 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         };
-    }
-
-    // 全体在庫の減算処理
-    function updateTotalInventory(product, quantity) {
-        const transaction = db.transaction(['inventory'], 'readwrite');
-        const store = transaction.objectStore('inventory');
-        const request = store.get(product.category); // 全体在庫のカテゴリーで減らす
-
-        request.onsuccess = (event) => {
-            const inventory = event.target.result;
-            if (inventory) {
-                inventory.quantity -= parseInt(quantity, 10) * (product.name.includes('5ml') ? 5 : 10); // 5mlなら5、10mlなら10減らす
-                store.put(inventory);
-            }
-        };
-    }
-
-    // 送料を売上に追加
-    function addShippingCostToDB() {
-        const sale = {
-            productName: '送料',
-            quantity: 1,
-            totalPrice: 300,
-            profit: 0,
-            date: new Date().toISOString().split('T')[0]
-        };
-
-        const transaction = db.transaction(['sales'], 'readwrite');
-        const store = transaction.objectStore('sales');
-        store.put(sale);
-        displaySales();
     }
 
     function updateProductQuantity(product, quantity) {
@@ -277,12 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['products'], 'readwrite');
         const store = transaction.objectStore('products');
         store.put(product);
-    }
-
-    function saveSaleToDB(sale) {
-        const transaction = db.transaction(['sales'], 'readwrite');
-        const store = transaction.objectStore('sales');
-        store.put(sale);
     }
 
     function loadCategories() {
