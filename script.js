@@ -524,3 +524,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// 既存の関数のあとに追加
+function displayInventoryCategories() {
+    const inventoryCategoryList = document.getElementById('inventory-category-list');
+    inventoryCategoryList.innerHTML = '';
+
+    for (const categoryName in categories) {
+        const button = document.createElement('button');
+        button.textContent = categoryName;
+        button.className = 'inventory-category-button';
+        button.addEventListener('click', () => {
+            displayInventoryProducts(categoryName);
+        });
+
+        inventoryCategoryList.appendChild(button);
+    }
+}
+
+function displayInventoryProducts(category) {
+    const transaction = db.transaction(['products'], 'readonly');
+    const store = transaction.objectStore('products');
+    const index = store.index('category');
+    const request = index.getAll(category);
+
+    request.onsuccess = (event) => {
+        const products = event.target.result;
+        const inventoryProductList = document.getElementById('inventory-product-list');
+        inventoryProductList.innerHTML = '';
+
+        products.forEach(product => {
+            const row = document.createElement('div');
+            row.className = 'inventory-item';
+            row.innerHTML = `
+                <p>${product.name}</p>
+                <p>${product.quantity}</p>
+                <p>${product.price}</p>
+                <p>${product.barcode}</p>
+                <button class="edit-button">編集</button>
+                <button class="delete-button">削除</button>
+            `;
+            inventoryProductList.appendChild(row);
+
+            const editButton = row.querySelector('.edit-button');
+            editButton.addEventListener('click', () => {
+                const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
+                if (newQuantity !== null) {
+                    product.quantity = parseInt(newQuantity, 10);
+                    saveProductToDB(product);
+                    displayInventoryProducts(category);
+                }
+            });
+
+            const deleteButton = row.querySelector('.delete-button');
+            deleteButton.addEventListener('click', () => {
+                if (confirm('この商品を削除しますか？')) {
+                    const transaction = db.transaction(['products'], 'readwrite');
+                    const store = transaction.objectStore('products');
+                    store.delete(product.id);
+                    displayInventoryProducts(category);
+                }
+            });
+        });
+    };
+}
