@@ -33,8 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('sales')) {
             db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
         }
+        // inventoryストアの追加
+        if (!db.objectStoreNames.contains('inventory')) {
+            db.createObjectStore('inventory', { keyPath: 'id', autoIncrement: true });
+        }
     };
 
+    // 必要なボタンや要素の取得
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
@@ -47,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
 
+    // 各セクションの取得
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
     const productSection = document.getElementById('product-section');
@@ -54,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
 
+    // 各リンクの取得
     const linkHome = document.getElementById('link-home');
     const linkCategory = document.getElementById('link-category');
     const linkProduct = document.getElementById('link-product');
@@ -71,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'block';
     }
 
+    // 各リンクに対するイベントリスナーを追加
     linkHome.addEventListener('click', () => {
         showSection(homeSection);
     });
@@ -165,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // カテゴリに関連する商品を表示する関数の修正
+    // カテゴリに関連する商品を表示する関数
     function displaySalesProducts(categoryName) {
         const salesProductContainer = document.getElementById('salesProductContainer');
         salesProductContainer.innerHTML = '';
