@@ -3,73 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management</title>
+    <title>在庫管理アプリ</title>
     <style>
         body {
             font-family: Arial, sans-serif;
         }
-        #scanner-container {
-            width: 400px;
-            height: 300px;
-            border: 1px solid black;
+        header {
+            margin-bottom: 20px;
         }
-        .section {
+        .button-container {
+            margin-bottom: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+        section {
             display: none;
         }
-        .active {
+        section.active {
             display: block;
         }
-        .category-button, .product-button, .inventory-category-button {
-            margin: 5px;
+        .category-item, .inventory-item {
+            margin: 10px 0;
         }
-        .inventory-item, .sales-item {
-            margin-bottom: 10px;
+        .category-button, .product-button {
+            margin-left: 10px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        #salesCategoryContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        th, td {
-            padding: 8px;
-            border: 1px solid black;
-            text-align: center;
+        #salesProductContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <nav>
-        <button id="link-home">ホーム</button>
-        <button id="link-category">カテゴリ管理</button>
-        <button id="link-product">商品管理</button>
-        <button id="link-inventory">在庫管理</button>
-        <button id="link-barcode">バーコードスキャン</button>
-        <button id="link-sales">売上管理</button>
-        <button id="link-overall-stock">全体在庫</button>
-    </nav>
+    <header>
+        <div class="button-container">
+            <button id="link-home">ホーム</button>
+            <button id="link-category">カテゴリ管理</button>
+            <button id="link-product">商品管理</button>
+            <button id="link-inventory">在庫管理</button>
+            <button id="link-barcode">バーコードスキャン</button>
+            <button id="link-sales">売上管理</button>
+            <button id="link-overall-stock">全体在庫</button>
+        </div>
+    </header>
 
-    <!-- ホームセクション -->
-    <section id="home-section" class="section active">
+    <section id="home-section" class="active">
         <h1>ホーム</h1>
     </section>
 
-    <!-- カテゴリ管理セクション -->
-    <section id="category-section" class="section">
-        <h2>カテゴリ管理</h2>
-        <input type="text" id="category-name" placeholder="カテゴリ名">
-        <button id="add-category">カテゴリ追加</button>
+    <section id="category-section">
+        <h1>カテゴリ管理</h1>
+        <input type="text" id="category-name" placeholder="カテゴリ名を入力">
+        <button id="add-category">カテゴリを追加</button>
         <div id="category-list"></div>
     </section>
 
-    <!-- 商品管理セクション -->
-    <section id="product-section" class="section">
-        <h2>商品管理</h2>
+    <section id="product-section">
+        <h1>商品管理</h1>
         <select id="category-select"></select>
-        <input type="text" id="product-name" placeholder="商品名">
+        <input type="text" id="product-name" placeholder="商品名を入力">
         <input type="number" id="product-quantity" placeholder="数量">
         <input type="number" id="product-price" placeholder="価格">
         <input type="number" id="product-cost" placeholder="原価">
         <input type="text" id="product-barcode" placeholder="バーコード">
-        <button id="add-product">商品追加</button>
+        <button id="add-product">商品を追加</button>
         <table id="product-table">
             <thead>
                 <tr>
@@ -86,23 +92,22 @@
         </table>
     </section>
 
-    <!-- 在庫管理セクション -->
-    <section id="inventory-section" class="section">
-        <h2>在庫管理</h2>
+    <section id="inventory-section">
+        <h1>在庫管理</h1>
         <div id="inventory-category-list"></div>
         <div id="inventory-product-list"></div>
     </section>
 
-    <!-- バーコードスキャンセクション -->
-    <section id="barcode-section" class="section">
-        <h2>バーコードスキャン</h2>
+    <section id="barcode-section">
+        <h1>バーコードスキャン</h1>
         <div id="scanner-container"></div>
-        <button id="start-scan">スキャン開始</button>
+        <button id="start-scan">スキャンを開始</button>
     </section>
 
-    <!-- 売上管理セクション -->
-    <section id="sales-section" class="section">
-        <h2>売上管理</h2>
+    <section id="sales-section">
+        <h1>売上管理</h1>
+        <div id="salesCategoryContainer"></div>
+        <div id="salesProductContainer"></div>
         <table id="sales-table">
             <thead>
                 <tr>
@@ -110,7 +115,7 @@
                     <th>日付</th>
                     <th>商品名</th>
                     <th>数量</th>
-                    <th>合計価格</th>
+                    <th>売上</th>
                     <th>利益</th>
                     <th>編集</th>
                     <th>削除</th>
@@ -120,19 +125,18 @@
         </table>
     </section>
 
-    <!-- 全体在庫セクション -->
-    <section id="overall-stock-section" class="section">
-        <h2>全体在庫管理</h2>
+    <section id="overall-stock-section">
+        <h1>全体在庫</h1>
         <div id="overall-stock-list"></div>
     </section>
 
-    <!-- モーダル -->
+    <!-- エラーモーダル -->
     <div id="errorModal" style="display:none;">
-        <p id="errorMessage"></p>
-        <button id="closeErrorModal">閉じる</button>
+        <div>
+            <p id="errorMessage"></p>
+            <button id="closeErrorModal">閉じる</button>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+    <!-- スクリプトの読み込み -->
+    <script src="your-script-file
