@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
     let isScanning = false;
+    let currentTransactionType = ''; // 追加: EC か 店舗かを保持
 
     const request = indexedDB.open('inventoryDB', 4);
 
@@ -32,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (!db.objectStoreNames.contains('sales')) {
             db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
+        }
+        if (!db.objectStoreNames.contains('inventory')) {
+            db.createObjectStore('inventory', { keyPath: 'id', autoIncrement: true }); // 全体在庫
         }
     };
 
@@ -141,65 +145,18 @@ document.addEventListener('DOMContentLoaded', () => {
         errorModal.style.display = 'none';
     });
 
-    manualAddSalesButton.addEventListener('click', () => {
-        const salesCategoryContainer = document.getElementById('salesCategoryContainer');
-        const salesProductContainer = document.getElementById('salesProductContainer');
-
-        if (salesCategoryContainer) {
-            salesCategoryContainer.innerHTML = '';
-            salesCategoryContainer.style.display = 'flex';
-            salesCategoryContainer.style.flexWrap = 'wrap';
-            salesCategoryContainer.style.gap = '10px';
-
-            for (const categoryName in categories) {
-                const categoryButton = document.createElement('button');
-                categoryButton.textContent = categoryName;
-                categoryButton.className = 'inventory-category-button';
-                categoryButton.addEventListener('click', () => {
-                    displaySalesProducts(categoryName);  // 修正: 正しい商品を表示
-                });
-                salesCategoryContainer.appendChild(categoryButton);
-            }
-        } else {
-            console.error('salesCategoryContainer が見つかりませんでした。');
+    // ECか店舗販売かの選択
+    startScanButton.addEventListener('click', () => {
+        currentTransactionType = prompt('ECか店舗かを選択してください。ECの場合は「EC」、店舗販売の場合は「店舗」と入力してください。');
+        if (currentTransactionType !== 'EC' && currentTransactionType !== '店舗') {
+            alert('無効な選択です。もう一度選択してください。');
+            return;
         }
+        startBarcodeScan();
     });
 
-    // カテゴリに関連する商品を表示する関数の修正
-    function displaySalesProducts(categoryName) {
-        const salesProductContainer = document.getElementById('salesProductContainer');
-        salesProductContainer.innerHTML = '';
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('category');
-        const request = index.getAll(categoryName);
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            if (products.length === 0) {
-                alert('該当する商品がありません。');
-                return;
-            }
-            products.forEach(product => {
-                const productButton = document.createElement('button');
-                productButton.textContent = product.name;
-                productButton.className = 'inventory-product-button';
-                productButton.addEventListener('click', () => {
-                    const quantity = prompt(`商品名: ${product.name}\n購入数量を入力してください:`);
-                    if (quantity) {
-                        updateProductQuantity(product, quantity);
-                        addSaleToDB(product, quantity);
-                    } else {
-                        alert('数量を入力してください。');
-                    }
-                });
-                salesProductContainer.appendChild(productButton);
-            });
-        };
-    }
-
-    // バーコードをスキャンしたら在庫を減らし、売上に追加
-    startScanButton.addEventListener('click', () => {
+    // バーコードをスキャン
+    function startBarcodeScan() {
         if (isScanning) return;
         isScanning = true;
 
@@ -224,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
             Quagga.stop();
             findProductByBarcode(barcode);
         });
-    });
+    }
 
     function findProductByBarcode(barcode) {
         const transaction = db.transaction(['products'], 'readonly');
@@ -239,6 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
+                    updateTotalInventory(product, quantity);  // 全体在庫を減らす処理を追加
+                    if (currentTransactionType === 'EC') {
+                        addShippingCostToDB();
+                    }
                     isScanning = false;
                 } else {
                     showErrorModal('数量が無効です。');
@@ -251,6 +212,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         };
+    }
+
+    // 全体在庫の減算処理
+    function updateTotalInventory(product, quantity) {
+        const transaction = db.transaction(['inventory'], 'readwrite');
+        const store = transaction.objectStore('inventory');
+        const request = store.get(product.category); // 全体在庫のカテゴリーで減らす
+
+        request.onsuccess = (event) => {
+            const inventory = event.target.result;
+            if (inventory) {
+                inventory.quantity -= parseInt(quantity, 10) * (product.name.includes('5ml') ? 5 : 10); // 5mlなら5、10mlなら10減らす
+                store.put(inventory);
+            }
+        };
+    }
+
+    // 送料を売上に追加
+    function addShippingCostToDB() {
+        const sale = {
+            productName: '送料',
+            quantity: 1,
+            totalPrice: 300,
+            profit: 0,
+            date: new Date().toISOString().split('T')[0]
+        };
+
+        const transaction = db.transaction(['sales'], 'readwrite');
+        const store = transaction.objectStore('sales');
+        store.put(sale);
+        displaySales();
     }
 
     function updateProductQuantity(product, quantity) {
