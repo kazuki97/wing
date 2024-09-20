@@ -3,132 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在庫管理アプリ</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        header {
-            margin-bottom: 20px;
-        }
-        .button-container {
-            margin-bottom: 20px;
-        }
-        button {
-            margin: 5px;
-            padding: 10px 15px;
-            font-size: 16px;
-        }
-        section {
-            display: none;
-        }
-        section.active {
-            display: block;
-        }
-        .category-item, .inventory-item {
-            margin: 10px 0;
-        }
-        .category-button, .product-button {
-            margin-left: 10px;
-        }
-        #salesCategoryContainer {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        #salesProductContainer {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-    </style>
+    <title>在庫管理システム</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <div class="button-container">
+        <h1>在庫管理システム</h1>
+        <nav>
             <button id="link-home">ホーム</button>
             <button id="link-category">カテゴリ管理</button>
             <button id="link-product">商品管理</button>
             <button id="link-inventory">在庫管理</button>
             <button id="link-barcode">バーコードスキャン</button>
             <button id="link-sales">売上管理</button>
-            <button id="link-overall-stock">全体在庫</button>
-        </div>
+            <button id="link-global-inventory">全体在庫</button> <!-- 全体在庫セクションの追加 -->
+        </nav>
     </header>
 
-    <section id="home-section" class="active">
-        <h1>ホーム</h1>
-    </section>
+    <main>
+        <!-- ホームセクション -->
+        <section id="home-section">
+            <h2>ホーム</h2>
+            <p>在庫管理システムへようこそ。</p>
+        </section>
 
-    <section id="category-section">
-        <h1>カテゴリ管理</h1>
-        <input type="text" id="category-name" placeholder="カテゴリ名を入力">
-        <button id="add-category">カテゴリを追加</button>
-        <div id="category-list"></div>
-    </section>
+        <!-- カテゴリ管理セクション -->
+        <section id="category-section" style="display:none;">
+            <h2>カテゴリ管理</h2>
+            <input type="text" id="category-name" placeholder="カテゴリ名を入力">
+            <button id="add-category">カテゴリを追加</button>
+            <div id="category-list"></div>
+        </section>
 
-    <section id="product-section">
-        <h1>商品管理</h1>
-        <select id="category-select"></select>
-        <input type="text" id="product-name" placeholder="商品名を入力">
-        <input type="number" id="product-quantity" placeholder="数量">
-        <input type="number" id="product-price" placeholder="価格">
-        <input type="number" id="product-cost" placeholder="原価">
-        <input type="text" id="product-barcode" placeholder="バーコード">
-        <button id="add-product">商品を追加</button>
-        <table id="product-table">
-            <thead>
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>価格</th>
-                    <th>原価</th>
-                    <th>バーコード</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </section>
+        <!-- 商品管理セクション -->
+        <section id="product-section" style="display:none;">
+            <h2>商品管理</h2>
+            <select id="category-select">
+                <option value="">カテゴリを選択</option>
+            </select>
+            <input type="text" id="product-name" placeholder="商品名">
+            <input type="number" id="product-quantity" placeholder="数量">
+            <input type="number" id="product-price" placeholder="価格">
+            <input type="number" id="product-cost" placeholder="原価">
+            <input type="text" id="product-barcode" placeholder="バーコード">
+            <button id="add-product">商品を追加</button>
+            <table id="product-table">
+                <thead>
+                    <tr>
+                        <th>商品名</th>
+                        <th>数量</th>
+                        <th>価格</th>
+                        <th>原価</th>
+                        <th>バーコード</th>
+                        <th>編集</th>
+                        <th>削除</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
 
-    <section id="inventory-section">
-        <h1>在庫管理</h1>
-        <div id="inventory-category-list"></div>
-        <div id="inventory-product-list"></div>
-    </section>
+        <!-- 在庫管理セクション -->
+        <section id="inventory-section" style="display:none;">
+            <h2>在庫管理</h2>
+            <div id="inventory-category-list"></div>
+            <div id="inventory-product-list"></div>
+        </section>
 
-    <section id="barcode-section">
-        <h1>バーコードスキャン</h1>
-        <div id="scanner-container"></div>
-        <button id="start-scan">スキャンを開始</button>
-    </section>
+        <!-- バーコードスキャンセクション -->
+        <section id="barcode-section" style="display:none;">
+            <h2>バーコードスキャン</h2>
+            <div id="scanner-container"></div>
+            <button id="start-scan">スキャンを開始</button>
+        </section>
 
-    <section id="sales-section">
-        <h1>売上管理</h1>
-        <div id="salesCategoryContainer"></div>
-        <div id="salesProductContainer"></div>
-        <table id="sales-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>日付</th>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>売上</th>
-                    <th>利益</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </section>
+        <!-- 売上管理セクション -->
+        <section id="sales-section" style="display:none;">
+            <h2>売上管理</h2>
+            <button id="manualAddSalesButton">売上を手動追加</button>
+            <div id="salesCategoryContainer"></div>
+            <div id="salesProductContainer"></div>
+            <table id="sales-table">
+                <thead>
+                    <tr>
+                        <th>番号</th>
+                        <th>日付</th>
+                        <th>商品名</th>
+                        <th>数量</th>
+                        <th>売上金額</th>
+                        <th>利益</th>
+                        <th>編集</th>
+                        <th>削除</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
 
-    <section id="overall-stock-section">
-        <h1>全体在庫</h1>
-        <div id="overall-stock-list"></div>
-    </section>
+        <!-- 全体在庫セクション -->
+        <section id="global-inventory-section" style="display:none;">
+            <h2>全体在庫</h2>
+            <div id="global-inventory-list"></div>
+        </section>
+
+    </main>
 
     <!-- エラーモーダル -->
     <div id="errorModal" style="display:none;">
@@ -138,5 +116,7 @@
         </div>
     </div>
 
-    <!-- スクリプトの読み込み -->
-    <script src="your-script-file
+    <!-- JavaScriptファイルの読み込み -->
+    <script src="app.js"></script>
+</body>
+</html>
