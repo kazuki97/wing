@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 categoryButton.textContent = categoryName;
                 categoryButton.className = 'inventory-category-button';
                 categoryButton.addEventListener('click', () => {
-                    displaySalesProducts(categoryName);
+                    displaySalesProducts(categoryName);  // 修正: 正しい商品を表示
                 });
                 salesCategoryContainer.appendChild(categoryButton);
             }
@@ -291,22 +291,22 @@ document.addEventListener('DOMContentLoaded', () => {
         Quagga.init({
             inputStream: {
                 type: "LiveStream",
-                target: scannerContainer
+                target: scannerContainer // カメラビューを表示するコンテナ
             },
             decoder: {
-                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
+                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"] // 読み取るバーコードの種類
             }
         }, (err) => {
             if (err) {
                 console.error(err);
                 return;
             }
-            Quagga.start();
+            Quagga.start(); // スキャンの開始
         });
 
         Quagga.onDetected((result) => {
             const barcode = result.codeResult.code;
-            Quagga.stop();
+            Quagga.stop(); // スキャン停止
             findProductByBarcode(barcode);
         });
     });
