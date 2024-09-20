@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
-
 <body>
     <header>
         <nav>
@@ -29,24 +27,20 @@
 
         <section id="category-section" style="display: none;">
             <h2>カテゴリ管理</h2>
-            <div>
-                <input type="text" id="category-name" placeholder="カテゴリ名を入力">
-                <button id="add-category">カテゴリ追加</button>
-            </div>
+            <input type="text" id="category-name" placeholder="カテゴリ名を入力">
+            <button id="add-category">カテゴリ追加</button>
             <div id="category-list"></div>
         </section>
 
         <section id="product-section" style="display: none;">
             <h2>商品管理</h2>
-            <div>
-                <select id="category-select"></select>
-                <input type="text" id="product-name" placeholder="商品名を入力">
-                <input type="number" id="product-quantity" placeholder="数量">
-                <input type="number" id="product-price" placeholder="価格">
-                <input type="number" id="product-cost" placeholder="原価">
-                <input type="text" id="product-barcode" placeholder="バーコード">
-                <button id="add-product">商品追加</button>
-            </div>
+            <select id="category-select"></select>
+            <input type="text" id="product-name" placeholder="商品名を入力">
+            <input type="number" id="product-quantity" placeholder="数量">
+            <input type="number" id="product-price" placeholder="価格">
+            <input type="number" id="product-cost" placeholder="原価">
+            <input type="text" id="product-barcode" placeholder="バーコード">
+            <button id="add-product">商品追加</button>
             <table id="product-table">
                 <thead>
                     <tr>
@@ -102,6 +96,7 @@
             <div id="global-inventory-list"></div>
         </section>
 
+        <!-- エラーモーダル -->
         <section id="detail-modal" style="display: none;">
             <div id="errorModal">
                 <p id="errorMessage"></p>
@@ -112,5 +107,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
