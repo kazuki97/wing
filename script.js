@@ -119,22 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         displayGlobalInventory(); // 全体在庫を表示
     });
 
-    addCategoryButton.addEventListener('click', () => {
-        const categoryName = document.getElementById('category-name').value;
-        if (categoryName && !categories[categoryName]) {
-            categories[categoryName] = [];
-            saveCategoryToDB({
-                name: categoryName,
-                products: categories[categoryName]
-            });
-            updateCategorySelect();
-            displayCategories();
-            document.getElementById('category-name').value = '';
-        } else {
-            alert('カテゴリ名を入力してください。またはカテゴリが既に存在しています。');
-        }
-    });
-
+    // 商品追加の処理
     addProductButton.addEventListener('click', () => {
         const category = categorySelect.value;
         const productName = document.getElementById('product-name').value;
@@ -142,9 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const price = document.getElementById('product-price').value;
         const cost = document.getElementById('product-cost').value;
         const barcode = document.getElementById('product-barcode').value;
+        const size = document.getElementById('product-size').value; // サイズ入力フィールドの追加
 
-        if (category && productName && quantity && price && cost && barcode) {
-            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
+        if (category && productName && quantity && price && cost && barcode && size) {
+            const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode, size: parseFloat(size) };
             saveProductToDB(product);
             displayProducts(category);
             document.getElementById('product-name').value = '';
@@ -152,39 +138,46 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('product-price').value = '';
             document.getElementById('product-cost').value = '';
             document.getElementById('product-barcode').value = '';
+            document.getElementById('product-size').value = ''; // サイズフィールドのリセット
         } else {
             alert('すべてのフィールドを入力してください。');
         }
     });
 
-    closeModal.addEventListener('click', () => {
-        const errorModal = document.getElementById('errorModal');
-        errorModal.style.display = 'none';
-    });
+    // 小分け在庫の減少と全体在庫の管理
+    function updateProductQuantity(product, quantity) {
+        const transaction = db.transaction(['products', 'globalInventory'], 'readwrite');
+        const productStore = transaction.objectStore('products');
+        const globalInventoryStore = transaction.objectStore('globalInventory');
 
-    manualAddSalesButton.addEventListener('click', () => {
-        const salesCategoryContainer = document.getElementById('salesCategoryContainer');
-        const salesProductContainer = document.getElementById('salesProductContainer');
+        // 小分け在庫の減少
+        product.quantity -= parseInt(quantity, 10);
+        productStore.put(product);
 
-        if (salesCategoryContainer) {
-            salesCategoryContainer.innerHTML = '';
-            salesCategoryContainer.style.display = 'flex';
-            salesCategoryContainer.style.flexWrap = 'wrap';
-            salesCategoryContainer.style.gap = '10px';
-
-            for (const categoryName in categories) {
-                const categoryButton = document.createElement('button');
-                categoryButton.textContent = categoryName;
-                categoryButton.className = 'inventory-category-button';
-                categoryButton.addEventListener('click', () => {
-                    displaySalesProducts(categoryName);  // 修正: 正しい商品を表示
-                });
-                salesCategoryContainer.appendChild(categoryButton);
-            }
-        } else {
-            console.error('salesCategoryContainer が見つかりませんでした。');
+        // 全体在庫の更新: 商品名やカテゴリに基づいて適切な全体在庫を減らす
+        const categoryKey = findGlobalCategoryKey(product.name);
+        if (categoryKey) {
+            const globalRequest = globalInventoryStore.get(categoryKey);
+            globalRequest.onsuccess = (event) => {
+                const globalInventory = event.target.result;
+                if (globalInventory) {
+                    globalInventory.quantity -= product.size * quantity;
+                    globalInventoryStore.put(globalInventory);
+                }
+            };
         }
-    });
+    }
+
+    // 商品名からどの全体在庫カテゴリに対応するかを判断する関数
+    function findGlobalCategoryKey(productName) {
+        if (productName.includes('CRD')) {
+            return 'CRD';
+        } else if (productName.includes('CRDH')) {
+            return 'CRDH';
+        }
+        // 他のカテゴリも追加可能
+        return null;
+    }
 
     // 全体在庫を追加する処理
     const addGlobalInventoryButton = document.getElementById('add-global-inventory');
@@ -291,22 +284,22 @@ document.addEventListener('DOMContentLoaded', () => {
         Quagga.init({
             inputStream: {
                 type: "LiveStream",
-                target: scannerContainer // カメラビューを表示するコンテナ
+                target: scannerContainer
             },
             decoder: {
-                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"] // 読み取るバーコードの種類
+                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
             }
         }, (err) => {
             if (err) {
                 console.error(err);
                 return;
             }
-            Quagga.start(); // スキャンの開始
+            Quagga.start();
         });
 
         Quagga.onDetected((result) => {
             const barcode = result.codeResult.code;
-            Quagga.stop(); // スキャン停止
+            Quagga.stop();
             findProductByBarcode(barcode);
         });
     });
