@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>在庫管理システム</title>
-    <link rel="stylesheet" href="styles.css"> <!-- 正しいスタイルシートへのリンク -->
+    <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
     <header>
         <nav>
@@ -17,7 +15,7 @@
             <button id="link-inventory">在庫管理</button>
             <button id="link-barcode">バーコードスキャン</button>
             <button id="link-sales">売上管理</button>
-            <button id="link-stock">全体在庫</button>
+            <button id="link-global-inventory">全体在庫</button>
         </nav>
     </header>
 
@@ -96,9 +94,9 @@
             <button id="manualAddSalesButton">手動売上追加</button>
         </section>
 
-        <section id="stock-section" style="display: none;">
+        <section id="global-inventory-section" style="display: none;">
             <h2>全体在庫</h2>
-            <div id="overall-stock-list"></div>
+            <div id="global-inventory-list"></div>
         </section>
 
         <section id="detail-modal" style="display: none;">
@@ -109,8 +107,6 @@
         </section>
     </main>
 
-    <!-- スクリプトファイルへのリンク修正 -->
     <script src="script.js"></script>
 </body>
-
 </html>
