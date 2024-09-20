@@ -3,113 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WINGアプリ</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <title>Inventory Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #scanner-container {
+            width: 400px;
+            height: 300px;
+            border: 1px solid black;
+        }
+        .section {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .category-button, .product-button, .inventory-category-button {
+            margin: 5px;
+        }
+        .inventory-item, .sales-item {
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid black;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>WINGアプリ</h1>
-        <nav>
-            <button id="link-home">ホーム</button>
-            <button id="link-category">カテゴリ設定</button>
-            <button id="link-product">商品設定</button>
-            <button id="link-inventory">在庫管理</button>
-            <button id="link-barcode">バーコードスキャン</button>
-            <button id="link-sales">売上管理</button>
-        </nav>
-    </header>
-    <main>
-        <!-- ホームセクション -->
-        <section id="home-section" class="content-section">
-            <h2>ホーム</h2>
-            <p>ようこそ、WINGアプリへ！</p>
-        </section>
+    <nav>
+        <button id="link-home">ホーム</button>
+        <button id="link-category">カテゴリ管理</button>
+        <button id="link-product">商品管理</button>
+        <button id="link-inventory">在庫管理</button>
+        <button id="link-barcode">バーコードスキャン</button>
+        <button id="link-sales">売上管理</button>
+        <button id="link-overall-stock">全体在庫</button>
+    </nav>
 
-        <!-- カテゴリ設定 -->
-        <section id="category-section" class="content-section" style="display: none;">
-            <h2>カテゴリ設定</h2>
-            <input type="text" id="category-name" placeholder="カテゴリ名を入力">
-            <button id="add-category">カテゴリを追加</button>
-            <div id="category-list"></div>
-        </section>
+    <!-- ホームセクション -->
+    <section id="home-section" class="section active">
+        <h1>ホーム</h1>
+    </section>
 
-        <!-- 商品設定 -->
-        <section id="product-section" class="content-section" style="display: none;">
-            <h2>商品設定</h2>
-            <select id="category-select"></select>
-            <input type="text" id="product-name" placeholder="商品名を入力">
-            <input type="number" id="product-quantity" placeholder="数量を入力">
-            <input type="number" id="product-price" placeholder="価格を入力">
-            <input type="number" id="product-cost" placeholder="原価を入力">
-            <input type="text" id="product-barcode" placeholder="バーコードを入力">
-            <button id="add-product">商品を追加</button>
-            <table id="product-table">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>数量</th>
-                        <th>価格</th>
-                        <th>原価</th>
-                        <th>バーコード</th>
-                        <th>編集</th>
-                        <th>削除</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
+    <!-- カテゴリ管理セクション -->
+    <section id="category-section" class="section">
+        <h2>カテゴリ管理</h2>
+        <input type="text" id="category-name" placeholder="カテゴリ名">
+        <button id="add-category">カテゴリ追加</button>
+        <div id="category-list"></div>
+    </section>
 
-        <!-- 在庫管理 -->
-        <section id="inventory-section" class="content-section" style="display: none;">
-            <h2>在庫管理</h2>
-            <div id="inventory-category-list"></div>
-            <div id="inventory-product-list"></div>
-        </section>
+    <!-- 商品管理セクション -->
+    <section id="product-section" class="section">
+        <h2>商品管理</h2>
+        <select id="category-select"></select>
+        <input type="text" id="product-name" placeholder="商品名">
+        <input type="number" id="product-quantity" placeholder="数量">
+        <input type="number" id="product-price" placeholder="価格">
+        <input type="number" id="product-cost" placeholder="原価">
+        <input type="text" id="product-barcode" placeholder="バーコード">
+        <button id="add-product">商品追加</button>
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>価格</th>
+                    <th>原価</th>
+                    <th>バーコード</th>
+                    <th>編集</th>
+                    <th>削除</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
 
-        <!-- バーコードスキャン -->
-        <section id="barcode-section" class="content-section" style="display: none;">
-            <h2>バーコードスキャン</h2>
-            <div id="scanner-container" style="width: 640px; height: 480px; border: 1px solid black;"></div>
-            <button id="start-scan">スキャンを開始</button>
-        </section>
+    <!-- 在庫管理セクション -->
+    <section id="inventory-section" class="section">
+        <h2>在庫管理</h2>
+        <div id="inventory-category-list"></div>
+        <div id="inventory-product-list"></div>
+    </section>
 
-        <!-- 売上管理 -->
-        <section id="sales-section" class="content-section" style="display: none;">
-            <h2>売上管理</h2>
-            <input type="month" id="month-filter">
-            <button id="searchButton">検索</button>
-            <input type="date" id="start-date">
-            <input type="date" id="end-date">
-            <button id="rangeSearchButton">範囲検索</button>
-            <button id="manualAddSalesButton">手動で売上を追加</button>
-            <div id="salesCategoryContainer"></div>
-            <div id="salesProductContainer"></div>
-            <table id="sales-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>日付</th>
-                        <th>商品名</th>
-                        <th>売上数量</th>
-                        <th>売上金額</th>
-                        <th>利益</th>
-                        <th>編集</th>
-                        <th>削除</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
+    <!-- バーコードスキャンセクション -->
+    <section id="barcode-section" class="section">
+        <h2>バーコードスキャン</h2>
+        <div id="scanner-container"></div>
+        <button id="start-scan">スキャン開始</button>
+    </section>
 
-        <!-- エラーモーダル -->
-        <div id="errorModal" class="modal">
-            <div class="modal-content">
-                <p id="errorMessage"></p>
-                <button id="closeErrorModal">閉じる</button>
-            </div>
+    <!-- 売上管理セクション -->
+    <section id="sales-section" class="section">
+        <h2>売上管理</h2>
+        <div id="salesCategoryContainer"></div>
+        <div id="salesProductContainer"></div>
+        <table id="sales-table">
+            <thead>
+                <tr>
+                    <th>番号</th>
+                    <th>日付</th>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>売上</th>
+                    <th>利益</th>
+                    <th>編集</th>
+                    <th>削除</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <!-- 全体在庫セクション -->
+    <section id="overall-stock-section" class="section">
+        <h2>全体在庫</h2>
+        <div id="overall-stock-list"></div>
+    </section>
+
+    <!-- エラーモーダル -->
+    <div id="errorModal" style="display:none;">
+        <div>
+            <p id="errorMessage"></p>
+            <button id="closeErrorModal">閉じる</button>
         </div>
-    </main>
-    <script src="script.js"></script>
+    </div>
+
+    <script src="path-to-your-js-file.js"></script>
 </body>
 </html>
