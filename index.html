@@ -103,16 +103,14 @@
     <!-- 売上管理セクション -->
     <section id="sales-section" class="section">
         <h2>売上管理</h2>
-        <div id="salesCategoryContainer"></div>
-        <div id="salesProductContainer"></div>
         <table id="sales-table">
             <thead>
                 <tr>
-                    <th>番号</th>
+                    <th>#</th>
                     <th>日付</th>
                     <th>商品名</th>
                     <th>数量</th>
-                    <th>売上</th>
+                    <th>合計価格</th>
                     <th>利益</th>
                     <th>編集</th>
                     <th>削除</th>
@@ -124,18 +122,17 @@
 
     <!-- 全体在庫セクション -->
     <section id="overall-stock-section" class="section">
-        <h2>全体在庫</h2>
+        <h2>全体在庫管理</h2>
         <div id="overall-stock-list"></div>
     </section>
 
-    <!-- エラーモーダル -->
+    <!-- モーダル -->
     <div id="errorModal" style="display:none;">
-        <div>
-            <p id="errorMessage"></p>
-            <button id="closeErrorModal">閉じる</button>
-        </div>
+        <p id="errorMessage"></p>
+        <button id="closeErrorModal">閉じる</button>
     </div>
 
-    <script src="path-to-your-js-file.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
