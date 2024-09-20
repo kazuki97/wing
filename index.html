@@ -3,44 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在庫管理システム</title>
+    <title>WINGアプリ</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 <body>
     <header>
+        <h1>WINGアプリ</h1>
         <nav>
             <button id="link-home">ホーム</button>
-            <button id="link-category">カテゴリ管理</button>
-            <button id="link-product">商品管理</button>
+            <button id="link-category">カテゴリ設定</button>
+            <button id="link-product">商品設定</button>
             <button id="link-inventory">在庫管理</button>
             <button id="link-barcode">バーコードスキャン</button>
             <button id="link-sales">売上管理</button>
-            <button id="link-global-inventory">全体在庫</button>
         </nav>
     </header>
-
     <main>
-        <section id="home-section">
+        <!-- ホームセクション -->
+        <section id="home-section" class="content-section">
             <h2>ホーム</h2>
+            <p>ようこそ、WINGアプリへ！</p>
         </section>
 
-        <section id="category-section" style="display: none;">
-            <h2>カテゴリ管理</h2>
+        <!-- カテゴリ設定 -->
+        <section id="category-section" class="content-section" style="display: none;">
+            <h2>カテゴリ設定</h2>
             <input type="text" id="category-name" placeholder="カテゴリ名を入力">
-            <button id="add-category">カテゴリ追加</button>
+            <button id="add-category">カテゴリを追加</button>
             <div id="category-list"></div>
         </section>
 
-        <section id="product-section" style="display: none;">
-            <h2>商品管理</h2>
+        <!-- 商品設定 -->
+        <section id="product-section" class="content-section" style="display: none;">
+            <h2>商品設定</h2>
             <select id="category-select"></select>
             <input type="text" id="product-name" placeholder="商品名を入力">
-            <input type="number" id="product-quantity" placeholder="数量">
-            <input type="number" id="product-price" placeholder="価格">
-            <input type="number" id="product-cost" placeholder="原価">
-            <input type="text" id="product-barcode" placeholder="バーコード">
-            <button id="add-product">商品追加</button>
+            <input type="number" id="product-quantity" placeholder="数量を入力">
+            <input type="number" id="product-price" placeholder="価格を入力">
+            <input type="number" id="product-cost" placeholder="原価を入力">
+            <input type="text" id="product-barcode" placeholder="バーコードを入力">
+            <button id="add-product">商品を追加</button>
             <table id="product-table">
                 <thead>
                     <tr>
@@ -57,30 +60,39 @@
             </table>
         </section>
 
-        <section id="inventory-section" style="display: none;">
+        <!-- 在庫管理 -->
+        <section id="inventory-section" class="content-section" style="display: none;">
             <h2>在庫管理</h2>
             <div id="inventory-category-list"></div>
             <div id="inventory-product-list"></div>
         </section>
 
-        <section id="barcode-section" style="display: none;">
+        <!-- バーコードスキャン -->
+        <section id="barcode-section" class="content-section" style="display: none;">
             <h2>バーコードスキャン</h2>
-            <div id="scanner-container"></div>
-            <button id="start-scan">スキャン開始</button>
+            <div id="scanner-container" style="width: 640px; height: 480px; border: 1px solid black;"></div>
+            <button id="start-scan">スキャンを開始</button>
         </section>
 
-        <section id="sales-section" style="display: none;">
+        <!-- 売上管理 -->
+        <section id="sales-section" class="content-section" style="display: none;">
             <h2>売上管理</h2>
+            <input type="month" id="month-filter">
+            <button id="searchButton">検索</button>
+            <input type="date" id="start-date">
+            <input type="date" id="end-date">
+            <button id="rangeSearchButton">範囲検索</button>
+            <button id="manualAddSalesButton">手動で売上を追加</button>
             <div id="salesCategoryContainer"></div>
             <div id="salesProductContainer"></div>
             <table id="sales-table">
                 <thead>
                     <tr>
-                        <th>番号</th>
+                        <th>#</th>
                         <th>日付</th>
                         <th>商品名</th>
-                        <th>数量</th>
-                        <th>合計価格</th>
+                        <th>売上数量</th>
+                        <th>売上金額</th>
                         <th>利益</th>
                         <th>編集</th>
                         <th>削除</th>
@@ -88,23 +100,16 @@
                 </thead>
                 <tbody></tbody>
             </table>
-            <button id="manualAddSalesButton">手動売上追加</button>
-        </section>
-
-        <section id="global-inventory-section" style="display: none;">
-            <h2>全体在庫</h2>
-            <div id="global-inventory-list"></div>
         </section>
 
         <!-- エラーモーダル -->
-        <section id="detail-modal" style="display: none;">
-            <div id="errorModal">
+        <div id="errorModal" class="modal">
+            <div class="modal-content">
                 <p id="errorMessage"></p>
                 <button id="closeErrorModal">閉じる</button>
             </div>
-        </section>
+        </div>
     </main>
-
     <script src="script.js"></script>
 </body>
 </html>
