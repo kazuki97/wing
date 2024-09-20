@@ -49,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
+    const addGlobalInventoryButton = document.getElementById('add-global-inventory'); // 全体在庫追加用
+    const addStockButton = document.getElementById('add-stock-button'); // 在庫の入荷追加用
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.getElementById('closeErrorModal');
     const searchButton = document.getElementById('searchButton');
@@ -180,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 全体在庫を追加する処理
-    const addGlobalInventoryButton = document.getElementById('add-global-inventory');
     addGlobalInventoryButton.addEventListener('click', () => {
         const category = document.getElementById('global-category').value;
         const quantity = parseInt(document.getElementById('global-quantity').value, 10);
@@ -221,6 +222,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
     }
+
+    // 在庫の入荷機能（全体在庫に追加）
+    addStockButton.addEventListener('click', () => {
+        const category = document.getElementById('global-category').value;
+        const quantity = parseInt(document.getElementById('stock-quantity').value, 10);
+
+        if (category && quantity > 0) {
+            const transaction = db.transaction(['globalInventory'], 'readwrite');
+            const store = transaction.objectStore('globalInventory');
+            const request = store.get(category);
+
+            request.onsuccess = (event) => {
+                const globalInventory = event.target.result;
+                if (globalInventory) {
+                    globalInventory.quantity += quantity; // 入荷による全体在庫の追加
+                    store.put(globalInventory);
+                    alert(`全体在庫に ${quantity} g が追加されました。`);
+                    displayGlobalInventory(); // 追加後の全体在庫を再表示
+                }
+            };
+        } else {
+            alert('カテゴリ名と在庫量を正しく入力してください。');
+        }
+    });
 
     // 小分け在庫の減少時に対応する全体在庫も減少
     function updateProductQuantity(product, quantity) {
