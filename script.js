@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inventorySection = document.getElementById('inventory-section');
     const barcodeSection = document.getElementById('barcode-section');
     const salesSection = document.getElementById('sales-section');
-    const globalInventorySection = document.getElementById('global-inventory-section');
+    const globalInventorySection = document.getElementById('stock-section');
 
     const linkHome = document.getElementById('link-home');
     const linkCategory = document.getElementById('link-category');
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
     const linkSales = document.getElementById('link-sales');
-    const linkGlobalInventory = document.getElementById('link-global-inventory');
+    const linkGlobalInventory = document.getElementById('link-stock');
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (category && productName && quantity && price && cost && barcode) {
             const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
             saveProductToDB(product);
-            updateGlobalInventory(category, parseInt(quantity, 10)); // 全体在庫の更新
+            updateGlobalInventory(category, parseInt(quantity, 10)); 
             displayProducts(category);
             document.getElementById('product-name').value = '';
             document.getElementById('product-quantity').value = '';
@@ -172,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // バーコードスキャンの処理
     startScanButton.addEventListener('click', () => {
         if (isScanning) return;
         isScanning = true;
@@ -213,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
-                    updateGlobalInventory(product.category, -parseInt(quantity, 10)); // 全体在庫を減少
+                    updateGlobalInventory(product.category, -parseInt(quantity, 10)); 
                     isScanning = false;
                 } else {
                     showErrorModal('数量が無効です。');
