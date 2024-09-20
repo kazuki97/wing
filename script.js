@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db = event.target.result;
         loadCategories();
         loadSales();
+        loadGlobalInventory();
     };
 
     request.onupgradeneeded = (event) => {
@@ -42,12 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
-    const detailModal = document.getElementById('detail-modal');
-    const closeModal = document.getElementById('closeErrorModal');
     const searchButton = document.getElementById('searchButton');
     const rangeSearchButton = document.getElementById('rangeSearchButton');
-    const monthFilter = document.getElementById('month-filter');
-    const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
 
     const homeSection = document.getElementById('home-section');
@@ -136,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (category && productName && quantity && price && cost && barcode) {
             const product = { category, name: productName, quantity: parseInt(quantity, 10), price: parseFloat(price), cost: parseFloat(cost), barcode };
             saveProductToDB(product);
-            updateGlobalInventory(category, parseInt(quantity, 10)); 
+            updateGlobalInventory(category, parseInt(quantity, 10)); // 全体在庫の更新
             displayProducts(category);
             document.getElementById('product-name').value = '';
             document.getElementById('product-quantity').value = '';
@@ -163,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 categoryButton.textContent = categoryName;
                 categoryButton.className = 'inventory-category-button';
                 categoryButton.addEventListener('click', () => {
-                    displaySalesProducts(categoryName); 
+                    displaySalesProducts(categoryName);
                 });
                 salesCategoryContainer.appendChild(categoryButton);
             }
@@ -212,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
-                    updateGlobalInventory(product.category, -parseInt(quantity, 10)); 
+                    updateGlobalInventory(product.category, -parseInt(quantity, 10)); // 全体在庫を減少
                     isScanning = false;
                 } else {
                     showErrorModal('数量が無効です。');
@@ -271,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const globalInventories = event.target.result;
-            const globalInventoryList = document.getElementById('global-inventory-list');
+            const globalInventoryList = document.getElementById('overall-stock-list');
             globalInventoryList.innerHTML = '';
 
             globalInventories.forEach(inventory => {
@@ -286,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // 既存の関数
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
         const store = transaction.objectStore('categories');
@@ -322,6 +318,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadSales() {
         displaySales();
+    }
+
+    function loadGlobalInventory() {
+        displayGlobalInventory();
     }
 
     function updateCategorySelect() {
@@ -524,67 +524,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
-// 既存の関数のあとに追加
-function displayInventoryCategories() {
-    const inventoryCategoryList = document.getElementById('inventory-category-list');
-    inventoryCategoryList.innerHTML = '';
-
-    for (const categoryName in categories) {
-        const button = document.createElement('button');
-        button.textContent = categoryName;
-        button.className = 'inventory-category-button';
-        button.addEventListener('click', () => {
-            displayInventoryProducts(categoryName);
-        });
-
-        inventoryCategoryList.appendChild(button);
-    }
-}
-
-function displayInventoryProducts(category) {
-    const transaction = db.transaction(['products'], 'readonly');
-    const store = transaction.objectStore('products');
-    const index = store.index('category');
-    const request = index.getAll(category);
-
-    request.onsuccess = (event) => {
-        const products = event.target.result;
-        const inventoryProductList = document.getElementById('inventory-product-list');
-        inventoryProductList.innerHTML = '';
-
-        products.forEach(product => {
-            const row = document.createElement('div');
-            row.className = 'inventory-item';
-            row.innerHTML = `
-                <p>${product.name}</p>
-                <p>${product.quantity}</p>
-                <p>${product.price}</p>
-                <p>${product.barcode}</p>
-                <button class="edit-button">編集</button>
-                <button class="delete-button">削除</button>
-            `;
-            inventoryProductList.appendChild(row);
-
-            const editButton = row.querySelector('.edit-button');
-            editButton.addEventListener('click', () => {
-                const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
-                if (newQuantity !== null) {
-                    product.quantity = parseInt(newQuantity, 10);
-                    saveProductToDB(product);
-                    displayInventoryProducts(category);
-                }
-            });
-
-            const deleteButton = row.querySelector('.delete-button');
-            deleteButton.addEventListener('click', () => {
-                if (confirm('この商品を削除しますか？')) {
-                    const transaction = db.transaction(['products'], 'readwrite');
-                    const store = transaction.objectStore('products');
-                    store.delete(product.id);
-                    displayInventoryProducts(category);
-                }
-            });
-        });
-    };
-}
