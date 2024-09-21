@@ -3,19 +3,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let db;
     let isScanning = false;
 
-    const request = indexedDB.open('inventoryDB', 5); // データベースのバージョンをアップグレード
+    // データベースを開く
+    const request = indexedDB.open('inventoryDB', 5); // バージョンを5に設定
 
+    // データベースエラー
     request.onerror = (event) => {
         console.error('Database error:', event.target.error);
     };
 
+    // データベース成功時
     request.onsuccess = (event) => {
         db = event.target.result;
         loadCategories();
         loadSales();
-        displayGlobalInventory(); // 全体在庫の表示
+        displayGlobalInventory(); // 全体在庫を表示
     };
 
+    // データベースのアップグレード
     request.onupgradeneeded = (event) => {
         db = event.target.result;
 
@@ -38,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
         }
 
-        // 全体在庫用ストアを追加
         if (!db.objectStoreNames.contains('globalInventory')) {
             db.createObjectStore('globalInventory', { keyPath: 'category' });
         }
@@ -49,8 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
-    const addGlobalInventoryButton = document.getElementById('add-global-inventory'); // 全体在庫追加用
-    const addStockButton = document.getElementById('add-stock-button'); // 在庫の入荷追加用
+    const addGlobalInventoryButton = document.getElementById('add-global-inventory');
+    const addStockButton = document.getElementById('add-stock-button');
     const detailModal = document.getElementById('detail-modal');
     const closeModal = document.getElementById('closeErrorModal');
     const searchButton = document.getElementById('searchButton');
@@ -59,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
 
-    // 各セクションの取得
+    // セクションの取得
     const homeSection = document.getElementById('home-section');
     const categorySection = document.getElementById('category-section');
     const productSection = document.getElementById('product-section');
@@ -75,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkInventory = document.getElementById('link-inventory');
     const linkBarcode = document.getElementById('link-barcode');
     const linkSales = document.getElementById('link-sales');
-    const linkGlobalInventory = document.getElementById('link-global-inventory'); // 全体在庫用リンク
+    const linkGlobalInventory = document.getElementById('link-global-inventory');
 
     function showSection(section) {
         homeSection.style.display = 'none';
@@ -84,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inventorySection.style.display = 'none';
         barcodeSection.style.display = 'none';
         salesSection.style.display = 'none';
-        globalInventorySection.style.display = 'none'; // 全体在庫セクションも隠す
+        globalInventorySection.style.display = 'none';
         section.style.display = 'block';
     }
 
@@ -144,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = document.getElementById('product-price').value;
             const cost = document.getElementById('product-cost').value;
             const barcode = document.getElementById('product-barcode').value;
-            const size = document.getElementById('product-size').value; // サイズ入力フィールドの追加
+            const size = document.getElementById('product-size').value;
 
             if (category && productName && quantity && price && cost && barcode && size) {
                 const product = {
@@ -163,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('product-price').value = '';
                 document.getElementById('product-cost').value = '';
                 document.getElementById('product-barcode').value = '';
-                document.getElementById('product-size').value = ''; // サイズフィールドのリセット
+                document.getElementById('product-size').value = '';
             } else {
                 alert('すべてのフィールドを入力してください。');
             }
@@ -184,10 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 request.onsuccess = (event) => {
                     const globalInventory = event.target.result;
                     if (globalInventory) {
-                        globalInventory.quantity += quantity; // 入荷による全体在庫の追加
+                        globalInventory.quantity += quantity;
                         store.put(globalInventory);
                         alert(`全体在庫に ${quantity} g が追加されました。`);
-                        displayGlobalInventory(); // 追加後の全体在庫を再表示
+                        displayGlobalInventory();
                     }
                 };
             } else {
@@ -246,11 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const productStore = transaction.objectStore('products');
         const globalInventoryStore = transaction.objectStore('globalInventory');
 
-        // 小分け在庫の減少
         product.quantity -= parseInt(quantity, 10);
         productStore.put(product);
 
-        // 全体在庫の更新: 商品名やカテゴリに基づいて適切な全体在庫を減らす
         const categoryKey = findGlobalCategoryKey(product.name);
         if (categoryKey) {
             const globalRequest = globalInventoryStore.get(categoryKey);
@@ -271,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (productName.includes('CRDH')) {
             return 'CRDH';
         }
-        // 他のカテゴリも追加可能
         return null;
     }
 
@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     type: "LiveStream",
                     target: scannerContainer,
                     constraints: {
-                        facingMode: "environment" // 背面カメラを使用
+                        facingMode: "environment"
                     }
                 },
                 decoder: {
