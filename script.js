@@ -146,40 +146,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 小分け在庫の減少と全体在庫の管理
-    function updateProductQuantity(product, quantity) {
-        const transaction = db.transaction(['products', 'globalInventory'], 'readwrite');
-        const productStore = transaction.objectStore('products');
-        const globalInventoryStore = transaction.objectStore('globalInventory');
+    // 在庫の入荷機能（全体在庫に追加）
+    addStockButton.addEventListener('click', () => {
+        const category = document.getElementById('global-category').value;
+        const quantity = parseInt(document.getElementById('stock-quantity').value, 10);
 
-        // 小分け在庫の減少
-        product.quantity -= parseInt(quantity, 10);
-        productStore.put(product);
+        if (category && quantity > 0) {
+            const transaction = db.transaction(['globalInventory'], 'readwrite');
+            const store = transaction.objectStore('globalInventory');
+            const request = store.get(category);
 
-        // 全体在庫の更新: 商品名やカテゴリに基づいて適切な全体在庫を減らす
-        const categoryKey = findGlobalCategoryKey(product.name);
-        if (categoryKey) {
-            const globalRequest = globalInventoryStore.get(categoryKey);
-            globalRequest.onsuccess = (event) => {
+            request.onsuccess = (event) => {
                 const globalInventory = event.target.result;
                 if (globalInventory) {
-                    globalInventory.quantity -= product.size * quantity;
-                    globalInventoryStore.put(globalInventory);
+                    globalInventory.quantity += quantity; // 入荷による全体在庫の追加
+                    store.put(globalInventory);
+                    alert(`全体在庫に ${quantity} g が追加されました。`);
+                    displayGlobalInventory(); // 追加後の全体在庫を再表示
                 }
             };
+        } else {
+            alert('カテゴリ名と在庫量を正しく入力してください。');
         }
-    }
-
-    // 商品名からどの全体在庫カテゴリに対応するかを判断する関数
-    function findGlobalCategoryKey(productName) {
-        if (productName.includes('CRD')) {
-            return 'CRD';
-        } else if (productName.includes('CRDH')) {
-            return 'CRDH';
-        }
-        // 他のカテゴリも追加可能
-        return null;
-    }
+    });
 
     // 全体在庫を追加する処理
     addGlobalInventoryButton.addEventListener('click', () => {
@@ -223,31 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // 在庫の入荷機能（全体在庫に追加）
-    addStockButton.addEventListener('click', () => {
-        const category = document.getElementById('global-category').value;
-        const quantity = parseInt(document.getElementById('stock-quantity').value, 10);
-
-        if (category && quantity > 0) {
-            const transaction = db.transaction(['globalInventory'], 'readwrite');
-            const store = transaction.objectStore('globalInventory');
-            const request = store.get(category);
-
-            request.onsuccess = (event) => {
-                const globalInventory = event.target.result;
-                if (globalInventory) {
-                    globalInventory.quantity += quantity; // 入荷による全体在庫の追加
-                    store.put(globalInventory);
-                    alert(`全体在庫に ${quantity} g が追加されました。`);
-                    displayGlobalInventory(); // 追加後の全体在庫を再表示
-                }
-            };
-        } else {
-            alert('カテゴリ名と在庫量を正しく入力してください。');
-        }
-    });
-
-    // 小分け在庫の減少時に対応する全体在庫も減少
+    // 小分け在庫の減少と全体在庫の管理
     function updateProductQuantity(product, quantity) {
         const transaction = db.transaction(['products', 'globalInventory'], 'readwrite');
         const productStore = transaction.objectStore('products');
@@ -257,15 +222,29 @@ document.addEventListener('DOMContentLoaded', () => {
         product.quantity -= parseInt(quantity, 10);
         productStore.put(product);
 
-        // 全体在庫の更新
-        const globalRequest = globalInventoryStore.get(product.category); // カテゴリごとの全体在庫を取得
-        globalRequest.onsuccess = (event) => {
-            const globalInventory = event.target.result;
-            if (globalInventory) {
-                globalInventory.quantity -= product.size * quantity; // 小分けサイズに基づいて全体在庫を減少
-                globalInventoryStore.put(globalInventory); // 更新後の全体在庫を保存
-            }
-        };
+        // 全体在庫の更新: 商品名やカテゴリに基づいて適切な全体在庫を減らす
+        const categoryKey = findGlobalCategoryKey(product.name);
+        if (categoryKey) {
+            const globalRequest = globalInventoryStore.get(categoryKey);
+            globalRequest.onsuccess = (event) => {
+                const globalInventory = event.target.result;
+                if (globalInventory) {
+                    globalInventory.quantity -= product.size * quantity;
+                    globalInventoryStore.put(globalInventory);
+                }
+            };
+        }
+    }
+
+    // 商品名からどの全体在庫カテゴリに対応するかを判断する関数
+    function findGlobalCategoryKey(productName) {
+        if (productName.includes('CRD')) {
+            return 'CRD';
+        } else if (productName.includes('CRDH')) {
+            return 'CRDH';
+        }
+        // 他のカテゴリも追加可能
+        return null;
     }
 
     // カテゴリに関連する商品を表示する関数
@@ -309,7 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
         Quagga.init({
             inputStream: {
                 type: "LiveStream",
-                target: scannerContainer
+                target: scannerContainer,
+                constraints: {
+                    facingMode: "environment" // 背面カメラを使用
+                }
             },
             decoder: {
                 readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
