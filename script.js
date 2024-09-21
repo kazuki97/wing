@@ -285,30 +285,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isScanning) return;
         isScanning = true;
 
-        Quagga.init({
-            inputStream: {
-                type: "LiveStream",
-                target: scannerContainer,
-                constraints: {
-                    facingMode: "environment" // 背面カメラを使用
+        // カメラの設定およびQuaggaの初期化
+        if (startScanButton) {
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    target: scannerContainer,
+                    constraints: {
+                        facingMode: "environment" // 背面カメラを使用
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
                 }
-            },
-            decoder: {
-                readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
-            }
-        }, (err) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            Quagga.start();
-        });
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                    isScanning = false;
+                    return;
+                }
+                Quagga.start();
+            });
 
-        Quagga.onDetected((result) => {
-            const barcode = result.codeResult.code;
-            Quagga.stop();
-            findProductByBarcode(barcode);
-        });
+            Quagga.onDetected((result) => {
+                const barcode = result.codeResult.code;
+                Quagga.stop();
+                findProductByBarcode(barcode);
+            });
+        }
     });
 
     function findProductByBarcode(barcode) {
