@@ -106,7 +106,7 @@
         </section>
 
         <!-- 全体在庫セクション -->
-        <section id="global-inventory-section" class="content-section" style="display:none;">
+        <section id="global-inventory-section" style="display:none;">
             <h2>全体在庫管理</h2>
             <!-- 全体在庫のカテゴリ入力 -->
             <label for="global-category">カテゴリ:</label>
@@ -116,7 +116,7 @@
             <input type="number" id="global-quantity" placeholder="在庫量を入力してね" required>
             <!-- 商品選択用 -->
             <label for="product-select">関連商品を選択:</label>
-            <select id="global-inventory-product-select" multiple> <!-- 修正箇所 -->
+            <select id="product-select" multiple>
                 <!-- 商品リストがここに表示されます -->
             </select>
             <!-- 関連商品を保存するボタン -->
@@ -125,7 +125,7 @@
             <button id="add-global-inventory">全体在庫を追加</button>
             <!-- 全体在庫の一覧表示 -->
             <h3>全体在庫一覧</h3>
-            <div id="global-inventory-list"></div> <!-- 修正箇所 -->
+            <div id="global-inventory-list"></div>
         </section>
 
         <!-- エラーモーダル -->
