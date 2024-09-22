@@ -68,14 +68,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthFilter = document.getElementById('month-filter');
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
+    const globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
 
-    let globalInventoryProductSelect;
+    // ナビゲーションの要素取得
+    const linkHome = document.getElementById('link-home');
+    const linkCategory = document.getElementById('link-category');
+    const linkProduct = document.getElementById('link-product');
+    const linkInventory = document.getElementById('link-inventory');
+    const linkBarcode = document.getElementById('link-barcode');
+    const linkSales = document.getElementById('link-sales');
+    const linkGlobalInventory = document.getElementById('link-global-inventory');
 
-    // 全体在庫セクションが表示された際に要素を取得するためのイベントリスナー
-    document.getElementById('link-global-inventory').addEventListener('click', () => {
-        globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
-        updateProductSelectForGlobalInventory(); // 商品選択リストを更新
-    });
+    const sections = {
+        home: document.getElementById('home-section'),
+        category: document.getElementById('category-section'),
+        product: document.getElementById('product-section'),
+        inventory: document.getElementById('inventory-section'),
+        barcode: document.getElementById('barcode-section'),
+        sales: document.getElementById('sales-section'),
+        globalInventory: document.getElementById('global-inventory-section')
+    };
+
+    // セクションを切り替える関数
+    function showSection(section) {
+        Object.keys(sections).forEach(key => {
+            sections[key].style.display = 'none';
+        });
+        sections[section].style.display = 'block';
+    }
+
+    // ナビゲーションボタンのイベントリスナー設定
+    linkHome.addEventListener('click', () => showSection('home'));
+    linkCategory.addEventListener('click', () => showSection('category'));
+    linkProduct.addEventListener('click', () => showSection('product'));
+    linkInventory.addEventListener('click', () => showSection('inventory'));
+    linkBarcode.addEventListener('click', () => showSection('barcode'));
+    linkSales.addEventListener('click', () => showSection('sales'));
+    linkGlobalInventory.addEventListener('click', () => showSection('globalInventory'));
 
     // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
     function updateProductSelectForGlobalInventory() {
@@ -85,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const products = event.target.result;
-            if (globalInventoryProductSelect) { // 修正箇所
+            if (globalInventoryProductSelect) {
                 globalInventoryProductSelect.innerHTML = ''; // リストをクリア
 
                 products.forEach(product => {
@@ -250,8 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const globalInventories = event.target.result;
-            const globalInventoryList = document.getElementById('global-inventory-list'); // 修正箇所
-            if (globalInventoryList) { // 修正箇所
+            const globalInventoryList = document.getElementById('global-inventory-list');
+            if (globalInventoryList) {
                 globalInventoryList.innerHTML = ''; 
 
                 globalInventories.forEach(inventory => {
@@ -260,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     globalInventoryList.appendChild(listItem);
                 });
             } else {
-                console.error("global-inventory-list が見つかりません。"); // エラーを明示的に表示
+                console.error("global-inventory-list が見つかりません。");
             }
         };
     }
@@ -565,14 +594,13 @@ document.addEventListener('DOMContentLoaded', () => {
             products.forEach(product => {
                 const row = document.createElement('div');
                 row.className = 'inventory-item';
-                row.innerHTML = `
-                    <p>${product.name}</p>
+                row.innerHTML = 
+                    `<p>${product.name}</p>
                     <p>${product.quantity}</p>
                     <p>${product.price}</p>
                     <p>${product.barcode}</p>
                     <button class="edit-button">編集</button>
-                    <button class="delete-button">削除</button>
-                `;
+                    <button class="delete-button">削除</button>`;
                 inventoryProductTableBody.appendChild(row);
 
                 const editButton = row.querySelector('.edit-button');
