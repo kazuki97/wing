@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
 
-    const globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
+    const globalInventoryProductSelect = document.getElementById('global-inventory-product-select'); // 修正箇所
 
     // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
     function updateProductSelectForGlobalInventory() {
@@ -79,14 +79,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const products = event.target.result;
-            globalInventoryProductSelect.innerHTML = ''; // リストをクリア
+            if (globalInventoryProductSelect) { // 修正箇所
+                globalInventoryProductSelect.innerHTML = ''; // リストをクリア
 
-            products.forEach(product => {
-                const option = document.createElement('option');
-                option.value = product.id;
-                option.text = product.name;
-                globalInventoryProductSelect.appendChild(option);
-            });
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.text = product.name;
+                    globalInventoryProductSelect.appendChild(option);
+                });
+            } else {
+                console.error("globalInventoryProductSelect が見つかりません。");
+            }
         };
     }
 
@@ -240,14 +244,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const globalInventories = event.target.result;
-            const globalInventoryList = document.getElementById('global-inventory-list');
-            globalInventoryList.innerHTML = '';
+            const globalInventoryList = document.getElementById('global-inventory-list'); // 修正箇所
+            if (globalInventoryList) { // 修正箇所
+                globalInventoryList.innerHTML = ''; 
 
-            globalInventories.forEach(inventory => {
-                const listItem = document.createElement('div');
-                listItem.textContent = `${inventory.category}: ${inventory.quantity} g`;
-                globalInventoryList.appendChild(listItem);
-            });
+                globalInventories.forEach(inventory => {
+                    const listItem = document.createElement('div');
+                    listItem.textContent = `${inventory.category}: ${inventory.quantity} g`;
+                    globalInventoryList.appendChild(listItem);
+                });
+            } else {
+                console.error("global-inventory-list が見つかりません。"); // エラーを明示的に表示
+            }
         };
     }
 
