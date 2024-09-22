@@ -145,6 +145,8 @@
     <!-- 必要なJavaScriptファイルの読み込み -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM fully loaded and parsed");
+
             const sections = document.querySelectorAll('.content-section');
             const homeSection = document.getElementById('home-section');
             
@@ -160,10 +162,22 @@
 
             // 各ボタンにクリックイベントを設定
             Object.keys(navButtons).forEach(buttonId => {
-                document.getElementById(buttonId).addEventListener('click', () => {
-                    sections.forEach(section => section.style.display = 'none');  // 全セクションを非表示
-                    document.getElementById(navButtons[buttonId]).style.display = 'block';  // 対応するセクションを表示
-                });
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    console.log(`Button ${buttonId} found, adding event listener`);
+                    button.addEventListener('click', () => {
+                        console.log(`Button ${buttonId} clicked`);
+                        sections.forEach(section => section.style.display = 'none');  // 全セクションを非表示
+                        const targetSection = document.getElementById(navButtons[buttonId]);
+                        if (targetSection) {
+                            targetSection.style.display = 'block';  // 対応するセクションを表示
+                        } else {
+                            console.error(`Target section ${navButtons[buttonId]} not found`);
+                        }
+                    });
+                } else {
+                    console.error(`Button ${buttonId} not found`);
+                }
             });
 
             homeSection.style.display = 'block';  // 初期状態でホームセクションを表示
