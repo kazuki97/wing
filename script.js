@@ -46,6 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!db.objectStoreNames.contains('globalInventory')) {
             db.createObjectStore('globalInventory', { keyPath: 'category' });
         }
+
+        if (!db.objectStoreNames.contains('relatedProducts')) {
+            const relatedProductsStore = db.createObjectStore('relatedProducts', { keyPath: 'id', autoIncrement: true });
+            relatedProductsStore.createIndex('globalCategory', 'globalCategory', { unique: false });
+            relatedProductsStore.createIndex('productId', 'productId', { unique: false });
+        }
     };
 
     // 必要なボタンや要素の取得
@@ -120,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 全体在庫を追加する処理
+    // 全体在庫に関連する商品を保存する処理
     if (addGlobalInventoryButton) {
         addGlobalInventoryButton.addEventListener('click', () => {
             const category = document.getElementById('global-category').value;
@@ -128,7 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const relatedProductId = globalInventoryProductSelect.value; // 関連する商品のID
 
             if (category && quantity > 0 && relatedProductId) {
-                saveGlobalInventoryToDB({ category, quantity, relatedProductId });
+                saveGlobalInventoryToDB({ category, quantity });
+                saveRelatedProduct(category, relatedProductId); // 関連商品を保存
                 alert(`${category} の全体在庫が追加されました。`);
                 document.getElementById('global-category').value = '';
                 document.getElementById('global-quantity').value = '';
@@ -136,6 +143,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('すべてのフィールドを正しく入力してください。');
             }
         });
+    }
+
+    // 関連商品を保存する関数
+    function saveRelatedProduct(globalCategory, productId) {
+        const transaction = db.transaction(['relatedProducts'], 'readwrite');
+        const store = transaction.objectStore('relatedProducts');
+        const relatedProduct = { globalCategory, productId };
+        store.put(relatedProduct);
+    }
+
+    // 全体在庫から関連商品が購入された場合に自動で在庫を減らす処理
+    function updateGlobalInventoryOnSale(productId, quantity) {
+        const transaction = db.transaction(['relatedProducts'], 'readonly');
+        const store = transaction.objectStore('relatedProducts');
+        const index = store.index('productId');
+        const request = index.getAll(productId);
+
+        request.onsuccess = (event) => {
+            const relatedProducts = event.target.result;
+            relatedProducts.forEach(relatedProduct => {
+                const globalInventoryTransaction = db.transaction(['globalInventory'], 'readwrite');
+                const globalStore = globalInventoryTransaction.objectStore('globalInventory');
+                const globalRequest = globalStore.get(relatedProduct.globalCategory);
+
+                globalRequest.onsuccess = (event) => {
+                    const globalInventory = event.target.result;
+                    if (globalInventory) {
+                        globalInventory.quantity -= quantity;
+                        globalStore.put(globalInventory);
+                    }
+                };
+            });
+        };
     }
 
     // 在庫の入荷機能（全体在庫に追加）
@@ -181,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalInventoryStore.put(globalInventory);
             }
         };
+        updateGlobalInventoryOnSale(product.id, product.size * quantity); // 全体在庫から減らす
     }
 
     // 全体在庫をDBに保存する関数
@@ -208,28 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalInventoryList.appendChild(listItem);
             });
         };
-    }
-
-    // 小分け在庫の減少と全体在庫の管理
-    function updateProductQuantity(product, quantity) {
-        const transaction = db.transaction(['products', 'globalInventory'], 'readwrite');
-        const productStore = transaction.objectStore('products');
-        const globalInventoryStore = transaction.objectStore('globalInventory');
-
-        product.quantity -= parseInt(quantity, 10);
-        productStore.put(product);
-
-        const categoryKey = findGlobalCategoryKey(product.name);
-        if (categoryKey) {
-            const globalRequest = globalInventoryStore.get(categoryKey);
-            globalRequest.onsuccess = (event) => {
-                const globalInventory = event.target.result;
-                if (globalInventory) {
-                    globalInventory.quantity -= product.size * quantity;
-                    globalInventoryStore.put(globalInventory);
-                }
-            };
-        }
     }
 
     // 商品名からどの全体在庫カテゴリに対応するかを判断する関数
