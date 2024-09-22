@@ -106,6 +106,19 @@ document.addEventListener('DOMContentLoaded', () => {
     linkSales.addEventListener('click', () => showSection('sales'));
     linkGlobalInventory.addEventListener('click', () => showSection('globalInventory'));
 
+    // Safari対応のためIndexedDBのリクエスト失敗時の処理を改善
+    request.onsuccess = function(event) {
+        try {
+            db = event.target.result;
+            loadCategories();
+            loadSales();
+            displayGlobalInventory();
+            updateProductSelectForGlobalInventory(); 
+        } catch (e) {
+            console.error('IndexedDB initialization failed:', e);
+        }
+    };
+
     // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
     function updateProductSelectForGlobalInventory() {
         const transaction = db.transaction(['products'], 'readonly');
@@ -126,33 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.error("globalInventoryProductSelect が見つかりません。");
             }
-        };
-    }
-
-    // カテゴリのプルダウンメニューを更新する関数
-    function updateCategorySelect() {
-        categorySelect.innerHTML = '';
-        for (const categoryName in categories) {
-            const option = document.createElement('option');
-            option.value = categoryName;
-            option.text = categoryName;
-            categorySelect.add(option);
-        }
-    }
-
-    // カテゴリをロードする関数
-    function loadCategories() {
-        const transaction = db.transaction(['categories'], 'readonly');
-        const store = transaction.objectStore('categories');
-        const request = store.getAll();
-
-        request.onsuccess = (event) => {
-            const result = event.target.result;
-            categories = {};
-            result.forEach(category => {
-                categories[category.name] = category.products;
-            });
-            updateCategorySelect(); // カテゴリの選択肢を更新
         };
     }
 
@@ -481,6 +467,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadSales() {
         displaySales();
+    }
+
+    function updateCategorySelect() {
+        categorySelect.innerHTML = '';
+        for (const categoryName in categories) {
+            const option = document.createElement('option');
+            option.value = categoryName;
+            option.text = categoryName;
+            categorySelect.add(option);
+        }
     }
 
     function displayCategories() {
