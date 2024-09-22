@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSales();
         displayGlobalInventory(); // 全体在庫を表示
         updateProductSelectForGlobalInventory(); // 商品選択リストを更新
+        updateCategorySelect(); // カテゴリ選択を更新
     };
 
     // データベースのアップグレード
@@ -125,6 +126,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             } else {
                 console.error("globalInventoryProductSelect が見つかりません。");
+            }
+        };
+    }
+
+    // カテゴリ選択を更新する関数
+    function updateCategorySelect() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const categories = event.target.result;
+            if (categorySelect) {
+                categorySelect.innerHTML = ''; // リストをクリア
+
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.name;
+                    option.text = category.name;
+                    categorySelect.appendChild(option);
+                });
+            } else {
+                console.error("categorySelect が見つかりません。");
             }
         };
     }
