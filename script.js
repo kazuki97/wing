@@ -129,6 +129,33 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // カテゴリのプルダウンメニューを更新する関数
+    function updateCategorySelect() {
+        categorySelect.innerHTML = '';
+        for (const categoryName in categories) {
+            const option = document.createElement('option');
+            option.value = categoryName;
+            option.text = categoryName;
+            categorySelect.add(option);
+        }
+    }
+
+    // カテゴリをロードする関数
+    function loadCategories() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const result = event.target.result;
+            categories = {};
+            result.forEach(category => {
+                categories[category.name] = category.products;
+            });
+            updateCategorySelect(); // カテゴリの選択肢を更新
+        };
+    }
+
     // 商品追加の処理
     if (addProductButton) {
         addProductButton.addEventListener('click', () => {
@@ -449,22 +476,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 categories[category.name] = category.products;
             });
             displayCategories();
-            updateCategorySelect(); // カテゴリセレクトを更新
         };
     }
 
     function loadSales() {
         displaySales();
-    }
-
-    function updateCategorySelect() {
-        categorySelect.innerHTML = ''; // セレクトボックスをクリア
-        for (const categoryName in categories) {
-            const option = document.createElement('option');
-            option.value = categoryName;
-            option.text = categoryName;
-            categorySelect.add(option);
-        }
     }
 
     function displayCategories() {
