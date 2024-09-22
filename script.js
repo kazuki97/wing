@@ -69,7 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
 
-    const globalInventoryProductSelect = document.getElementById('global-inventory-product-select'); // 修正箇所
+    let globalInventoryProductSelect;
+
+    // 全体在庫セクションが表示された際に要素を取得するためのイベントリスナー
+    document.getElementById('link-global-inventory').addEventListener('click', () => {
+        globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
+        updateProductSelectForGlobalInventory(); // 商品選択リストを更新
+    });
 
     // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
     function updateProductSelectForGlobalInventory() {
