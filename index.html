@@ -18,10 +18,10 @@
             <button id="link-inventory">在庫管理</button>
             <button id="link-barcode">バーコードスキャン</button>
             <button id="link-sales">売上管理</button>
-            <button id="link-global-inventory">全体在庫管理</button> <!-- 全体在庫のリンクを追加 -->
+            <button id="link-global-inventory">全体在庫管理</button>
         </nav>
     </header>
-    
+
     <main>
         <!-- ホームセクション -->
         <section id="home-section" class="content-section">
@@ -143,45 +143,6 @@
     </main>
 
     <!-- 必要なJavaScriptファイルの読み込み -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM fully loaded and parsed");
-
-            const sections = document.querySelectorAll('.content-section');
-            const homeSection = document.getElementById('home-section');
-            
-            const navButtons = {
-                'link-home': 'home-section',
-                'link-category': 'category-section',
-                'link-product': 'product-section',
-                'link-inventory': 'inventory-section',
-                'link-barcode': 'barcode-section',
-                'link-sales': 'sales-section',
-                'link-global-inventory': 'global-inventory-section'
-            };
-
-            // 各ボタンにクリックイベントを設定
-            Object.keys(navButtons).forEach(buttonId => {
-                const button = document.getElementById(buttonId);
-                if (button) {
-                    console.log(`Button ${buttonId} found, adding event listener`);
-                    button.addEventListener('click', () => {
-                        console.log(`Button ${buttonId} clicked`);
-                        sections.forEach(section => section.style.display = 'none');  // 全セクションを非表示
-                        const targetSection = document.getElementById(navButtons[buttonId]);
-                        if (targetSection) {
-                            targetSection.style.display = 'block';  // 対応するセクションを表示
-                        } else {
-                            console.error(`Target section ${navButtons[buttonId]} not found`);
-                        }
-                    });
-                } else {
-                    console.error(`Button ${buttonId} not found`);
-                }
-            });
-
-            homeSection.style.display = 'block';  // 初期状態でホームセクションを表示
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
