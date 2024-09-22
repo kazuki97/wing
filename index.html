@@ -143,6 +143,31 @@
     </main>
 
     <!-- 必要なJavaScriptファイルの読み込み -->
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('.content-section');
+            const homeSection = document.getElementById('home-section');
+            
+            const navButtons = {
+                'link-home': 'home-section',
+                'link-category': 'category-section',
+                'link-product': 'product-section',
+                'link-inventory': 'inventory-section',
+                'link-barcode': 'barcode-section',
+                'link-sales': 'sales-section',
+                'link-global-inventory': 'global-inventory-section'
+            };
+
+            // 各ボタンにクリックイベントを設定
+            Object.keys(navButtons).forEach(buttonId => {
+                document.getElementById(buttonId).addEventListener('click', () => {
+                    sections.forEach(section => section.style.display = 'none');  // 全セクションを非表示
+                    document.getElementById(navButtons[buttonId]).style.display = 'block';  // 対応するセクションを表示
+                });
+            });
+
+            homeSection.style.display = 'block';  // 初期状態でホームセクションを表示
+        });
+    </script>
 </body>
 </html>
