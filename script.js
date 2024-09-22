@@ -106,19 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
     linkSales.addEventListener('click', () => showSection('sales'));
     linkGlobalInventory.addEventListener('click', () => showSection('globalInventory'));
 
-    // Safari対応のためIndexedDBのリクエスト失敗時の処理を改善
-    request.onsuccess = function(event) {
-        try {
-            db = event.target.result;
-            loadCategories();
-            loadSales();
-            displayGlobalInventory();
-            updateProductSelectForGlobalInventory(); 
-        } catch (e) {
-            console.error('IndexedDB initialization failed:', e);
-        }
-    };
-
     // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
     function updateProductSelectForGlobalInventory() {
         const transaction = db.transaction(['products'], 'readonly');
