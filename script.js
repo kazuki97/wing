@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 必要なボタンや要素の取得
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
     const addCategoryButton = document.getElementById('add-category');
-    const categorySelect = document.getElementById('category-select');
+    const categorySelect = document.getElementById('category-select'); // 商品設定のカテゴリ選択
     const addProductButton = document.getElementById('add-product');
     const addGlobalInventoryButton = document.getElementById('add-global-inventory');
     const addStockButton = document.getElementById('add-stock-button');
@@ -106,33 +106,38 @@ document.addEventListener('DOMContentLoaded', () => {
     linkSales.addEventListener('click', () => showSection('sales'));
     linkGlobalInventory.addEventListener('click', () => showSection('globalInventory'));
 
-    // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
-    function updateProductSelectForGlobalInventory() {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
+    // カテゴリを読み込む関数
+    function loadCategories() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
         const request = store.getAll();
 
         request.onsuccess = (event) => {
-            const products = event.target.result;
-            if (globalInventoryProductSelect) {
-                globalInventoryProductSelect.innerHTML = ''; // リストをクリア
-
-                products.forEach(product => {
-                    const option = document.createElement('option');
-                    option.value = product.id;
-                    option.text = product.name;
-                    globalInventoryProductSelect.appendChild(option);
-                });
-            } else {
-                console.error("globalInventoryProductSelect が見つかりません。");
-            }
+            const result = event.target.result;
+            categories = {}; // カテゴリ情報をリセット
+            result.forEach(category => {
+                categories[category.name] = category.products;
+            });
+            updateCategorySelect(); // カテゴリ選択を更新
         };
+    }
+
+    // カテゴリ選択肢を更新する関数
+    function updateCategorySelect() {
+        categorySelect.innerHTML = ''; // 既存のオプションをクリア
+
+        for (const categoryName in categories) {
+            const option = document.createElement('option');
+            option.value = categoryName;
+            option.text = categoryName;
+            categorySelect.appendChild(option);
+        }
     }
 
     // 商品追加の処理
     if (addProductButton) {
         addProductButton.addEventListener('click', () => {
-            const category = categorySelect.value;
+            const category = categorySelect.value; // カテゴリ選択から取得
             const productName = document.getElementById('product-name').value;
             const quantity = document.getElementById('product-quantity').value;
             const price = document.getElementById('product-price').value;
@@ -718,3 +723,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
