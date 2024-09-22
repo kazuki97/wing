@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCategories();
         loadSales();
         displayGlobalInventory(); // 全体在庫を表示
+        updateProductSelectForGlobalInventory(); // 商品選択リストを更新
     };
 
     // データベースのアップグレード
@@ -62,80 +63,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
 
-    // セクションの取得
-    const homeSection = document.getElementById('home-section');
-    const categorySection = document.getElementById('category-section');
-    const productSection = document.getElementById('product-section');
-    const inventorySection = document.getElementById('inventory-section');
-    const barcodeSection = document.getElementById('barcode-section');
-    const salesSection = document.getElementById('sales-section');
-    const globalInventorySection = document.getElementById('global-inventory-section');
+    const globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
 
-    // 各リンクの取得
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-    const linkSales = document.getElementById('link-sales');
-    const linkGlobalInventory = document.getElementById('link-global-inventory');
+    // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
+    function updateProductSelectForGlobalInventory() {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const request = store.getAll();
 
-    function showSection(section) {
-        homeSection.style.display = 'none';
-        categorySection.style.display = 'none';
-        productSection.style.display = 'none';
-        inventorySection.style.display = 'none';
-        barcodeSection.style.display = 'none';
-        salesSection.style.display = 'none';
-        globalInventorySection.style.display = 'none';
-        section.style.display = 'block';
-    }
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            globalInventoryProductSelect.innerHTML = ''; // リストをクリア
 
-    // 各リンクに対するイベントリスナーを追加
-    if (linkHome) {
-        linkHome.addEventListener('click', () => {
-            showSection(homeSection);
-        });
-    }
-
-    if (linkCategory) {
-        linkCategory.addEventListener('click', () => {
-            showSection(categorySection);
-        });
-    }
-
-    if (linkProduct) {
-        linkProduct.addEventListener('click', () => {
-            showSection(productSection);
-            updateCategorySelect();
-        });
-    }
-
-    if (linkInventory) {
-        linkInventory.addEventListener('click', () => {
-            showSection(inventorySection);
-            displayInventoryCategories();
-        });
-    }
-
-    if (linkBarcode) {
-        linkBarcode.addEventListener('click', () => {
-            showSection(barcodeSection);
-        });
-    }
-
-    if (linkSales) {
-        linkSales.addEventListener('click', () => {
-            showSection(salesSection);
-            displaySales();
-        });
-    }
-
-    if (linkGlobalInventory) {
-        linkGlobalInventory.addEventListener('click', () => {
-            showSection(globalInventorySection);
-            displayGlobalInventory();
-        });
+            products.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.text = product.name;
+                globalInventoryProductSelect.appendChild(option);
+            });
+        };
     }
 
     // 商品追加の処理
@@ -167,8 +113,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('product-cost').value = '';
                 document.getElementById('product-barcode').value = '';
                 document.getElementById('product-size').value = '';
+                updateProductSelectForGlobalInventory(); // 商品リストの更新
             } else {
                 alert('すべてのフィールドを入力してください。');
+            }
+        });
+    }
+
+    // 全体在庫を追加する処理
+    if (addGlobalInventoryButton) {
+        addGlobalInventoryButton.addEventListener('click', () => {
+            const category = document.getElementById('global-category').value;
+            const quantity = parseInt(document.getElementById('global-quantity').value, 10);
+            const relatedProductId = globalInventoryProductSelect.value; // 関連する商品のID
+
+            if (category && quantity > 0 && relatedProductId) {
+                saveGlobalInventoryToDB({ category, quantity, relatedProductId });
+                alert(`${category} の全体在庫が追加されました。`);
+                document.getElementById('global-category').value = '';
+                document.getElementById('global-quantity').value = '';
+            } else {
+                alert('すべてのフィールドを正しく入力してください。');
             }
         });
     }
@@ -199,21 +164,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 全体在庫を追加する処理
-    if (addGlobalInventoryButton) {
-        addGlobalInventoryButton.addEventListener('click', () => {
-            const category = document.getElementById('global-category').value;
-            const quantity = parseInt(document.getElementById('global-quantity').value, 10);
+    // 商品の小分け在庫と全体在庫の更新処理
+    function updateProductQuantity(product, quantity) {
+        const transaction = db.transaction(['products', 'globalInventory'], 'readwrite');
+        const productStore = transaction.objectStore('products');
+        const globalInventoryStore = transaction.objectStore('globalInventory');
 
-            if (category && quantity > 0) {
-                saveGlobalInventoryToDB({ category, quantity });
-                alert(`${category} の全体在庫が追加されました。`);
-                document.getElementById('global-category').value = '';
-                document.getElementById('global-quantity').value = '';
-            } else {
-                alert('カテゴリ名と在庫量を正しく入力してください。');
+        product.quantity -= parseInt(quantity, 10);
+        productStore.put(product);
+
+        const globalRequest = globalInventoryStore.get(product.category);
+        globalRequest.onsuccess = (event) => {
+            const globalInventory = event.target.result;
+            if (globalInventory) {
+                globalInventory.quantity -= product.size * quantity;
+                globalInventoryStore.put(globalInventory);
             }
-        });
+        };
     }
 
     // 全体在庫をDBに保存する関数
