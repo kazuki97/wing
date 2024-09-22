@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkSales = document.getElementById('link-sales');
     const linkGlobalInventory = document.getElementById('link-global-inventory');
 
-    // 各セクションの要素を格納するオブジェクト
     const sections = {
         home: document.getElementById('home-section'),
         category: document.getElementById('category-section'),
@@ -87,15 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
         inventory: document.getElementById('inventory-section'),
         barcode: document.getElementById('barcode-section'),
         sales: document.getElementById('sales-section'),
-        globalInventory: document.getElementById('global-inventory-section') // 全体在庫管理セクション
+        globalInventory: document.getElementById('global-inventory-section')
     };
 
     // セクションを切り替える関数
     function showSection(section) {
         Object.keys(sections).forEach(key => {
-            sections[key].style.display = 'none'; // すべてのセクションを非表示に
+            sections[key].style.display = 'none';
         });
-        sections[section].style.display = 'block'; // 表示したいセクションのみ表示
+        sections[section].style.display = 'block';
     }
 
     // ナビゲーションボタンのイベントリスナー設定
