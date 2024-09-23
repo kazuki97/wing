@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // カテゴリ選択を更新する関数（DOM遅延対策を強化）
+    // カテゴリ選択を更新する関数
     function updateCategorySelect() {
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
@@ -147,9 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     option.text = category.name;
                     categorySelect.appendChild(option);
                 });
-
-                // iPhone向けの再レンダリング強化
-                categorySelect.dispatchEvent(new Event('change'));
             } else {
                 console.error("categorySelect が見つかりません。");
             }
