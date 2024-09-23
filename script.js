@@ -14,11 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // データベース成功時
     request.onsuccess = (event) => {
         db = event.target.result;
-        loadCategories();
-        loadSales();
-        displayGlobalInventory(); // 全体在庫を表示
-        updateProductSelectForGlobalInventory(); // 商品選択リストを更新
-        updateCategorySelect(); // カテゴリ選択を更新
+        try {
+            loadCategories();
+            loadSales();
+            displayGlobalInventory(); // 全体在庫を表示
+            updateProductSelectForGlobalInventory(); // 商品選択リストを更新
+            updateCategorySelect(); // カテゴリ選択を更新
+        } catch (error) {
+            console.error('Error in onsuccess:', error);
+        }
     };
 
     // データベースのアップグレード
