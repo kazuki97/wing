@@ -153,6 +153,34 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // カテゴリ追加の不具合修正
+    if (addCategoryButton) {
+        addCategoryButton.addEventListener('click', () => {
+            const categoryName = document.getElementById('category-name').value;
+
+            if (categoryName) {
+                const category = { name: categoryName };
+
+                const transaction = db.transaction(['categories'], 'readwrite');
+                const store = transaction.objectStore('categories');
+                const request = store.add(category);
+
+                request.onsuccess = () => {
+                    alert(`${categoryName} がカテゴリに追加されました。`);
+                    updateCategorySelect(); // カテゴリ選択を更新
+                };
+
+                request.onerror = () => {
+                    alert('このカテゴリ名はすでに存在しています。');
+                };
+
+                document.getElementById('category-name').value = ''; // 入力フィールドをクリア
+            } else {
+                alert('カテゴリ名を入力してください。');
+            }
+        });
+    }
+
     // 商品追加の処理
     if (addProductButton) {
         addProductButton.addEventListener('click', () => {
