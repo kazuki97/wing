@@ -136,15 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // カテゴリ選択を更新する関数
     function updateCategorySelect() {
+        console.log('updateCategorySelect called');
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
         const request = store.getAll();
 
         request.onsuccess = (event) => {
             const categories = event.target.result;
+            console.log('categories fetched:', categories);
             if (categorySelect) {
                 categorySelect.innerHTML = ''; // リストをクリア
-
                 categories.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.name;
