@@ -193,6 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // カテゴリ選択を更新する関数
     function updateCategorySelects() {
+        if (!db) {
+            console.error('Database is not initialized.');
+            return;
+        }
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
         const request = store.getAll();
@@ -220,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     option.text = category.name;
                     productParentCategorySelect.appendChild(option);
                 });
+                // サブカテゴリを更新
+                updateProductCategorySelects();
             }
 
             // 全体在庫用の上位カテゴリ選択肢を更新
@@ -231,6 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     option.text = category.name;
                     globalParentCategorySelect.appendChild(option);
                 });
+                // サブカテゴリを更新
+                updateGlobalSubcategorySelect();
             }
 
             // カテゴリ一覧を表示
@@ -508,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (confirm('このカテゴリとそのサブカテゴリを削除しますか？')) {
                         deleteCategoryAndSubcategories(parentCategory.id);
                         displayCategories();
+                        updateCategorySelects();
                     }
                 });
                 parentDiv.appendChild(deleteParentButton);
@@ -538,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (confirm('このサブカテゴリを削除しますか？')) {
                             deleteCategory(subcategory.id);
                             displayCategories();
+                            updateCategorySelects();
                         }
                     });
                     subDiv.appendChild(deleteSubButton);
@@ -881,20 +891,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    // データベース接続成功時に初期化関数を呼び出す
-    request.onsuccess = (event) => {
-        db = event.target.result;
-        try {
-            loadCategories();
-            loadSales();
-            displayGlobalInventory();
-            updateCategorySelects();
-            updateProductCategorySelects();
-            displayInventoryCategories();
-            updateBarcodeScannerAvailability();
-        } catch (error) {
-            console.error('Error in onsuccess:', error);
-        }
-    };
 });
