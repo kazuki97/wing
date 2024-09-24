@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let categories = {};
     let db;
     let isScanning = false;
+    let onDetected; // onDetected ハンドラー
 
     // データベースを開く（バージョンを12に上げました）
     const request = indexedDB.open('inventoryDB', 12);
@@ -277,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isScanning) return;
                 isScanning = true;
 
+                // Quagga の初期化
                 Quagga.init({
                     inputStream: {
                         type: "LiveStream",
@@ -291,15 +293,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, (err) => {
                     if (err) {
                         console.error(err);
+                        isScanning = false; // エラー時にスキャン状態をリセット
                         return;
                     }
                     Quagga.start();
-                });
 
-                Quagga.onDetected((result) => {
-                    const barcode = result.codeResult.code;
-                    Quagga.stop();
-                    findProductByBarcode(barcode);
+                    // 既存の onDetected リスナーを解除
+                    if (onDetected) {
+                        Quagga.offDetected(onDetected);
+                    }
+
+                    // onDetected リスナーを定義
+                    onDetected = (result) => {
+                        const barcode = result.codeResult.code;
+                        Quagga.stop();
+                        Quagga.offDetected(onDetected); // リスナーを解除
+                        isScanning = false; // スキャン状態をリセット
+                        findProductByBarcode(barcode);
+                    };
+
+                    // onDetected リスナーを登録
+                    Quagga.onDetected(onDetected);
                 });
             });
         }
@@ -995,17 +1009,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (quantity) {
                     updateProductQuantity(product, quantity);
                     addSaleToDB(product, quantity);
-                    isScanning = false;
                 } else {
                     showErrorModal('数量が無効です。');
-                    isScanning = false;
                 }
             } else {
                 showErrorModal('該当する商品が見つかりませんでした。');
-                document.getElementById('closeErrorModal').addEventListener('click', () => {
-                    isScanning = false;
-                });
             }
+        };
+
+        request.onerror = (event) => {
+            console.error('Error fetching product:', event.target.error);
+            showErrorModal('商品情報の取得中にエラーが発生しました。');
         };
     }
 
@@ -1019,11 +1033,13 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMessage.textContent = message;
             errorModal.style.display = 'block';
 
-            closeErrorModalButton.addEventListener('click', () => {
+            closeErrorModalButton.onclick = () => {
                 errorModal.style.display = 'none';
-            });
+                isScanning = false; // スキャン状態をリセット
+            };
         } else {
             alert(message);
+            isScanning = false; // スキャン状態をリセット
         }
     }
 
