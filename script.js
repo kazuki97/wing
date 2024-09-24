@@ -162,7 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
         addSubcategoryButton.addEventListener('click', () => {
             const parentCategoryId = parentCategorySelect ? parseInt(parentCategorySelect.value, 10) : null;
             const subcategoryNameElement = document.getElementById('subcategory-name');
-            if (subcategoryNameElement && parentCategoryId) {
+            // 修正ポイント：parentCategoryId が 0 でも正しく判定するように条件を変更
+            if (subcategoryNameElement && parentCategoryId !== null && !isNaN(parentCategoryId)) {
                 const subcategoryName = subcategoryNameElement.value;
 
                 if (subcategoryName) {
@@ -249,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 商品登録用のサブカテゴリ選択肢を更新する関数
     function updateProductCategorySelects() {
         const parentCategoryId = productParentCategorySelect ? parseInt(productParentCategorySelect.value, 10) : null;
-        if (parentCategoryId) {
+        if (parentCategoryId !== null && !isNaN(parentCategoryId)) {
             const transaction = db.transaction(['categories'], 'readonly');
             const store = transaction.objectStore('categories');
             const index = store.index('parentId');
@@ -273,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 全体在庫用のサブカテゴリ選択肢を更新する関数
     function updateGlobalSubcategorySelect() {
         const parentCategoryId = globalParentCategorySelect ? parseInt(globalParentCategorySelect.value, 10) : null;
-        if (parentCategoryId) {
+        if (parentCategoryId !== null && !isNaN(parentCategoryId)) {
             const transaction = db.transaction(['categories'], 'readonly');
             const store = transaction.objectStore('categories');
             const index = store.index('parentId');
@@ -313,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const costElement = document.getElementById('product-cost');
             const barcodeElement = document.getElementById('product-barcode');
 
-            if (subcategoryId && productNameElement && quantityElement && priceElement && costElement && barcodeElement) {
+            if (subcategoryId !== null && !isNaN(subcategoryId) && productNameElement && quantityElement && priceElement && costElement && barcodeElement) {
                 const productName = productNameElement.value;
                 const quantity = quantityElement.value;
                 const price = priceElement.value;
@@ -394,13 +395,20 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // 商品をDBに保存する関数
+    function saveProductToDB(product) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        store.put(product);
+    }
+
     // 全体在庫に追加する処理
     if (addGlobalInventoryButton) {
         addGlobalInventoryButton.addEventListener('click', () => {
             const subcategoryId = globalSubcategorySelect ? parseInt(globalSubcategorySelect.value, 10) : null;
             const quantityElement = document.getElementById('global-quantity');
 
-            if (subcategoryId && quantityElement) {
+            if (subcategoryId !== null && !isNaN(subcategoryId) && quantityElement) {
                 const quantity = parseInt(quantityElement.value, 10);
 
                 if (quantity >= 0) {
@@ -415,13 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('全体在庫情報の入力フィールドが見つからないか、サブカテゴリが選択されていません。');
             }
         });
-    }
-
-    // 商品をDBに保存する関数
-    function saveProductToDB(product) {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-        store.put(product);
     }
 
     // 全体在庫をDBに保存する関数
