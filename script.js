@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let db;
     let isScanning = false;
 
-    // データベースを開く（バージョンを6に上げました）
-    const request = indexedDB.open('inventoryDB', 6);
+    // データベースを開く（バージョンを7に上げました）
+    const request = indexedDB.open('inventoryDB', 7);
 
     // データベースエラー
     request.onerror = (event) => {
@@ -29,30 +29,36 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onupgradeneeded = (event) => {
         db = event.target.result;
 
+        // 既存のオブジェクトストアを確認・作成
+
+        // カテゴリ
         if (!db.objectStoreNames.contains('categories')) {
             db.createObjectStore('categories', { keyPath: 'name' });
         }
 
+        // 商品
         if (!db.objectStoreNames.contains('products')) {
             const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
             productStore.createIndex('category', 'category', { unique: false });
             productStore.createIndex('barcode', 'barcode', { unique: true });
         } else {
-            const productStore = event.target.transaction.objectStore('products');
+            const productStore = event.currentTarget.transaction.objectStore('products');
             if (!productStore.indexNames.contains('barcode')) {
                 productStore.createIndex('barcode', 'barcode', { unique: true });
             }
         }
 
+        // 売上
         if (!db.objectStoreNames.contains('sales')) {
             db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
         }
 
+        // 全体在庫
         if (!db.objectStoreNames.contains('globalInventory')) {
             db.createObjectStore('globalInventory', { keyPath: 'category' });
         }
 
-        // **修正点：`relatedProducts` オブジェクトストアの作成を追加**
+        // relatedProducts オブジェクトストアの作成を確認・修正
         if (!db.objectStoreNames.contains('relatedProducts')) {
             const relatedProductsStore = db.createObjectStore('relatedProducts', { keyPath: 'id', autoIncrement: true });
             relatedProductsStore.createIndex('globalCategory', 'globalCategory', { unique: false });
@@ -62,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 必要なボタンや要素の取得
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
     const addProductButton = document.getElementById('add-product');
@@ -171,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // カテゴリ追加の不具合修正
+    // カテゴリ追加の処理
     if (addCategoryButton) {
         addCategoryButton.addEventListener('click', () => {
             const categoryName = document.getElementById('category-name').value;
@@ -259,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveRelatedProduct(globalCategory, productId) {
         const transaction = db.transaction(['relatedProducts'], 'readwrite');
         const store = transaction.objectStore('relatedProducts');
-        const relatedProduct = { globalCategory, productId };
+        const relatedProduct = { globalCategory, productId: Number(productId) };
         store.put(relatedProduct);
     }
 
