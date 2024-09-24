@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let db;
     let isScanning = false;
 
-    // データベースを開く（バージョンを7に上げました）
-    const request = indexedDB.open('inventoryDB', 7);
+    // データベースを開く（バージョンを9に上げました）
+    const request = indexedDB.open('inventoryDB', 9);
 
     // データベースエラー
     request.onerror = (event) => {
@@ -73,11 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addProductButton = document.getElementById('add-product');
     const addGlobalInventoryButton = document.getElementById('add-global-inventory');
     const addStockButton = document.getElementById('add-stock-button');
-    const detailModal = document.getElementById('detail-modal');
-    const closeModal = document.getElementById('closeErrorModal');
-    const searchButton = document.getElementById('searchButton');
-    const rangeSearchButton = document.getElementById('rangeSearchButton');
-    const monthFilter = document.getElementById('month-filter');
     const scannerContainer = document.getElementById('scanner-container');
     const startScanButton = document.getElementById('start-scan');
     const globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
@@ -216,37 +211,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = categorySelect ? categorySelect.value : null;
             const productNameElement = document.getElementById('product-name');
             const quantityElement = document.getElementById('product-quantity');
-            const priceElement = document.getElementById('product-price');
-            const costElement = document.getElementById('product-cost');
+            const unitPriceElement = document.getElementById('product-unit-price');
             const barcodeElement = document.getElementById('product-barcode');
             const sizeElement = document.getElementById('product-size');
+            const costPerGramElement = document.getElementById('product-cost-per-gram'); // 新しく追加
 
-            if (category && productNameElement && quantityElement && priceElement && costElement && barcodeElement && sizeElement) {
+            if (category && productNameElement && quantityElement && unitPriceElement && barcodeElement && sizeElement && costPerGramElement) {
                 const productName = productNameElement.value;
                 const quantity = quantityElement.value;
-                const price = priceElement.value;
-                const cost = costElement.value;
+                const unitPrice = unitPriceElement.value;
                 const barcode = barcodeElement.value;
                 const size = sizeElement.value;
+                const costPerGram = costPerGramElement.value;
 
-                if (productName && quantity && price && cost && barcode && size) {
+                if (productName && quantity && unitPrice && barcode && size && costPerGram) {
                     const product = {
                         category,
                         name: productName,
                         quantity: parseInt(quantity, 10),
-                        price: parseFloat(price),
-                        cost: parseFloat(cost),
+                        unitPrice: parseFloat(unitPrice),
+                        price: parseFloat(unitPrice) * parseFloat(size),
                         barcode,
-                        size: parseFloat(size)
+                        size: parseFloat(size),
+                        costPerGram: parseFloat(costPerGram) // 商品ごとのグラムあたりの原価
                     };
                     saveProductToDB(product);
                     displayProducts(category);
                     productNameElement.value = '';
                     quantityElement.value = '';
-                    priceElement.value = '';
-                    costElement.value = '';
+                    unitPriceElement.value = '';
                     barcodeElement.value = '';
                     sizeElement.value = '';
+                    costPerGramElement.value = '';
                     updateProductSelectForGlobalInventory(); // 商品リストの更新
                 } else {
                     alert('すべてのフィールドを入力してください。');
@@ -268,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const category = globalCategoryElement.value;
                 const quantity = parseInt(globalQuantityElement.value, 10);
 
-                if (category && quantity > 0 && relatedProductId) {
+                if (category && quantity >= 0 && relatedProductId) {
                     saveGlobalInventoryToDB({ category, quantity });
                     saveRelatedProduct(category, relatedProductId); // 関連商品を保存
                     alert(`${category} の全体在庫が追加されました。`);
@@ -292,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 全体在庫から関連商品が購入された場合に自動で在庫を減らす処理
-    function updateGlobalInventoryOnSale(productId, quantity) {
+    function updateGlobalInventoryOnSale(productId, totalGramsSold) {
         const transaction = db.transaction(['relatedProducts'], 'readonly');
         const store = transaction.objectStore('relatedProducts');
         const index = store.index('productId');
@@ -308,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalRequest.onsuccess = (event) => {
                     const globalInventory = event.target.result;
                     if (globalInventory) {
-                        globalInventory.quantity -= quantity;
+                        globalInventory.quantity -= totalGramsSold;
                         globalStore.put(globalInventory);
                     }
                 };
@@ -351,22 +347,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 商品の小分け在庫と全体在庫の更新処理
     function updateProductQuantity(product, quantity) {
-        const transaction = db.transaction(['products', 'globalInventory'], 'readwrite');
+        const transaction = db.transaction(['products'], 'readwrite');
         const productStore = transaction.objectStore('products');
-        const globalInventoryStore = transaction.objectStore('globalInventory');
 
         product.quantity -= parseInt(quantity, 10);
         productStore.put(product);
 
-        const globalRequest = globalInventoryStore.get(product.category);
-        globalRequest.onsuccess = (event) => {
-            const globalInventory = event.target.result;
-            if (globalInventory) {
-                globalInventory.quantity -= product.size * quantity;
-                globalInventoryStore.put(globalInventory);
-            }
-        };
-        updateGlobalInventoryOnSale(product.id, product.size * quantity); // 全体在庫から減らす
+        const totalGramsSold = product.size * quantity;
+        updateGlobalInventoryOnSale(product.id, totalGramsSold); // 全体在庫から減らす
     }
 
     // 全体在庫をDBに保存する関数
@@ -518,11 +506,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addSaleToDB(product, quantity) {
+        const totalPrice = product.price * quantity;
+        const totalCost = product.costPerGram * product.size * quantity;
+        const profit = totalPrice - totalCost;
+
         const sale = {
             productName: product.name,
             quantity: parseInt(quantity, 10),
-            totalPrice: product.price * quantity,
-            profit: (product.price - product.cost) * quantity,
+            totalPrice: totalPrice,
+            profit: profit,
             date: new Date().toISOString().split('T')[0]
         };
 
@@ -637,9 +629,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const row = productTableBody.insertRow();
                 row.insertCell(0).textContent = product.name;
                 row.insertCell(1).textContent = product.quantity;
-                row.insertCell(2).textContent = product.price;
-                row.insertCell(3).textContent = product.cost;
-                row.insertCell(4).textContent = product.barcode;
+                row.insertCell(2).textContent = product.unitPrice;
+                row.insertCell(3).textContent = product.size;
+                row.insertCell(4).textContent = product.price;
+                row.insertCell(5).textContent = product.costPerGram; // 原価を表示
+                row.insertCell(6).textContent = product.barcode;
 
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
@@ -652,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayProducts(category);
                     }
                 });
-                row.insertCell(5).appendChild(editButton);
+                row.insertCell(7).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
@@ -665,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayProducts(category);
                     }
                 });
-                row.insertCell(6).appendChild(deleteButton);
+                row.insertCell(8).appendChild(deleteButton);
             });
         };
     }
@@ -709,9 +703,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.className = 'inventory-item';
                 row.innerHTML = `
                     <p>${product.name}</p>
-                    <p>${product.quantity}</p>
-                    <p>${product.price}</p>
-                    <p>${product.barcode}</p>
+                    <p>数量: ${product.quantity}</p>
+                    <p>単価: ${product.unitPrice}</p>
+                    <p>サイズ(g): ${product.size}</p>
+                    <p>価格: ${product.price}</p>
+                    <p>原価/グラム: ${product.costPerGram}</p>
+                    <p>バーコード: ${product.barcode}</p>
                     <button class="edit-button">編集</button>
                     <button class="delete-button">削除</button>`;
                 inventoryProductTableBody.appendChild(row);
@@ -762,39 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editButton.textContent = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
-                    row.classList.add('editable');
-                    row.querySelectorAll('td').forEach((cell, cellIndex) => {
-                        if (cellIndex !== 0 && cellIndex !== 6 && cellIndex !== 7) {
-                            cell.addEventListener('click', () => {
-                                const originalValue = cell.textContent;
-                                const input = document.createElement('input');
-                                input.type = 'text';
-                                input.value = originalValue;
-                                cell.innerHTML = '';
-                                cell.appendChild(input);
-                                input.focus();
-                                input.addEventListener('blur', () => {
-                                    const newValue = input.value;
-                                    cell.textContent = newValue;
-                                    row.classList.remove('editable');
-                                    if (cellIndex === 1) {
-                                        sale.date = newValue;
-                                    } else if (cellIndex === 2) {
-                                        sale.productName = newValue;
-                                    } else if (cellIndex === 3) {
-                                        sale.quantity = parseInt(newValue, 10);
-                                        sale.totalPrice = sale.quantity * (sale.totalPrice / sale.quantity);
-                                    } else if (cellIndex === 4) {
-                                        sale.totalPrice = parseFloat(newValue);
-                                    } else if (cellIndex === 5) {
-                                        sale.profit = parseFloat(newValue);
-                                    }
-                                    saveSaleToDB(sale);
-                                    displaySales();
-                                });
-                            });
-                        }
-                    });
+                    // 編集機能の実装（必要に応じて）
                 });
                 row.insertCell(6).appendChild(editButton);
 
