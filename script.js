@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalInventoryList.innerHTML = '';
 
                 globalInventories.forEach(inventory => {
-                    if (inventory && inventory.subcategoryId !== undefined && inventory.subcategoryId !== null) {
+                    if (inventory && inventory.subcategoryId !== undefined && inventory.subcategoryId !== null && !isNaN(inventory.subcategoryId)) {
                         const categoryRequest = categoryStore.get(inventory.subcategoryId);
                         categoryRequest.onsuccess = (catEvent) => {
                             const subcategory = catEvent.target.result;
@@ -455,6 +455,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 globalInventoryList.appendChild(listItem);
                             }
                         };
+                        categoryRequest.onerror = (catError) => {
+                            console.error('Error fetching category:', catError);
+                        };
+                    } else {
+                        console.warn('Invalid inventory entry:', inventory);
                     }
                 });
             } else {
@@ -510,6 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const store = transaction.objectStore('categories');
                         store.put(parentCategory);
                         displayCategories();
+                        updateCategorySelects();
                     }
                 });
                 parentDiv.appendChild(editParentButton);
@@ -541,6 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const store = transaction.objectStore('categories');
                             store.put(subcategory);
                             displayCategories();
+                            updateCategorySelects();
                         }
                     });
                     subDiv.appendChild(editSubButton);
