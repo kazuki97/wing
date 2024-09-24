@@ -25,31 +25,41 @@
     <!-- カテゴリ管理セクション -->
     <section id="category-section" style="display:none;">
         <h2>カテゴリ管理</h2>
-        <input type="text" id="category-name" placeholder="カテゴリ名を入力">
-        <button id="add-category">カテゴリを追加</button>
+        <!-- 上位カテゴリの追加 -->
+        <input type="text" id="parent-category-name" placeholder="上位カテゴリ名を入力">
+        <button id="add-parent-category">上位カテゴリを追加</button>
+
+        <!-- サブカテゴリの追加 -->
+        <select id="parent-category-select"></select>
+        <input type="text" id="subcategory-name" placeholder="サブカテゴリ名を入力">
+        <button id="add-subcategory">サブカテゴリを追加</button>
+
+        <!-- カテゴリ一覧表示 -->
         <div id="category-list"></div>
     </section>
 
     <!-- 商品管理セクション -->
     <section id="product-section" style="display:none;">
         <h2>商品管理</h2>
-        <select id="category-select"></select>
+        <!-- 上位カテゴリ選択 -->
+        <select id="product-parent-category-select"></select>
+        <!-- サブカテゴリ選択 -->
+        <select id="product-subcategory-select"></select>
+        <!-- 商品情報入力 -->
         <input type="text" id="product-name" placeholder="商品名を入力">
-        <input type="number" id="product-quantity" placeholder="数量を入力">
-        <input type="number" id="product-unit-price" placeholder="単価を入力">
-        <input type="number" id="product-size" placeholder="サイズを入力 (g)">
-        <input type="number" id="product-cost-per-gram" placeholder="グラムあたりの原価を入力">
+        <input type="number" id="product-quantity" placeholder="在庫数量を入力">
+        <input type="number" id="product-price" placeholder="販売価格を入力">
+        <input type="number" id="product-cost" placeholder="原価を入力">
         <input type="text" id="product-barcode" placeholder="バーコードを入力">
         <button id="add-product">商品を追加</button>
+        <!-- 商品一覧表示 -->
         <table id="product-table">
             <thead>
                 <tr>
                     <th>商品名</th>
                     <th>数量</th>
-                    <th>単価</th>
-                    <th>サイズ (g)</th>
                     <th>価格</th>
-                    <th>原価/グラム</th>
+                    <th>原価</th>
                     <th>バーコード</th>
                     <th>編集</th>
                     <th>削除</th>
@@ -99,9 +109,9 @@
     <!-- 全体在庫管理セクション -->
     <section id="global-inventory-section" style="display:none;">
         <h2>全体在庫管理</h2>
-        <input type="text" id="global-category" placeholder="全体在庫のカテゴリ名">
-        <input type="number" id="global-quantity" placeholder="数量を入力 (g)">
-        <select id="global-inventory-product-select"></select>
+        <select id="global-parent-category-select"></select>
+        <select id="global-subcategory-select"></select>
+        <input type="number" id="global-quantity" placeholder="在庫量を入力">
         <button id="add-global-inventory">全体在庫を追加</button>
         <div id="global-inventory-list"></div>
     </section>
