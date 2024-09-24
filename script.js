@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let db;
     let isScanning = false;
 
-    // データベースを開く（バージョンを11に上げました）
-    const request = indexedDB.open('inventoryDB', 11);
+    // データベースを開く（バージョンを12に上げました）
+    const request = indexedDB.open('inventoryDB', 12);
 
     // データベースエラー
     request.onerror = (event) => {
@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!productStore.indexNames.contains('barcode')) {
                 productStore.createIndex('barcode', 'barcode', { unique: true });
             }
+            // データベースのバージョンを上げた際に、商品に新しいフィールドを追加
+            // 既存のデータに対して特別な処理は必要ありません
         }
 
         // 売上
@@ -211,22 +213,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const priceElement = document.getElementById('product-price');
                 const costElement = document.getElementById('product-cost');
                 const barcodeElement = document.getElementById('product-barcode');
+                const unitAmountElement = document.getElementById('product-unit-amount');
 
-                if (subcategoryId !== null && !isNaN(subcategoryId) && productNameElement && quantityElement && priceElement && costElement && barcodeElement) {
+                if (subcategoryId !== null && !isNaN(subcategoryId) && productNameElement && quantityElement && priceElement && costElement && barcodeElement && unitAmountElement) {
                     const productName = productNameElement.value.trim();
                     const quantity = quantityElement.value.trim();
                     const price = priceElement.value.trim();
                     const cost = costElement.value.trim();
                     const barcode = barcodeElement.value.trim();
+                    const unitAmount = unitAmountElement.value.trim();
 
-                    if (productName !== '' && quantity !== '' && price !== '' && cost !== '' && barcode !== '') {
+                    if (productName !== '' && quantity !== '' && price !== '' && cost !== '' && barcode !== '' && unitAmount !== '') {
                         const product = {
                             subcategoryId,
                             name: productName,
                             quantity: parseInt(quantity, 10),
                             price: parseFloat(price),
                             cost: parseFloat(cost),
-                            barcode
+                            barcode,
+                            unitAmount: parseFloat(unitAmount)
                         };
                         saveProductToDB(product);
                         displayProducts(subcategoryId);
@@ -235,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         priceElement.value = '';
                         costElement.value = '';
                         barcodeElement.value = '';
+                        unitAmountElement.value = '';
                     } else {
                         alert('すべてのフィールドを入力してください。');
                     }
@@ -489,6 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(2).textContent = product.price;
                 row.insertCell(3).textContent = product.cost;
                 row.insertCell(4).textContent = product.barcode;
+                row.insertCell(5).textContent = product.unitAmount;
 
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
@@ -501,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayProducts(subcategoryId);
                     }
                 });
-                row.insertCell(5).appendChild(editButton);
+                row.insertCell(6).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
@@ -514,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayProducts(subcategoryId);
                     }
                 });
-                row.insertCell(6).appendChild(deleteButton);
+                row.insertCell(7).appendChild(deleteButton);
             });
         };
     }
@@ -737,6 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>価格: ${product.price}</p>
                     <p>原価: ${product.cost}</p>
                     <p>バーコード: ${product.barcode}</p>
+                    <p>サイズ: ${product.unitAmount}</p>
                     <button class="edit-button">編集</button>
                     <button class="delete-button">削除</button>`;
                 inventoryProductList.appendChild(productDiv);
@@ -772,11 +780,12 @@ document.addEventListener('DOMContentLoaded', () => {
         product.quantity -= parseInt(quantity, 10);
         productStore.put(product);
 
-        updateGlobalInventoryOnSale(product.subcategoryId, quantity);
+        // 商品のサイズを渡す
+        updateGlobalInventoryOnSale(product.subcategoryId, parseInt(quantity, 10), product.unitAmount);
     }
 
     // 全体在庫から減らす処理
-    function updateGlobalInventoryOnSale(subcategoryId, quantity) {
+    function updateGlobalInventoryOnSale(subcategoryId, quantity, unitAmount) {
         const transaction = db.transaction(['globalInventory'], 'readwrite');
         const store = transaction.objectStore('globalInventory');
         const request = store.get(subcategoryId);
@@ -784,7 +793,8 @@ document.addEventListener('DOMContentLoaded', () => {
         request.onsuccess = (event) => {
             const globalInventory = event.target.result;
             if (globalInventory) {
-                globalInventory.quantity -= quantity;
+                const totalAmountToReduce = quantity * unitAmount;
+                globalInventory.quantity -= totalAmountToReduce;
                 store.put(globalInventory);
                 displayGlobalInventory();
             }
