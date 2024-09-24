@@ -1,337 +1,228 @@
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #1b1b1b;
-    color: #f5f5f5;
-}
-
-/* ヘッダー */
-header {
-    background-color: #262626;
-    color: #f5f5f5;
-    padding: 20px 0;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-}
-
-header h1 {
-    font-size: 28px;
+/* リセットスタイル */
+* {
     margin: 0;
-    letter-spacing: 2px;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* ナビゲーション */
+/* ボディのスタイル */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* ナビゲーションメニュー */
+nav {
+    background-color: #2c3e50;
+    overflow: hidden;
+}
+
 nav ul {
     list-style-type: none;
-    padding: 0;
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+    justify-content: space-around;
 }
 
-nav ul li {
-    margin: 0 10px;
+nav li {
+    flex: 1;
 }
 
-nav ul li a {
-    color: #ffffff;
+nav li a {
+    display: block;
+    color: #ecf0f1;
+    text-align: center;
+    padding: 14px 0;
     text-decoration: none;
     font-weight: bold;
-    padding: 10px 15px;
-    border-radius: 5px;
-    background-color: #4a4a4a;
-    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 
-nav ul li a:hover {
-    background-color: #333333;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+nav li a:hover {
+    background-color: #34495e;
 }
 
-/* メインコンテンツ */
-main {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 20px auto;
-    background-color: #262626;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-    border-radius: 15px;
-}
-
-/* セクション */
+/* セクションのスタイル */
 section {
-    margin-bottom: 20px;
-}
-
-section h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #ffd700;
-    border-bottom: 2px solid #ffd700;
-    padding-bottom: 5px;
-}
-
-/* フォーム要素 */
-input, button, select {
-    display: block;
-    margin: 10px 0;
-    padding: 10px;
-    width: 90%;
-    border: 1px solid #555555;
+    padding: 20px;
+    margin: 20px;
+    background-color: #ffffff;
     border-radius: 5px;
-    font-size: 16px;
-    background-color: #333333;
-    color: #f5f5f5;
-    margin-left: 5%;
 }
 
-input:focus, select:focus {
-    border-color: #ffd700;
-    outline: none;
+/* ヘッダーのスタイル */
+h1, h2, h3 {
+    margin-bottom: 20px;
+    color: #2c3e50;
 }
 
+/* フォーム要素のスタイル */
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 8px 12px;
+    margin: 5px 0 15px 0;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+}
+
+/* ボタンのスタイル */
 button {
-    background-color: #444444;
-    color: #ffd700;
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #3498db;
+    color: #ffffff;
     border: none;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-    width: 90%;
-    margin-left: 5%;
 }
 
 button:hover {
-    background-color: #ffd700;
-    color: #333333;
-    transform: scale(1.05);
+    background-color: #2980b9;
 }
 
-/* カテゴリや商品の管理ボタンに異なる色を設定 */
-#add-category, #manualAddSalesButton {
-    background-color: #28a745; /* 緑色 */
-}
-
-#add-category:hover, #manualAddSalesButton:hover {
-    background-color: #218838; /* ホバー時の緑色 */
-}
-
-#add-product {
-    background-color: #ffc107; /* 黄色 */
-}
-
-#add-product:hover {
-    background-color: #e0a800; /* ホバー時の黄色 */
-}
-
-#start-scan {
-    background-color: #dc3545; /* 赤色 */
-}
-
-#start-scan:hover {
-    background-color: #c82333; /* ホバー時の赤色 */
-}
-
-/* テーブル */
+/* テーブルのスタイル */
 table {
-    width: 90%;
+    width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    margin-left: 5%;
+    margin-bottom: 20px;
 }
 
-th, td {
+table th, table td {
+    border: 1px solid #bdc3c7;
     padding: 12px;
-    border: 1px solid #333;
     text-align: left;
 }
 
-th {
-    background-color: #333333; /* ダークグレー */
-    color: #ffd700;
+table th {
+    background-color: #ecf0f1;
 }
 
-td {
-    background-color: #2a2a2a;
-    color: #f5f5f5;
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
 
-td:hover {
-    background-color: #444444; /* ホバー時の背景色 */
-}
-
-/* カテゴリリスト */
-#category-list {
-    display: flex;
-    flex-direction: column;
-    margin: 20px 5%;
-}
-
-.category-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #333333;
-    color: #f5f5f5;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 5px;
-    width: 100%;
-}
-
-.category-item button {
-    background-color: #555555;
-    color: #f5f5f5;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-    padding: 5px 10px;
-    margin-left: 10px;
-}
-
-.category-item button:hover {
-    background-color: #ffd700;
-    color: #333333;
-    transform: scale(1.05);
-}
-
-/* 在庫管理ボタン */
-.inventory-category-button {
-    display: inline-block;
-    width: 100px;
-    height: 100px;
-    margin: 10px;
-    padding: 15px;
-    background-color: #444444;
-    color: #ffd700;
-    text-align: center;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    line-height: 70px;
-    font-size: 18px;
-}
-
-.inventory-category-button:hover {
-    background-color: #ffd700; /* ホバー時の色 */
-    color: #333333;
-}
-
-.inventory-category-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-}
-
-/* 在庫管理のテーブル */
-.inventory-table {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 5%;
-}
-
-.inventory-table .inventory-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #2a2a2a;
-    color: #f5f5f5;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 5px;
-    width: calc(100% - 20px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.inventory-table .inventory-item p {
-    margin: 0;
-    padding: 0 10px;
-}
-
-.inventory-table .inventory-item button {
-    width: auto;
-    margin: 0 5px;
-    padding: 5px 10px;
-}
-
-/* モバイル対応 */
-@media (max-width: 767px) {
-    nav ul {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    nav ul li {
-        margin: 5px 0;
-    }
-
-    table, th, td {
-        display: block;
-        width: 100%;
-    }
-
-    th {
-        display: none;
-    }
-
-    td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        border: none;
-        border-bottom: 1px solid #333;
-    }
-
-    td:before {
-        content: attr(data-label);
-        font-weight: bold;
-        flex: 1;
-        text-align: left;
-        color: #ffd700;
-    }
-
-    .inventory-category-button {
-        width: 80px;
-        height: 80px;
-        font-size: 14px;
-    }
-
-    .inventory-table .inventory-item {
-        width: 100%;
-    }
-}
-
-/* モーダル */
-#detail-modal {
+/* 編集フォームのスタイル */
+.edit-form {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #262626;
+    background-color: #ffffff;
+    border: 1px solid #bdc3c7;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    border-radius: 5px;
+    width: 300px;
+}
+
+.edit-form label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.edit-form input[type="text"],
+.edit-form input[type="number"] {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 5px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+}
+
+.edit-form button {
+    width: 48%;
+    margin-top: 10px;
+}
+
+.edit-form button:first-child {
+    margin-right: 4%;
+}
+
+/* エラーモーダルのスタイル */
+#errorModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
 }
 
-.modal-content {
-    position: relative;
+#errorModalContent {
+    background-color: #ffffff;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    border-radius: 5px;
 }
 
-.close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
+#errorModalContent p {
+    margin-bottom: 20px;
+}
+
+#errorModalContent button {
+    padding: 10px 20px;
+}
+
+/* カテゴリボタンのスタイル */
+.category-button,
+.inventory-category-button,
+.inventory-product-button {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 5px;
+    background-color: #1abc9c;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    color: #ffd700;
 }
 
-.close:hover {
-    color: #ffae42;
+.category-button:hover,
+.inventory-category-button:hover,
+.inventory-product-button:hover {
+    background-color: #16a085;
+}
+
+/* 在庫管理アイテムのスタイル */
+.inventory-item {
+    border: 1px solid #bdc3c7;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    background-color: #ecf0f1;
+}
+
+.inventory-item p {
+    margin: 5px 0;
+}
+
+/* その他のスタイル */
+.parent-category {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.subcategory {
+    margin-left: 20px;
+    margin-top: 5px;
+}
+
+/* レスポンシブデザイン */
+@media screen and (max-width: 600px) {
+    nav ul {
+        flex-direction: column;
+    }
+
+    nav li {
+        text-align: center;
+    }
+
+    .edit-form {
+        width: 90%;
+    }
 }
