@@ -631,8 +631,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         categoryRequest.onsuccess = (catEvent) => {
                             const subcategory = catEvent.target.result;
                             if (subcategory) {
+                                const quantity = Number(inventory.quantity);
                                 const listItem = document.createElement('div');
-                                listItem.textContent = `${subcategory.name}: ${inventory.quantity}`;
+                                listItem.textContent = `${subcategory.name}: ${isNaN(quantity) ? 0 : quantity}`;
                                 globalInventoryList.appendChild(listItem);
                             }
                         };
@@ -646,6 +647,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.error("global-inventory-list が見つかりません。");
             }
+        };
+
+        request.onerror = (event) => {
+            console.error('Error fetching global inventory:', event.target.error);
         };
     }
 
@@ -869,8 +874,9 @@ document.addEventListener('DOMContentLoaded', () => {
         request.onsuccess = (event) => {
             const globalInventory = event.target.result;
             if (globalInventory) {
-                const totalAmountToReduce = quantity * unitAmount;
-                globalInventory.quantity -= totalAmountToReduce;
+                const totalAmountToReduce = Number(quantity) * Number(unitAmount);
+                const currentQuantity = Number(globalInventory.quantity);
+                globalInventory.quantity = currentQuantity - totalAmountToReduce;
                 store.put(globalInventory);
                 displayGlobalInventory();
             }
