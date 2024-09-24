@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let db;
     let isScanning = false;
 
-    // データベースを開く（バージョンを10に上げました）
-    const request = indexedDB.open('inventoryDB', 10);
+    // データベースを開く（バージョンを11に上げました）
+    const request = indexedDB.open('inventoryDB', 11);
 
     // データベースエラー
     request.onerror = (event) => {
@@ -132,7 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const store = transaction.objectStore('categories');
                         const request = store.add(category);
 
-                        request.onsuccess = () => {
+                        request.onsuccess = (event) => {
+                            // 生成されたIDを取得してカテゴリに設定
+                            category.id = event.target.result;
                             alert(`${categoryName} が上位カテゴリに追加されました。`);
                             updateCategorySelects(); // カテゴリ選択を更新
                             parentCategoryNameElement.value = ''; // 入力フィールドをクリア
@@ -168,7 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             const store = transaction.objectStore('categories');
                             const request = store.add(category);
 
-                            request.onsuccess = () => {
+                            request.onsuccess = (event) => {
+                                // 生成されたIDを取得してカテゴリに設定
+                                category.id = event.target.result;
                                 alert(`${subcategoryName} がサブカテゴリに追加されました。`);
                                 updateCategorySelects(); // カテゴリ選択を更新
                                 subcategoryNameElement.value = ''; // 入力フィールドをクリア
@@ -906,6 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // バーコードから商品を検索する関数
     function findProductByBarcode(barcode) {
         const transaction = db.transaction(['products'], 'readonly');
         const store = transaction.objectStore('products');
