@@ -160,31 +160,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // サブカテゴリを追加する処理
     if (addSubcategoryButton) {
         addSubcategoryButton.addEventListener('click', () => {
-            const parentCategoryId = parentCategorySelect ? parseInt(parentCategorySelect.value, 10) : null;
             const subcategoryNameElement = document.getElementById('subcategory-name');
-            // 修正ポイント：parentCategoryId が 0 でも正しく判定するように条件を変更
-            if (subcategoryNameElement && parentCategoryId !== null && !isNaN(parentCategoryId)) {
+            if (subcategoryNameElement && parentCategorySelect && parentCategorySelect.value !== '') {
                 const subcategoryName = subcategoryNameElement.value;
+                const parentCategoryId = parseInt(parentCategorySelect.value, 10);
 
-                if (subcategoryName) {
-                    const category = { name: subcategoryName, parentId: parentCategoryId };
+                if (!isNaN(parentCategoryId)) {
+                    if (subcategoryName) {
+                        const category = { name: subcategoryName, parentId: parentCategoryId };
 
-                    const transaction = db.transaction(['categories'], 'readwrite');
-                    const store = transaction.objectStore('categories');
-                    const request = store.add(category);
+                        const transaction = db.transaction(['categories'], 'readwrite');
+                        const store = transaction.objectStore('categories');
+                        const request = store.add(category);
 
-                    request.onsuccess = () => {
-                        alert(`${subcategoryName} がサブカテゴリに追加されました。`);
-                        updateCategorySelects(); // カテゴリ選択を更新
-                    };
+                        request.onsuccess = () => {
+                            alert(`${subcategoryName} がサブカテゴリに追加されました。`);
+                            updateCategorySelects(); // カテゴリ選択を更新
+                        };
 
-                    request.onerror = () => {
-                        alert('このサブカテゴリ名はすでに存在しています。');
-                    };
+                        request.onerror = () => {
+                            alert('このサブカテゴリ名はすでに存在しています。');
+                        };
 
-                    subcategoryNameElement.value = ''; // 入力フィールドをクリア
+                        subcategoryNameElement.value = ''; // 入力フィールドをクリア
+                    } else {
+                        alert('サブカテゴリ名を入力してください。');
+                    }
                 } else {
-                    alert('サブカテゴリ名を入力してください。');
+                    alert('親カテゴリの選択が正しくありません。');
                 }
             } else {
                 alert('サブカテゴリ名入力フィールドまたは親カテゴリが選択されていません。');
@@ -208,6 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 上位カテゴリの選択肢を更新
             if (parentCategorySelect) {
                 parentCategorySelect.innerHTML = ''; // リストをクリア
+
+                // デフォルトの選択肢を追加
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = '親カテゴリを選択';
+                parentCategorySelect.appendChild(defaultOption);
+
                 categories.filter(cat => cat.parentId === null).forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
@@ -219,6 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 商品登録用の上位カテゴリ選択肢を更新
             if (productParentCategorySelect) {
                 productParentCategorySelect.innerHTML = '';
+
+                // デフォルトの選択肢を追加
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = '親カテゴリを選択';
+                productParentCategorySelect.appendChild(defaultOption);
+
                 categories.filter(cat => cat.parentId === null).forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
@@ -232,6 +249,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 全体在庫用の上位カテゴリ選択肢を更新
             if (globalParentCategorySelect) {
                 globalParentCategorySelect.innerHTML = '';
+
+                // デフォルトの選択肢を追加
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = '親カテゴリを選択';
+                globalParentCategorySelect.appendChild(defaultOption);
+
                 categories.filter(cat => cat.parentId === null).forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
@@ -249,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 商品登録用のサブカテゴリ選択肢を更新する関数
     function updateProductCategorySelects() {
-        const parentCategoryId = productParentCategorySelect ? parseInt(productParentCategorySelect.value, 10) : null;
+        const parentCategoryId = productParentCategorySelect && productParentCategorySelect.value !== '' ? parseInt(productParentCategorySelect.value, 10) : null;
         if (parentCategoryId !== null && !isNaN(parentCategoryId)) {
             const transaction = db.transaction(['categories'], 'readonly');
             const store = transaction.objectStore('categories');
@@ -260,6 +284,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const subcategories = event.target.result;
                 if (productSubcategorySelect) {
                     productSubcategorySelect.innerHTML = '';
+
+                    // デフォルトの選択肢を追加
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.text = 'サブカテゴリを選択';
+                    productSubcategorySelect.appendChild(defaultOption);
+
                     subcategories.forEach(subcategory => {
                         const option = document.createElement('option');
                         option.value = subcategory.id;
@@ -268,12 +299,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             };
+        } else {
+            if (productSubcategorySelect) {
+                productSubcategorySelect.innerHTML = '';
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = 'サブカテゴリを選択';
+                productSubcategorySelect.appendChild(defaultOption);
+            }
         }
     }
 
     // 全体在庫用のサブカテゴリ選択肢を更新する関数
     function updateGlobalSubcategorySelect() {
-        const parentCategoryId = globalParentCategorySelect ? parseInt(globalParentCategorySelect.value, 10) : null;
+        const parentCategoryId = globalParentCategorySelect && globalParentCategorySelect.value !== '' ? parseInt(globalParentCategorySelect.value, 10) : null;
         if (parentCategoryId !== null && !isNaN(parentCategoryId)) {
             const transaction = db.transaction(['categories'], 'readonly');
             const store = transaction.objectStore('categories');
@@ -284,6 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const subcategories = event.target.result;
                 if (globalSubcategorySelect) {
                     globalSubcategorySelect.innerHTML = '';
+
+                    // デフォルトの選択肢を追加
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.text = 'サブカテゴリを選択';
+                    globalSubcategorySelect.appendChild(defaultOption);
+
                     subcategories.forEach(subcategory => {
                         const option = document.createElement('option');
                         option.value = subcategory.id;
@@ -292,6 +338,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             };
+        } else {
+            if (globalSubcategorySelect) {
+                globalSubcategorySelect.innerHTML = '';
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = 'サブカテゴリを選択';
+                globalSubcategorySelect.appendChild(defaultOption);
+            }
         }
     }
 
@@ -307,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 商品追加の処理
     if (addProductButton) {
         addProductButton.addEventListener('click', () => {
-            const subcategoryId = productSubcategorySelect ? parseInt(productSubcategorySelect.value, 10) : null;
+            const subcategoryId = productSubcategorySelect && productSubcategorySelect.value !== '' ? parseInt(productSubcategorySelect.value, 10) : null;
             const productNameElement = document.getElementById('product-name');
             const quantityElement = document.getElementById('product-quantity');
             const priceElement = document.getElementById('product-price');
@@ -405,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 全体在庫に追加する処理
     if (addGlobalInventoryButton) {
         addGlobalInventoryButton.addEventListener('click', () => {
-            const subcategoryId = globalSubcategorySelect ? parseInt(globalSubcategorySelect.value, 10) : null;
+            const subcategoryId = globalSubcategorySelect && globalSubcategorySelect.value !== '' ? parseInt(globalSubcategorySelect.value, 10) : null;
             const quantityElement = document.getElementById('global-quantity');
 
             if (subcategoryId !== null && !isNaN(subcategoryId) && quantityElement) {
