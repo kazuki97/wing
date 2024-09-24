@@ -59,8 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-  // 必要なボタンや要素の取得
+ // 必要なボタンや要素の取得
 const manualAddSalesButton = document.getElementById('manualAddSalesButton');
+console.log(manualAddSalesButton); // ここで要素が正しく取得できているかを確認
+
 const addCategoryButton = document.getElementById('add-category');
 const categorySelect = document.getElementById('category-select');
 const addProductButton = document.getElementById('add-product');
@@ -93,6 +95,7 @@ const sections = {
     sales: document.getElementById('sales-section'),
     globalInventory: document.getElementById('global-inventory-section')
 };
+
 
 // manualAddSalesButtonにイベントリスナーを追加して、カテゴリを表示させる
 if (manualAddSalesButton) {
