@@ -36,18 +36,20 @@
         <select id="category-select"></select>
         <input type="text" id="product-name" placeholder="商品名を入力">
         <input type="number" id="product-quantity" placeholder="数量を入力">
-        <input type="number" id="product-price" placeholder="価格を入力">
-        <input type="number" id="product-cost" placeholder="原価を入力">
+        <input type="number" id="product-unit-price" placeholder="単価を入力">
+        <input type="number" id="product-size" placeholder="サイズを入力 (g)">
+        <input type="number" id="product-cost-per-gram" placeholder="グラムあたりの原価を入力">
         <input type="text" id="product-barcode" placeholder="バーコードを入力">
-        <input type="number" id="product-size" placeholder="サイズを入力">
         <button id="add-product">商品を追加</button>
         <table id="product-table">
             <thead>
                 <tr>
                     <th>商品名</th>
                     <th>数量</th>
+                    <th>単価</th>
+                    <th>サイズ (g)</th>
                     <th>価格</th>
-                    <th>原価</th>
+                    <th>原価/グラム</th>
                     <th>バーコード</th>
                     <th>編集</th>
                     <th>削除</th>
