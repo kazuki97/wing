@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
             loadSales();
             displayGlobalInventory(); // 全体在庫を表示
             updateProductSelectForGlobalInventory(); // 商品選択リストを更新
-            updateCategorySelect(); // カテゴリ選択を更新
             displayInventoryCategories(); // インベントリカテゴリを表示
         } catch (error) {
             console.error('Error in onsuccess:', error);
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 必要なボタンや要素の取得
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    console.log(manualAddSalesButton); // ここで要素が正しく取得できているかを確認
 
     const addCategoryButton = document.getElementById('add-category');
     const categorySelect = document.getElementById('category-select');
@@ -100,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // manualAddSalesButtonにイベントリスナーを追加して、カテゴリ一覧を表示させる
     if (manualAddSalesButton) {
         manualAddSalesButton.addEventListener('click', () => {
+            showSection('sales'); // 売上セクションを表示
             displayCategorySelectionForSales();
         });
     }
@@ -118,7 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
     linkProduct.addEventListener('click', () => showSection('product'));
     linkInventory.addEventListener('click', () => showSection('inventory'));
     linkBarcode.addEventListener('click', () => showSection('barcode'));
-    linkSales.addEventListener('click', () => showSection('sales'));
+    linkSales.addEventListener('click', () => {
+        showSection('sales');
+        displaySales(); // 売上一覧を表示
+    });
     linkGlobalInventory.addEventListener('click', () => showSection('globalInventory'));
 
     // 全体在庫に関連する商品を選択するためのプルダウンメニューを更新する関数
@@ -152,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const categories = event.target.result;
-            console.log(categories); // ここでカテゴリデータをログに出力
 
             if (categorySelect) {
                 categorySelect.innerHTML = ''; // リストをクリア
@@ -398,14 +399,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // カテゴリ一覧を表示する関数を追加
     function displayCategorySelectionForSales() {
+        const salesCategoryContainer = document.getElementById('salesCategoryContainer');
+        salesCategoryContainer.innerHTML = ''; // 前回の内容をクリア
+
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
         const request = store.getAll();
 
         request.onsuccess = (event) => {
             const categories = event.target.result;
-            const salesCategoryContainer = document.getElementById('salesCategoryContainer');
-            salesCategoryContainer.innerHTML = '';
 
             categories.forEach(category => {
                 const categoryButton = document.createElement('button');
