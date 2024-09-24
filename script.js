@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let db;
     let isScanning = false;
 
-    // データベースを開く
-    const request = indexedDB.open('inventoryDB', 5); // バージョンを5に設定
+    // データベースを開く（バージョンを6に上げました）
+    const request = indexedDB.open('inventoryDB', 6);
 
     // データベースエラー
     request.onerror = (event) => {
@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             db.createObjectStore('globalInventory', { keyPath: 'category' });
         }
 
+        // **修正点：`relatedProducts` オブジェクトストアの作成を追加**
         if (!db.objectStoreNames.contains('relatedProducts')) {
             const relatedProductsStore = db.createObjectStore('relatedProducts', { keyPath: 'id', autoIncrement: true });
             relatedProductsStore.createIndex('globalCategory', 'globalCategory', { unique: false });
@@ -267,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['relatedProducts'], 'readonly');
         const store = transaction.objectStore('relatedProducts');
         const index = store.index('productId');
-        const request = index.getAll(productId);
+        const request = index.getAll(Number(productId));
 
         request.onsuccess = (event) => {
             const relatedProducts = event.target.result;
