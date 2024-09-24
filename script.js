@@ -59,40 +59,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 必要なボタンや要素の取得
-    const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    const addCategoryButton = document.getElementById('add-category');
-    const categorySelect = document.getElementById('category-select');
-    const addProductButton = document.getElementById('add-product');
-    const addGlobalInventoryButton = document.getElementById('add-global-inventory');
-    const addStockButton = document.getElementById('add-stock-button');
-    const detailModal = document.getElementById('detail-modal');
-    const closeModal = document.getElementById('closeErrorModal');
-    const searchButton = document.getElementById('searchButton');
-    const rangeSearchButton = document.getElementById('rangeSearchButton');
-    const monthFilter = document.getElementById('month-filter');
-    const scannerContainer = document.getElementById('scanner-container');
-    const startScanButton = document.getElementById('start-scan');
-    const globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
+  // 必要なボタンや要素の取得
+const manualAddSalesButton = document.getElementById('manualAddSalesButton');
+const addCategoryButton = document.getElementById('add-category');
+const categorySelect = document.getElementById('category-select');
+const addProductButton = document.getElementById('add-product');
+const addGlobalInventoryButton = document.getElementById('add-global-inventory');
+const addStockButton = document.getElementById('add-stock-button');
+const detailModal = document.getElementById('detail-modal');
+const closeModal = document.getElementById('closeErrorModal');
+const searchButton = document.getElementById('searchButton');
+const rangeSearchButton = document.getElementById('rangeSearchButton');
+const monthFilter = document.getElementById('month-filter');
+const scannerContainer = document.getElementById('scanner-container');
+const startScanButton = document.getElementById('start-scan');
+const globalInventoryProductSelect = document.getElementById('global-inventory-product-select');
 
-    // ナビゲーションの要素取得
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-    const linkSales = document.getElementById('link-sales');
-    const linkGlobalInventory = document.getElementById('link-global-inventory');
+// ナビゲーションの要素取得
+const linkHome = document.getElementById('link-home');
+const linkCategory = document.getElementById('link-category');
+const linkProduct = document.getElementById('link-product');
+const linkInventory = document.getElementById('link-inventory');
+const linkBarcode = document.getElementById('link-barcode');
+const linkSales = document.getElementById('link-sales');
+const linkGlobalInventory = document.getElementById('link-global-inventory');
 
-    const sections = {
-        home: document.getElementById('home-section'),
-        category: document.getElementById('category-section'),
-        product: document.getElementById('product-section'),
-        inventory: document.getElementById('inventory-section'),
-        barcode: document.getElementById('barcode-section'),
-        sales: document.getElementById('sales-section'),
-        globalInventory: document.getElementById('global-inventory-section')
-    };
+const sections = {
+    home: document.getElementById('home-section'),
+    category: document.getElementById('category-section'),
+    product: document.getElementById('product-section'),
+    inventory: document.getElementById('inventory-section'),
+    barcode: document.getElementById('barcode-section'),
+    sales: document.getElementById('sales-section'),
+    globalInventory: document.getElementById('global-inventory-section')
+};
+
+// manualAddSalesButtonにイベントリスナーを追加して、カテゴリを表示させる
+if (manualAddSalesButton) {
+    manualAddSalesButton.addEventListener('click', () => {
+        const selectedCategory = categorySelect.value;
+        
+        if (!selectedCategory) {
+            alert('カテゴリを選択してください。');
+            return;
+        }
+
+        // カテゴリに関連する商品を表示する関数を呼び出し
+        displaySalesProducts(selectedCategory);
+    });
+}
+
 
     // セクションを切り替える関数
     function showSection(section) {
