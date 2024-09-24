@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadCategories();
             loadSales();
             displayGlobalInventory(); // 全体在庫を表示
+            updateCategorySelects(); // カテゴリ選択を更新
             updateProductCategorySelects(); // 商品登録用のカテゴリ選択肢を更新
             displayInventoryCategories(); // インベントリカテゴリを表示
             updateBarcodeScannerAvailability(); // バーコードスキャナの利用可能性を更新
@@ -336,6 +337,55 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 商品を表示する関数
+    function displayProducts(subcategoryId) {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('subcategoryId');
+        const request = index.getAll(subcategoryId);
+
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            const productTableBody = document.getElementById('product-table').getElementsByTagName('tbody')[0];
+            productTableBody.innerHTML = '';
+
+            products.forEach(product => {
+                const row = productTableBody.insertRow();
+                row.insertCell(0).textContent = product.name;
+                row.insertCell(1).textContent = product.quantity;
+                row.insertCell(2).textContent = product.price;
+                row.insertCell(3).textContent = product.cost;
+                row.insertCell(4).textContent = product.barcode;
+
+                const editButton = document.createElement('button');
+                editButton.textContent = '編集';
+                editButton.className = 'product-button';
+                editButton.addEventListener('click', () => {
+                    const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
+                    if (newQuantity !== null) {
+                        product.quantity = parseInt(newQuantity, 10);
+                        saveProductToDB(product);
+                        displayProducts(subcategoryId);
+                    }
+                });
+                row.insertCell(5).appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '削除';
+                deleteButton.className = 'product-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm('この商品を削除しますか？')) {
+                        const transaction = db.transaction(['products'], 'readwrite');
+                        const store = transaction.objectStore('products');
+                        store.delete(product.id);
+                        displayProducts(subcategoryId);
+                    }
+                });
+                row.insertCell(6).appendChild(deleteButton);
+            });
+        };
+    }
+
     // 全体在庫に追加する処理
     if (addGlobalInventoryButton) {
         addGlobalInventoryButton.addEventListener('click', () => {
@@ -399,6 +449,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("global-inventory-list が見つかりません。");
             }
         };
+    }
+
+    // カテゴリ一覧を表示する関数
+    function loadCategories() {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const categoriesResult = event.target.result;
+            categories = categoriesResult.reduce((acc, category) => {
+                acc[category.id] = category;
+                return acc;
+            }, {});
+            displayCategories();
+        };
+    }
+
+    // 売上データを読み込む関数
+    function loadSales() {
+        displaySales();
     }
 
     // カテゴリ一覧を表示する関数
@@ -811,9 +882,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 初期化時にカテゴリ選択を更新
-    updateCategorySelects();
-
-    // 初期化時にバーコードスキャナの利用可能性を確認
-    updateBarcodeScannerAvailability();
+    // データベース接続成功時に初期化関数を呼び出す
+    request.onsuccess = (event) => {
+        db = event.target.result;
+        try {
+            loadCategories();
+            loadSales();
+            displayGlobalInventory();
+            updateCategorySelects();
+            updateProductCategorySelects();
+            displayInventoryCategories();
+            updateBarcodeScannerAvailability();
+        } catch (error) {
+            console.error('Error in onsuccess:', error);
+        }
+    };
 });
