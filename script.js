@@ -154,27 +154,30 @@ if (manualAddSalesButton) {
     }
 
     // カテゴリ選択を更新する関数
-    function updateCategorySelect() {
-        const transaction = db.transaction(['categories'], 'readonly');
-        const store = transaction.objectStore('categories');
-        const request = store.getAll();
+   function updateCategorySelect() {
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
 
-        request.onsuccess = (event) => {
-            const categories = event.target.result;
-            if (categorySelect) {
-                categorySelect.innerHTML = ''; // リストをクリア
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        console.log(categories); // ここでカテゴリデータをログに出力
+        
+        if (categorySelect) {
+            categorySelect.innerHTML = ''; // リストをクリア
 
-                categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.name;
-                    option.text = category.name;
-                    categorySelect.appendChild(option);
-                });
-            } else {
-                console.error("categorySelect が見つかりません。");
-            }
-        };
-    }
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.text = category.name;
+                categorySelect.appendChild(option);
+            });
+        } else {
+            console.error("categorySelect が見つかりません。");
+        }
+    };
+}
+
 
     // カテゴリ追加の不具合修正
     if (addCategoryButton) {
