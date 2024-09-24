@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>在庫管理および販売処理システム</title>
     <!-- Quagga.jsのライブラリをインクルード -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js" defer></script>
     <!-- JavaScriptファイルのリンク -->
     <script src="script.js" defer></script>
     <!-- CSSファイルのリンク -->
@@ -82,7 +82,7 @@
         <!-- 商品一覧の表示 -->
         <div>
             <h2>商品一覧</h2>
-            <table id="product-table">
+            <table id="product-table" border="1">
                 <thead>
                     <tr>
                         <th>商品名</th>
@@ -143,12 +143,12 @@
             <div id="transaction-list">
                 <!-- 取引中の商品がここに表示されます -->
             </div>
-            <button id="complete-transaction">取引を完了</button>
+            <button id="complete-transaction" disabled>取引を完了</button>
         </div>
         <!-- 売上一覧の表示 -->
         <div>
             <h2>売上一覧</h2>
-            <table id="sales-table">
+            <table id="sales-table" border="1">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -215,7 +215,7 @@
     </div>
 
     <!-- エラーモーダル -->
-    <div id="errorModal" class="modal">
+    <div id="errorModal" class="modal" style="display:none;">
         <div class="modal-content">
             <span id="closeErrorModal" class="close-button">&times;</span>
             <p id="errorMessage">エラーメッセージ</p>
