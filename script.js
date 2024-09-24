@@ -179,28 +179,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // カテゴリ追加の処理
     if (addCategoryButton) {
         addCategoryButton.addEventListener('click', () => {
-            const categoryName = document.getElementById('category-name').value;
+            const categoryNameElement = document.getElementById('category-name');
+            if (categoryNameElement) {
+                const categoryName = categoryNameElement.value;
 
-            if (categoryName) {
-                const category = { name: categoryName };
+                if (categoryName) {
+                    const category = { name: categoryName };
 
-                const transaction = db.transaction(['categories'], 'readwrite');
-                const store = transaction.objectStore('categories');
-                const request = store.add(category);
+                    const transaction = db.transaction(['categories'], 'readwrite');
+                    const store = transaction.objectStore('categories');
+                    const request = store.add(category);
 
-                request.onsuccess = () => {
-                    alert(`${categoryName} がカテゴリに追加されました。`);
-                    updateCategorySelect(); // カテゴリ選択を更新
-                    displayInventoryCategories(); // インベントリカテゴリを更新
-                };
+                    request.onsuccess = () => {
+                        alert(`${categoryName} がカテゴリに追加されました。`);
+                        updateCategorySelect(); // カテゴリ選択を更新
+                        displayInventoryCategories(); // インベントリカテゴリを更新
+                    };
 
-                request.onerror = () => {
-                    alert('このカテゴリ名はすでに存在しています。');
-                };
+                    request.onerror = () => {
+                        alert('このカテゴリ名はすでに存在しています。');
+                    };
 
-                document.getElementById('category-name').value = ''; // 入力フィールドをクリア
+                    categoryNameElement.value = ''; // 入力フィールドをクリア
+                } else {
+                    alert('カテゴリ名を入力してください。');
+                }
             } else {
-                alert('カテゴリ名を入力してください。');
+                alert('カテゴリ名入力フィールドが見つかりません。');
             }
         });
     }
@@ -208,35 +213,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // 商品追加の処理
     if (addProductButton) {
         addProductButton.addEventListener('click', () => {
-            const category = categorySelect.value;
-            const productName = document.getElementById('product-name').value;
-            const quantity = document.getElementById('product-quantity').value;
-            const price = document.getElementById('product-price').value;
-            const cost = document.getElementById('product-cost').value;
-            const barcode = document.getElementById('product-barcode').value;
-            const size = document.getElementById('product-size').value;
+            const category = categorySelect ? categorySelect.value : null;
+            const productNameElement = document.getElementById('product-name');
+            const quantityElement = document.getElementById('product-quantity');
+            const priceElement = document.getElementById('product-price');
+            const costElement = document.getElementById('product-cost');
+            const barcodeElement = document.getElementById('product-barcode');
+            const sizeElement = document.getElementById('product-size');
 
-            if (category && productName && quantity && price && cost && barcode && size) {
-                const product = {
-                    category,
-                    name: productName,
-                    quantity: parseInt(quantity, 10),
-                    price: parseFloat(price),
-                    cost: parseFloat(cost),
-                    barcode,
-                    size: parseFloat(size)
-                };
-                saveProductToDB(product);
-                displayProducts(category);
-                document.getElementById('product-name').value = '';
-                document.getElementById('product-quantity').value = '';
-                document.getElementById('product-price').value = '';
-                document.getElementById('product-cost').value = '';
-                document.getElementById('product-barcode').value = '';
-                document.getElementById('product-size').value = '';
-                updateProductSelectForGlobalInventory(); // 商品リストの更新
+            if (category && productNameElement && quantityElement && priceElement && costElement && barcodeElement && sizeElement) {
+                const productName = productNameElement.value;
+                const quantity = quantityElement.value;
+                const price = priceElement.value;
+                const cost = costElement.value;
+                const barcode = barcodeElement.value;
+                const size = sizeElement.value;
+
+                if (productName && quantity && price && cost && barcode && size) {
+                    const product = {
+                        category,
+                        name: productName,
+                        quantity: parseInt(quantity, 10),
+                        price: parseFloat(price),
+                        cost: parseFloat(cost),
+                        barcode,
+                        size: parseFloat(size)
+                    };
+                    saveProductToDB(product);
+                    displayProducts(category);
+                    productNameElement.value = '';
+                    quantityElement.value = '';
+                    priceElement.value = '';
+                    costElement.value = '';
+                    barcodeElement.value = '';
+                    sizeElement.value = '';
+                    updateProductSelectForGlobalInventory(); // 商品リストの更新
+                } else {
+                    alert('すべてのフィールドを入力してください。');
+                }
             } else {
-                alert('すべてのフィールドを入力してください。');
+                alert('商品情報の入力フィールドが見つかりません。');
             }
         });
     }
@@ -244,18 +260,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // 全体在庫に関連する商品を保存する処理
     if (addGlobalInventoryButton) {
         addGlobalInventoryButton.addEventListener('click', () => {
-            const category = document.getElementById('global-category').value;
-            const quantity = parseInt(document.getElementById('global-quantity').value, 10);
-            const relatedProductId = globalInventoryProductSelect.value; // 関連する商品のID
+            const globalCategoryElement = document.getElementById('global-category');
+            const globalQuantityElement = document.getElementById('global-quantity');
+            const relatedProductId = globalInventoryProductSelect ? globalInventoryProductSelect.value : null;
 
-            if (category && quantity > 0 && relatedProductId) {
-                saveGlobalInventoryToDB({ category, quantity });
-                saveRelatedProduct(category, relatedProductId); // 関連商品を保存
-                alert(`${category} の全体在庫が追加されました。`);
-                document.getElementById('global-category').value = '';
-                document.getElementById('global-quantity').value = '';
+            if (globalCategoryElement && globalQuantityElement && relatedProductId) {
+                const category = globalCategoryElement.value;
+                const quantity = parseInt(globalQuantityElement.value, 10);
+
+                if (category && quantity > 0 && relatedProductId) {
+                    saveGlobalInventoryToDB({ category, quantity });
+                    saveRelatedProduct(category, relatedProductId); // 関連商品を保存
+                    alert(`${category} の全体在庫が追加されました。`);
+                    globalCategoryElement.value = '';
+                    globalQuantityElement.value = '';
+                } else {
+                    alert('すべてのフィールドを正しく入力してください。');
+                }
             } else {
-                alert('すべてのフィールドを正しく入力してください。');
+                alert('全体在庫情報の入力フィールドが見つかりません。');
             }
         });
     }
@@ -296,25 +319,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // 在庫の入荷機能（全体在庫に追加）
     if (addStockButton) {
         addStockButton.addEventListener('click', () => {
-            const category = document.getElementById('global-category').value;
-            const quantity = parseInt(document.getElementById('stock-quantity').value, 10);
+            const globalCategoryElement = document.getElementById('global-category');
+            const stockQuantityElement = document.getElementById('stock-quantity');
 
-            if (category && quantity > 0) {
-                const transaction = db.transaction(['globalInventory'], 'readwrite');
-                const store = transaction.objectStore('globalInventory');
-                const request = store.get(category);
+            if (globalCategoryElement && stockQuantityElement) {
+                const category = globalCategoryElement.value;
+                const quantity = parseInt(stockQuantityElement.value, 10);
 
-                request.onsuccess = (event) => {
-                    const globalInventory = event.target.result;
-                    if (globalInventory) {
-                        globalInventory.quantity += quantity;
-                        store.put(globalInventory);
-                        alert(`全体在庫に ${quantity} g が追加されました。`);
-                        displayGlobalInventory();
-                    }
-                };
+                if (category && quantity > 0) {
+                    const transaction = db.transaction(['globalInventory'], 'readwrite');
+                    const store = transaction.objectStore('globalInventory');
+                    const request = store.get(category);
+
+                    request.onsuccess = (event) => {
+                        const globalInventory = event.target.result;
+                        if (globalInventory) {
+                            globalInventory.quantity += quantity;
+                            store.put(globalInventory);
+                            alert(`全体在庫に ${quantity} g が追加されました。`);
+                            displayGlobalInventory();
+                        }
+                    };
+                } else {
+                    alert('カテゴリ名と在庫量を正しく入力してください。');
+                }
             } else {
-                alert('カテゴリ名と在庫量を正しく入力してください。');
+                alert('在庫の入荷情報の入力フィールドが見つかりません。');
             }
         });
     }
