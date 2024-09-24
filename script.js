@@ -19,9 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
             loadSales();
             displayGlobalInventory(); // 全体在庫を表示
             updateCategorySelects(); // カテゴリ選択を更新
-            updateProductCategorySelects(); // 商品登録用のカテゴリ選択肢を更新
             displayInventoryCategories(); // インベントリカテゴリを表示
             updateBarcodeScannerAvailability(); // バーコードスキャナの利用可能性を更新
+            registerEventListeners(); // イベントリスナーを登録
         } catch (error) {
             console.error('Error in onsuccess:', error);
         }
@@ -96,12 +96,205 @@ document.addEventListener('DOMContentLoaded', () => {
         globalInventory: document.getElementById('global-inventory-section')
     };
 
-    // manualAddSalesButtonにイベントリスナーを追加して、カテゴリ一覧を表示させる
-    if (manualAddSalesButton) {
-        manualAddSalesButton.addEventListener('click', () => {
-            showSection('sales'); // 売上セクションを表示
-            displayCategorySelectionForSales();
+    // イベントリスナーを登録する関数
+    function registerEventListeners() {
+        // manualAddSalesButtonにイベントリスナーを追加して、カテゴリ一覧を表示させる
+        if (manualAddSalesButton) {
+            manualAddSalesButton.addEventListener('click', () => {
+                showSection('sales'); // 売上セクションを表示
+                displayCategorySelectionForSales();
+            });
+        }
+
+        // ナビゲーションボタンのイベントリスナー設定
+        linkHome.addEventListener('click', () => showSection('home'));
+        linkCategory.addEventListener('click', () => showSection('category'));
+        linkProduct.addEventListener('click', () => showSection('product'));
+        linkInventory.addEventListener('click', () => showSection('inventory'));
+        linkBarcode.addEventListener('click', () => showSection('barcode'));
+        linkSales.addEventListener('click', () => {
+            showSection('sales');
+            displaySales(); // 売上一覧を表示
         });
+        linkGlobalInventory.addEventListener('click', () => showSection('globalInventory'));
+
+        // 上位カテゴリを追加する処理
+        if (addParentCategoryButton) {
+            addParentCategoryButton.addEventListener('click', () => {
+                const parentCategoryNameElement = document.getElementById('parent-category-name');
+                if (parentCategoryNameElement) {
+                    const categoryName = parentCategoryNameElement.value.trim();
+
+                    if (categoryName !== '') {
+                        const category = { name: categoryName, parentId: null };
+
+                        const transaction = db.transaction(['categories'], 'readwrite');
+                        const store = transaction.objectStore('categories');
+                        const request = store.add(category);
+
+                        request.onsuccess = () => {
+                            alert(`${categoryName} が上位カテゴリに追加されました。`);
+                            updateCategorySelects(); // カテゴリ選択を更新
+                            parentCategoryNameElement.value = ''; // 入力フィールドをクリア
+                        };
+
+                        request.onerror = () => {
+                            alert('このカテゴリ名はすでに存在しています。');
+                        };
+                    } else {
+                        alert('カテゴリ名を入力してください。');
+                    }
+                } else {
+                    alert('カテゴリ名入力フィールドが見つかりません。');
+                }
+            });
+        }
+
+        // サブカテゴリを追加する処理
+        if (addSubcategoryButton) {
+            addSubcategoryButton.addEventListener('click', () => {
+                const subcategoryNameElement = document.getElementById('subcategory-name');
+                if (subcategoryNameElement && parentCategorySelect) {
+                    const subcategoryName = subcategoryNameElement.value.trim();
+                    const parentCategoryValue = parentCategorySelect.value;
+
+                    if (subcategoryName !== '' && parentCategoryValue !== '') {
+                        const parentCategoryId = parseInt(parentCategoryValue, 10);
+
+                        if (!isNaN(parentCategoryId)) {
+                            const category = { name: subcategoryName, parentId: parentCategoryId };
+
+                            const transaction = db.transaction(['categories'], 'readwrite');
+                            const store = transaction.objectStore('categories');
+                            const request = store.add(category);
+
+                            request.onsuccess = () => {
+                                alert(`${subcategoryName} がサブカテゴリに追加されました。`);
+                                updateCategorySelects(); // カテゴリ選択を更新
+                                subcategoryNameElement.value = ''; // 入力フィールドをクリア
+                            };
+
+                            request.onerror = () => {
+                                alert('このサブカテゴリ名はすでに存在しています。');
+                            };
+                        } else {
+                            alert('親カテゴリの選択が正しくありません。');
+                        }
+                    } else {
+                        alert('サブカテゴリ名を入力し、親カテゴリを選択してください。');
+                    }
+                } else {
+                    alert('サブカテゴリ名入力フィールドまたは親カテゴリが見つかりません。');
+                }
+            });
+        }
+
+        // 上位カテゴリ選択時にサブカテゴリ選択肢を更新
+        if (productParentCategorySelect) {
+            productParentCategorySelect.addEventListener('change', updateProductCategorySelects);
+        }
+
+        if (globalParentCategorySelect) {
+            globalParentCategorySelect.addEventListener('change', updateGlobalSubcategorySelect);
+        }
+
+        // 商品追加の処理
+        if (addProductButton) {
+            addProductButton.addEventListener('click', () => {
+                const subcategoryId = productSubcategorySelect && productSubcategorySelect.value !== '' ? parseInt(productSubcategorySelect.value, 10) : null;
+                const productNameElement = document.getElementById('product-name');
+                const quantityElement = document.getElementById('product-quantity');
+                const priceElement = document.getElementById('product-price');
+                const costElement = document.getElementById('product-cost');
+                const barcodeElement = document.getElementById('product-barcode');
+
+                if (subcategoryId !== null && !isNaN(subcategoryId) && productNameElement && quantityElement && priceElement && costElement && barcodeElement) {
+                    const productName = productNameElement.value.trim();
+                    const quantity = quantityElement.value.trim();
+                    const price = priceElement.value.trim();
+                    const cost = costElement.value.trim();
+                    const barcode = barcodeElement.value.trim();
+
+                    if (productName !== '' && quantity !== '' && price !== '' && cost !== '' && barcode !== '') {
+                        const product = {
+                            subcategoryId,
+                            name: productName,
+                            quantity: parseInt(quantity, 10),
+                            price: parseFloat(price),
+                            cost: parseFloat(cost),
+                            barcode
+                        };
+                        saveProductToDB(product);
+                        displayProducts(subcategoryId);
+                        productNameElement.value = '';
+                        quantityElement.value = '';
+                        priceElement.value = '';
+                        costElement.value = '';
+                        barcodeElement.value = '';
+                    } else {
+                        alert('すべてのフィールドを入力してください。');
+                    }
+                } else {
+                    alert('商品情報の入力フィールドが見つからないか、サブカテゴリが選択されていません。');
+                }
+            });
+        }
+
+        // 全体在庫に追加する処理
+        if (addGlobalInventoryButton) {
+            addGlobalInventoryButton.addEventListener('click', () => {
+                const subcategoryId = globalSubcategorySelect && globalSubcategorySelect.value !== '' ? parseInt(globalSubcategorySelect.value, 10) : null;
+                const quantityElement = document.getElementById('global-quantity');
+
+                if (subcategoryId !== null && !isNaN(subcategoryId) && quantityElement) {
+                    const quantity = parseInt(quantityElement.value.trim(), 10);
+
+                    if (!isNaN(quantity) && quantity >= 0) {
+                        saveGlobalInventoryToDB({ subcategoryId, quantity });
+                        alert(`全体在庫に追加されました。`);
+                        quantityElement.value = '';
+                        displayGlobalInventory();
+                    } else {
+                        alert('在庫量を正しく入力してください。');
+                    }
+                } else {
+                    alert('全体在庫情報の入力フィールドが見つからないか、サブカテゴリが選択されていません。');
+                }
+            });
+        }
+
+        // バーコードスキャンの処理
+        if (startScanButton) {
+            startScanButton.addEventListener('click', () => {
+                if (isScanning) return;
+                isScanning = true;
+
+                Quagga.init({
+                    inputStream: {
+                        type: "LiveStream",
+                        target: scannerContainer,
+                        constraints: {
+                            facingMode: "environment"
+                        }
+                    },
+                    decoder: {
+                        readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
+                    }
+                }, (err) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    Quagga.start();
+                });
+
+                Quagga.onDetected((result) => {
+                    const barcode = result.codeResult.code;
+                    Quagga.stop();
+                    findProductByBarcode(barcode);
+                });
+            });
+        }
     }
 
     // セクションを切り替える関数
@@ -110,89 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sections[key].style.display = 'none';
         });
         sections[section].style.display = 'block';
-    }
-
-    // ナビゲーションボタンのイベントリスナー設定
-    linkHome.addEventListener('click', () => showSection('home'));
-    linkCategory.addEventListener('click', () => showSection('category'));
-    linkProduct.addEventListener('click', () => showSection('product'));
-    linkInventory.addEventListener('click', () => showSection('inventory'));
-    linkBarcode.addEventListener('click', () => showSection('barcode'));
-    linkSales.addEventListener('click', () => {
-        showSection('sales');
-        displaySales(); // 売上一覧を表示
-    });
-    linkGlobalInventory.addEventListener('click', () => showSection('globalInventory'));
-
-    // 上位カテゴリを追加する処理
-    if (addParentCategoryButton) {
-        addParentCategoryButton.addEventListener('click', () => {
-            const parentCategoryNameElement = document.getElementById('parent-category-name');
-            if (parentCategoryNameElement) {
-                const categoryName = parentCategoryNameElement.value;
-
-                if (categoryName) {
-                    const category = { name: categoryName, parentId: null };
-
-                    const transaction = db.transaction(['categories'], 'readwrite');
-                    const store = transaction.objectStore('categories');
-                    const request = store.add(category);
-
-                    request.onsuccess = () => {
-                        alert(`${categoryName} が上位カテゴリに追加されました。`);
-                        updateCategorySelects(); // カテゴリ選択を更新
-                    };
-
-                    request.onerror = () => {
-                        alert('このカテゴリ名はすでに存在しています。');
-                    };
-
-                    parentCategoryNameElement.value = ''; // 入力フィールドをクリア
-                } else {
-                    alert('カテゴリ名を入力してください。');
-                }
-            } else {
-                alert('カテゴリ名入力フィールドが見つかりません。');
-            }
-        });
-    }
-
-    // サブカテゴリを追加する処理
-    if (addSubcategoryButton) {
-        addSubcategoryButton.addEventListener('click', () => {
-            const subcategoryNameElement = document.getElementById('subcategory-name');
-            if (subcategoryNameElement && parentCategorySelect && parentCategorySelect.value !== '') {
-                const subcategoryName = subcategoryNameElement.value;
-                const parentCategoryId = parseInt(parentCategorySelect.value, 10);
-
-                if (!isNaN(parentCategoryId)) {
-                    if (subcategoryName) {
-                        const category = { name: subcategoryName, parentId: parentCategoryId };
-
-                        const transaction = db.transaction(['categories'], 'readwrite');
-                        const store = transaction.objectStore('categories');
-                        const request = store.add(category);
-
-                        request.onsuccess = () => {
-                            alert(`${subcategoryName} がサブカテゴリに追加されました。`);
-                            updateCategorySelects(); // カテゴリ選択を更新
-                        };
-
-                        request.onerror = () => {
-                            alert('このサブカテゴリ名はすでに存在しています。');
-                        };
-
-                        subcategoryNameElement.value = ''; // 入力フィールドをクリア
-                    } else {
-                        alert('サブカテゴリ名を入力してください。');
-                    }
-                } else {
-                    alert('親カテゴリの選択が正しくありません。');
-                }
-            } else {
-                alert('サブカテゴリ名入力フィールドまたは親カテゴリが選択されていません。');
-            }
-        });
     }
 
     // カテゴリ選択を更新する関数
@@ -349,55 +459,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 上位カテゴリ選択時にサブカテゴリ選択肢を更新
-    if (productParentCategorySelect) {
-        productParentCategorySelect.addEventListener('change', updateProductCategorySelects);
-    }
-
-    if (globalParentCategorySelect) {
-        globalParentCategorySelect.addEventListener('change', updateGlobalSubcategorySelect);
-    }
-
-    // 商品追加の処理
-    if (addProductButton) {
-        addProductButton.addEventListener('click', () => {
-            const subcategoryId = productSubcategorySelect && productSubcategorySelect.value !== '' ? parseInt(productSubcategorySelect.value, 10) : null;
-            const productNameElement = document.getElementById('product-name');
-            const quantityElement = document.getElementById('product-quantity');
-            const priceElement = document.getElementById('product-price');
-            const costElement = document.getElementById('product-cost');
-            const barcodeElement = document.getElementById('product-barcode');
-
-            if (subcategoryId !== null && !isNaN(subcategoryId) && productNameElement && quantityElement && priceElement && costElement && barcodeElement) {
-                const productName = productNameElement.value;
-                const quantity = quantityElement.value;
-                const price = priceElement.value;
-                const cost = costElement.value;
-                const barcode = barcodeElement.value;
-
-                if (productName && quantity && price && cost && barcode) {
-                    const product = {
-                        subcategoryId,
-                        name: productName,
-                        quantity: parseInt(quantity, 10),
-                        price: parseFloat(price),
-                        cost: parseFloat(cost),
-                        barcode
-                    };
-                    saveProductToDB(product);
-                    displayProducts(subcategoryId);
-                    productNameElement.value = '';
-                    quantityElement.value = '';
-                    priceElement.value = '';
-                    costElement.value = '';
-                    barcodeElement.value = '';
-                } else {
-                    alert('すべてのフィールドを入力してください。');
-                }
-            } else {
-                alert('商品情報の入力フィールドが見つからないか、サブカテゴリが選択されていません。');
-            }
-        });
+    // 商品をDBに保存する関数
+    function saveProductToDB(product) {
+        const transaction = db.transaction(['products'], 'readwrite');
+        const store = transaction.objectStore('products');
+        store.put(product);
     }
 
     // 商品を表示する関数
@@ -447,36 +513,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(6).appendChild(deleteButton);
             });
         };
-    }
-
-    // 商品をDBに保存する関数
-    function saveProductToDB(product) {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-        store.put(product);
-    }
-
-    // 全体在庫に追加する処理
-    if (addGlobalInventoryButton) {
-        addGlobalInventoryButton.addEventListener('click', () => {
-            const subcategoryId = globalSubcategorySelect && globalSubcategorySelect.value !== '' ? parseInt(globalSubcategorySelect.value, 10) : null;
-            const quantityElement = document.getElementById('global-quantity');
-
-            if (subcategoryId !== null && !isNaN(subcategoryId) && quantityElement) {
-                const quantity = parseInt(quantityElement.value, 10);
-
-                if (quantity >= 0) {
-                    saveGlobalInventoryToDB({ subcategoryId, quantity });
-                    alert(`全体在庫に追加されました。`);
-                    quantityElement.value = '';
-                    displayGlobalInventory();
-                } else {
-                    alert('在庫量を正しく入力してください。');
-                }
-            } else {
-                alert('全体在庫情報の入力フィールドが見つからないか、サブカテゴリが選択されていません。');
-            }
-        });
     }
 
     // 全体在庫をDBに保存する関数
@@ -868,39 +904,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 salesProductContainer.appendChild(button);
             });
         };
-    }
-
-    // バーコードスキャンの処理
-    if (startScanButton) {
-        startScanButton.addEventListener('click', () => {
-            if (isScanning) return;
-            isScanning = true;
-
-            Quagga.init({
-                inputStream: {
-                    type: "LiveStream",
-                    target: scannerContainer,
-                    constraints: {
-                        facingMode: "environment"
-                    }
-                },
-                decoder: {
-                    readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
-                }
-            }, (err) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected((result) => {
-                const barcode = result.codeResult.code;
-                Quagga.stop();
-                findProductByBarcode(barcode);
-            });
-        });
     }
 
     function findProductByBarcode(barcode) {
