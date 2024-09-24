@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayGlobalInventory(); // 全体在庫を表示
             updateProductCategorySelects(); // 商品登録用のカテゴリ選択肢を更新
             displayInventoryCategories(); // インベントリカテゴリを表示
+            updateBarcodeScannerAvailability(); // バーコードスキャナの利用可能性を更新
         } catch (error) {
             console.error('Error in onsuccess:', error);
         }
@@ -416,17 +417,92 @@ document.addEventListener('DOMContentLoaded', () => {
                 parentDiv.className = 'parent-category';
                 parentDiv.textContent = parentCategory.name;
 
+                const editParentButton = document.createElement('button');
+                editParentButton.textContent = '編集';
+                editParentButton.addEventListener('click', () => {
+                    const newName = prompt('新しいカテゴリ名を入力してください:', parentCategory.name);
+                    if (newName) {
+                        parentCategory.name = newName;
+                        const transaction = db.transaction(['categories'], 'readwrite');
+                        const store = transaction.objectStore('categories');
+                        store.put(parentCategory);
+                        displayCategories();
+                    }
+                });
+                parentDiv.appendChild(editParentButton);
+
+                const deleteParentButton = document.createElement('button');
+                deleteParentButton.textContent = '削除';
+                deleteParentButton.addEventListener('click', () => {
+                    if (confirm('このカテゴリとそのサブカテゴリを削除しますか？')) {
+                        deleteCategoryAndSubcategories(parentCategory.id);
+                        displayCategories();
+                    }
+                });
+                parentDiv.appendChild(deleteParentButton);
+
                 const subcategories = categories.filter(cat => cat.parentId === parentCategory.id);
                 subcategories.forEach(subcategory => {
                     const subDiv = document.createElement('div');
                     subDiv.className = 'subcategory';
                     subDiv.textContent = ` - ${subcategory.name}`;
+
+                    const editSubButton = document.createElement('button');
+                    editSubButton.textContent = '編集';
+                    editSubButton.addEventListener('click', () => {
+                        const newName = prompt('新しいサブカテゴリ名を入力してください:', subcategory.name);
+                        if (newName) {
+                            subcategory.name = newName;
+                            const transaction = db.transaction(['categories'], 'readwrite');
+                            const store = transaction.objectStore('categories');
+                            store.put(subcategory);
+                            displayCategories();
+                        }
+                    });
+                    subDiv.appendChild(editSubButton);
+
+                    const deleteSubButton = document.createElement('button');
+                    deleteSubButton.textContent = '削除';
+                    deleteSubButton.addEventListener('click', () => {
+                        if (confirm('このサブカテゴリを削除しますか？')) {
+                            deleteCategory(subcategory.id);
+                            displayCategories();
+                        }
+                    });
+                    subDiv.appendChild(deleteSubButton);
+
                     parentDiv.appendChild(subDiv);
                 });
 
                 categoryList.appendChild(parentDiv);
             });
         };
+    }
+
+    // カテゴリとそのサブカテゴリを削除する関数
+    function deleteCategoryAndSubcategories(categoryId) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        const index = store.index('parentId');
+
+        // 親カテゴリを削除
+        store.delete(categoryId);
+
+        // サブカテゴリを取得して削除
+        const subRequest = index.getAll(categoryId);
+        subRequest.onsuccess = (event) => {
+            const subcategories = event.target.result;
+            subcategories.forEach(subcategory => {
+                store.delete(subcategory.id);
+            });
+        };
+    }
+
+    // カテゴリを削除する関数
+    function deleteCategory(categoryId) {
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        store.delete(categoryId);
     }
 
     // 在庫管理用のカテゴリ一覧を表示する関数
@@ -647,10 +723,97 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // バーコードスキャンの処理（必要に応じて実装）
+    // バーコードスキャンの処理
+    if (startScanButton) {
+        startScanButton.addEventListener('click', () => {
+            if (isScanning) return;
+            isScanning = true;
+
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    target: scannerContainer,
+                    constraints: {
+                        facingMode: "environment"
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
+                }
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                Quagga.start();
+            });
+
+            Quagga.onDetected((result) => {
+                const barcode = result.codeResult.code;
+                Quagga.stop();
+                findProductByBarcode(barcode);
+            });
+        });
+    }
+
+    function findProductByBarcode(barcode) {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('barcode');
+        const request = index.get(barcode);
+
+        request.onsuccess = (event) => {
+            const product = event.target.result;
+            if (product) {
+                const quantity = prompt(`バーコード: ${barcode}\n商品名: ${product.name}\n購入数量を入力してください:`);
+                if (quantity) {
+                    updateProductQuantity(product, quantity);
+                    addSaleToDB(product, quantity);
+                    isScanning = false;
+                } else {
+                    showErrorModal('数量が無効です。');
+                    isScanning = false;
+                }
+            } else {
+                showErrorModal('該当する商品が見つかりませんでした。');
+                document.getElementById('closeErrorModal').addEventListener('click', () => {
+                    isScanning = false;
+                });
+            }
+        };
+    }
+
+    // エラーモーダルの表示関数
+    function showErrorModal(message) {
+        const errorMessage = document.getElementById('errorMessage');
+        const errorModal = document.getElementById('errorModal');
+        const closeErrorModalButton = document.getElementById('closeErrorModal');
+
+        if (errorMessage && errorModal && closeErrorModalButton) {
+            errorMessage.textContent = message;
+            errorModal.style.display = 'block';
+
+            closeErrorModalButton.addEventListener('click', () => {
+                errorModal.style.display = 'none';
+            });
+        } else {
+            alert(message);
+        }
+    }
+
+    // ブラウザがバーコードスキャンに対応しているか確認
+    function updateBarcodeScannerAvailability() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (startScanButton) {
+                startScanButton.disabled = true;
+                startScanButton.textContent = 'バーコードスキャンはサポートされていません';
+            }
+        }
+    }
 
     // 初期化時にカテゴリ選択を更新
     updateCategorySelects();
 
-    // エラーモーダルの表示関数（必要に応じて実装）
+    // 初期化時にバーコードスキャナの利用可能性を確認
+    updateBarcodeScannerAvailability();
 });
