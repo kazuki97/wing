@@ -50,8 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!productStore.indexNames.contains('barcode')) {
                 productStore.createIndex('barcode', 'barcode', { unique: true });
             }
-            // データベースのバージョンを上げた際に、商品に新しいフィールドを追加
-            // 既存のデータに対して特別な処理は必要ありません
         }
 
         // 売上
@@ -501,12 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 editButton.textContent = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
-                    const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
-                    if (newQuantity !== null) {
-                        product.quantity = parseInt(newQuantity, 10);
-                        saveProductToDB(product);
-                        displayProducts(subcategoryId);
-                    }
+                    // 編集フォームを表示
+                    showEditProductForm(product, subcategoryId);
                 });
                 row.insertCell(6).appendChild(editButton);
 
@@ -524,6 +518,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertCell(7).appendChild(deleteButton);
             });
         };
+    }
+
+    // 商品編集フォームを表示する関数
+    function showEditProductForm(product, subcategoryId) {
+        // 編集フォームの要素を作成
+        const editForm = document.createElement('div');
+        editForm.className = 'edit-form';
+
+        editForm.innerHTML = `
+            <h3>商品を編集</h3>
+            <label>商品名: <input type="text" id="edit-product-name" value="${product.name}"></label><br>
+            <label>数量: <input type="number" id="edit-product-quantity" value="${product.quantity}"></label><br>
+            <label>価格: <input type="number" id="edit-product-price" value="${product.price}"></label><br>
+            <label>原価: <input type="number" id="edit-product-cost" value="${product.cost}"></label><br>
+            <label>バーコード: <input type="text" id="edit-product-barcode" value="${product.barcode}"></label><br>
+            <label>サイズ（量）: <input type="number" id="edit-product-unit-amount" value="${product.unitAmount}"></label><br>
+            <button id="save-edit-button">保存</button>
+            <button id="cancel-edit-button">キャンセル</button>
+        `;
+
+        // 編集フォームを表示
+        document.body.appendChild(editForm);
+
+        // 保存ボタンのイベントリスナー
+        const saveButton = editForm.querySelector('#save-edit-button');
+        saveButton.addEventListener('click', () => {
+            // 入力された値を取得
+            const editedName = editForm.querySelector('#edit-product-name').value.trim();
+            const editedQuantity = parseInt(editForm.querySelector('#edit-product-quantity').value.trim(), 10);
+            const editedPrice = parseFloat(editForm.querySelector('#edit-product-price').value.trim());
+            const editedCost = parseFloat(editForm.querySelector('#edit-product-cost').value.trim());
+            const editedBarcode = editForm.querySelector('#edit-product-barcode').value.trim();
+            const editedUnitAmount = parseFloat(editForm.querySelector('#edit-product-unit-amount').value.trim());
+
+            // 入力チェック
+            if (editedName && !isNaN(editedQuantity) && !isNaN(editedPrice) && !isNaN(editedCost) && editedBarcode && !isNaN(editedUnitAmount)) {
+                // データベースを更新
+                const transaction = db.transaction(['products'], 'readwrite');
+                const store = transaction.objectStore('products');
+
+                const updatedProduct = {
+                    id: product.id,
+                    subcategoryId: product.subcategoryId,
+                    name: editedName,
+                    quantity: editedQuantity,
+                    price: editedPrice,
+                    cost: editedCost,
+                    barcode: editedBarcode,
+                    unitAmount: editedUnitAmount
+                };
+
+                store.put(updatedProduct);
+
+                transaction.oncomplete = () => {
+                    // 編集フォームを削除
+                    document.body.removeChild(editForm);
+                    // 商品一覧を更新
+                    displayProducts(subcategoryId);
+                    displayInventoryProducts(subcategoryId);
+                };
+            } else {
+                alert('すべての項目を正しく入力してください。');
+            }
+        });
+
+        // キャンセルボタンのイベントリスナー
+        const cancelButton = editForm.querySelector('#cancel-edit-button');
+        cancelButton.addEventListener('click', () => {
+            // 編集フォームを削除
+            document.body.removeChild(editForm);
+        });
     }
 
     // 全体在庫をDBに保存する関数
@@ -739,24 +804,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productDiv = document.createElement('div');
                 productDiv.className = 'inventory-item';
                 productDiv.innerHTML = `
-                    <p>${product.name}</p>
+                    <p>商品名: ${product.name}</p>
                     <p>数量: ${product.quantity}</p>
                     <p>価格: ${product.price}</p>
                     <p>原価: ${product.cost}</p>
                     <p>バーコード: ${product.barcode}</p>
-                    <p>サイズ: ${product.unitAmount}</p>
+                    <p>サイズ（量）: ${product.unitAmount}</p>
                     <button class="edit-button">編集</button>
                     <button class="delete-button">削除</button>`;
                 inventoryProductList.appendChild(productDiv);
 
                 const editButton = productDiv.querySelector('.edit-button');
                 editButton.addEventListener('click', () => {
-                    const newQuantity = prompt('新しい数量を入力してください:', product.quantity);
-                    if (newQuantity !== null) {
-                        product.quantity = parseInt(newQuantity, 10);
-                        saveProductToDB(product);
-                        displayInventoryProducts(subcategoryId);
-                    }
+                    // 編集フォームを表示
+                    showEditProductForm(product, subcategoryId);
                 });
 
                 const deleteButton = productDiv.querySelector('.delete-button');
