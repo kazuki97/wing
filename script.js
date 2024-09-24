@@ -216,21 +216,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (subcategoryId !== null && !isNaN(subcategoryId) && productNameElement && quantityElement && priceElement && costElement && barcodeElement && unitAmountElement) {
                     const productName = productNameElement.value.trim();
-                    const quantity = quantityElement.value.trim();
-                    const price = priceElement.value.trim();
-                    const cost = costElement.value.trim();
+                    const quantity = Number(quantityElement.value.trim());
+                    const price = Number(priceElement.value.trim());
+                    const cost = Number(costElement.value.trim());
                     const barcode = barcodeElement.value.trim();
-                    const unitAmount = unitAmountElement.value.trim();
+                    const unitAmount = Number(unitAmountElement.value.trim());
 
-                    if (productName !== '' && quantity !== '' && price !== '' && cost !== '' && barcode !== '' && unitAmount !== '') {
+                    if (productName !== '' && !isNaN(quantity) && !isNaN(price) && !isNaN(cost) && barcode !== '' && !isNaN(unitAmount)) {
                         const product = {
                             subcategoryId,
                             name: productName,
-                            quantity: parseInt(quantity, 10),
-                            price: parseFloat(price),
-                            cost: parseFloat(cost),
+                            quantity,
+                            price,
+                            cost,
                             barcode,
-                            unitAmount: parseFloat(unitAmount)
+                            unitAmount
                         };
                         saveProductToDB(product);
                         displayProducts(subcategoryId);
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         barcodeElement.value = '';
                         unitAmountElement.value = '';
                     } else {
-                        alert('すべてのフィールドを入力してください。');
+                        alert('すべてのフィールドを正しく入力してください。');
                     }
                 } else {
                     alert('商品情報の入力フィールドが見つからないか、サブカテゴリが選択されていません。');
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const quantityElement = document.getElementById('global-quantity');
 
                 if (subcategoryId !== null && !isNaN(subcategoryId) && quantityElement) {
-                    const quantity = parseInt(quantityElement.value.trim(), 10);
+                    const quantity = Number(quantityElement.value.trim());
 
                     if (!isNaN(quantity) && quantity >= 0) {
                         saveGlobalInventoryToDB({ subcategoryId, quantity });
@@ -560,11 +560,11 @@ document.addEventListener('DOMContentLoaded', () => {
         saveButton.addEventListener('click', () => {
             // 入力された値を取得
             const editedName = editForm.querySelector('#edit-product-name').value.trim();
-            const editedQuantity = parseInt(editForm.querySelector('#edit-product-quantity').value.trim(), 10);
-            const editedPrice = parseFloat(editForm.querySelector('#edit-product-price').value.trim());
-            const editedCost = parseFloat(editForm.querySelector('#edit-product-cost').value.trim());
+            const editedQuantity = Number(editForm.querySelector('#edit-product-quantity').value.trim());
+            const editedPrice = Number(editForm.querySelector('#edit-product-price').value.trim());
+            const editedCost = Number(editForm.querySelector('#edit-product-cost').value.trim());
             const editedBarcode = editForm.querySelector('#edit-product-barcode').value.trim();
-            const editedUnitAmount = parseFloat(editForm.querySelector('#edit-product-unit-amount').value.trim());
+            const editedUnitAmount = Number(editForm.querySelector('#edit-product-unit-amount').value.trim());
 
             // 入力チェック
             if (editedName && !isNaN(editedQuantity) && !isNaN(editedPrice) && !isNaN(editedCost) && editedBarcode && !isNaN(editedUnitAmount)) {
@@ -852,11 +852,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const transaction = db.transaction(['products'], 'readwrite');
         const productStore = transaction.objectStore('products');
 
-        product.quantity -= parseInt(quantity, 10);
+        const updatedQuantity = product.quantity - Number(quantity);
+        product.quantity = updatedQuantity;
         productStore.put(product);
 
         // 商品のサイズを渡す
-        updateGlobalInventoryOnSale(product.subcategoryId, parseInt(quantity, 10), product.unitAmount);
+        updateGlobalInventoryOnSale(product.subcategoryId, Number(quantity), product.unitAmount);
     }
 
     // 全体在庫から減らす処理
@@ -878,13 +879,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 商品販売時の売上データ保存
     function addSaleToDB(product, quantity) {
-        const totalPrice = product.price * quantity;
-        const totalCost = product.cost * quantity;
+        const totalPrice = product.price * Number(quantity);
+        const totalCost = product.cost * Number(quantity);
         const profit = totalPrice - totalCost;
 
         const sale = {
             productName: product.name,
-            quantity: parseInt(quantity, 10),
+            quantity: Number(quantity),
             totalPrice: totalPrice,
             profit: profit,
             date: new Date().toISOString().split('T')[0]
