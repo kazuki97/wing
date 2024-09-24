@@ -445,13 +445,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 globalInventoryList.innerHTML = '';
 
                 globalInventories.forEach(inventory => {
-                    const categoryRequest = categoryStore.get(inventory.subcategoryId);
-                    categoryRequest.onsuccess = (catEvent) => {
-                        const subcategory = catEvent.target.result;
-                        const listItem = document.createElement('div');
-                        listItem.textContent = `${subcategory.name}: ${inventory.quantity}`;
-                        globalInventoryList.appendChild(listItem);
-                    };
+                    if (inventory && inventory.subcategoryId !== undefined && inventory.subcategoryId !== null) {
+                        const categoryRequest = categoryStore.get(inventory.subcategoryId);
+                        categoryRequest.onsuccess = (catEvent) => {
+                            const subcategory = catEvent.target.result;
+                            if (subcategory) {
+                                const listItem = document.createElement('div');
+                                listItem.textContent = `${subcategory.name}: ${inventory.quantity}`;
+                                globalInventoryList.appendChild(listItem);
+                            }
+                        };
+                    }
                 });
             } else {
                 console.error("global-inventory-list が見つかりません。");
