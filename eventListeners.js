@@ -8,6 +8,10 @@ import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
 import { saveUnitPriceToDB } from './inventory.js';
 
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('eventListeners.js が正しく読み込まれました。');
+console.log('saveUnitPriceToDB がインポートされました。', saveUnitPriceToDB);
+
 /**
  * イベントリスナーを初期化する関数
  */
