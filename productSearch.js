@@ -5,7 +5,7 @@ import { showErrorModal } from './errorHandling.js';
 /**
  * 商品名で商品を検索する関数
  * @param {string} name - 検索する商品名
- * @returns {Promise<Object>} - 検索結果の商品のオブジェクト
+ * @returns {Promise<Object|null>} - 検索結果の商品のオブジェクトまたはnull
  */
 export function findProductByName(name) {
     return new Promise((resolve, reject) => {
@@ -37,7 +37,7 @@ export function findProductByName(name) {
 /**
  * バーコードで商品を検索する関数
  * @param {string} barcode - 検索するバーコード
- * @returns {Promise<Object>} - 検索結果の商品のオブジェクト
+ * @returns {Promise<Object|null>} - 検索結果の商品のオブジェクトまたはnull
  */
 export function findProductByBarcode(barcode) {
     return new Promise((resolve, reject) => {
