@@ -2,119 +2,39 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
-export function updateGlobalSubcategorySelect() {
-    const globalParentCategorySelect = document.getElementById('global-parent-category-select');
-    const globalSubcategorySelect = document.getElementById('global-subcategory-select');
-
-    if (globalParentCategorySelect) {
-        globalParentCategorySelect.addEventListener('change', () => {
-            const parentCategoryId = globalParentCategorySelect.value;
-            if (parentCategoryId) {
-                const transaction = db.transaction(['categories'], 'readonly');
-                const store = transaction.objectStore('categories');
-                const index = store.index('parentId');
-                const request = index.getAll(Number(parentCategoryId));
-
-                request.onsuccess = (event) => {
-                    const subcategories = event.target.result;
-                    if (globalSubcategorySelect) {
-                        globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-
-                        subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.text = subcategory.name;
-                            globalSubcategorySelect.appendChild(option);
-                        });
-                    }
-                };
-
-                request.onerror = (event) => {
-                    console.error('Error fetching subcategories for global inventory:', event.target.error);
-                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-                };
-            } else {
-                if (globalSubcategorySelect) {
-                    globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-                }
-            }
-        });
-    }
-}
-
-export function updateUnitPriceSubcategorySelect() {
-    const unitPriceParentCategorySelect = document.getElementById('unit-price-parent-category-select');
-    const unitPriceSubcategorySelect = document.getElementById('unit-price-subcategory-select');
-
-    if (unitPriceParentCategorySelect) {
-        unitPriceParentCategorySelect.addEventListener('change', () => {
-            const parentCategoryId = unitPriceParentCategorySelect.value;
-            if (parentCategoryId) {
-                const transaction = db.transaction(['categories'], 'readonly');
-                const store = transaction.objectStore('categories');
-                const index = store.index('parentId');
-                const request = index.getAll(Number(parentCategoryId));
-
-                request.onsuccess = (event) => {
-                    const subcategories = event.target.result;
-                    if (unitPriceSubcategorySelect) {
-                        unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-
-                        subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.text = subcategory.name;
-                            unitPriceSubcategorySelect.appendChild(option);
-                        });
-                    }
-                };
-
-                request.onerror = (event) => {
-                    console.error('Error fetching subcategories for unit prices:', event.target.error);
-                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-                };
-            } else {
-                if (unitPriceSubcategorySelect) {
-                    unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-                }
-            }
-        });
-    }
-}
-
-export function displayGlobalInventory() {
-    if (!db) {
-        console.error('Database is not initialized.');
-        return;
-    }
-
-    const transaction = db.transaction(['globalInventory'], 'readonly');
-    const store = transaction.objectStore('globalInventory');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const inventory = event.target.result;
-        const inventoryTableBody = document.getElementById('global-inventory-table')?.getElementsByTagName('tbody')[0];
-        if (inventoryTableBody) {
-            inventoryTableBody.innerHTML = '';
-
-            inventory.forEach(item => {
-                const row = inventoryTableBody.insertRow();
-                row.insertCell(0).textContent = item.subcategoryId;
-                row.insertCell(1).textContent = item.quantity;
-            });
-        } else {
-            console.error("global-inventory-tableのtbodyが見つかりません。");
-            showErrorModal('全体在庫一覧の表示エリアが見つかりません。');
+/**
+ * 単価をデータベースに保存する関数
+ * @param {Object} unitPrice - 保存する単価情報
+ * @returns {Promise<void>}
+ */
+export function saveUnitPriceToDB(unitPrice) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('データベースが初期化されていません。'));
+            return;
         }
-    };
 
-    request.onerror = (event) => {
-        console.error('Error fetching global inventory:', event.target.error);
-        showErrorModal('全体在庫の取得中にエラーが発生しました。');
-    };
+        const transaction = db.transaction(['unitPrices'], 'readwrite');
+        const store = transaction.objectStore('unitPrices');
+        const addRequest = store.add(unitPrice);
+
+        addRequest.onsuccess = () => {
+            console.log('単価が正常に保存されました。');
+            displayUnitPrices(); // 単価一覧を更新
+            resolve();
+        };
+
+        addRequest.onerror = (event) => {
+            console.error('単価の保存中にエラーが発生しました:', event.target.error);
+            showErrorModal('単価の保存中にエラーが発生しました。');
+            reject(event.target.error);
+        };
+    });
 }
 
+/**
+ * 単価の表示を行う関数
+ */
 export function displayUnitPrices() {
     if (!db) {
         console.error('Database is not initialized.');
@@ -155,12 +75,12 @@ export function displayUnitPrices() {
                         deleteStore.delete(unitPrice.id);
 
                         deleteTransaction.oncomplete = () => {
-                            console.log('Unit price deleted successfully.');
+                            console.log('単価が正常に削除されました。');
                             displayUnitPrices();
                         };
 
                         deleteTransaction.onerror = (event) => {
-                            console.error('Error deleting unit price:', event.target.error);
+                            console.error('単価の削除中にエラーが発生しました:', event.target.error);
                             showErrorModal('単価の削除中にエラーが発生しました。');
                         };
                     }
@@ -174,12 +94,16 @@ export function displayUnitPrices() {
     };
 
     request.onerror = (event) => {
-        console.error('Error fetching unit prices:', event.target.error);
+        console.error('単価の取得中にエラーが発生しました:', event.target.error);
         showErrorModal('単価の取得中にエラーが発生しました。');
     };
 }
 
-function showEditUnitPriceForm(unitPrice) {
+/**
+ * 単価編集フォームを表示する関数
+ * @param {Object} unitPrice - 編集する単価情報
+ */
+export function showEditUnitPriceForm(unitPrice) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
 
@@ -227,17 +151,17 @@ function showEditUnitPriceForm(unitPrice) {
             const updateRequest = store.put(updatedUnitPrice);
 
             updateRequest.onsuccess = () => {
-                console.log('Unit price updated successfully.');
+                console.log('単価が正常に更新されました。');
                 document.body.removeChild(editForm);
                 displayUnitPrices();
             };
 
             updateRequest.onerror = (event) => {
-                console.error('Error updating unit price:', event.target.error);
+                console.error('単価の更新中にエラーが発生しました:', event.target.error);
                 showErrorModal('単価の更新中にエラーが発生しました。');
             };
         } else {
-            alert('すべての項目を正しく入力してください。');
+            alert('階層と価格を正しく入力してください。');
         }
     });
 
