@@ -11,6 +11,12 @@ export function initializeQuagga() {
         return;
     }
 
+    // Quaggaがグローバルにロードされていることを確認
+    if (typeof Quagga === 'undefined') {
+        showErrorModal('Quagga.jsがロードされていません。');
+        return;
+    }
+
     Quagga.init({
         inputStream: {
             name: "Live",
@@ -25,13 +31,15 @@ export function initializeQuagga() {
         },
     }, function(err) {
         if (err) {
-            console.error(err);
+            console.error('Quaggaの初期化エラー:', err);
             showErrorModal('バーコードスキャンの初期化に失敗しました。');
             return;
         }
         Quagga.start();
+        console.log('Quaggaが正常に起動しました。');
     });
 
+    // バーコード検出時のイベントリスナーを設定
     Quagga.onDetected(handleBarcodeDetected);
 }
 
@@ -43,6 +51,9 @@ function handleBarcodeDetected(result) {
     const code = result.codeResult.code;
     console.log('バーコード検出:', code);
 
+    // 重複検出を防ぐためにQuaggaを一時停止
+    Quagga.pause();
+
     // 商品を検索し、結果に基づいてアラートを表示
     findProductByBarcode(code).then(product => {
         if (product) {
@@ -51,8 +62,22 @@ function handleBarcodeDetected(result) {
         } else {
             alert('該当する商品が見つかりませんでした。');
         }
+        // スキャンを再開
+        Quagga.resume();
     }).catch(error => {
         console.error('商品検索エラー:', error);
         showErrorModal('商品検索中にエラーが発生しました。');
+        // スキャンを再開
+        Quagga.resume();
     });
+}
+
+/**
+ * Quagga.jsを停止する関数
+ */
+export function stopQuagga() {
+    if (typeof Quagga !== 'undefined' && Quagga.active) {
+        Quagga.stop();
+        console.log('Quaggaが停止されました。');
+    }
 }
