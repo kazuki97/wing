@@ -2,53 +2,88 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
+/**
+ * 現在のトランザクション情報
+ */
 export let currentTransaction = {
     salesLocation: null,
     products: []
 };
 
-export function initializeTransactionUI() {
-    const completeTransactionButton = document.getElementById('complete-transaction');
-    const currentTransactionList = document.getElementById('current-transaction-list');
+/**
+ * 完了ボタンとトランザクション一覧のDOM要素
+ */
+let completeTransactionButtonElement = null;
+let currentTransactionListElement = null;
 
-    if (!currentTransactionList) {
+/**
+ * トランザクションUIを初期化する関数
+ */
+export function initializeTransactionUI() {
+    completeTransactionButtonElement = document.getElementById('complete-transaction');
+    currentTransactionListElement = document.getElementById('current-transaction-list');
+
+    if (!currentTransactionListElement) {
         console.error("current-transaction-list が見つかりません。");
         showErrorModal('現在のトランザクション一覧の表示エリアが見つかりません。');
         return;
     }
 
-    window.updateTransactionUI = function() {
-        currentTransactionList.innerHTML = '';
-
-        currentTransaction.products.forEach((item, index) => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${item.product.name} - 数量: ${item.quantity}`;
-            
-            const removeButton = document.createElement('button');
-            removeButton.textContent = '削除';
-            removeButton.addEventListener('click', () => {
-                currentTransaction.products.splice(index, 1);
-                updateTransactionUI();
-                toggleCompleteButton();
-            });
-
-            listItem.appendChild(removeButton);
-            currentTransactionList.appendChild(listItem);
-        });
-    };
-
-    window.toggleCompleteButton = function() {
-        if (completeTransactionButton) {
-            completeTransactionButton.disabled = currentTransaction.products.length === 0;
-        }
-    };
-
+    // 初期状態でボタンの状態を設定
     toggleCompleteButton();
     updateTransactionUI();
+
+    // 完了ボタンにイベントリスナーを追加
+    if (completeTransactionButtonElement) {
+        completeTransactionButtonElement.addEventListener('click', processTransaction);
+    }
 }
 
+/**
+ * トランザクション一覧を更新する関数
+ */
+export function updateTransactionUI() {
+    if (!currentTransactionListElement) {
+        console.error("current-transaction-list が見つかりません。");
+        showErrorModal('現在のトランザクション一覧の表示エリアが見つかりません。');
+        return;
+    }
+
+    currentTransactionListElement.innerHTML = '';
+
+    currentTransaction.products.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${item.product.name} - 数量: ${item.quantity}`;
+        
+        const removeButton = document.createElement('button');
+        removeButton.textContent = '削除';
+        removeButton.className = 'remove-button';
+        removeButton.addEventListener('click', () => {
+            currentTransaction.products.splice(index, 1);
+            updateTransactionUI();
+            toggleCompleteButton();
+        });
+
+        listItem.appendChild(removeButton);
+        currentTransactionListElement.appendChild(listItem);
+    });
+}
+
+/**
+ * 完了ボタンの有効/無効を切り替える関数
+ */
+export function toggleCompleteButton() {
+    if (completeTransactionButtonElement) {
+        completeTransactionButtonElement.disabled = currentTransaction.products.length === 0;
+    }
+}
+
+/**
+ * トランザクションを処理する関数
+ */
 export async function processTransaction() {
     if (!db) {
+        showErrorModal('データベースが初期化されていません。');
         throw new Error('データベースが初期化されていません。');
     }
 
@@ -71,6 +106,7 @@ export async function processTransaction() {
 
     transaction.oncomplete = () => {
         console.log('トランザクションが正常に完了しました。');
+        // トランザクション情報をリセット
         currentTransaction = {
             salesLocation: null,
             products: []
@@ -86,9 +122,13 @@ export async function processTransaction() {
     };
 }
 
+/**
+ * 売上一覧を表示する関数
+ */
 export function displaySales() {
     if (!db) {
         console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
         return;
     }
 
@@ -119,3 +159,6 @@ export function displaySales() {
         showErrorModal('売上の取得中にエラーが発生しました。');
     };
 }
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('transactions.js が正しく読み込まれました。');
