@@ -4,6 +4,9 @@ import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { updateGlobalSubcategorySelect, updateUnitPriceSubcategorySelect } from './inventory.js';
 
+/**
+ * カテゴリセレクトを更新する関数
+ */
 export function updateCategorySelects() {
     if (!db) {
         console.error('Database is not initialized.');
@@ -49,7 +52,17 @@ export function updateCategorySelects() {
     };
 }
 
+/**
+ * カテゴリをデータベースに保存する関数
+ * @param {Object} category - 保存するカテゴリ情報
+ */
 export function saveCategoryToDB(category) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
     const transaction = db.transaction(['categories'], 'readwrite');
     const store = transaction.objectStore('categories');
     const addRequest = store.add(category);
@@ -66,7 +79,15 @@ export function saveCategoryToDB(category) {
     };
 }
 
+/**
+ * カテゴリ一覧を表示する関数
+ */
 export function displayCategories() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        return;
+    }
+
     const transaction = db.transaction(['categories'], 'readonly');
     const store = transaction.objectStore('categories');
     const request = store.getAll();
@@ -175,13 +196,25 @@ export function displayCategories() {
     };
 }
 
+/**
+ * カテゴリとそのサブカテゴリを削除する関数
+ * @param {number} categoryId - 削除するカテゴリのID
+ */
 function deleteCategoryAndSubcategories(categoryId) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
     const transaction = db.transaction(['categories'], 'readwrite');
     const store = transaction.objectStore('categories');
     const index = store.index('parentId');
 
+    // 親カテゴリを削除
     store.delete(categoryId);
 
+    // サブカテゴリを取得して削除
     const subRequest = index.getAll(categoryId);
     subRequest.onsuccess = (event) => {
         const subcategories = event.target.result;
@@ -207,7 +240,17 @@ function deleteCategoryAndSubcategories(categoryId) {
     };
 }
 
+/**
+ * サブカテゴリを削除する関数
+ * @param {number} categoryId - 削除するサブカテゴリのID
+ */
 function deleteCategory(categoryId) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
     const transaction = db.transaction(['categories'], 'readwrite');
     const store = transaction.objectStore('categories');
     store.delete(categoryId);
@@ -223,3 +266,6 @@ function deleteCategory(categoryId) {
         showErrorModal('カテゴリの削除中にエラーが発生しました。');
     };
 }
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('categories.js が正しく読み込まれました。');
