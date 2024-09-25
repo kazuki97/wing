@@ -92,7 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
         sections.forEach(sec => {
             sec.style.display = 'none';
         });
-        document.getElementById(`${section}-section`).style.display = 'block';
+        const targetSection = document.getElementById(`${section}-section`);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+        } else {
+            console.error(`セクション "${section}-section" が見つかりません。`);
+            showErrorModal(`セクション "${section}" が見つかりません。`);
+        }
     }
 
     // イベントリスナーの初期化関数
@@ -117,51 +123,69 @@ document.addEventListener('DOMContentLoaded', () => {
         const addUnitPriceButton = document.getElementById('add-unit-price');
 
         // ナビゲーションリンクのイベントリスナー
-        linkHome.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('home');
-        });
+        if (linkHome) {
+            linkHome.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('home');
+            });
+        }
 
-        linkCategory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('category');
-            displayCategories();
-        });
+        if (linkCategory) {
+            linkCategory.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('category');
+                displayCategories();
+            });
+        }
 
-        linkProduct.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('product');
-            updateCategorySelects();
-        });
+        if (linkProduct) {
+            linkProduct.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('product');
+                updateCategorySelects();
+            });
+        }
 
-        linkInventory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('inventory');
-            displayGlobalInventory();
-        });
+        if (linkInventory) {
+            linkInventory.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('inventory');
+                displayGlobalInventory();
+            });
+        }
 
-        linkBarcode.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('barcode');
-        });
+        if (linkBarcode) {
+            linkBarcode.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('barcode');
+            });
+        }
 
-        linkSales.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('sales');
-            displaySales();
-        });
+        if (linkSales) {
+            linkSales.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('sales');
+                displaySales();
+            });
+        }
 
-        linkGlobalInventory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('global-inventory');
-            displayGlobalInventory();
-        });
+        if (linkGlobalInventory) {
+            linkGlobalInventory.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('global-inventory');
+                displayGlobalInventory();
+            });
+        }
 
-        linkUnitPrice.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('unit-price');
-            displayUnitPrices();
-        });
+        if (linkUnitPrice) {
+            linkUnitPrice.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('unit-price');
+                displayUnitPrices();
+            });
+        }
+
+        // 以下、ボタンのイベントリスナー設定は次のパートに続きます。
 
         // トランザクション完了ボタンのイベントリスナー
         if (completeTransactionButton) {
@@ -377,14 +401,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     request.onsuccess = (event) => {
                         const subcategories = event.target.result;
-                        productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                        if (productSubcategorySelect) {
+                            productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-                        subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.text = subcategory.name;
-                            productSubcategorySelect.appendChild(option);
-                        });
+                            subcategories.forEach(subcategory => {
+                                const option = document.createElement('option');
+                                option.value = subcategory.id;
+                                option.text = subcategory.name;
+                                productSubcategorySelect.appendChild(option);
+                            });
+                        }
                     };
 
                     request.onerror = (event) => {
@@ -392,7 +418,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
                     };
                 } else {
-                    productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    if (productSubcategorySelect) {
+                        productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    }
                 }
             });
         }
@@ -426,14 +454,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     request.onsuccess = (event) => {
                         const subcategories = event.target.result;
-                        globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                        if (globalSubcategorySelect) {
+                            globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-                        subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.text = subcategory.name;
-                            globalSubcategorySelect.appendChild(option);
-                        });
+                            subcategories.forEach(subcategory => {
+                                const option = document.createElement('option');
+                                option.value = subcategory.id;
+                                option.text = subcategory.name;
+                                globalSubcategorySelect.appendChild(option);
+                            });
+                        }
                     };
 
                     request.onerror = (event) => {
@@ -441,7 +471,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
                     };
                 } else {
-                    globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    if (globalSubcategorySelect) {
+                        globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    }
                 }
             });
         }
@@ -463,14 +495,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     request.onsuccess = (event) => {
                         const subcategories = event.target.result;
-                        unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                        if (unitPriceSubcategorySelect) {
+                            unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-                        subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.text = subcategory.name;
-                            unitPriceSubcategorySelect.appendChild(option);
-                        });
+                            subcategories.forEach(subcategory => {
+                                const option = document.createElement('option');
+                                option.value = subcategory.id;
+                                option.text = subcategory.name;
+                                unitPriceSubcategorySelect.appendChild(option);
+                            });
+                        }
                     };
 
                     request.onerror = (event) => {
@@ -478,7 +512,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
                     };
                 } else {
-                    unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    if (unitPriceSubcategorySelect) {
+                        unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    }
                 }
             });
         }
@@ -488,15 +524,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveCategoryToDB(category) {
         const transaction = db.transaction(['categories'], 'readwrite');
         const store = transaction.objectStore('categories');
-        store.add(category);
+        const addRequest = store.add(category);
 
-        transaction.oncomplete = () => {
+        addRequest.onsuccess = () => {
             console.log(`Category "${category.name}" saved successfully.`);
             updateCategorySelects();
             displayCategories();
         };
 
-        transaction.onerror = (event) => {
+        addRequest.onerror = (event) => {
             console.error('Error saving category:', event.target.error);
             showErrorModal('カテゴリの保存中にエラーが発生しました。');
         };
@@ -689,14 +725,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveProductToDB(product) {
         const transaction = db.transaction(['products'], 'readwrite');
         const store = transaction.objectStore('products');
-        store.put(product);
+        const addRequest = store.put(product);
 
-        transaction.oncomplete = () => {
+        addRequest.onsuccess = () => {
             console.log(`Product "${product.name}" saved successfully.`);
             displayProducts(product.subcategoryId);
         };
 
-        transaction.onerror = (event) => {
+        addRequest.onerror = (event) => {
             console.error('Error saving product:', event.target.error);
             showErrorModal('商品の保存中にエラーが発生しました。');
         };
@@ -716,7 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         request.onsuccess = (event) => {
             const products = event.target.result;
-            const productTableBody = document.getElementById('product-table').getElementsByTagName('tbody')[0];
+            const productTableBody = document.getElementById('product-table')?.getElementsByTagName('tbody')[0];
             if (productTableBody) {
                 productTableBody.innerHTML = '';
 
@@ -836,9 +872,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const transaction = db.transaction(['products'], 'readwrite');
                 const store = transaction.objectStore('products');
 
-                store.put(updatedProduct);
+                const updateRequest = store.put(updatedProduct);
 
-                transaction.oncomplete = () => {
+                updateRequest.onsuccess = () => {
                     console.log(`Product "${updatedProduct.name}" updated successfully.`);
                     // 編集フォームを削除
                     document.body.removeChild(editForm);
@@ -846,7 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     displayProducts(subcategoryId);
                 };
 
-                transaction.onerror = (event) => {
+                updateRequest.onerror = (event) => {
                     console.error('Error updating product:', event.target.error);
                     showErrorModal('商品の更新中にエラーが発生しました。');
                 };
