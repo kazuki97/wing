@@ -94,7 +94,7 @@ export function initializeEventListeners() {
         linkSales.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('sales');
-            // displaySales(); // 実装が必要な場合
+            displaySales(); // 実装されている場合
         });
     }
 
@@ -110,7 +110,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            // displayUnitPrices(); // 実装が必要な場合
+            displayUnitPrices(); // 実装が必要な場合
         });
     }
 
