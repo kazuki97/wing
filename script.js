@@ -38,6 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let isScanning = false;
     let onDetected = null;
 
+    // セクションの表示切替関数
+    function showSection(section) {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(sec => {
+            sec.style.display = 'none';
+        });
+        document.getElementById(`${section}-section`).style.display = 'block';
+    }
+
     // initializeUI 関数の定義
     function initializeUI() {
         showSection('home');
@@ -114,15 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Database error:', event.target.errorCode);
         alert('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
     };
-
-    // セクションの表示切替関数
-    function showSection(section) {
-        const sections = document.querySelectorAll('.section');
-        sections.forEach(sec => {
-            sec.style.display = 'none';
-        });
-        document.getElementById(`${section}-section`).style.display = 'block';
-    }
 
     // ナビゲーションリンクのイベントリスナー
     linkHome.addEventListener('click', (e) => {
@@ -920,7 +920,7 @@ function displaySales() {
 
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
-                editButton.className = 'sales-button';
+                editButton.className = 'sale-button';
                 editButton.addEventListener('click', () => {
                     showEditSaleForm(sale);
                 });
@@ -928,7 +928,7 @@ function displaySales() {
 
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
-                deleteButton.className = 'sales-button';
+                deleteButton.className = 'sale-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この売上を削除しますか？')) {
                         deleteSale(sale.id);
@@ -946,139 +946,6 @@ function displaySales() {
         console.error('Error fetching sales:', event.target.error);
         showErrorModal('売上の取得中にエラーが発生しました。');
     };
-}
-
-// 売上を編集する関数
-function showEditSaleForm(sale) {
-    // 編集フォームの要素を作成
-    const editForm = document.createElement('div');
-    editForm.className = 'edit-form';
-
-    editForm.innerHTML = `
-        <div class="modal">
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h3>売上を編集</h3>
-                <label>販売場所: <input type="text" id="edit-sale-location" value="${sale.salesLocation}"></label><br>
-                <label>商品名: <input type="text" id="edit-sale-product-name" value="${sale.productName}"></label><br>
-                <label>数量: <input type="number" id="edit-sale-quantity" value="${sale.quantity}"></label><br>
-                <label>単価: <input type="number" id="edit-sale-unit-price" value="${sale.unitPrice}"></label><br>
-                <button id="save-sale-button">保存</button>
-                <button id="cancel-sale-button">キャンセル</button>
-            </div>
-        </div>
-    `;
-
-    // 編集フォームを表示
-    document.body.appendChild(editForm);
-
-    // モーダルのスタイルを適用
-    const modal = editForm.querySelector('.modal');
-    const closeButton = editForm.querySelector('.close-button');
-
-    modal.style.display = 'block';
-
-    // 閉じるボタンのイベントリスナー
-    closeButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
-
-    // 保存ボタンのイベントリスナー
-    const saveButton = editForm.querySelector('#save-sale-button');
-    saveButton.addEventListener('click', () => {
-        // 入力された値を取得
-        const editedLocation = editForm.querySelector('#edit-sale-location').value.trim();
-        const editedProductName = editForm.querySelector('#edit-sale-product-name').value.trim();
-        const editedQuantity = Number(editForm.querySelector('#edit-sale-quantity').value.trim());
-        const editedUnitPrice = Number(editForm.querySelector('#edit-sale-unit-price').value.trim());
-
-        // 入力チェック
-        if (editedLocation && editedProductName && !isNaN(editedQuantity) && !isNaN(editedUnitPrice)) {
-            // 合計金額と利益を再計算
-            const editedTotalPrice = editedQuantity * editedUnitPrice;
-            const editedProfit = (editedUnitPrice - getProductCostByName(editedProductName)) * editedQuantity;
-
-            // データベースを更新
-            const updatedSale = {
-                ...sale,
-                salesLocation: editedLocation,
-                productName: editedProductName,
-                quantity: editedQuantity,
-                unitPrice: editedUnitPrice,
-                totalPrice: editedTotalPrice,
-                profit: editedProfit
-            };
-
-            const transaction = db.transaction(['sales'], 'readwrite');
-            const store = transaction.objectStore('sales');
-
-            store.put(updatedSale);
-
-            transaction.oncomplete = () => {
-                console.log(`Sale for "${updatedSale.productName}" updated successfully.`);
-                // 編集フォームを削除
-                document.body.removeChild(editForm);
-                // 売上一覧を更新
-                displaySales();
-            };
-
-            transaction.onerror = (event) => {
-                console.error('Error updating sale:', event.target.error);
-                showErrorModal('売上の更新中にエラーが発生しました。');
-            };
-        } else {
-            alert('すべての項目を正しく入力してください。');
-        }
-    });
-
-    // キャンセルボタンのイベントリスナー
-    const cancelButton = editForm.querySelector('#cancel-sale-button');
-    cancelButton.addEventListener('click', () => {
-        // 編集フォームを削除
-        document.body.removeChild(editForm);
-    });
-}
-
-// 売上の削除関数
-function deleteSale(saleId) {
-    const transaction = db.transaction(['sales'], 'readwrite');
-    const store = transaction.objectStore('sales');
-    store.delete(saleId);
-
-    transaction.oncomplete = () => {
-        console.log(`Sale ID ${saleId} deleted successfully.`);
-        displaySales();
-    };
-
-    transaction.onerror = (event) => {
-        console.error('Error deleting sale:', event.target.error);
-        showErrorModal('売上の削除中にエラーが発生しました。');
-    };
-}
-
-// 商品名から原価を取得する関数
-function getProductCostByName(productName) {
-    let cost = 0;
-    const transaction = db.transaction(['products'], 'readonly');
-    const store = transaction.objectStore('products');
-    const index = store.index('name');
-    const request = index.get(productName);
-
-    request.onsuccess = (event) => {
-        const product = event.target.result;
-        if (product) {
-            cost = product.cost;
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('Error fetching product cost:', event.target.error);
-        showErrorModal('商品の原価取得中にエラーが発生しました。');
-    };
-
-    // 原価が取得される前に関数が返るため、実際には非同期処理を適切に扱う必要があります。
-    // ここでは単純化のため、デフォルト値を返します。
-    return cost;
 }
 
 // 売上データをDBに保存する関数
@@ -1256,7 +1123,7 @@ function initializeQuagga() {
             Quagga.init({
                 inputStream: {
                     type: "LiveStream",
-                    target: scannerContainer,
+                    target: document.getElementById('scanner-container'),
                     constraints: {
                         facingMode: "environment"
                     }
@@ -1462,39 +1329,5 @@ function addProductToTransaction(product) {
         }
     } else {
         alert('数量が入力されませんでした。');
-    }
-}
-
-// システム起動時のUI初期化
-function initializeUI() {
-    showSection('home');
-    initializeTransactionUI();
-    updateBarcodeScannerAvailability();
-
-    // エラーモーダルの閉じるボタンのイベントリスナー
-    const closeErrorModalButton = document.getElementById('closeErrorModal');
-    const errorModal = document.getElementById('errorModal');
-    if (closeErrorModalButton && errorModal) {
-        closeErrorModalButton.addEventListener('click', () => {
-            errorModal.style.display = 'none';
-        });
-    }
-
-    // クリックでモーダルを閉じる
-    window.addEventListener('click', (event) => {
-        if (event.target === errorModal) {
-            errorModal.style.display = 'none';
-        }
-    });
-}
-
-// バーコードスキャナーの利用可能性を更新する関数
-function updateBarcodeScannerAvailability() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        const startScanButton = document.getElementById('start-scan');
-        if (startScanButton) {
-            startScanButton.disabled = true;
-            startScanButton.textContent = 'バーコードスキャンはサポートされていません';
-        }
     }
 }
