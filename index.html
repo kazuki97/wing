@@ -30,7 +30,7 @@
         <p>ここでは、カテゴリ管理、商品管理、在庫管理、売上管理などの機能を使用できます。</p>
     </div>
 
-    <!-- カテゴリ管理セクション ->
+    <!-- カテゴリ管理セクション -->
     <div id="category-section" class="section" style="display: none;">
         <h2>カテゴリ管理</h2>
         <!-- 親カテゴリの追加フォーム -->
@@ -138,6 +138,12 @@
     <!-- 全体在庫セクション -->
     <div id="global-inventory-section" class="section" style="display: none;">
         <h2>全体在庫</h2>
+        <!-- グローバルサブカテゴリセレクト -->
+        <select id="global-subcategory-select">
+            <option value="">サブカテゴリを選択</option>
+            <!-- JavaScriptで動的に選択肢を追加 -->
+        </select>
+
         <!-- 全体在庫の表示 -->
         <table id="global-inventory-table">
             <thead>
