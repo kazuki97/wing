@@ -648,259 +648,608 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // カテゴリとそのサブカテゴリを削除する関数
-    function deleteCategoryAndSubcategories(categoryId) {
-        const transaction = db.transaction(['categories'], 'readwrite');
-        const store = transaction.objectStore('categories');
-        const index = store.index('parentId');
+        // カテゴリとそのサブカテゴリを削除する関数
+        function deleteCategoryAndSubcategories(categoryId) {
+            const transaction = db.transaction(['categories'], 'readwrite');
+            const store = transaction.objectStore('categories');
+            const index = store.index('parentId');
 
-        // 親カテゴリを削除
-        store.delete(categoryId);
+            // 親カテゴリを削除
+            store.delete(categoryId);
 
-        // サブカテゴリを取得して削除
-        const subRequest = index.getAll(categoryId);
-        subRequest.onsuccess = (event) => {
-            const subcategories = event.target.result;
-            subcategories.forEach(subcategory => {
-                store.delete(subcategory.id);
-            });
-        };
-
-        subRequest.onerror = (event) => {
-            console.error('Error fetching subcategories for deletion:', event.target.error);
-            showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-        };
-
-        transaction.oncomplete = () => {
-            console.log(`Category ID ${categoryId} and its subcategories deleted successfully.`);
-            displayCategories();
-            updateCategorySelects();
-        };
-
-        transaction.onerror = (event) => {
-            console.error('Error deleting category and subcategories:', event.target.error);
-            showErrorModal('カテゴリの削除中にエラーが発生しました。');
-        };
-    }
-
-    // カテゴリを削除する関数
-    function deleteCategory(categoryId) {
-        const transaction = db.transaction(['categories'], 'readwrite');
-        const store = transaction.objectStore('categories');
-        store.delete(categoryId);
-
-        transaction.oncomplete = () => {
-            console.log(`Category with ID ${categoryId} deleted successfully.`);
-            displayCategories();
-            updateCategorySelects();
-        };
-
-        transaction.onerror = (event) => {
-            console.error('Error deleting category:', event.target.error);
-            showErrorModal('カテゴリの削除中にエラーが発生しました。');
-        };
-    }
-
-    // エラーモーダルの表示関数
-    function showErrorModal(message) {
-        const errorMessage = document.getElementById('errorMessage');
-        const errorModal = document.getElementById('errorModal');
-        const closeErrorModalButton = document.getElementById('closeErrorModal');
-
-        if (errorMessage && errorModal && closeErrorModalButton) {
-            errorMessage.textContent = message;
-            errorModal.style.display = 'block';
-
-            closeErrorModalButton.onclick = () => {
-                errorModal.style.display = 'none';
-                isScanning = false; // スキャン状態をリセット
-            };
-        } else {
-            alert(message);
-            isScanning = false; // スキャン状態をリセット
-        }
-    }
-
-    // 商品をDBに保存する関数
-    function saveProductToDB(product) {
-        const transaction = db.transaction(['products'], 'readwrite');
-        const store = transaction.objectStore('products');
-        const addRequest = store.put(product);
-
-        addRequest.onsuccess = () => {
-            console.log(`Product "${product.name}" saved successfully.`);
-            displayProducts(product.subcategoryId);
-        };
-
-        addRequest.onerror = (event) => {
-            console.error('Error saving product:', event.target.error);
-            showErrorModal('商品の保存中にエラーが発生しました。');
-        };
-    }
-
-    // 商品を表示する関数
-    function displayProducts(subcategoryId) {
-        if (!db) {
-            console.error('Database is not initialized.');
-            return;
-        }
-
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const index = store.index('subcategoryId');
-        const request = index.getAll(subcategoryId);
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            const productTableBody = document.getElementById('product-table')?.getElementsByTagName('tbody')[0];
-            if (productTableBody) {
-                productTableBody.innerHTML = '';
-
-                products.forEach(product => {
-                    const row = productTableBody.insertRow();
-                    row.insertCell(0).textContent = product.name;
-                    row.insertCell(1).textContent = product.quantity;
-                    row.insertCell(2).textContent = product.price;
-                    row.insertCell(3).textContent = product.cost;
-                    row.insertCell(4).textContent = product.barcode;
-                    row.insertCell(5).textContent = product.unitAmount;
-
-                    const editButton = document.createElement('button');
-                    editButton.textContent = '編集';
-                    editButton.className = 'product-button';
-                    editButton.addEventListener('click', () => {
-                        showEditProductForm(product, subcategoryId);
-                    });
-                    row.insertCell(6).appendChild(editButton);
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = '削除';
-                    deleteButton.className = 'product-button';
-                    deleteButton.addEventListener('click', () => {
-                        if (confirm('この商品を削除しますか？')) {
-                            const deleteTransaction = db.transaction(['products'], 'readwrite');
-                            const deleteStore = deleteTransaction.objectStore('products');
-                            deleteStore.delete(product.id);
-
-                            deleteTransaction.oncomplete = () => {
-                                console.log(`Product "${product.name}" deleted successfully.`);
-                                displayProducts(subcategoryId);
-                            };
-
-                            deleteTransaction.onerror = (event) => {
-                                console.error('Error deleting product:', event.target.error);
-                                showErrorModal('商品の削除中にエラーが発生しました。');
-                            };
-                        }
-                    });
-                    row.insertCell(7).appendChild(deleteButton);
+            // サブカテゴリを取得して削除
+            const subRequest = index.getAll(categoryId);
+            subRequest.onsuccess = (event) => {
+                const subcategories = event.target.result;
+                subcategories.forEach(subcategory => {
+                    store.delete(subcategory.id);
                 });
+            };
+
+            subRequest.onerror = (event) => {
+                console.error('Error fetching subcategories for deletion:', event.target.error);
+                showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+            };
+
+            transaction.oncomplete = () => {
+                console.log(`Category ID ${categoryId} and its subcategories deleted successfully.`);
+                displayCategories();
+                updateCategorySelects();
+            };
+
+            transaction.onerror = (event) => {
+                console.error('Error deleting category and subcategories:', event.target.error);
+                showErrorModal('カテゴリの削除中にエラーが発生しました。');
+            };
+        }
+
+        // カテゴリを削除する関数
+        function deleteCategory(categoryId) {
+            const transaction = db.transaction(['categories'], 'readwrite');
+            const store = transaction.objectStore('categories');
+            store.delete(categoryId);
+
+            transaction.oncomplete = () => {
+                console.log(`Category with ID ${categoryId} deleted successfully.`);
+                displayCategories();
+                updateCategorySelects();
+            };
+
+            transaction.onerror = (event) => {
+                console.error('Error deleting category:', event.target.error);
+                showErrorModal('カテゴリの削除中にエラーが発生しました。');
+            };
+        }
+
+        // エラーモーダルの表示関数
+        function showErrorModal(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            const errorModal = document.getElementById('errorModal');
+            const closeErrorModalButton = document.getElementById('closeErrorModal');
+
+            if (errorMessage && errorModal && closeErrorModalButton) {
+                errorMessage.textContent = message;
+                errorModal.style.display = 'block';
+
+                closeErrorModalButton.onclick = () => {
+                    errorModal.style.display = 'none';
+                    isScanning = false; // スキャン状態をリセット
+                };
             } else {
-                console.error("product-tableのtbodyが見つかりません。");
-                showErrorModal('商品一覧の表示エリアが見つかりません。');
+                alert(message);
+                isScanning = false; // スキャン状態をリセット
             }
-        };
+        }
 
-        request.onerror = (event) => {
-            console.error('Error fetching products:', event.target.error);
-            showErrorModal('商品の取得中にエラーが発生しました。');
-        };
-    }
+        // 商品をDBに保存する関数
+        function saveProductToDB(product) {
+            const transaction = db.transaction(['products'], 'readwrite');
+            const store = transaction.objectStore('products');
+            const addRequest = store.put(product);
 
-    // 商品編集フォームを表示する関数
-    function showEditProductForm(product, subcategoryId) {
-        // 編集フォームの要素を作成
-        const editForm = document.createElement('div');
-        editForm.className = 'edit-form';
+            addRequest.onsuccess = () => {
+                console.log(`Product "${product.name}" saved successfully.`);
+                displayProducts(product.subcategoryId);
+            };
 
-        editForm.innerHTML = `
-            <div class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h3>商品を編集</h3>
-                    <label>商品名: <input type="text" id="edit-product-name" value="${product.name}"></label><br>
-                    <label>数量: <input type="number" id="edit-product-quantity" value="${product.quantity}"></label><br>
-                    <label>価格: <input type="number" id="edit-product-price" value="${product.price}"></label><br>
-                    <label>原価: <input type="number" id="edit-product-cost" value="${product.cost}"></label><br>
-                    <label>バーコード: <input type="text" id="edit-product-barcode" value="${product.barcode}"></label><br>
-                    <label>サイズ（量）: <input type="number" id="edit-product-unit-amount" value="${product.unitAmount}"></label><br>
-                    <button id="save-edit-button">保存</button>
-                    <button id="cancel-edit-button">キャンセル</button>
+            addRequest.onerror = (event) => {
+                console.error('Error saving product:', event.target.error);
+                showErrorModal('商品の保存中にエラーが発生しました。');
+            };
+        }
+
+        // 商品を表示する関数
+        function displayProducts(subcategoryId) {
+            if (!db) {
+                console.error('Database is not initialized.');
+                return;
+            }
+
+            const transaction = db.transaction(['products'], 'readonly');
+            const store = transaction.objectStore('products');
+            const index = store.index('subcategoryId');
+            const request = index.getAll(subcategoryId);
+
+            request.onsuccess = (event) => {
+                const products = event.target.result;
+                const productTableBody = document.getElementById('product-table')?.getElementsByTagName('tbody')[0];
+                if (productTableBody) {
+                    productTableBody.innerHTML = '';
+
+                    products.forEach(product => {
+                        const row = productTableBody.insertRow();
+                        row.insertCell(0).textContent = product.name;
+                        row.insertCell(1).textContent = product.quantity;
+                        row.insertCell(2).textContent = product.price;
+                        row.insertCell(3).textContent = product.cost;
+                        row.insertCell(4).textContent = product.barcode;
+                        row.insertCell(5).textContent = product.unitAmount;
+
+                        const editButton = document.createElement('button');
+                        editButton.textContent = '編集';
+                        editButton.className = 'product-button';
+                        editButton.addEventListener('click', () => {
+                            showEditProductForm(product, subcategoryId);
+                        });
+                        row.insertCell(6).appendChild(editButton);
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = '削除';
+                        deleteButton.className = 'product-button';
+                        deleteButton.addEventListener('click', () => {
+                            if (confirm('この商品を削除しますか？')) {
+                                const deleteTransaction = db.transaction(['products'], 'readwrite');
+                                const deleteStore = deleteTransaction.objectStore('products');
+                                deleteStore.delete(product.id);
+
+                                deleteTransaction.oncomplete = () => {
+                                    console.log(`Product "${product.name}" deleted successfully.`);
+                                    displayProducts(subcategoryId);
+                                };
+
+                                deleteTransaction.onerror = (event) => {
+                                    console.error('Error deleting product:', event.target.error);
+                                    showErrorModal('商品の削除中にエラーが発生しました。');
+                                };
+                            }
+                        });
+                        row.insertCell(7).appendChild(deleteButton);
+                    });
+                } else {
+                    console.error("product-tableのtbodyが見つかりません。");
+                    showErrorModal('商品一覧の表示エリアが見つかりません。');
+                }
+            };
+
+            request.onerror = (event) => {
+                console.error('Error fetching products:', event.target.error);
+                showErrorModal('商品の取得中にエラーが発生しました。');
+            };
+        }
+
+        // 商品編集フォームを表示する関数
+        function showEditProductForm(product, subcategoryId) {
+            // 編集フォームの要素を作成
+            const editForm = document.createElement('div');
+            editForm.className = 'edit-form';
+
+            editForm.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <h3>商品を編集</h3>
+                        <label>商品名: <input type="text" id="edit-product-name" value="${product.name}"></label><br>
+                        <label>数量: <input type="number" id="edit-product-quantity" value="${product.quantity}"></label><br>
+                        <label>価格: <input type="number" id="edit-product-price" value="${product.price}"></label><br>
+                        <label>原価: <input type="number" id="edit-product-cost" value="${product.cost}"></label><br>
+                        <label>バーコード: <input type="text" id="edit-product-barcode" value="${product.barcode}"></label><br>
+                        <label>サイズ（量）: <input type="number" id="edit-product-unit-amount" value="${product.unitAmount}"></label><br>
+                        <button id="save-edit-button">保存</button>
+                        <button id="cancel-edit-button">キャンセル</button>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        // 編集フォームを表示
-        document.body.appendChild(editForm);
+            // 編集フォームを表示
+            document.body.appendChild(editForm);
 
-        // モーダルのスタイルを適用
-        const modal = editForm.querySelector('.modal');
-        const closeButton = editForm.querySelector('.close-button');
+            // モーダルのスタイルを適用
+            const modal = editForm.querySelector('.modal');
+            const closeButton = editForm.querySelector('.close-button');
 
-        modal.style.display = 'block';
+            modal.style.display = 'block';
 
-        // 閉じるボタンのイベントリスナー
-        closeButton.addEventListener('click', () => {
-            document.body.removeChild(editForm);
-        });
+            // 閉じるボタンのイベントリスナー
+            closeButton.addEventListener('click', () => {
+                document.body.removeChild(editForm);
+            });
 
-        // 保存ボタンのイベントリスナー
-        const saveButton = editForm.querySelector('#save-edit-button');
-        saveButton.addEventListener('click', () => {
-            // 入力された値を取得
-            const editedName = editForm.querySelector('#edit-product-name').value.trim();
-            const editedQuantity = Number(editForm.querySelector('#edit-product-quantity').value.trim());
-            const editedPrice = Number(editForm.querySelector('#edit-product-price').value.trim());
-            const editedCost = Number(editForm.querySelector('#edit-product-cost').value.trim());
-            const editedBarcode = editForm.querySelector('#edit-product-barcode').value.trim();
-            const editedUnitAmount = Number(editForm.querySelector('#edit-product-unit-amount').value.trim());
+            // 保存ボタンのイベントリスナー
+            const saveButton = editForm.querySelector('#save-edit-button');
+            saveButton.addEventListener('click', () => {
+                // 入力された値を取得
+                const editedName = editForm.querySelector('#edit-product-name').value.trim();
+                const editedQuantity = Number(editForm.querySelector('#edit-product-quantity').value.trim());
+                const editedPrice = Number(editForm.querySelector('#edit-product-price').value.trim());
+                const editedCost = Number(editForm.querySelector('#edit-product-cost').value.trim());
+                const editedBarcode = editForm.querySelector('#edit-product-barcode').value.trim();
+                const editedUnitAmount = Number(editForm.querySelector('#edit-product-unit-amount').value.trim());
 
-            // 入力チェック
-            if (editedName && !isNaN(editedQuantity) && !isNaN(editedPrice) && !isNaN(editedCost) && editedBarcode && !isNaN(editedUnitAmount)) {
-                // データベースを更新
-                const updatedProduct = {
-                    id: product.id,
-                    subcategoryId: product.subcategoryId,
-                    name: editedName,
-                    quantity: editedQuantity,
-                    price: editedPrice,
-                    cost: editedCost,
-                    barcode: editedBarcode,
-                    unitAmount: editedUnitAmount
-                };
+                // 入力チェック
+                if (editedName && !isNaN(editedQuantity) && !isNaN(editedPrice) && !isNaN(editedCost) && editedBarcode && !isNaN(editedUnitAmount)) {
+                    // データベースを更新
+                    const updatedProduct = {
+                        id: product.id,
+                        subcategoryId: product.subcategoryId,
+                        name: editedName,
+                        quantity: editedQuantity,
+                        price: editedPrice,
+                        cost: editedCost,
+                        barcode: editedBarcode,
+                        unitAmount: editedUnitAmount
+                    };
 
-                const transaction = db.transaction(['products'], 'readwrite');
-                const store = transaction.objectStore('products');
+                    const transaction = db.transaction(['products'], 'readwrite');
+                    const store = transaction.objectStore('products');
 
-                const updateRequest = store.put(updatedProduct);
+                    const updateRequest = store.put(updatedProduct);
 
-                updateRequest.onsuccess = () => {
-                    console.log(`Product "${updatedProduct.name}" updated successfully.`);
-                    // 編集フォームを削除
-                    document.body.removeChild(editForm);
-                    // 商品一覧を更新
-                    displayProducts(subcategoryId);
-                };
+                    updateRequest.onsuccess = () => {
+                        console.log(`Product "${updatedProduct.name}" updated successfully.`);
+                        // 編集フォームを削除
+                        document.body.removeChild(editForm);
+                        // 商品一覧を更新
+                        displayProducts(subcategoryId);
+                    };
 
-                updateRequest.onerror = (event) => {
-                    console.error('Error updating product:', event.target.error);
-                    showErrorModal('商品の更新中にエラーが発生しました。');
-                };
-            } else {
-                alert('すべての項目を正しく入力してください。');
+                    updateRequest.onerror = (event) => {
+                        console.error('Error updating product:', event.target.error);
+                        showErrorModal('商品の更新中にエラーが発生しました。');
+                    };
+                } else {
+                    alert('すべての項目を正しく入力してください。');
+                }
+            });
+
+            // キャンセルボタンのイベントリスナー
+            const cancelButton = editForm.querySelector('#cancel-edit-button');
+            cancelButton.addEventListener('click', () => {
+                // 編集フォームを削除
+                document.body.removeChild(editForm);
+            });
+        }
+
+        // 初期トランザクションUIの初期化関数
+        function initializeTransactionUI() {
+            const completeTransactionButton = document.getElementById('complete-transaction');
+            const currentTransactionList = document.getElementById('current-transaction-list');
+
+            if (!currentTransactionList) {
+                console.error("current-transaction-list が見つかりません。");
+                showErrorModal('現在のトランザクション一覧の表示エリアが見つかりません。');
+                return;
             }
-        });
 
-        // キャンセルボタンのイベントリスナー
-        const cancelButton = editForm.querySelector('#cancel-edit-button');
-        cancelButton.addEventListener('click', () => {
-            // 編集フォームを削除
-            document.body.removeChild(editForm);
-        });
-    }
+            // トランザクションUIを更新する関数
+            window.updateTransactionUI = function() {
+                currentTransactionList.innerHTML = '';
 
-    // その他の関数（売上管理、単価管理、全体在庫の表示など）をここに追加します。
-    // 例: displaySales(), saveUnitPriceToDB(), displayUnitPrices(), processTransaction(), etc.
+                currentTransaction.products.forEach((item, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${item.product.name} - 数量: ${item.quantity}`;
+                    
+                    const removeButton = document.createElement('button');
+                    removeButton.textContent = '削除';
+                    removeButton.addEventListener('click', () => {
+                        currentTransaction.products.splice(index, 1);
+                        updateTransactionUI();
+                        toggleCompleteButton();
+                    });
 
-    // DOMContentLoadedの閉じ括弧
-});
+                    listItem.appendChild(removeButton);
+                    currentTransactionList.appendChild(listItem);
+                });
+            };
+
+            // 完了ボタンの有効/無効を切り替える関数
+            window.toggleCompleteButton = function() {
+                if (completeTransactionButton) {
+                    completeTransactionButton.disabled = currentTransaction.products.length === 0;
+                }
+            };
+
+            // 初期状態のボタンを設定
+            toggleCompleteButton();
+            updateTransactionUI();
+        }
+
+        // トランザクション処理関数の仮実装
+        async function processTransaction() {
+            // トランザクションの完了処理をここに実装します。
+            // 例として、売上データを保存し、在庫を更新します。
+
+            if (!db) {
+                throw new Error('データベースが初期化されていません。');
+            }
+
+            const transaction = db.transaction(['sales', 'products'], 'readwrite');
+            const salesStore = transaction.objectStore('sales');
+            const productsStore = transaction.objectStore('products');
+
+            currentTransaction.products.forEach(item => {
+                // 売上データの追加
+                const sale = {
+                    productName: item.product.name,
+                    quantity: item.quantity,
+                    date: new Date()
+                };
+                salesStore.add(sale);
+
+                // 在庫の更新
+                const updatedProduct = { ...item.product };
+                updatedProduct.quantity -= item.quantity;
+                productsStore.put(updatedProduct);
+            });
+
+            transaction.oncomplete = () => {
+                console.log('トランザクションが正常に完了しました。');
+                // トランザクションデータをリセット
+                currentTransaction = {
+                    salesLocation: null,
+                    products: []
+                };
+                updateTransactionUI();
+                toggleCompleteButton();
+                alert('トランザクションが完了しました。');
+            };
+
+            transaction.onerror = (event) => {
+                console.error('トランザクション中にエラーが発生しました:', event.target.error);
+                showErrorModal('トランザクションの処理中にエラーが発生しました。');
+            };
+        }
+
+        // 商品を名前で検索する関数
+        function findProductByName(name) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('データベースが初期化されていません。'));
+                    return;
+                }
+
+                const transaction = db.transaction(['products'], 'readonly');
+                const store = transaction.objectStore('products');
+                const index = store.index('name');
+                const request = index.get(name);
+
+                request.onsuccess = (event) => {
+                    resolve(event.target.result);
+                };
+
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // その他の関数（売上管理、単価管理、全体在庫の表示など）をここに追加します。
+        // 例: displaySales(), saveUnitPriceToDB(), displayUnitPrices(), etc.
+    });
+
+        // 単価をDBに保存する関数
+        function saveUnitPriceToDB(unitPrice) {
+            const transaction = db.transaction(['unitPrices'], 'readwrite');
+            const store = transaction.objectStore('unitPrices');
+            const addRequest = store.add(unitPrice);
+
+            addRequest.onsuccess = () => {
+                console.log('Unit price saved successfully.');
+                displayUnitPrices();
+            };
+
+            addRequest.onerror = (event) => {
+                console.error('Error saving unit price:', event.target.error);
+                showErrorModal('単価の保存中にエラーが発生しました。');
+            };
+        }
+
+        // 単価一覧を表示する関数
+        function displayUnitPrices() {
+            if (!db) {
+                console.error('Database is not initialized.');
+                return;
+            }
+
+            const transaction = db.transaction(['unitPrices'], 'readonly');
+            const store = transaction.objectStore('unitPrices');
+            const request = store.getAll();
+
+            request.onsuccess = (event) => {
+                const unitPrices = event.target.result;
+                const unitPriceTableBody = document.getElementById('unit-price-table')?.getElementsByTagName('tbody')[0];
+                if (unitPriceTableBody) {
+                    unitPriceTableBody.innerHTML = '';
+
+                    unitPrices.forEach(unitPrice => {
+                        const row = unitPriceTableBody.insertRow();
+                        row.insertCell(0).textContent = unitPrice.subcategoryId;
+                        row.insertCell(1).textContent = unitPrice.tier;
+                        row.insertCell(2).textContent = unitPrice.price;
+
+                        const editButton = document.createElement('button');
+                        editButton.textContent = '編集';
+                        editButton.className = 'unit-price-button';
+                        editButton.addEventListener('click', () => {
+                            showEditUnitPriceForm(unitPrice);
+                        });
+                        row.insertCell(3).appendChild(editButton);
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = '削除';
+                        deleteButton.className = 'unit-price-button';
+                        deleteButton.addEventListener('click', () => {
+                            if (confirm('この単価を削除しますか？')) {
+                                const deleteTransaction = db.transaction(['unitPrices'], 'readwrite');
+                                const deleteStore = deleteTransaction.objectStore('unitPrices');
+                                deleteStore.delete(unitPrice.id);
+
+                                deleteTransaction.oncomplete = () => {
+                                    console.log('Unit price deleted successfully.');
+                                    displayUnitPrices();
+                                };
+
+                                deleteTransaction.onerror = (event) => {
+                                    console.error('Error deleting unit price:', event.target.error);
+                                    showErrorModal('単価の削除中にエラーが発生しました。');
+                                };
+                            }
+                        });
+                        row.insertCell(4).appendChild(deleteButton);
+                    });
+                } else {
+                    console.error("unit-price-tableのtbodyが見つかりません。");
+                    showErrorModal('単価一覧の表示エリアが見つかりません。');
+                }
+            };
+
+            request.onerror = (event) => {
+                console.error('Error fetching unit prices:', event.target.error);
+                showErrorModal('単価の取得中にエラーが発生しました。');
+            };
+        }
+
+        // 単価編集フォームを表示する関数
+        function showEditUnitPriceForm(unitPrice) {
+            // 編集フォームの要素を作成
+            const editForm = document.createElement('div');
+            editForm.className = 'edit-form';
+
+            editForm.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <h3>単価を編集</h3>
+                        <label>サブカテゴリID: <input type="number" id="edit-unit-price-subcategoryId" value="${unitPrice.subcategoryId}" disabled></label><br>
+                        <label>階層: <input type="number" id="edit-unit-price-tier" value="${unitPrice.tier}"></label><br>
+                        <label>価格: <input type="number" id="edit-unit-price-price" value="${unitPrice.price}"></label><br>
+                        <button id="save-unit-price-button">保存</button>
+                        <button id="cancel-unit-price-button">キャンセル</button>
+                    </div>
+                </div>
+            `;
+
+            // 編集フォームを表示
+            document.body.appendChild(editForm);
+
+            // モーダルのスタイルを適用
+            const modal = editForm.querySelector('.modal');
+            const closeButton = editForm.querySelector('.close-button');
+
+            modal.style.display = 'block';
+
+            // 閉じるボタンのイベントリスナー
+            closeButton.addEventListener('click', () => {
+                document.body.removeChild(editForm);
+            });
+
+            // 保存ボタンのイベントリスナー
+            const saveButton = editForm.querySelector('#save-unit-price-button');
+            saveButton.addEventListener('click', () => {
+                // 入力された値を取得
+                const editedTier = Number(editForm.querySelector('#edit-unit-price-tier').value.trim());
+                const editedPrice = Number(editForm.querySelector('#edit-unit-price-price').value.trim());
+
+                // 入力チェック
+                if (!isNaN(editedTier) && !isNaN(editedPrice)) {
+                    // データベースを更新
+                    const updatedUnitPrice = {
+                        id: unitPrice.id,
+                        subcategoryId: unitPrice.subcategoryId,
+                        tier: editedTier,
+                        price: editedPrice
+                    };
+
+                    const transaction = db.transaction(['unitPrices'], 'readwrite');
+                    const store = transaction.objectStore('unitPrices');
+
+                    const updateRequest = store.put(updatedUnitPrice);
+
+                    updateRequest.onsuccess = () => {
+                        console.log('Unit price updated successfully.');
+                        // 編集フォームを削除
+                        document.body.removeChild(editForm);
+                        // 単価一覧を更新
+                        displayUnitPrices();
+                    };
+
+                    updateRequest.onerror = (event) => {
+                        console.error('Error updating unit price:', event.target.error);
+                        showErrorModal('単価の更新中にエラーが発生しました。');
+                    };
+                } else {
+                    alert('すべての項目を正しく入力してください。');
+                }
+            });
+
+            // キャンセルボタンのイベントリスナー
+            const cancelButton = editForm.querySelector('#cancel-unit-price-button');
+            cancelButton.addEventListener('click', () => {
+                // 編集フォームを削除
+                document.body.removeChild(editForm);
+            });
+        }
+
+        // 全体在庫を表示する関数
+        function displayGlobalInventory() {
+            if (!db) {
+                console.error('Database is not initialized.');
+                return;
+            }
+
+            const transaction = db.transaction(['globalInventory'], 'readonly');
+            const store = transaction.objectStore('globalInventory');
+            const request = store.getAll();
+
+            request.onsuccess = (event) => {
+                const inventory = event.target.result;
+                const inventoryTableBody = document.getElementById('global-inventory-table')?.getElementsByTagName('tbody')[0];
+                if (inventoryTableBody) {
+                    inventoryTableBody.innerHTML = '';
+
+                    inventory.forEach(item => {
+                        const row = inventoryTableBody.insertRow();
+                        row.insertCell(0).textContent = item.subcategoryId;
+                        row.insertCell(1).textContent = item.quantity;
+
+                        // 必要に応じて編集・削除機能を追加
+                    });
+                } else {
+                    console.error("global-inventory-tableのtbodyが見つかりません。");
+                    showErrorModal('全体在庫一覧の表示エリアが見つかりません。');
+                }
+            };
+
+            request.onerror = (event) => {
+                console.error('Error fetching global inventory:', event.target.error);
+                showErrorModal('全体在庫の取得中にエラーが発生しました。');
+            };
+        }
+
+        // 売上一覧を表示する関数
+        function displaySales() {
+            if (!db) {
+                console.error('Database is not initialized.');
+                return;
+            }
+
+            const transaction = db.transaction(['sales'], 'readonly');
+            const store = transaction.objectStore('sales');
+            const request = store.getAll();
+
+            request.onsuccess = (event) => {
+                const sales = event.target.result;
+                const salesTableBody = document.getElementById('sales-table')?.getElementsByTagName('tbody')[0];
+                if (salesTableBody) {
+                    salesTableBody.innerHTML = '';
+
+                    sales.forEach(sale => {
+                        const row = salesTableBody.insertRow();
+                        row.insertCell(0).textContent = sale.productName;
+                        row.insertCell(1).textContent = sale.quantity;
+                        row.insertCell(2).textContent = new Date(sale.date).toLocaleString();
+
+                        // 必要に応じて編集・削除機能を追加
+                    });
+                } else {
+                    console.error("sales-tableのtbodyが見つかりません。");
+                    showErrorModal('売上一覧の表示エリアが見つかりません。');
+                }
+            };
+
+            request.onerror = (event) => {
+                console.error('Error fetching sales:', event.target.error);
+                showErrorModal('売上の取得中にエラーが発生しました。');
+            };
+        }
+
+        // その他必要な関数や機能をここに追加します。
