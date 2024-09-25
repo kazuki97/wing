@@ -1,6 +1,5 @@
 // ui.js
-import { initializeDatabase, db } from './db.js';
-import { initializeTransactionUI, processTransaction, currentTransaction } from './transactions.js';
+import { initializeTransactionUI } from './transactions.js';
 import { updateCategorySelects, displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
 import { displayUnitPrices } from './inventory.js';
@@ -8,10 +7,9 @@ import { displayGlobalInventory } from './inventory.js';
 import { initializeEventListeners } from './eventListeners.js';
 import { showErrorModal } from './errorHandling.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-    initializeDatabase();
-});
-
+/**
+ * UIの初期化を行う関数
+ */
 export function initializeUI() {
     showSection('home');
     initializeTransactionUI();
@@ -27,7 +25,10 @@ export function initializeUI() {
     initializeEventListeners();
 }
 
-// セクションの表示切替関数
+/**
+ * 指定されたセクションを表示し、他を非表示にする関数
+ * @param {string} section - 表示するセクションの名前（idのプレフィックス）
+ */
 export function showSection(section) {
     const sections = document.querySelectorAll('.section');
     sections.forEach(sec => {
