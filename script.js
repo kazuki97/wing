@@ -1,13 +1,13 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // グローバル変数の宣言
-    let db;
-    let currentTransaction = {
-        salesLocation: null,
-        products: []
-    };
-    let isScanning = false;
-    let onDetected = null;
+// グローバル変数の宣言
+let db;
+let currentTransaction = {
+    salesLocation: null,
+    products: []
+};
+let isScanning = false;
+let onDetected = null;
 
+document.addEventListener('DOMContentLoaded', () => {
     // IndexedDBの初期化
     const request = indexedDB.open('inventoryDB', 13);
 
@@ -308,32 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 単価の追加ボタンのイベントリスナー
-        if (addUnitPriceButton) {
-            addUnitPriceButton.addEventListener('click', () => {
-                const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
-                const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
-                const tier = Number(document.getElementById('unit-price-tier').value.trim());
-                const price = Number(document.getElementById('unit-price-value').value.trim());
-
-                // 入力チェック
-                if (parentCategoryId && subcategoryId && !isNaN(tier) && !isNaN(price)) {
-                    const unitPrice = {
-                        subcategoryId,
-                        tier,
-                        price
-                    };
-
-                    saveUnitPriceToDB(unitPrice);
-
-                    // 入力欄をクリア
-                    document.getElementById('unit-price-tier').value = '';
-                    document.getElementById('unit-price-value').value = '';
-                } else {
-                    alert('すべての項目を正しく入力してください。');
-                }
-            });
-        }
+        // 単価の追加ボタンのイベントリスナーは次のパートに続きます。
     }
 
     // カテゴリ選択を更新する関数
@@ -384,6 +359,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorModal('カテゴリの取得中にエラーが発生しました。');
         };
     }
+
+    // 次のパートで続きます...
+});
 
     // サブカテゴリ選択を更新する関数（商品管理用）
     function updateProductCategorySelects() {
@@ -721,6 +699,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 次のパートで続きます...
+
     // 商品をDBに保存する関数
     function saveProductToDB(product) {
         const transaction = db.transaction(['products'], 'readwrite');
@@ -1012,10 +992,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // その他の関数（売上管理、単価管理、全体在庫の表示など）をここに追加します。
-    // 例: displaySales(), saveUnitPriceToDB(), displayUnitPrices(), etc.
-});
-
     // 単価をDBに保存する関数
     function saveUnitPriceToDB(unitPrice) {
         const transaction = db.transaction(['unitPrices'], 'readwrite');
@@ -1251,11 +1227,4 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorModal('売上の取得中にエラーが発生しました。');
         };
     }
-    // 単価をDBに保存する関数（既にパート7に含まれている場合は削除してください）
-    // function saveUnitPriceToDB(unitPrice) { ... }
 
-    // 単価一覧を表示する関数（既にパート7に含まれている場合は削除してください）
-    // function displayUnitPrices() { ... }
-
-    // その他の必要な関数をここに追加してください。
-}
