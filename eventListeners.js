@@ -1,8 +1,8 @@
 // eventListeners.js
 import { showSection } from './ui.js';
-import { updateCategorySelects, saveCategoryToDB } from './categories.js';
+import { updateCategorySelects, saveCategoryToDB, displayCategories } from './categories.js';
 import { saveProductToDB, displayProducts } from './products.js';
-import { processTransaction, currentTransaction } from './transactions.js';
+import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton } from './transactions.js';
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
@@ -243,7 +243,11 @@ export function initializeEventListeners() {
                     price
                 };
 
-                saveUnitPriceToDB(unitPrice);
+                saveUnitPriceToDB(unitPrice)
+                    .catch(error => {
+                        console.error('単価の保存に失敗しました:', error);
+                        showErrorModal('単価の保存に失敗しました。');
+                    });
 
                 document.getElementById('unit-price-tier').value = '';
                 document.getElementById('unit-price-price').value = '';
@@ -252,4 +256,7 @@ export function initializeEventListeners() {
             }
         });
     }
+
+    // テスト用のログ（正常に読み込まれているか確認）
+    console.log('eventListeners.js が正しく読み込まれました。');
 }
