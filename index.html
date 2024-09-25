@@ -5,6 +5,8 @@
     <title>在庫管理システム</title>
     <!-- 必要に応じてCSSファイルをリンク -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Quagga.js の読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 <body>
     <!-- ナビゲーションメニュー -->
@@ -22,21 +24,22 @@
     </nav>
 
     <!-- 各セクションのコンテナ -->
-    <div id="home-section" class="section">
+    <div id="home-section" class="section active">
         <!-- ホーム画面の内容 -->
         <h1>在庫管理システムへようこそ</h1>
-        <!-- その他のホーム画面のコンテンツ -->
+        <p>ここでは、カテゴリ管理、商品管理、在庫管理、売上管理などの機能を使用できます。</p>
     </div>
 
+    <!-- カテゴリ管理セクション -->
     <div id="category-section" class="section" style="display: none;">
-        <!-- カテゴリ管理の内容 -->
         <h2>カテゴリ管理</h2>
-        <!-- カテゴリ追加フォーム -->
+        <!-- 親カテゴリの追加フォーム -->
         <div>
             <h3>親カテゴリの追加</h3>
             <input type="text" id="parent-category-name" placeholder="親カテゴリ名">
             <button id="add-parent-category">追加</button>
         </div>
+        <!-- サブカテゴリの追加フォーム -->
         <div>
             <h3>サブカテゴリの追加</h3>
             <select id="parent-category-select">
@@ -52,8 +55,8 @@
         </div>
     </div>
 
+    <!-- 商品管理セクション -->
     <div id="product-section" class="section" style="display: none;">
-        <!-- 商品管理の内容 -->
         <h2>商品管理</h2>
         <!-- 商品追加フォーム -->
         <div>
@@ -98,18 +101,25 @@
     <div id="inventory-section" class="section" style="display: none;">
         <h2>在庫管理</h2>
         <!-- 在庫管理のコンテンツをここに追加 -->
+        <p>在庫管理機能は現在準備中です。</p>
     </div>
 
     <!-- バーコードスキャンセクション -->
     <div id="barcode-section" class="section" style="display: none;">
         <h2>バーコードスキャン</h2>
         <button id="start-scan">スキャン開始</button>
-        <!-- バーコードスキャンのコンテンツをここに追加 -->
+        <div id="barcode-scanner" style="width: 100%; height: 400px; position: relative; margin-top: 20px;"></div>
     </div>
 
     <!-- 売上管理セクション -->
     <div id="sales-section" class="section" style="display: none;">
         <h2>売上管理</h2>
+        <!-- 売上トランザクション一覧 -->
+        <ul id="current-transaction-list">
+            <!-- JavaScriptで現在のトランザクションを表示 -->
+        </ul>
+        <button id="complete-transaction">トランザクション完了</button>
+        <button id="manualAddSalesButton">手動で売上を追加</button>
         <!-- 売上一覧の表示 -->
         <table id="sales-table">
             <thead>
@@ -185,7 +195,7 @@
         </div>
     </div>
 
-    <!-- スクリプトの読み込み -->
+    <!-- JavaScriptファイルの読み込み -->
     <script type="module" src="main.js"></script>
 </body>
 </html>
