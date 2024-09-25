@@ -2,128 +2,12 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>在庫管理および販売処理システム</title>
-    <!-- Quagga.jsのライブラリをインクルード -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js" defer></script>
-    <!-- JavaScriptファイルのリンク -->
-    <script src="script.js" defer></script>
-    <!-- CSSファイルのリンク -->
+    <title>在庫管理システム</title>
+    <!-- 必要に応じてCSSファイルをリンク -->
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* 基本的なモーダルスタイル */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-        }
-
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            cursor: pointer;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* ナビゲーションバーのスタイル */
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            display: flex;
-            background-color: #333;
-            margin: 0;
-        }
-
-        nav ul li {
-            margin: 0;
-        }
-
-        nav ul li a {
-            display: block;
-            padding: 14px 20px;
-            color: white;
-            text-decoration: none;
-        }
-
-        nav ul li a:hover {
-            background-color: #575757;
-        }
-
-        /* セクションのスタイル */
-        .section {
-            padding: 20px;
-        }
-
-        /* テーブルのスタイル */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        /* ボタンのスタイル */
-        button {
-            margin: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-
-        /* 親カテゴリとサブカテゴリのスタイル */
-        .parent-category {
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .subcategory {
-            margin-left: 20px;
-        }
-
-        /* スキャナーコンテナのスタイル */
-        #scanner-container {
-            width: 100%;
-            height: 400px;
-            margin-top: 10px;
-            border: 1px solid #ccc;
-        }
-    </style>
 </head>
 <body>
-    <!-- ナビゲーションバー -->
+    <!-- ナビゲーションメニュー -->
     <nav>
         <ul>
             <li><a href="#" id="link-home">ホーム</a></li>
@@ -132,221 +16,176 @@
             <li><a href="#" id="link-inventory">在庫管理</a></li>
             <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
             <li><a href="#" id="link-sales">売上管理</a></li>
-            <li><a href="#" id="link-global-inventory">全体在庫管理</a></li>
+            <li><a href="#" id="link-global-inventory">全体在庫</a></li>
             <li><a href="#" id="link-unit-price">単価管理</a></li>
         </ul>
     </nav>
 
-    <!-- セクションコンテナ -->
+    <!-- 各セクションのコンテナ -->
     <div id="home-section" class="section">
-        <h1>ホーム</h1>
-        <button id="manualAddSalesButton">手動で売上を追加</button>
+        <!-- ホーム画面の内容 -->
+        <h1>在庫管理システムへようこそ</h1>
+        <!-- その他のホーム画面のコンテンツ -->
     </div>
 
-    <div id="category-section" class="section" style="display:none;">
-        <h1>カテゴリ管理</h1>
-        <!-- 上位カテゴリの追加 -->
+    <div id="category-section" class="section" style="display: none;">
+        <!-- カテゴリ管理の内容 -->
+        <h2>カテゴリ管理</h2>
+        <!-- カテゴリ追加フォーム -->
         <div>
-            <h2>上位カテゴリを追加</h2>
-            <input type="text" id="parent-category-name" placeholder="上位カテゴリ名">
+            <h3>親カテゴリの追加</h3>
+            <input type="text" id="parent-category-name" placeholder="親カテゴリ名">
             <button id="add-parent-category">追加</button>
         </div>
-        <!-- サブカテゴリの追加 -->
         <div>
-            <h2>サブカテゴリを追加</h2>
-            <input type="text" id="subcategory-name" placeholder="サブカテゴリ名">
+            <h3>サブカテゴリの追加</h3>
             <select id="parent-category-select">
                 <option value="">親カテゴリを選択</option>
-                <!-- 上位カテゴリの選択肢がここに追加されます -->
+                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
+            <input type="text" id="subcategory-name" placeholder="サブカテゴリ名">
             <button id="add-subcategory">追加</button>
         </div>
         <!-- カテゴリ一覧の表示 -->
-        <div>
-            <h2>カテゴリ一覧</h2>
-            <div id="category-list">
-                <!-- カテゴリとサブカテゴリがここに表示されます -->
-            </div>
+        <div id="category-list">
+            <!-- JavaScriptでカテゴリ一覧を表示 -->
         </div>
     </div>
 
-    <div id="product-section" class="section" style="display:none;">
-        <h1>商品管理</h1>
-        <!-- 商品の追加 -->
+    <div id="product-section" class="section" style="display: none;">
+        <!-- 商品管理の内容 -->
+        <h2>商品管理</h2>
+        <!-- 商品追加フォーム -->
         <div>
-            <h2>商品を追加</h2>
+            <h3>商品を追加</h3>
+            <select id="product-parent-category-select">
+                <option value="">親カテゴリを選択</option>
+                <!-- JavaScriptで動的に選択肢を追加 -->
+            </select>
+            <select id="product-subcategory-select">
+                <option value="">サブカテゴリを選択</option>
+                <!-- JavaScriptで動的に選択肢を追加 -->
+            </select>
             <input type="text" id="product-name" placeholder="商品名">
             <input type="number" id="product-quantity" placeholder="数量">
             <input type="number" id="product-price" placeholder="価格">
             <input type="number" id="product-cost" placeholder="原価">
             <input type="text" id="product-barcode" placeholder="バーコード">
             <input type="number" id="product-unit-amount" placeholder="サイズ（量）">
-            <select id="product-parent-category-select">
-                <option value="">親カテゴリを選択</option>
-                <!-- 上位カテゴリの選択肢がここに追加されます -->
-            </select>
-            <select id="product-subcategory-select">
-                <option value="">サブカテゴリを選択</option>
-                <!-- サブカテゴリの選択肢がここに追加されます -->
-            </select>
-            <button id="add-product">商品を追加</button>
+            <button id="add-product">追加</button>
         </div>
         <!-- 商品一覧の表示 -->
-        <div>
-            <h2>商品一覧</h2>
-            <table id="product-table" border="1">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>数量</th>
-                        <th>価格</th>
-                        <th>原価</th>
-                        <th>バーコード</th>
-                        <th>サイズ（量）</th>
-                        <th>編集</th>
-                        <th>削除</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 商品データがここに追加されます -->
-                </tbody>
-            </table>
-        </div>
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>価格</th>
+                    <th>原価</th>
+                    <th>バーコード</th>
+                    <th>サイズ（量）</th>
+                    <th>編集</th>
+                    <th>削除</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JavaScriptで商品一覧を表示 -->
+            </tbody>
+        </table>
     </div>
 
-    <div id="inventory-section" class="section" style="display:none;">
-        <h1>在庫管理</h1>
-        <!-- 全体在庫の追加 -->
-        <div>
-            <h2>全体在庫を追加</h2>
-            <input type="number" id="global-quantity" placeholder="在庫量">
-            <select id="global-parent-category-select">
-                <option value="">親カテゴリを選択</option>
-                <!-- 上位カテゴリの選択肢がここに追加されます -->
-            </select>
-            <select id="global-subcategory-select">
-                <option value="">サブカテゴリを選択</option>
-                <!-- サブカテゴリの選択肢がここに追加されます -->
-            </select>
-            <button id="add-global-inventory">全体在庫を追加</button>
-        </div>
-        <!-- 全体在庫一覧の表示 -->
-        <div>
-            <h2>全体在庫一覧</h2>
-            <table id="global-inventory-table" border="1">
-                <thead>
-                    <tr>
-                        <th>サブカテゴリID</th>
-                        <th>在庫量</th>
-                        <!-- 必要に応じて他のカラムを追加 -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 全体在庫がここに表示されます -->
-                </tbody>
-            </table>
-        </div>
+    <!-- 在庫管理セクション -->
+    <div id="inventory-section" class="section" style="display: none;">
+        <h2>在庫管理</h2>
+        <!-- 在庫管理のコンテンツをここに追加 -->
     </div>
 
-    <div id="barcode-section" class="section" style="display:none;">
-        <h1>バーコードスキャン</h1>
+    <!-- バーコードスキャンセクション -->
+    <div id="barcode-section" class="section" style="display: none;">
+        <h2>バーコードスキャン</h2>
         <button id="start-scan">スキャン開始</button>
-        <div id="scanner-container">
-            <!-- Quagga.jsのカメラフィードがここに表示されます -->
-        </div>
+        <!-- バーコードスキャンのコンテンツをここに追加 -->
     </div>
 
-    <div id="sales-section" class="section" style="display:none;">
-        <h1>売上管理</h1>
-        <!-- 現在のトランザクションの表示 -->
-        <div>
-            <h2>現在の取引</h2>
-            <ul id="current-transaction-list">
-                <!-- 取引中の商品がここに表示されます -->
-            </ul>
-            <button id="complete-transaction" disabled>取引を完了</button>
-        </div>
+    <!-- 売上管理セクション -->
+    <div id="sales-section" class="section" style="display: none;">
+        <h2>売上管理</h2>
         <!-- 売上一覧の表示 -->
-        <div>
-            <h2>売上一覧</h2>
-            <table id="sales-table" border="1">
-                <thead>
-                    <tr>
-                        <th>商品名</th>
-                        <th>数量</th>
-                        <th>日付</th>
-                        <th>編集</th>
-                        <th>削除</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 売上データがここに追加されます -->
-                </tbody>
-            </table>
-        </div>
+        <table id="sales-table">
+            <thead>
+                <tr>
+                    <th>商品名</th>
+                    <th>数量</th>
+                    <th>日時</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JavaScriptで売上一覧を表示 -->
+            </tbody>
+        </table>
     </div>
 
-    <div id="global-inventory-section" class="section" style="display:none;">
-        <h1>全体在庫管理</h1>
-        <!-- 在庫管理用のカテゴリ一覧 -->
-        <div>
-            <h2>在庫カテゴリ一覧</h2>
-            <div id="inventory-category-list">
-                <!-- 在庫カテゴリのボタンがここに追加されます -->
-            </div>
-        </div>
-        <!-- 選択されたカテゴリの在庫商品一覧 -->
-        <div>
-            <h2>在庫商品一覧</h2>
-            <div id="inventory-product-list">
-                <!-- 在庫商品の詳細がここに表示されます -->
-            </div>
-        </div>
+    <!-- 全体在庫セクション -->
+    <div id="global-inventory-section" class="section" style="display: none;">
+        <h2>全体在庫</h2>
+        <!-- 全体在庫の表示 -->
+        <table id="global-inventory-table">
+            <thead>
+                <tr>
+                    <th>サブカテゴリID</th>
+                    <th>数量</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JavaScriptで全体在庫を表示 -->
+            </tbody>
+        </table>
     </div>
 
-    <div id="unit-price-section" class="section" style="display:none;">
-        <h1>単価管理</h1>
-        <!-- 単価の追加 -->
+    <!-- 単価管理セクション -->
+    <div id="unit-price-section" class="section" style="display: none;">
+        <h2>単価管理</h2>
+        <!-- 単価追加フォーム -->
         <div>
-            <h2>単価を追加</h2>
+            <h3>単価を追加</h3>
             <select id="unit-price-parent-category-select">
                 <option value="">親カテゴリを選択</option>
-                <!-- 上位カテゴリの選択肢がここに追加されます -->
+                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
             <select id="unit-price-subcategory-select">
                 <option value="">サブカテゴリを選択</option>
-                <!-- サブカテゴリの選択肢がここに追加されます -->
+                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
             <input type="number" id="unit-price-tier" placeholder="階層">
-            <input type="number" id="unit-price-value" placeholder="単価（円）">
-            <button id="add-unit-price">単価を追加</button>
+            <input type="number" id="unit-price-price" placeholder="価格">
+            <button id="add-unit-price">追加</button>
         </div>
         <!-- 単価一覧の表示 -->
-        <div>
-            <h2>単価一覧</h2>
-            <table id="unit-price-table" border="1">
-                <thead>
-                    <tr>
-                        <th>サブカテゴリID</th>
-                        <th>階層</th>
-                        <th>価格（円）</th>
-                        <th>編集</th>
-                        <th>削除</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 単価データがここに追加されます -->
-                </tbody>
-            </table>
+        <table id="unit-price-table">
+            <thead>
+                <tr>
+                    <th>サブカテゴリID</th>
+                    <th>階層</th>
+                    <th>価格</th>
+                    <th>編集</th>
+                    <th>削除</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JavaScriptで単価一覧を表示 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- エラーモーダルの定義 -->
+    <div id="errorModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span id="closeErrorModal" class="close-button">&times;</span>
+            <p id="errorMessage"></p>
         </div>
     </div>
 
-    <!-- エラーモーダル -->
-    <div id="errorModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span id="closeErrorModal" class="close-button">&times;</span>
-            <p id="errorMessage">エラーメッセージ</p>
-        </div>
-    </div>
+    <!-- スクリプトの読み込み -->
+    <script type="module" src="main.js"></script>
 </body>
 </html>
