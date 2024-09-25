@@ -9,6 +9,118 @@
     <script src="script.js" defer></script>
     <!-- CSSファイルのリンク -->
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 基本的なモーダルスタイル */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* ナビゲーションバーのスタイル */
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            background-color: #333;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin: 0;
+        }
+
+        nav ul li a {
+            display: block;
+            padding: 14px 20px;
+            color: white;
+            text-decoration: none;
+        }
+
+        nav ul li a:hover {
+            background-color: #575757;
+        }
+
+        /* セクションのスタイル */
+        .section {
+            padding: 20px;
+        }
+
+        /* テーブルのスタイル */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* ボタンのスタイル */
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        /* 親カテゴリとサブカテゴリのスタイル */
+        .parent-category {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .subcategory {
+            margin-left: 20px;
+        }
+
+        /* スキャナーコンテナのスタイル */
+        #scanner-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
     <!-- ナビゲーションバー -->
@@ -121,9 +233,18 @@
         <!-- 全体在庫一覧の表示 -->
         <div>
             <h2>全体在庫一覧</h2>
-            <div id="global-inventory-list">
-                <!-- 全体在庫がここに表示されます -->
-            </div>
+            <table id="global-inventory-table" border="1">
+                <thead>
+                    <tr>
+                        <th>サブカテゴリID</th>
+                        <th>在庫量</th>
+                        <!-- 必要に応じて他のカラムを追加 -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 全体在庫がここに表示されます -->
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -140,9 +261,9 @@
         <!-- 現在のトランザクションの表示 -->
         <div>
             <h2>現在の取引</h2>
-            <div id="transaction-list">
+            <ul id="current-transaction-list">
                 <!-- 取引中の商品がここに表示されます -->
-            </div>
+            </ul>
             <button id="complete-transaction" disabled>取引を完了</button>
         </div>
         <!-- 売上一覧の表示 -->
@@ -151,14 +272,9 @@
             <table id="sales-table" border="1">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>日付</th>
-                        <th>販売場所</th>
                         <th>商品名</th>
                         <th>数量</th>
-                        <th>単価</th>
-                        <th>合計金額</th>
-                        <th>利益</th>
+                        <th>日付</th>
                         <th>編集</th>
                         <th>削除</th>
                     </tr>
@@ -201,16 +317,27 @@
                 <option value="">サブカテゴリを選択</option>
                 <!-- サブカテゴリの選択肢がここに追加されます -->
             </select>
-            <input type="number" id="unit-price-tier" placeholder="タイヤ量（g）">
+            <input type="number" id="unit-price-tier" placeholder="階層">
             <input type="number" id="unit-price-value" placeholder="単価（円）">
             <button id="add-unit-price">単価を追加</button>
         </div>
         <!-- 単価一覧の表示 -->
         <div>
             <h2>単価一覧</h2>
-            <div id="unit-price-list">
-                <!-- 単価データがここに表示されます -->
-            </div>
+            <table id="unit-price-table" border="1">
+                <thead>
+                    <tr>
+                        <th>サブカテゴリID</th>
+                        <th>階層</th>
+                        <th>価格（円）</th>
+                        <th>編集</th>
+                        <th>削除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 単価データがここに追加されます -->
+                </tbody>
+            </table>
         </div>
     </div>
 
