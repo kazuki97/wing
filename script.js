@@ -1,5 +1,64 @@
 // グローバル変数の宣言
 let db;
+let currentTransaction = {
+    salesLocation: null,
+    products: []
+};
+let isScanning = false;
+let onDetected = null;
+
+// IndexedDBの初期化
+const request = indexedDB.open('inventoryDB', 13);
+
+request.onupgradeneeded = function(event) {
+    db = event.target.result;
+
+    if (!db.objectStoreNames.contains('categories')) {
+        const categoryStore = db.createObjectStore('categories', { keyPath: 'id', autoIncrement: true });
+        categoryStore.createIndex('parentId', 'parentId', { unique: false });
+    }
+
+    if (!db.objectStoreNames.contains('products')) {
+        const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
+        productStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+        productStore.createIndex('barcode', 'barcode', { unique: true });
+        productStore.createIndex('name', 'name', { unique: false });
+    }
+
+    if (!db.objectStoreNames.contains('sales')) {
+        const salesStore = db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
+        salesStore.createIndex('productName', 'productName', { unique: false });
+    }
+
+    if (!db.objectStoreNames.contains('globalInventory')) {
+        const globalInventoryStore = db.createObjectStore('globalInventory', { keyPath: 'subcategoryId' });
+    }
+
+    if (!db.objectStoreNames.contains('unitPrices')) {
+        const unitPriceStore = db.createObjectStore('unitPrices', { keyPath: 'id', autoIncrement: true });
+        unitPriceStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+    }
+};
+
+request.onsuccess = function(event) {
+    db = event.target.result;
+    console.log('Database initialized successfully.');
+
+    // 初期ロード処理
+    updateCategorySelects();
+    displayCategories();
+    displaySales();
+    displayUnitPrices();
+    displayGlobalInventory();
+
+    // UIの初期化
+    initializeUI();
+};
+
+request.onerror = function(event) {
+    console.error('Database error:', event.target.errorCode);
+    alert('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
+};
 
 // DOM要素の取得
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,16 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const startScanButton = document.getElementById('start-scan');
     const scannerContainer = document.getElementById('scanner-container');
 
-    // トランザクション関連の変数
-    let currentTransaction = {
-        salesLocation: null,
-        products: []
-    };
-
-    // スキャン状態の管理
-    let isScanning = false;
-    let onDetected = null;
-
     // セクションの表示切替関数
     function showSection(section) {
         const sections = document.querySelectorAll('.section');
@@ -51,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeUI() {
         showSection('home');
         initializeTransactionUI();
-        // updateBarcodeScannerAvailability(); // この関数が定義されていないためコメントアウト
 
         // エラーモーダルの閉じるボタンのイベントリスナー
         const closeErrorModalButton = document.getElementById('closeErrorModal');
@@ -69,60 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // IndexedDBの初期化
-    const request = indexedDB.open('inventoryDB', 13);
-
-    request.onupgradeneeded = function(event) {
-        db = event.target.result;
-
-        if (!db.objectStoreNames.contains('categories')) {
-            const categoryStore = db.createObjectStore('categories', { keyPath: 'id', autoIncrement: true });
-            categoryStore.createIndex('parentId', 'parentId', { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains('products')) {
-            const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
-            productStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-            productStore.createIndex('barcode', 'barcode', { unique: true });
-            productStore.createIndex('name', 'name', { unique: false }); // 名前でのインデックスを追加
-        }
-
-        if (!db.objectStoreNames.contains('sales')) {
-            const salesStore = db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
-            salesStore.createIndex('productName', 'productName', { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains('globalInventory')) {
-            const globalInventoryStore = db.createObjectStore('globalInventory', { keyPath: 'subcategoryId' });
-        }
-
-        if (!db.objectStoreNames.contains('unitPrices')) {
-            const unitPriceStore = db.createObjectStore('unitPrices', { keyPath: 'id', autoIncrement: true });
-            unitPriceStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-        }
-    };
-
-    request.onsuccess = function(event) {
-        db = event.target.result;
-        console.log('Database initialized successfully.');
-
-        // 初期ロード処理
-        updateCategorySelects();
-        displayCategories();
-        displaySales();
-        displayUnitPrices();
-        displayGlobalInventory();
-        // displayInventoryCategories(); // 必要に応じてこの関数を定義
-
-        // UIの初期化
-        initializeUI();
-    };
-
-    request.onerror = function(event) {
-        console.error('Database error:', event.target.errorCode);
-        alert('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
-    };
 
     // ナビゲーションリンクのイベントリスナー
     linkHome.addEventListener('click', (e) => {
@@ -197,10 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeTransactionUI();
 });
 
-// パート2: カテゴリ管理、商品管理、単価管理の実装
-
-// 以下、必要な関数を定義します。
-
 // カテゴリ選択を更新する関数
 function updateCategorySelects() {
     if (!db) {
@@ -246,116 +236,6 @@ function updateCategorySelects() {
 
     request.onerror = (event) => {
         console.error('Error fetching categories:', event.target.error);
-        showErrorModal('カテゴリの取得中にエラーが発生しました。');
-    };
-}
-
-// カテゴリ一覧を表示する関数
-function displayCategories() {
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const categories = event.target.result;
-        const categoryList = document.getElementById('category-list');
-        if (categoryList) {
-            categoryList.innerHTML = '';
-
-            categories.filter(cat => cat.parentId === null).forEach(parentCategory => {
-                const parentDiv = document.createElement('div');
-                parentDiv.className = 'parent-category';
-                parentDiv.textContent = parentCategory.name;
-
-                const editParentButton = document.createElement('button');
-                editParentButton.textContent = '編集';
-                editParentButton.className = 'category-button';
-                editParentButton.addEventListener('click', () => {
-                    const newName = prompt('新しいカテゴリ名を入力してください:', parentCategory.name);
-                    if (newName) {
-                        parentCategory.name = newName;
-                        const transaction = db.transaction(['categories'], 'readwrite');
-                        const store = transaction.objectStore('categories');
-                        store.put(parentCategory);
-
-                        transaction.oncomplete = () => {
-                            console.log(`Category "${newName}" updated successfully.`);
-                            displayCategories();
-                            updateCategorySelects();
-                        };
-
-                        transaction.onerror = (event) => {
-                            console.error('Error updating category:', event.target.error);
-                            showErrorModal('カテゴリの更新中にエラーが発生しました。');
-                        };
-                    }
-                });
-                parentDiv.appendChild(editParentButton);
-
-                const deleteParentButton = document.createElement('button');
-                deleteParentButton.textContent = '削除';
-                deleteParentButton.className = 'category-button';
-                deleteParentButton.addEventListener('click', () => {
-                    if (confirm('このカテゴリとそのサブカテゴリを削除しますか？')) {
-                        deleteCategoryAndSubcategories(parentCategory.id);
-                    }
-                });
-                parentDiv.appendChild(deleteParentButton);
-
-                const subcategories = categories.filter(cat => cat.parentId === parentCategory.id);
-                subcategories.forEach(subcategory => {
-                    const subDiv = document.createElement('div');
-                    subDiv.className = 'subcategory';
-                    subDiv.textContent = ` - ${subcategory.name}`;
-
-                    const editSubButton = document.createElement('button');
-                    editSubButton.textContent = '編集';
-                    editSubButton.className = 'category-button';
-                    editSubButton.addEventListener('click', () => {
-                        const newName = prompt('新しいサブカテゴリ名を入力してください:', subcategory.name);
-                        if (newName) {
-                            subcategory.name = newName;
-                            const transaction = db.transaction(['categories'], 'readwrite');
-                            const store = transaction.objectStore('categories');
-                            store.put(subcategory);
-
-                            transaction.oncomplete = () => {
-                                console.log(`Subcategory "${newName}" updated successfully.`);
-                                displayCategories();
-                                updateCategorySelects();
-                            };
-
-                            transaction.onerror = (event) => {
-                                console.error('Error updating subcategory:', event.target.error);
-                                showErrorModal('サブカテゴリの更新中にエラーが発生しました。');
-                            };
-                        }
-                    });
-                    subDiv.appendChild(editSubButton);
-
-                    const deleteSubButton = document.createElement('button');
-                    deleteSubButton.textContent = '削除';
-                    deleteSubButton.className = 'category-button';
-                    deleteSubButton.addEventListener('click', () => {
-                        if (confirm('このサブカテゴリを削除しますか？')) {
-                            deleteCategory(subcategory.id);
-                        }
-                    });
-                    subDiv.appendChild(deleteSubButton);
-
-                    parentDiv.appendChild(subDiv);
-                });
-
-                categoryList.appendChild(parentDiv);
-            });
-        } else {
-            console.error("category-list が見つかりません。");
-            showErrorModal('カテゴリ一覧の表示エリアが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('Error fetching categories for display:', event.target.error);
         showErrorModal('カテゴリの取得中にエラーが発生しました。');
     };
 }
@@ -481,6 +361,116 @@ function updateUnitPriceSubcategorySelect() {
             }
         });
     }
+}
+
+// カテゴリ一覧を表示する関数
+function displayCategories() {
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const categoryList = document.getElementById('category-list');
+        if (categoryList) {
+            categoryList.innerHTML = '';
+
+            categories.filter(cat => cat.parentId === null).forEach(parentCategory => {
+                const parentDiv = document.createElement('div');
+                parentDiv.className = 'parent-category';
+                parentDiv.textContent = parentCategory.name;
+
+                const editParentButton = document.createElement('button');
+                editParentButton.textContent = '編集';
+                editParentButton.className = 'category-button';
+                editParentButton.addEventListener('click', () => {
+                    const newName = prompt('新しいカテゴリ名を入力してください:', parentCategory.name);
+                    if (newName) {
+                        parentCategory.name = newName;
+                        const transaction = db.transaction(['categories'], 'readwrite');
+                        const store = transaction.objectStore('categories');
+                        store.put(parentCategory);
+
+                        transaction.oncomplete = () => {
+                            console.log(`Category "${newName}" updated successfully.`);
+                            displayCategories();
+                            updateCategorySelects();
+                        };
+
+                        transaction.onerror = (event) => {
+                            console.error('Error updating category:', event.target.error);
+                            showErrorModal('カテゴリの更新中にエラーが発生しました。');
+                        };
+                    }
+                });
+                parentDiv.appendChild(editParentButton);
+
+                const deleteParentButton = document.createElement('button');
+                deleteParentButton.textContent = '削除';
+                deleteParentButton.className = 'category-button';
+                deleteParentButton.addEventListener('click', () => {
+                    if (confirm('このカテゴリとそのサブカテゴリを削除しますか？')) {
+                        deleteCategoryAndSubcategories(parentCategory.id);
+                    }
+                });
+                parentDiv.appendChild(deleteParentButton);
+
+                const subcategories = categories.filter(cat => cat.parentId === parentCategory.id);
+                subcategories.forEach(subcategory => {
+                    const subDiv = document.createElement('div');
+                    subDiv.className = 'subcategory';
+                    subDiv.textContent = ` - ${subcategory.name}`;
+
+                    const editSubButton = document.createElement('button');
+                    editSubButton.textContent = '編集';
+                    editSubButton.className = 'category-button';
+                    editSubButton.addEventListener('click', () => {
+                        const newName = prompt('新しいサブカテゴリ名を入力してください:', subcategory.name);
+                        if (newName) {
+                            subcategory.name = newName;
+                            const transaction = db.transaction(['categories'], 'readwrite');
+                            const store = transaction.objectStore('categories');
+                            store.put(subcategory);
+
+                            transaction.oncomplete = () => {
+                                console.log(`Subcategory "${newName}" updated successfully.`);
+                                displayCategories();
+                                updateCategorySelects();
+                            };
+
+                            transaction.onerror = (event) => {
+                                console.error('Error updating subcategory:', event.target.error);
+                                showErrorModal('サブカテゴリの更新中にエラーが発生しました。');
+                            };
+                        }
+                    });
+                    subDiv.appendChild(editSubButton);
+
+                    const deleteSubButton = document.createElement('button');
+                    deleteSubButton.textContent = '削除';
+                    deleteSubButton.className = 'category-button';
+                    deleteSubButton.addEventListener('click', () => {
+                        if (confirm('このサブカテゴリを削除しますか？')) {
+                            deleteCategory(subcategory.id);
+                        }
+                    });
+                    subDiv.appendChild(deleteSubButton);
+
+                    parentDiv.appendChild(subDiv);
+                });
+
+                categoryList.appendChild(parentDiv);
+            });
+        } else {
+            console.error("category-list が見つかりません。");
+            showErrorModal('カテゴリ一覧の表示エリアが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching categories for display:', event.target.error);
+        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+    };
 }
 
 // カテゴリとそのサブカテゴリを削除する関数
@@ -752,7 +742,7 @@ function displayUnitPrices() {
                         const listItem = document.createElement('div');
                         listItem.className = 'unit-price-item';
                         listItem.innerHTML = `
-                            <span>サブカテゴリ: ${category.name} - タイヤ量: ${unitPrice.tier}g - 単価: ${unitPrice.price}円</span>
+                            <span>サブカテゴリ: ${category.name} - 階層量: ${unitPrice.tier} - 単価: ${unitPrice.price}円</span>
                             <button class="edit-unit-price-button" data-id="${unitPrice.id}">編集</button>
                             <button class="delete-unit-price-button" data-id="${unitPrice.id}">削除</button>
                         `;
@@ -804,7 +794,7 @@ function editUnitPrice(unitPriceId) {
     request.onsuccess = (event) => {
         const unitPrice = event.target.result;
         if (unitPrice) {
-            const newTier = prompt('新しいタイヤ量を入力してください（g）:', unitPrice.tier);
+            const newTier = prompt('新しい階層量を入力してください:', unitPrice.tier);
             const newPrice = prompt('新しい単価を入力してください（円）:', unitPrice.price);
             if (newTier !== null && newPrice !== null) { // null チェック
                 const parsedTier = Number(newTier);
@@ -909,8 +899,6 @@ if (addUnitPriceButton) {
         }
     });
 }
-
-// パート3: 販売処理と補助機能の実装
 
 // 売上を表示する関数
 function displaySales() {
@@ -1292,7 +1280,6 @@ function initializeTransactionUI() {
     if (transactionList) {
         transactionList.innerHTML = '';
     }
-
     toggleCompleteButton();
 }
 
