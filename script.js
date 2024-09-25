@@ -1,97 +1,60 @@
-// グローバル変数の宣言
-let db;
-let isScanning = false;
-let onDetected = null;
-
-// IndexedDBの初期化
-const request = indexedDB.open('inventoryDB', 13);
-
-request.onupgradeneeded = function(event) {
-    db = event.target.result;
-
-    if (!db.objectStoreNames.contains('categories')) {
-        const categoryStore = db.createObjectStore('categories', { keyPath: 'id', autoIncrement: true });
-        categoryStore.createIndex('parentId', 'parentId', { unique: false });
-    }
-
-    if (!db.objectStoreNames.contains('products')) {
-        const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
-        productStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-        productStore.createIndex('barcode', 'barcode', { unique: true });
-        productStore.createIndex('name', 'name', { unique: false });
-    }
-
-    if (!db.objectStoreNames.contains('sales')) {
-        const salesStore = db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
-        salesStore.createIndex('productName', 'productName', { unique: false });
-    }
-
-    if (!db.objectStoreNames.contains('globalInventory')) {
-        const globalInventoryStore = db.createObjectStore('globalInventory', { keyPath: 'subcategoryId' });
-    }
-
-    if (!db.objectStoreNames.contains('unitPrices')) {
-        const unitPriceStore = db.createObjectStore('unitPrices', { keyPath: 'id', autoIncrement: true });
-        unitPriceStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-    }
-};
-
-request.onsuccess = function(event) {
-    db = event.target.result;
-    console.log('Database initialized successfully.');
-
-    // UIの初期化
-    initializeUI();
-};
-
-request.onerror = function(event) {
-    console.error('Database error:', event.target.errorCode);
-    alert('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
-};
-
-// DOM要素の取得と初期化
 document.addEventListener('DOMContentLoaded', () => {
-    // グローバル変数（スコープ内に移動）
+    // グローバル変数の宣言
+    let db;
     let currentTransaction = {
         salesLocation: null,
         products: []
     };
+    let isScanning = false;
+    let onDetected = null;
 
-    // セクション
-    const homeSection = document.getElementById('home-section');
-    const categorySection = document.getElementById('category-section');
-    const productSection = document.getElementById('product-section');
-    const inventorySection = document.getElementById('inventory-section');
-    const barcodeSection = document.getElementById('barcode-section');
-    const salesSection = document.getElementById('sales-section');
-    const globalInventorySection = document.getElementById('global-inventory-section');
-    const unitPriceSection = document.getElementById('unit-price-section');
+    // IndexedDBの初期化
+    const request = indexedDB.open('inventoryDB', 13);
 
-    // ナビゲーションリンク
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-    const linkSales = document.getElementById('link-sales');
-    const linkGlobalInventory = document.getElementById('link-global-inventory');
-    const linkUnitPrice = document.getElementById('link-unit-price');
+    request.onupgradeneeded = function(event) {
+        db = event.target.result;
 
-    // ボタン
-    const completeTransactionButton = document.getElementById('complete-transaction');
-    const startScanButton = document.getElementById('start-scan');
-    const scannerContainer = document.getElementById('scanner-container');
+        if (!db.objectStoreNames.contains('categories')) {
+            const categoryStore = db.createObjectStore('categories', { keyPath: 'id', autoIncrement: true });
+            categoryStore.createIndex('parentId', 'parentId', { unique: false });
+        }
 
-    // セクションの表示切替関数
-    function showSection(section) {
-        const sections = document.querySelectorAll('.section');
-        sections.forEach(sec => {
-            sec.style.display = 'none';
-        });
-        document.getElementById(`${section}-section`).style.display = 'block';
-    }
+        if (!db.objectStoreNames.contains('products')) {
+            const productStore = db.createObjectStore('products', { keyPath: 'id', autoIncrement: true });
+            productStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+            productStore.createIndex('barcode', 'barcode', { unique: true });
+            productStore.createIndex('name', 'name', { unique: false });
+        }
 
-    // initializeUI 関数の定義
+        if (!db.objectStoreNames.contains('sales')) {
+            const salesStore = db.createObjectStore('sales', { keyPath: 'id', autoIncrement: true });
+            salesStore.createIndex('productName', 'productName', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('globalInventory')) {
+            const globalInventoryStore = db.createObjectStore('globalInventory', { keyPath: 'subcategoryId' });
+        }
+
+        if (!db.objectStoreNames.contains('unitPrices')) {
+            const unitPriceStore = db.createObjectStore('unitPrices', { keyPath: 'id', autoIncrement: true });
+            unitPriceStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+        }
+    };
+
+    request.onsuccess = function(event) {
+        db = event.target.result;
+        console.log('Database initialized successfully.');
+
+        // UIの初期化
+        initializeUI();
+    };
+
+    request.onerror = function(event) {
+        console.error('Database error:', event.target.errorCode);
+        alert('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
+    };
+
+    // UIの初期化関数
     function initializeUI() {
         showSection('home');
         initializeTransactionUI();
@@ -120,77 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ナビゲーションリンクのイベントリスナー
-    linkHome.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('home');
-    });
-
-    linkCategory.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('category');
-        displayCategories();
-    });
-
-    linkProduct.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('product');
-        updateCategorySelects();
-    });
-
-    linkInventory.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('inventory');
-        displayGlobalInventory();
-    });
-
-    linkBarcode.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('barcode');
-    });
-
-    linkSales.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('sales');
-        displaySales();
-    });
-
-    linkGlobalInventory.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('global-inventory');
-        displayGlobalInventory();
-    });
-
-    linkUnitPrice.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('unit-price');
-        displayUnitPrices();
-    });
-
-    // トランザクション完了ボタンのイベントリスナー
-    if (completeTransactionButton) {
-        completeTransactionButton.addEventListener('click', async () => {
-            try {
-                await processTransaction();
-            } catch (error) {
-                console.error('Transaction processing failed:', error);
-                showErrorModal(error.message);
-            }
+    // セクションの表示切替関数
+    function showSection(section) {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(sec => {
+            sec.style.display = 'none';
         });
+        document.getElementById(`${section}-section`).style.display = 'block';
     }
-
-    // バーコードスキャン開始ボタンのイベントリスナー
-    if (startScanButton) {
-        startScanButton.addEventListener('click', () => {
-            initializeQuagga();
-        });
-    }
-
-    // その他の初期化関数やイベントリスナー
-    updateProductCategorySelects();
-    updateGlobalSubcategorySelect();
-    updateUnitPriceSubcategorySelect();
-    initializeTransactionUI();
 
     // カテゴリ選択を更新する関数
     function updateCategorySelects() {
@@ -846,61 +746,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 商品登録ボタンのイベントリスナー
-    const addProductButton = document.getElementById('add-product');
-    if (addProductButton) {
-        addProductButton.addEventListener('click', () => {
-            const name = document.getElementById('product-name').value.trim();
-            const quantity = Number(document.getElementById('product-quantity').value.trim());
-            const price = Number(document.getElementById('product-price').value.trim());
-            const cost = Number(document.getElementById('product-cost').value.trim());
-            const barcode = document.getElementById('product-barcode').value.trim();
-            const unitAmount = Number(document.getElementById('product-unit-amount').value.trim());
-            const subcategoryId = Number(document.getElementById('product-subcategory-select').value);
-
-            // 入力チェック
-            if (name && !isNaN(quantity) && !isNaN(price) && !isNaN(cost) && barcode && !isNaN(unitAmount) && subcategoryId) {
-                const product = {
-                    name,
-                    quantity,
-                    price,
-                    cost,
-                    barcode,
-                    unitAmount,
-                    subcategoryId
-                };
-
-                saveProductToDB(product);
-            } else {
-                alert('すべての項目を正しく入力してください。');
-            }
-        });
-    }
-
-    // 単価の追加ボタンのイベントリスナー
-    const addUnitPriceButton = document.getElementById('add-unit-price');
-    if (addUnitPriceButton) {
-        addUnitPriceButton.addEventListener('click', () => {
-            const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
-            const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
-            const tier = Number(document.getElementById('unit-price-tier').value.trim());
-            const price = Number(document.getElementById('unit-price-value').value.trim());
-
-            // 入力チェック
-            if (parentCategoryId && subcategoryId && !isNaN(tier) && !isNaN(price)) {
-                const unitPrice = {
-                    subcategoryId,
-                    tier,
-                    price
-                };
-
-                saveUnitPriceToDB(unitPrice);
-            } else {
-                alert('すべての項目を正しく入力してください。');
-            }
-        });
-    }
-
     // 売上を表示する関数
     function displaySales() {
         if (!db) {
@@ -1334,21 +1179,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 商品をトランザクションに追加する関数
-    function addProductToTransaction(product) {
-        const quantityStr = prompt(`商品名: ${product.name}\n購入数量を入力してください:`);
-        if (quantityStr) {
-            const quantity = Number(quantityStr);
-            if (!isNaN(quantity) && quantity > 0) {
-                currentTransaction.products.push({ product, quantity });
-                updateTransactionUI();
-                toggleCompleteButton();
+    // 商品登録ボタンのイベントリスナー
+    const addProductButton = document.getElementById('add-product');
+    if (addProductButton) {
+        addProductButton.addEventListener('click', () => {
+            const name = document.getElementById('product-name').value.trim();
+            const quantity = Number(document.getElementById('product-quantity').value.trim());
+            const price = Number(document.getElementById('product-price').value.trim());
+            const cost = Number(document.getElementById('product-cost').value.trim());
+            const barcode = document.getElementById('product-barcode').value.trim();
+            const unitAmount = Number(document.getElementById('product-unit-amount').value.trim());
+            const subcategoryId = Number(document.getElementById('product-subcategory-select').value);
+
+            // 入力チェック
+            if (name && !isNaN(quantity) && !isNaN(price) && !isNaN(cost) && barcode && !isNaN(unitAmount) && subcategoryId) {
+                const product = {
+                    name,
+                    quantity,
+                    price,
+                    cost,
+                    barcode,
+                    unitAmount,
+                    subcategoryId
+                };
+
+                saveProductToDB(product);
             } else {
-                alert('有効な数量を入力してください。');
+                alert('すべての項目を正しく入力してください。');
             }
-        } else {
-            alert('数量が入力されませんでした。');
-        }
+        });
+    }
+
+    // 単価の追加ボタンのイベントリスナー
+    const addUnitPriceButton = document.getElementById('add-unit-price');
+    if (addUnitPriceButton) {
+        addUnitPriceButton.addEventListener('click', () => {
+            const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
+            const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
+            const tier = Number(document.getElementById('unit-price-tier').value.trim());
+            const price = Number(document.getElementById('unit-price-value').value.trim());
+
+            // 入力チェック
+            if (parentCategoryId && subcategoryId && !isNaN(tier) && !isNaN(price)) {
+                const unitPrice = {
+                    subcategoryId,
+                    tier,
+                    price
+                };
+
+                saveUnitPriceToDB(unitPrice);
+            } else {
+                alert('すべての項目を正しく入力してください。');
+            }
+        });
     }
 
     // 売上を削除する関数
@@ -1411,4 +1294,101 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorModal('全体在庫の取得中にエラーが発生しました。');
         };
     }
+
+    // セクション
+    const homeSection = document.getElementById('home-section');
+    const categorySection = document.getElementById('category-section');
+    const productSection = document.getElementById('product-section');
+    const inventorySection = document.getElementById('inventory-section');
+    const barcodeSection = document.getElementById('barcode-section');
+    const salesSection = document.getElementById('sales-section');
+    const globalInventorySection = document.getElementById('global-inventory-section');
+    const unitPriceSection = document.getElementById('unit-price-section');
+
+    // ナビゲーションリンク
+    const linkHome = document.getElementById('link-home');
+    const linkCategory = document.getElementById('link-category');
+    const linkProduct = document.getElementById('link-product');
+    const linkInventory = document.getElementById('link-inventory');
+    const linkBarcode = document.getElementById('link-barcode');
+    const linkSales = document.getElementById('link-sales');
+    const linkGlobalInventory = document.getElementById('link-global-inventory');
+    const linkUnitPrice = document.getElementById('link-unit-price');
+
+    // ボタン
+    const completeTransactionButton = document.getElementById('complete-transaction');
+    const startScanButton = document.getElementById('start-scan');
+    const scannerContainer = document.getElementById('scanner-container');
+
+    // ナビゲーションリンクのイベントリスナー
+    linkHome.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('home');
+    });
+
+    linkCategory.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('category');
+        displayCategories();
+    });
+
+    linkProduct.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('product');
+        updateCategorySelects();
+    });
+
+    linkInventory.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('inventory');
+        displayGlobalInventory();
+    });
+
+    linkBarcode.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('barcode');
+    });
+
+    linkSales.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('sales');
+        displaySales();
+    });
+
+    linkGlobalInventory.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('global-inventory');
+        displayGlobalInventory();
+    });
+
+    linkUnitPrice.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('unit-price');
+        displayUnitPrices();
+    });
+
+    // トランザクション完了ボタンのイベントリスナー
+    if (completeTransactionButton) {
+        completeTransactionButton.addEventListener('click', async () => {
+            try {
+                await processTransaction();
+            } catch (error) {
+                console.error('Transaction processing failed:', error);
+                showErrorModal(error.message);
+            }
+        });
+    }
+
+    // バーコードスキャン開始ボタンのイベントリスナー
+    if (startScanButton) {
+        startScanButton.addEventListener('click', () => {
+            initializeQuagga();
+        });
+    }
+
+    // その他の初期化関数やイベントリスナー
+    updateProductCategorySelects();
+    updateGlobalSubcategorySelect();
+    updateUnitPriceSubcategorySelect();
+    initializeTransactionUI();
 });
