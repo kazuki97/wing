@@ -1,9 +1,7 @@
-// パート1: データベースの初期化と基本設定
-
 // グローバル変数の宣言
 let db;
 
-// DOM要素の取得とイベントリスナーの設定
+// DOM要素の取得
 document.addEventListener('DOMContentLoaded', () => {
     // セクション
     const homeSection = document.getElementById('home-section');
@@ -151,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // トランザクション完了ボタンのイベントリスナー（パート2で実装）
+    // ここではイベントリスナーの登録のみ行い、実際の処理はパート2で定義します
     if (completeTransactionButton) {
         completeTransactionButton.addEventListener('click', async () => {
             try {
@@ -172,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // その他の初期化関数やイベントリスナーはパート2で定義します
 });
 
-// パート2: 主な機能の実装
+// パート2: カテゴリ管理、商品管理、単価管理の実装
 
 // カテゴリ選択を更新する関数
 function updateCategorySelects() {
@@ -332,11 +331,6 @@ function updateUnitPriceSubcategorySelect() {
             }
         });
     }
-}
-
-// カテゴリ一覧を表示する関数
-function loadCategories() {
-    displayCategories();
 }
 
 // カテゴリ一覧を表示する関数
@@ -826,7 +820,6 @@ if (addProductButton) {
         const cost = Number(document.getElementById('product-cost').value.trim());
         const barcode = document.getElementById('product-barcode').value.trim();
         const unitAmount = Number(document.getElementById('product-unit-amount').value.trim());
-        const parentCategoryId = Number(document.getElementById('product-parent-category-select').value);
         const subcategoryId = Number(document.getElementById('product-subcategory-select').value);
 
         // 入力チェック
@@ -848,7 +841,7 @@ if (addProductButton) {
     });
 }
 
-// ユニット価格追加ボタンのイベントリスナー
+// 単価の追加ボタンのイベントリスナー
 const addUnitPriceButton = document.getElementById('add-unit-price');
 if (addUnitPriceButton) {
     addUnitPriceButton.addEventListener('click', () => {
@@ -872,295 +865,407 @@ if (addUnitPriceButton) {
     });
 }
 
-// パート3: 販売処理と補助機能の実装
+// 売上データをDBに保存する関数
+function addSaleToDBWithPrice(product, quantity, unitPrice) {
+    const sale = {
+        date: new Date().toISOString(),
+        salesLocation: currentTransaction.salesLocation,
+        productName: product.name,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        totalPrice: quantity * unitPrice,
+        profit: (unitPrice - product.cost) * quantity
+    };
 
-// 全体在庫を表示する関数
-function displayGlobalInventory() {
-    if (!db) {
-        console.error('Database is not initialized.');
-        return;
-    }
+    const transaction = db.transaction(['sales'], 'readwrite');
+    const store = transaction.objectStore('sales');
+    store.add(sale);
 
-    const transaction = db.transaction(['globalInventory', 'categories'], 'readonly');
-    const globalStore = transaction.objectStore('globalInventory');
-    const categoryStore = transaction.objectStore('categories');
-    const request = globalStore.getAll();
+    transaction.oncomplete = () => {
+        console.log(`Sale for "${sale.productName}" recorded successfully.`);
+        displaySales();
+    };
+
+    transaction.onerror = (event) => {
+        console.error('Error saving sale:', event.target.error);
+        showErrorModal('売上の保存中にエラーが発生しました。');
+    };
+}
+
+// 全体在庫を更新する関数
+function updateGlobalInventoryOnSale(subcategoryId, quantity, unitAmount) {
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const request = store.get(subcategoryId);
 
     request.onsuccess = (event) => {
-        const globalInventories = event.target.result;
-        const globalInventoryList = document.getElementById('global-inventory-list');
-        if (globalInventoryList) {
-            globalInventoryList.innerHTML = '';
+        let inventory = event.target.result;
+        if (inventory) {
+            inventory.quantity += quantity * unitAmount;
+        } else {
+            inventory = {
+                subcategoryId: subcategoryId,
+                quantity: quantity * unitAmount
+            };
+        }
+        store.put(inventory);
+    };
 
-            globalInventories.forEach(inventory => {
-                if (inventory && inventory.subcategoryId !== undefined && inventory.subcategoryId !== null && !isNaN(inventory.subcategoryId)) {
-                    const categoryRequest = categoryStore.get(inventory.subcategoryId);
-                    categoryRequest.onsuccess = (catEvent) => {
-                        const subcategory = catEvent.target.result;
-                        if (subcategory) {
-                            let quantity = Number(inventory.quantity);
-                            if (isNaN(quantity)) {
-                                quantity = 0;
-                                console.warn(`Invalid quantity for subcategoryId ${inventory.subcategoryId}, defaulting to 0.`);
-                            }
-                            const listItem = document.createElement('div');
-                            listItem.textContent = `${subcategory.name}: ${quantity} `;
+    request.onerror = (event) => {
+        console.error('Error updating global inventory:', event.target.error);
+        showErrorModal('全体在庫の更新中にエラーが発生しました。');
+    };
+}
 
-                            const editButton = document.createElement('button');
-                            editButton.textContent = '編集';
-                            editButton.className = 'inventory-button';
-                            editButton.addEventListener('click', () => {
-                                const newQuantity = prompt(`現在の在庫量: ${quantity}\n新しい在庫量を入力してください:`, quantity);
-                                if (newQuantity !== null) {
-                                    const parsedQuantity = Number(newQuantity);
-                                    if (!isNaN(parsedQuantity) && parsedQuantity >= 0) {
-                                        const updateTransaction = db.transaction(['globalInventory'], 'readwrite');
-                                        const store = updateTransaction.objectStore('globalInventory');
-                                        const updatedInventory = {
-                                            subcategoryId: inventory.subcategoryId,
-                                            quantity: parsedQuantity
-                                        };
-                                        store.put(updatedInventory);
+// トランザクションを処理する関数
+async function processTransaction() {
+    const { salesLocation, products } = currentTransaction;
+    if (!salesLocation || products.length === 0) {
+        throw new Error('販売場所または商品が選択されていません。');
+    }
 
-                                        updateTransaction.oncomplete = () => {
-                                            console.log(`Global inventory for subcategoryId ${inventory.subcategoryId} updated to ${parsedQuantity}.`);
-                                            displayGlobalInventory();
-                                        };
+    // トランザクション全体でのサブカテゴリごとの合計数量を計算
+    const subcategoryTotals = {};
+    products.forEach(item => {
+        const subId = item.product.subcategoryId;
+        if (!subcategoryTotals[subId]) {
+            subcategoryTotals[subId] = 0;
+        }
+        subcategoryTotals[subId] += item.quantity;
+    });
 
-                                        updateTransaction.onerror = (event) => {
-                                            console.error('Error updating global inventory:', event.target.error);
-                                            showErrorModal('全体在庫の更新中にエラーが発生しました。');
-                                        };
-                                    } else {
-                                        alert('有効な在庫量を入力してください。');
-                                    }
-                                }
-                            });
-                            listItem.appendChild(editButton);
+    // トランザクション内の全サブカテゴリに対して処理を実行
+    const transactionPromises = Object.keys(subcategoryTotals).map(async (subId) => {
+        const totalQuantity = subcategoryTotals[subId];
+        const unitPrice = await getUnitPrice(subId, totalQuantity);
+        const productEntries = products.filter(item => item.product.subcategoryId === parseInt(subId, 10));
 
-                            const deleteButton = document.createElement('button');
-                            deleteButton.textContent = '削除';
-                            deleteButton.className = 'inventory-button';
-                            deleteButton.addEventListener('click', () => {
-                                if (confirm('この全体在庫を削除しますか？')) {
-                                    const deleteTransaction = db.transaction(['globalInventory'], 'readwrite');
-                                    const store = deleteTransaction.objectStore('globalInventory');
-                                    store.delete(inventory.subcategoryId);
+        // 各商品に対して在庫と売上を更新
+        const productPromises = productEntries.map(async (item) => {
+            const { product, quantity } = item;
 
-                                    deleteTransaction.oncomplete = () => {
-                                        console.log(`Global inventory for subcategoryId ${inventory.subcategoryId} deleted successfully.`);
-                                        displayGlobalInventory();
-                                    };
+            // 在庫を更新
+            const newQuantity = product.quantity - quantity;
+            if (newQuantity < 0) {
+                throw new Error(`在庫不足: ${product.name}`);
+            }
+            product.quantity = newQuantity;
+            await saveProductToDB(product);
 
-                                    deleteTransaction.onerror = (event) => {
-                                        console.error('Error deleting global inventory:', event.target.error);
-                                        showErrorModal('全体在庫の削除中にエラーが発生しました。');
-                                    };
-                                }
-                            });
-                            listItem.appendChild(deleteButton);
+            // 全体在庫を更新
+            await updateGlobalInventoryOnSale(product.subcategoryId, quantity, product.unitAmount);
 
-                            globalInventoryList.appendChild(listItem);
-                        }
-                    };
-                    categoryRequest.onerror = (catError) => {
-                        console.error('Error fetching category:', catError);
-                        showErrorModal('カテゴリの取得中にエラーが発生しました。');
-                    };
-                } else {
-                    console.warn('Invalid inventory entry:', inventory);
+            // 売上を記録
+            await addSaleToDBWithPrice(product, quantity, unitPrice);
+        });
+
+        await Promise.all(productPromises);
+    });
+
+    try {
+        await Promise.all(transactionPromises);
+        alert('取引が正常に完了しました。');
+        displaySales();
+        displayGlobalInventory();
+        resetTransaction();
+    } catch (error) {
+        console.error('Error processing transaction:', error);
+        showErrorModal(error.message);
+    }
+}
+
+// 単価を取得する関数（単価の階層を適用）
+function getUnitPrice(subcategoryId, totalQuantity) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['unitPrices'], 'readonly');
+        const store = transaction.objectStore('unitPrices');
+        const index = store.index('subcategoryId');
+        const request = index.getAll(subcategoryId);
+
+        request.onsuccess = (event) => {
+            const unitPrices = event.target.result;
+            if (unitPrices && unitPrices.length > 0) {
+                // 単価階層を量でソート（昇順）
+                unitPrices.sort((a, b) => a.tier - b.tier);
+                let applicablePrice = unitPrices[0].price; // デフォルト価格
+                unitPrices.forEach(priceTier => {
+                    if (totalQuantity >= priceTier.tier) {
+                        applicablePrice = priceTier.price;
+                    }
+                });
+                resolve(applicablePrice);
+            } else {
+                // 単価設定がない場合はエラーを投げる
+                reject(new Error(`サブカテゴリID ${subcategoryId} の単価が設定されていません。`));
+            }
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+}
+
+// エラーモーダルの表示関数
+function showErrorModal(message) {
+    const errorMessage = document.getElementById('errorMessage');
+    const errorModal = document.getElementById('errorModal');
+    const closeErrorModalButton = document.getElementById('closeErrorModal');
+
+    if (errorMessage && errorModal && closeErrorModalButton) {
+        errorMessage.textContent = message;
+        errorModal.style.display = 'block';
+
+        closeErrorModalButton.onclick = () => {
+            errorModal.style.display = 'none';
+            isScanning = false; // スキャン状態をリセット
+        };
+    } else {
+        alert(message);
+        isScanning = false; // スキャン状態をリセット
+    }
+}
+
+// バーコードスキャンの初期化と処理
+function initializeQuagga() {
+    if (isScanning) return;
+
+    isScanning = true;
+
+    // 販売場所の選択ダイアログを表示
+    selectSalesLocation().then(location => {
+        if (location) {
+            currentTransaction.salesLocation = location;
+            // Quagga の初期化
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    target: scannerContainer,
+                    constraints: {
+                        facingMode: "environment"
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader", "code_128_reader", "upc_reader", "code_39_reader", "code_93_reader"]
+                }
+            }, (err) => {
+                if (err) {
+                    console.error(err);
+                    isScanning = false; // エラー時にスキャン状態をリセット
+                    showErrorModal('バーコードスキャンの初期化に失敗しました。');
+                    return;
+                }
+                Quagga.start();
+
+                // 既存の onDetected リスナーを解除
+                if (onDetected) {
+                    Quagga.offDetected(onDetected);
+                }
+
+                // onDetected リスナーを定義
+                onDetected = (result) => {
+                    if (result && result.codeResult && result.codeResult.code) {
+                        const barcode = result.codeResult.code;
+                        Quagga.stop();
+                        Quagga.offDetected(onDetected); // リスナーを解除
+                        isScanning = false; // スキャン状態をリセット
+                        handleBarcodeScanned(barcode);
+                    } else {
+                        console.warn('バーコードが検出されませんでした。');
+                    }
+                };
+
+                // onDetected リスナーを登録
+                Quagga.onDetected(onDetected);
+            });
+        } else {
+            isScanning = false; // キャンセルされた場合
+        }
+    }).catch(err => {
+        console.error('Error selecting sales location:', err);
+        isScanning = false;
+        showErrorModal('販売場所の選択中にエラーが発生しました。');
+    });
+}
+
+// バーコードスキャン後の処理
+async function handleBarcodeScanned(barcode) {
+    try {
+        const product = await findProductByBarcode(barcode);
+        if (product) {
+            addProductToTransaction(product);
+        } else {
+            showErrorModal('該当する商品が見つかりませんでした。');
+        }
+    } catch (error) {
+        console.error('Error handling scanned barcode:', error);
+        showErrorModal('商品情報の取得中にエラーが発生しました。');
+    }
+}
+
+// 商品をバーコードで検索する関数
+function findProductByBarcode(barcode) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('barcode');
+        const request = index.get(barcode);
+
+        request.onsuccess = (event) => {
+            const product = event.target.result;
+            resolve(product);
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+}
+
+// トランザクション完了後にUIをリセットする関数
+function resetTransaction() {
+    currentTransaction = {
+        salesLocation: null,
+        products: []
+    };
+    updateTransactionUI();
+    toggleCompleteButton();
+}
+
+// トランザクションUIの更新関数
+function updateTransactionUI() {
+    const transactionList = document.getElementById('transaction-list');
+    if (transactionList) {
+        transactionList.innerHTML = '';
+        currentTransaction.products.forEach((item, index) => {
+            const listItem = document.createElement('div');
+            listItem.className = 'transaction-item';
+            listItem.innerHTML = `
+                <span>${item.product.name} - 数量: ${item.quantity}</span>
+                <button class="remove-item-button" data-index="${index}">削除</button>
+            `;
+            transactionList.appendChild(listItem);
+        });
+
+        // 削除ボタンのイベントリスナーを追加
+        const removeButtons = transactionList.querySelectorAll('.remove-item-button');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idx = Number(e.target.getAttribute('data-index'));
+                if (!isNaN(idx)) {
+                    currentTransaction.products.splice(idx, 1);
+                    updateTransactionUI();
+                    toggleCompleteButton();
                 }
             });
-        } else {
-            console.error("global-inventory-list が見つかりません。");
-            showErrorModal('全体在庫一覧の表示エリアが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('Error fetching global inventory:', event.target.error);
-        showErrorModal('全体在庫の取得中にエラーが発生しました。');
-    };
-}
-
-// 在庫管理用のカテゴリ一覧を表示する関数
-function displayInventoryCategories() {
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const categories = event.target.result;
-        const inventoryCategoryList = document.getElementById('inventory-category-list');
-        if (inventoryCategoryList) {
-            inventoryCategoryList.innerHTML = '';
-
-            categories.filter(cat => cat.parentId !== null).forEach(subcategory => {
-                const button = document.createElement('button');
-                button.textContent = subcategory.name;
-                button.className = 'inventory-category-button';
-                button.addEventListener('click', () => {
-                    displayInventoryProducts(subcategory.id);
-                });
-
-                inventoryCategoryList.appendChild(button);
-            });
-        } else {
-            console.error("inventory-category-list が見つかりません。");
-            showErrorModal('在庫カテゴリ一覧の表示エリアが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('Error fetching categories for inventory display:', event.target.error);
-        showErrorModal('在庫カテゴリの取得中にエラーが発生しました。');
-    };
-}
-
-// 在庫管理用の商品一覧を表示する関数
-function displayInventoryProducts(subcategoryId) {
-    if (!db) {
-        console.error('Database is not initialized.');
-        return;
+        });
     }
 
-    const transaction = db.transaction(['products'], 'readonly');
-    const store = transaction.objectStore('products');
-    const index = store.index('subcategoryId');
-    const request = index.getAll(subcategoryId);
-
-    request.onsuccess = (event) => {
-        const products = event.target.result;
-        const inventoryProductList = document.getElementById('inventory-product-list');
-        if (inventoryProductList) {
-            inventoryProductList.innerHTML = '';
-
-            products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'inventory-item';
-                productDiv.innerHTML = `
-                    <p>商品名: ${product.name}</p>
-                    <p>数量: ${product.quantity}</p>
-                    <p>価格: ${product.price}</p>
-                    <p>原価: ${product.cost}</p>
-                    <p>バーコード: ${product.barcode}</p>
-                    <p>サイズ（量）: ${product.unitAmount}</p>
-                    <button class="edit-button">編集</button>
-                    <button class="delete-button">削除</button>
-                `;
-                inventoryProductList.appendChild(productDiv);
-
-                const editButton = productDiv.querySelector('.edit-button');
-                editButton.addEventListener('click', () => {
-                    // 編集フォームを表示
-                    showEditProductForm(product, subcategoryId);
-                });
-
-                const deleteButton = productDiv.querySelector('.delete-button');
-                deleteButton.addEventListener('click', () => {
-                    if (confirm('この商品を削除しますか？')) {
-                        const deleteTransaction = db.transaction(['products'], 'readwrite');
-                        const store = deleteTransaction.objectStore('products');
-                        store.delete(product.id);
-
-                        deleteTransaction.oncomplete = () => {
-                            console.log(`Product "${product.name}" deleted successfully.`);
-                            displayInventoryProducts(subcategoryId);
-                        };
-
-                        deleteTransaction.onerror = (event) => {
-                            console.error('Error deleting product:', event.target.error);
-                            showErrorModal('商品の削除中にエラーが発生しました。');
-                        };
-                    }
-                });
-            });
-        } else {
-            console.error("inventory-product-list が見つかりません。");
-            showErrorModal('在庫商品一覧の表示エリアが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('Error fetching products for inventory display:', event.target.error);
-        showErrorModal('在庫商品の取得中にエラーが発生しました。');
-    };
+    toggleCompleteButton();
 }
 
-// 売上データを読み込む関数
-function loadSales() {
-    displaySales();
+// トランザクションの状態に応じて完了ボタンを有効化/無効化する関数
+function toggleCompleteButton() {
+    const completeTransactionButton = document.getElementById('complete-transaction');
+    if (completeTransactionButton) {
+        completeTransactionButton.disabled = currentTransaction.products.length === 0;
+    }
 }
 
-// 売上を表示する関数
-function displaySales() {
-    if (!db) {
-        console.error('Database is not initialized.');
-        return;
+// トランザクション関連のUIを初期化する関数
+function initializeTransactionUI() {
+    const transactionList = document.getElementById('transaction-list');
+    if (transactionList) {
+        transactionList.innerHTML = '';
     }
 
-    const transaction = db.transaction(['sales'], 'readonly');
-    const store = transaction.objectStore('sales');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const sales = event.target.result;
-        const salesTableBody = document.getElementById('sales-table').getElementsByTagName('tbody')[0];
-        if (salesTableBody) {
-            salesTableBody.innerHTML = '';
-
-            sales.forEach((sale, index) => {
-                const row = salesTableBody.insertRow();
-                row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = sale.date;
-                row.insertCell(2).textContent = sale.salesLocation === 'store' ? '店舗' : 'EC';
-                row.insertCell(3).textContent = sale.productName;
-                row.insertCell(4).textContent = sale.quantity;
-                row.insertCell(5).textContent = sale.unitPrice;
-                row.insertCell(6).textContent = sale.totalPrice;
-                row.insertCell(7).textContent = sale.profit;
-
-                // 編集ボタンの作成
-                const editButton = document.createElement('button');
-                editButton.textContent = '編集';
-                editButton.className = 'sale-button';
-                editButton.addEventListener('click', () => {
-                    // 編集機能の実装（必要に応じて）
-                    alert('編集機能は未実装です。');
-                });
-                row.insertCell(8).appendChild(editButton);
-
-                // 削除ボタンの作成
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = '削除';
-                deleteButton.className = 'sale-button';
-                deleteButton.addEventListener('click', () => {
-                    if (confirm('この売上を削除しますか？')) {
-                        const deleteTransaction = db.transaction(['sales'], 'readwrite');
-                        const deleteStore = deleteTransaction.objectStore('sales');
-                        deleteStore.delete(sale.id);
-
-                        deleteTransaction.oncomplete = () => {
-                            console.log(`Sale "${sale.productName}" deleted successfully.`);
-                            displaySales();
-                        };
-
-                        deleteTransaction.onerror = (event) => {
-                            console.error('Error deleting sale:', event.target.error);
-                            showErrorModal('売上の削除中にエラーが発生しました。');
-                        };
-                    }
-                });
-                row.insertCell(9).appendChild(deleteButton);
-            });
-        } else {
-            console.error("sales-tableのtbodyが見つかりません。");
-            showErrorModal('売上一覧の表示エリアが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('Error fetching sales:', event.target.error);
-        showErrorModal('売上の取得中にエラーが発生しました。');
-    };
+    toggleCompleteButton();
 }
+
+// 手動で売上を追加するボタンのイベントリスナー
+const manualAddSalesButton = document.getElementById('manualAddSalesButton');
+if (manualAddSalesButton) {
+    manualAddSalesButton.addEventListener('click', () => {
+        const productName = prompt('商品名を入力してください:');
+        const quantityStr = prompt('数量を入力してください:');
+        if (productName && quantityStr) {
+            const quantity = Number(quantityStr);
+            if (!isNaN(quantity) && quantity > 0) {
+                // 商品をバーコードで検索
+                findProductByName(productName).then(product => {
+                    if (product) {
+                        currentTransaction.products.push({ product, quantity });
+                        updateTransactionUI();
+                        toggleCompleteButton();
+                    } else {
+                        showErrorModal('該当する商品が見つかりませんでした。');
+                    }
+                }).catch(error => {
+                    console.error('Error finding product by name:', error);
+                    showErrorModal('商品情報の取得中にエラーが発生しました。');
+                });
+            } else {
+                alert('有効な数量を入力してください。');
+            }
+        } else {
+            alert('商品名と数量を入力してください。');
+        }
+    });
+}
+
+// 商品を名前で検索する関数
+function findProductByName(name) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const index = store.index('name'); // 名前でのインデックスが必要
+        const request = index.get(name);
+
+        request.onsuccess = (event) => {
+            const product = event.target.result;
+            resolve(product);
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+}
+
+// 商品をトランザクションに追加する関数
+function addProductToTransaction(product) {
+    const quantityStr = prompt(`商品名: ${product.name}\n購入数量を入力してください:`);
+    if (quantityStr) {
+        const quantity = Number(quantityStr);
+        if (!isNaN(quantity) && quantity > 0) {
+            currentTransaction.products.push({ product, quantity });
+            updateTransactionUI();
+            toggleCompleteButton();
+        } else {
+            alert('有効な数量を入力してください。');
+        }
+    } else {
+        alert('数量が入力されませんでした。');
+    }
+}
+
+// システム起動時のUI初期化
+function initializeUI() {
+    showSection('home');
+    initializeTransactionUI();
+    updateBarcodeScannerAvailability();
+}
+
+// バーコードスキャナーの利用可能性を更新する関数
+function updateBarcodeScannerAvailability() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        const startScanButton = document.getElementById('start-scan');
+        if (startScanButton) {
+            startScanButton.disabled = true;
+            startScanButton.textContent = 'バーコードスキャンはサポートされていません';
+        }
+    }
+}
+
+// システム起動時のUI初期化呼び出し（パート1で呼び出し済みの場合は不要）
+initializeUI();
