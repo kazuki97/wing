@@ -2,8 +2,14 @@
 import { initializeUI } from './ui.js';
 import { initializeDatabase } from './db.js';
 
-// 他の必要なインポート
-
 document.addEventListener('DOMContentLoaded', () => {
-    initializeDatabase();
+    initializeDatabase()
+        .then(() => {
+            initializeUI();
+        })
+        .catch((error) => {
+            console.error('Database initialization failed:', error);
+            // 必要に応じてエラーモーダルを表示
+            // showErrorModal('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
+        });
 });
