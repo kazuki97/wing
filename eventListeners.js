@@ -1,12 +1,16 @@
 // eventListeners.js
 import { showSection } from './ui.js';
 import { updateCategorySelects, saveCategoryToDB } from './categories.js';
-import { saveProductToDB, updateProductCategorySelects } from './products.js';
+import { saveProductToDB, displayProducts } from './products.js';
 import { processTransaction, currentTransaction } from './transactions.js';
-import { initializeQuagga } from './barcodeScanner.js'; // バーコードスキャナーの初期化関数（必要なら）
-import { findProductByName } from './productSearch.js'; // 商品検索機能（必要なら）
+import { initializeQuagga } from './barcodeScanner.js';
+import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
+import { saveUnitPriceToDB } from './inventory.js';
 
+/**
+ * イベントリスナーを初期化する関数
+ */
 export function initializeEventListeners() {
     // ナビゲーションリンク
     const linkHome = document.getElementById('link-home');
@@ -71,7 +75,7 @@ export function initializeEventListeners() {
         linkInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('inventory');
-            displayGlobalInventory();
+            // displayInventory(); // 実装が必要な場合
         });
     }
 
@@ -86,7 +90,7 @@ export function initializeEventListeners() {
         linkSales.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('sales');
-            displaySales();
+            // displaySales(); // 実装が必要な場合
         });
     }
 
@@ -94,7 +98,7 @@ export function initializeEventListeners() {
         linkGlobalInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('global-inventory');
-            displayGlobalInventory();
+            // displayGlobalInventory(); // 実装が必要な場合
         });
     }
 
@@ -102,7 +106,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            displayUnitPrices();
+            // displayUnitPrices(); // 実装が必要な場合
         });
     }
 
@@ -224,6 +228,28 @@ export function initializeEventListeners() {
         });
     }
 
-    // 単価の追加ボタンのイベントリスナー（必要なら）
-    // ここに追加します...
+    // 単価の追加ボタンのイベントリスナー
+    if (addUnitPriceButton) {
+        addUnitPriceButton.addEventListener('click', () => {
+            const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
+            const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
+            const tier = Number(document.getElementById('unit-price-tier').value.trim());
+            const price = Number(document.getElementById('unit-price-price').value.trim());
+
+            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(tier) && !isNaN(price)) {
+                const unitPrice = {
+                    subcategoryId,
+                    tier,
+                    price
+                };
+
+                saveUnitPriceToDB(unitPrice);
+
+                document.getElementById('unit-price-tier').value = '';
+                document.getElementById('unit-price-price').value = '';
+            } else {
+                alert('すべての項目を正しく入力してください。');
+            }
+        });
+    }
 }
