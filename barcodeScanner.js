@@ -43,7 +43,7 @@ function handleBarcodeDetected(result) {
     const code = result.codeResult.code;
     console.log('バーコード検出:', code);
 
-    // ここで商品を検索し、必要な処理を行う
+    // 商品を検索し、結果に基づいてアラートを表示
     findProductByBarcode(code).then(product => {
         if (product) {
             alert(`商品名: ${product.name}\n数量: ${product.quantity}`);
