@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeUI() {
         showSection('home');
         initializeTransactionUI();
-        updateBarcodeScannerAvailability();
+        // updateBarcodeScannerAvailability(); // この関数が定義されていないためコメントアウト
 
         // エラーモーダルの閉じるボタンのイベントリスナー
         const closeErrorModalButton = document.getElementById('closeErrorModal');
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSales();
         displayUnitPrices();
         displayGlobalInventory();
-        displayInventoryCategories();
+        // displayInventoryCategories(); // 必要に応じてこの関数を定義
 
         // UIの初期化
         initializeUI();
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         showSection('product');
         loadCategories(); // 必要な場合
-        loadProducts();
+        // loadProducts(); // サブカテゴリ選択後に商品をロードするため、ここではコメントアウト
     });
 
     linkInventory.addEventListener('click', (e) => {
@@ -191,7 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // その他の初期化関数やイベントリスナーは後続のパートで定義します
+    // その他の初期化関数やイベントリスナー
+    updateProductCategorySelects();
+    updateGlobalSubcategorySelect();
+    updateUnitPriceSubcategorySelect();
 });
 
 // パート2: カテゴリ管理、商品管理、単価管理の実装
@@ -277,6 +280,18 @@ function updateProductCategorySelects() {
                 };
             } else {
                 productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            }
+        });
+    }
+
+    // サブカテゴリ選択後に商品を表示
+    if (productSubcategorySelect) {
+        productSubcategorySelect.addEventListener('change', () => {
+            const subcategoryId = Number(productSubcategorySelect.value);
+            if (subcategoryId) {
+                displayProducts(subcategoryId);
+            } else {
+                console.error('No subcategory selected.');
             }
         });
     }
@@ -921,9 +936,10 @@ function displaySales() {
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
                 editButton.className = 'sale-button';
-                editButton.addEventListener('click', () => {
-                    showEditSaleForm(sale);
-                });
+                // 売上編集機能が未実装の場合、以下の行をコメントアウト
+                // editButton.addEventListener('click', () => {
+                //     showEditSaleForm(sale);
+                // });
                 row.insertCell(8).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
@@ -1063,7 +1079,7 @@ function getUnitPrice(subcategoryId, totalQuantity) {
         const transaction = db.transaction(['unitPrices'], 'readonly');
         const store = transaction.objectStore('unitPrices');
         const index = store.index('subcategoryId');
-        const request = index.getAll(subcategoryId);
+        const request = index.getAll(Number(subcategoryId));
 
         request.onsuccess = (event) => {
             const unitPrices = event.target.result;
@@ -1171,6 +1187,14 @@ function initializeQuagga() {
     });
 }
 
+// 販売場所を選択するダイアログ（仮実装）
+function selectSalesLocation() {
+    return new Promise((resolve) => {
+        const location = prompt('販売場所を入力してください:');
+        resolve(location);
+    });
+}
+
 // バーコードスキャン後の処理
 async function handleBarcodeScanned(barcode) {
     try {
@@ -1274,7 +1298,7 @@ if (manualAddSalesButton) {
         if (productName && quantityStr) {
             const quantity = Number(quantityStr);
             if (!isNaN(quantity) && quantity > 0) {
-                // 商品をバーコードで検索
+                // 商品を名前で検索
                 findProductByName(productName).then(product => {
                     if (product) {
                         currentTransaction.products.push({ product, quantity });
@@ -1330,4 +1354,85 @@ function addProductToTransaction(product) {
     } else {
         alert('数量が入力されませんでした。');
     }
+}
+
+// 売上を削除する関数
+function deleteSale(saleId) {
+    const transaction = db.transaction(['sales'], 'readwrite');
+    const store = transaction.objectStore('sales');
+    store.delete(saleId);
+
+    transaction.oncomplete = () => {
+        console.log(`Sale ID ${saleId} deleted successfully.`);
+        displaySales();
+    };
+
+    transaction.onerror = (event) => {
+        console.error('Error deleting sale:', event.target.error);
+        showErrorModal('売上の削除中にエラーが発生しました。');
+    };
+}
+
+// 全体在庫を表示する関数
+function displayGlobalInventory() {
+    const transaction = db.transaction(['globalInventory', 'categories'], 'readonly');
+    const inventoryStore = transaction.objectStore('globalInventory');
+    const categoryStore = transaction.objectStore('categories');
+
+    const request = inventoryStore.getAll();
+
+    request.onsuccess = (event) => {
+        const inventories = event.target.result;
+        const inventoryList = document.getElementById('global-inventory-list');
+        if (inventoryList) {
+            inventoryList.innerHTML = '';
+
+            inventories.forEach(inventory => {
+                const categoryRequest = categoryStore.get(inventory.subcategoryId);
+                categoryRequest.onsuccess = (catEvent) => {
+                    const category = catEvent.target.result;
+                    if (category) {
+                        const listItem = document.createElement('div');
+                        listItem.className = 'global-inventory-item';
+                        listItem.innerHTML = `
+                            <span>サブカテゴリ: ${category.name} - 在庫量: ${inventory.quantity}</span>
+                        `;
+                        inventoryList.appendChild(listItem);
+                    }
+                };
+                categoryRequest.onerror = (catError) => {
+                    console.error('Error fetching category for global inventory:', catError);
+                    showErrorModal('カテゴリの取得中にエラーが発生しました。');
+                };
+            });
+        } else {
+            console.error("global-inventory-list が見つかりません。");
+            showErrorModal('全体在庫一覧の表示エリアが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching global inventories:', event.target.error);
+        showErrorModal('全体在庫の取得中にエラーが発生しました。');
+    };
+}
+
+// 在庫をロードする関数
+function loadGlobalInventory() {
+    displayGlobalInventory();
+}
+
+// 売上をロードする関数
+function loadSales() {
+    displaySales();
+}
+
+// カテゴリをロードする関数
+function loadCategories() {
+    displayCategories();
+}
+
+// 単価をロードする関数
+function loadUnitPrices() {
+    displayUnitPrices();
 }
