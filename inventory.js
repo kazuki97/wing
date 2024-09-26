@@ -3,6 +3,37 @@ import { db, initializeDatabase } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
 /**
+ * 商品IDから商品の詳細を取得する関数
+ * @param {number} productId - 商品のID
+ * @returns {Promise<Object>} - 商品の詳細オブジェクト
+ */
+function getProductById(productId) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('データベースが初期化されていません。'));
+            return;
+        }
+
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const request = store.get(productId);
+
+        request.onsuccess = (event) => {
+            const product = event.target.result;
+            if (product) {
+                resolve(product);
+            } else {
+                reject(new Error(`Product with ID ${productId} not found.`));
+            }
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+}
+
+/**
  * 単価をデータベースに保存する関数
  * @param {Object} unitPrice - 保存する単価情報
  * @returns {Promise<void>}
@@ -122,7 +153,7 @@ export function deleteUnitPrice(id) {
  */
 export function updateGlobalSubcategorySelect() {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -162,7 +193,7 @@ export function updateGlobalSubcategorySelect() {
  */
 export function updateUnitPriceSubcategorySelect() {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -274,31 +305,30 @@ export function showEditUnitPriceForm(unitPrice) {
 }
 
 /**
- * 商品IDから商品の詳細を取得する関数
- * @param {number} productId - 商品のID
- * @returns {Promise<Object>} - 商品の詳細オブジェクト
+ * 在庫アイテムをデータベースに保存する関数
+ * @param {Object} inventoryItem - 保存する在庫アイテム情報
+ * @returns {Promise<void>}
  */
-function getProductById(productId) {
+export function saveInventoryToDB(inventoryItem) {
     return new Promise((resolve, reject) => {
         if (!db) {
             reject(new Error('データベースが初期化されていません。'));
             return;
         }
 
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const request = store.get(productId);
+        const transaction = db.transaction(['globalInventory'], 'readwrite');
+        const store = transaction.objectStore('globalInventory');
+        const addRequest = store.add(inventoryItem);
 
-        request.onsuccess = (event) => {
-            const product = event.target.result;
-            if (product) {
-                resolve(product);
-            } else {
-                reject(new Error(`Product with ID ${productId} not found.`));
-            }
+        addRequest.onsuccess = () => {
+            console.log('在庫アイテムが正常に保存されました。');
+            displayGlobalInventory(); // 在庫一覧を更新
+            resolve();
         };
 
-        request.onerror = (event) => {
+        addRequest.onerror = (event) => {
+            console.error('在庫アイテムの保存中にエラーが発生しました:', event.target.error);
+            showErrorModal('在庫アイテムの保存中にエラーが発生しました。');
             reject(event.target.error);
         };
     });
@@ -309,7 +339,7 @@ function getProductById(productId) {
  */
 export async function displayGlobalInventory() {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -379,7 +409,7 @@ export async function displayGlobalInventory() {
  */
 export function deleteInventoryItem(id) {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -407,72 +437,77 @@ export function showEditInventoryForm(inventoryItem) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
 
-    editForm.innerHTML = `
-        <div class="modal">
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${inventoryItem.name}" disabled></label><br>
-                <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
-                <button id="save-inventory-button">保存</button>
-                <button id="cancel-inventory-button">キャンセル</button>
-            </div>
-        </div>
-    `;
+    // 商品名を取得
+    getProductById(inventoryItem.productId)
+        .then(product => {
+            editForm.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <h3>在庫を編集</h3>
+                        <label>商品名: <input type="text" id="edit-inventory-name" value="${product.name}" disabled></label><br>
+                        <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
+                        <button id="save-inventory-button">保存</button>
+                        <button id="cancel-inventory-button">キャンセル</button>
+                    </div>
+                </div>
+            `;
 
-    document.body.appendChild(editForm);
+            document.body.appendChild(editForm);
 
-    const modal = editForm.querySelector('.modal');
-    const closeButton = editForm.querySelector('.close-button');
+            const modal = editForm.querySelector('.modal');
+            const closeButton = editForm.querySelector('.close-button');
 
-    // モーダルを表示
-    modal.style.display = 'block';
+            // モーダルを表示
+            modal.style.display = 'block';
 
-    // 閉じるボタンのイベントリスナー
-    closeButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
+            // 閉じるボタンのイベントリスナー
+            closeButton.addEventListener('click', () => {
+                document.body.removeChild(editForm);
+            });
 
-    // 保存ボタンのイベントリスナー
-    const saveButton = editForm.querySelector('#save-inventory-button');
-    saveButton.addEventListener('click', async () => {
-        const editedQuantity = Number(editForm.querySelector('#edit-inventory-quantity').value.trim());
+            // 保存ボタンのイベントリスナー
+            const saveButton = editForm.querySelector('#save-inventory-button');
+            saveButton.addEventListener('click', () => {
+                const editedQuantity = Number(editForm.querySelector('#edit-inventory-quantity').value.trim());
 
-        if (!isNaN(editedQuantity)) {
-            const updatedInventory = {
-                id: inventoryItem.id,
-                quantity: editedQuantity
-            };
+                if (!isNaN(editedQuantity) && editedQuantity >= 0) {
+                    const updatedInventory = {
+                        id: inventoryItem.id,
+                        productId: inventoryItem.productId,
+                        quantity: editedQuantity
+                    };
 
-            try {
-                const transaction = db.transaction(['globalInventory'], 'readwrite');
-                const store = transaction.objectStore('globalInventory');
-                const updateRequest = store.put(updatedInventory);
+                    const transaction = db.transaction(['globalInventory'], 'readwrite');
+                    const store = transaction.objectStore('globalInventory');
 
-                updateRequest.onsuccess = () => {
-                    console.log('在庫が正常に更新されました。');
-                    document.body.removeChild(editForm);
-                    displayGlobalInventory();  // 更新後に再表示
-                };
+                    const updateRequest = store.put(updatedInventory);
 
-                updateRequest.onerror = (event) => {
-                    console.error('在庫の更新中にエラーが発生しました:', event.target.error);
-                    showErrorModal('在庫の更新中にエラーが発生しました。');
-                };
-            } catch (error) {
-                console.error('在庫の更新中に例外が発生しました:', error);
-                showErrorModal('在庫の更新中に予期せぬエラーが発生しました。');
-            }
-        } else {
-            alert('数量を正しく入力してください。');
-        }
-    });
+                    updateRequest.onsuccess = () => {
+                        console.log('在庫が正常に更新されました。');
+                        document.body.removeChild(editForm);
+                        displayGlobalInventory();  // 更新後に再表示
+                    };
 
-    // キャンセルボタンのイベントリスナー
-    const cancelButton = editForm.querySelector('#cancel-inventory-button');
-    cancelButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
+                    updateRequest.onerror = (event) => {
+                        console.error('在庫の更新中にエラーが発生しました:', event.target.error);
+                        showErrorModal('在庫の更新中にエラーが発生しました。');
+                    };
+                } else {
+                    alert('数量を正しく入力してください。');
+                }
+            });
+
+            // キャンセルボタンのイベントリスナー
+            const cancelButton = editForm.querySelector('#cancel-inventory-button');
+            cancelButton.addEventListener('click', () => {
+                document.body.removeChild(editForm);
+            });
+        })
+        .catch(error => {
+            console.error('商品データの取得に失敗しました:', error);
+            showErrorModal('商品データの取得に失敗しました。');
+        });
 }
 
 /**
