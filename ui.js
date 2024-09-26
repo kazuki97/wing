@@ -2,8 +2,6 @@
 import { initializeTransactionUI } from './transactions.js';
 import { updateCategorySelects, displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
-import { displayUnitPrices } from './inventory.js';
-import { displayGlobalInventory } from './inventory.js';
 import { initializeEventListeners } from './eventListeners.js';
 import { showErrorModal } from './errorHandling.js';
 import { initializeInventorySection } from './inventory.js';
@@ -13,15 +11,14 @@ import { updateProductCategorySelects } from './products.js';
  * UIの初期化を行う関数
  */
 export function initializeUI() {
+    // 最初に表示するセクションを設定（例：homeセクション）
     showSection('home');
-    initializeTransactionUI();
 
-    // 初期ロード処理
+    // 各種初期化関数を呼び出す
+    initializeTransactionUI();
     updateCategorySelects();
     displayCategories();
     displaySales();
-    displayUnitPrices();
-    displayGlobalInventory();
 
     // 商品管理セクションの初期化
     updateProductCategorySelects();
@@ -50,3 +47,6 @@ export function showSection(section) {
         showErrorModal(`セクション "${section}" が見つかりません。`);
     }
 }
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('ui.js が正しく読み込まれました。');
