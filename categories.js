@@ -1,11 +1,9 @@
 // categories.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
-import { updateProductCategorySelects } from './products.js';
-import { updateGlobalSubcategorySelect, updateUnitPriceSubcategorySelect } from './inventory.js';
 
 /**
- * カテゴリセレクトを更新する関数
+ * 親カテゴリとサブカテゴリのセレクトボックスを更新する関数
  */
 export function updateCategorySelects() {
     if (!db) {
@@ -16,28 +14,24 @@ export function updateCategorySelects() {
     const transaction = db.transaction(['categories'], 'readonly');
     const store = transaction.objectStore('categories');
     const index = store.index('parentId');
-    const request = index.getAll(null); // 親カテゴリのみ取得
+    const request = index.getAll(null); // parentIdがnullのカテゴリ（親カテゴリ）のみを取得
 
     request.onsuccess = (event) => {
         const parentCategories = event.target.result;
 
-        // デバッグ用ログ
-        console.log('親カテゴリの取得結果:', parentCategories);
-
-        const parentCategorySelects = [
-            document.getElementById('parent-category-select'),
-            document.getElementById('product-parent-category-select'),
-            document.getElementById('subcategory-parent-category-select'),
-            document.getElementById('global-parent-category-select'),
-            document.getElementById('unit-price-parent-category-select')
+        // 親カテゴリセレクトボックスのIDリスト
+        const parentCategorySelectIds = [
+            'parent-category-select',
+            'product-parent-category-select',
+            'inventory-parent-category-select',
+            'unit-price-parent-category-select'
         ];
 
-        parentCategorySelects.forEach(select => {
+        parentCategorySelectIds.forEach(selectId => {
+            const select = document.getElementById(selectId);
             if (select) {
-                // オプションをクリア
-                while (select.firstChild) {
-                    select.removeChild(select.firstChild);
-                }
+                // セレクトボックスの既存のオプションをクリア
+                select.innerHTML = '';
 
                 // デフォルトのオプションを追加
                 const defaultOption = document.createElement('option');
@@ -55,11 +49,7 @@ export function updateCategorySelects() {
             }
         });
 
-        // サブカテゴリセレクトを更新
-        updateProductCategorySelects();
-        updateGlobalSubcategorySelect();
-        updateUnitPriceSubcategorySelect();
-
+        // カテゴリ一覧の更新
         displayCategories();
     };
 
@@ -72,6 +62,8 @@ export function updateCategorySelects() {
 /**
  * カテゴリをデータベースに保存する関数
  * @param {Object} category - 保存するカテゴリ情報
+ * 例: { name: 'カテゴリ名', parentId: null } // 親カテゴリ
+ *      { name: 'サブカテゴリ名', parentId: 親カテゴリのID } // サブカテゴリ
  */
 export function saveCategoryToDB(category) {
     if (!db) {
@@ -103,8 +95,7 @@ export function saveCategoryToDB(category) {
 
     addRequest.onsuccess = () => {
         console.log(`Category "${category.name}" saved successfully with parentId: ${category.parentId}`);
-        updateCategorySelects();
-        displayCategories();
+        updateCategorySelects(); // セレクトボックスを更新
     };
 
     addRequest.onerror = (event) => {
@@ -142,6 +133,7 @@ export function displayCategories() {
                 parentDiv.className = 'parent-category';
                 parentDiv.textContent = parentCategory.name;
 
+                // 編集ボタン
                 const editParentButton = document.createElement('button');
                 editParentButton.textContent = '編集';
                 editParentButton.className = 'category-button';
@@ -150,6 +142,7 @@ export function displayCategories() {
                 });
                 parentDiv.appendChild(editParentButton);
 
+                // 削除ボタン
                 const deleteParentButton = document.createElement('button');
                 deleteParentButton.textContent = '削除';
                 deleteParentButton.className = 'category-button';
@@ -160,13 +153,14 @@ export function displayCategories() {
                 });
                 parentDiv.appendChild(deleteParentButton);
 
-                // サブカテゴリを表示
+                // サブカテゴリの表示
                 const subcategories = categories.filter(cat => cat.parentId === parentCategory.id);
                 subcategories.forEach(subcategory => {
                     const subDiv = document.createElement('div');
                     subDiv.className = 'subcategory';
                     subDiv.textContent = ` - ${subcategory.name}`;
 
+                    // 編集ボタン
                     const editSubButton = document.createElement('button');
                     editSubButton.textContent = '編集';
                     editSubButton.className = 'category-button';
@@ -175,6 +169,7 @@ export function displayCategories() {
                     });
                     subDiv.appendChild(editSubButton);
 
+                    // 削除ボタン
                     const deleteSubButton = document.createElement('button');
                     deleteSubButton.textContent = '削除';
                     deleteSubButton.className = 'category-button';
@@ -203,10 +198,105 @@ export function displayCategories() {
 }
 
 /**
- * カテゴリとそのサブカテゴリを削除する関数
+ * カテゴリ編集フォームを表示する関数
+ * @param {Object} category - 編集するカテゴリオブジェクト
+ */
+function showEditCategoryForm(category) {
+    const editForm = document.createElement('div');
+    editForm.className = 'modal edit-form';
+    editForm.innerHTML = `
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3>カテゴリを編集</h3>
+            <form>
+                <label>カテゴリ名: <input type="text" id="edit-category-name" value="${category.name}" required></label><br>
+                <button type="submit">保存</button>
+                <button type="button" id="cancel-edit-category">キャンセル</button>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(editForm);
+
+    const modal = editForm.querySelector('.modal-content');
+    const closeButton = editForm.querySelector('.close-button');
+    const cancelButton = editForm.querySelector('#cancel-edit-category');
+    const form = editForm.querySelector('form');
+
+    // モーダルを表示
+    editForm.style.display = 'block';
+
+    // 閉じるボタンのイベントリスナー
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(editForm);
+    });
+
+    // キャンセルボタンのイベントリスナー
+    cancelButton.addEventListener('click', () => {
+        document.body.removeChild(editForm);
+    });
+
+    // 保存ボタンのイベントリスナー
+    form.addEventListener('submit', (event) => {
+        event.preventDefault(); // フォームのデフォルト送信を防ぐ
+        const newName = editForm.querySelector('#edit-category-name').value.trim();
+        if (newName === '') {
+            alert('カテゴリ名を入力してください。');
+            return;
+        }
+
+        // カテゴリの更新
+        category.name = newName;
+        const transaction = db.transaction(['categories'], 'readwrite');
+        const store = transaction.objectStore('categories');
+        const updateRequest = store.put(category);
+
+        updateRequest.onsuccess = () => {
+            console.log(`Category "${category.name}" updated successfully.`);
+            document.body.removeChild(editForm);
+            updateCategorySelects(); // セレクトボックスを更新
+            displayCategories(); // カテゴリ一覧を更新
+        };
+
+        updateRequest.onerror = (event) => {
+            console.error('Error updating category:', event.target.error);
+            showErrorModal('カテゴリの更新中にエラーが発生しました。');
+        };
+    });
+}
+
+/**
+ * カテゴリを削除する関数（サブカテゴリなし）
  * @param {number} categoryId - 削除するカテゴリのID
  */
-function deleteCategoryAndSubcategories(categoryId) {
+export function deleteCategory(categoryId) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readwrite');
+    const store = transaction.objectStore('categories');
+    const deleteRequest = store.delete(categoryId);
+
+    deleteRequest.onsuccess = () => {
+        console.log(`Category with ID ${categoryId} deleted successfully.`);
+        updateCategorySelects(); // セレクトボックスを更新
+        displayCategories(); // カテゴリ一覧を更新
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('Error deleting category:', event.target.error);
+        showErrorModal('カテゴリの削除中にエラーが発生しました。');
+    };
+}
+
+/**
+ * カテゴリとそのサブカテゴリを削除する関数
+ * @param {number} categoryId - 親カテゴリのID
+ */
+export function deleteCategoryAndSubcategories(categoryId) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -216,28 +306,24 @@ function deleteCategoryAndSubcategories(categoryId) {
     const transaction = db.transaction(['categories'], 'readwrite');
     const store = transaction.objectStore('categories');
     const index = store.index('parentId');
+    const subcategoriesRequest = index.getAll(categoryId);
 
-    // 親カテゴリを削除
-    store.delete(categoryId);
-
-    // サブカテゴリを取得して削除
-    const subRequest = index.getAll(categoryId);
-    subRequest.onsuccess = (event) => {
+    subcategoriesRequest.onsuccess = (event) => {
         const subcategories = event.target.result;
         subcategories.forEach(subcategory => {
             store.delete(subcategory.id);
         });
     };
 
-    subRequest.onerror = (event) => {
+    subcategoriesRequest.onerror = (event) => {
         console.error('Error fetching subcategories for deletion:', event.target.error);
         showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
     };
 
     transaction.oncomplete = () => {
         console.log(`Category ID ${categoryId} and its subcategories deleted successfully.`);
-        displayCategories();
-        updateCategorySelects();
+        updateCategorySelects(); // セレクトボックスを更新
+        displayCategories(); // カテゴリ一覧を更新
     };
 
     transaction.onerror = (event) => {
@@ -245,98 +331,3 @@ function deleteCategoryAndSubcategories(categoryId) {
         showErrorModal('カテゴリの削除中にエラーが発生しました。');
     };
 }
-
-/**
- * カテゴリを削除する関数
- * @param {number} categoryId - 削除するカテゴリのID
- */
-function deleteCategory(categoryId) {
-    if (!db) {
-        console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['categories'], 'readwrite');
-    const store = transaction.objectStore('categories');
-    store.delete(categoryId);
-
-    transaction.oncomplete = () => {
-        console.log(`Category with ID ${categoryId} deleted successfully.`);
-        displayCategories();
-        updateCategorySelects();
-    };
-
-    transaction.onerror = (event) => {
-        console.error('Error deleting category:', event.target.error);
-        showErrorModal('カテゴリの削除中にエラーが発生しました。');
-    };
-}
-
-/**
- * カテゴリ編集フォームを表示する関数
- * @param {Object} category - 編集するカテゴリオブジェクト
- */
-function showEditCategoryForm(category) {
-    const editForm = document.createElement('div');
-    editForm.className = 'edit-form';
-
-    editForm.innerHTML = `
-        <div class="modal">
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h3>カテゴリを編集</h3>
-                <label>カテゴリ名: <input type="text" id="edit-category-name" value="${category.name}"></label><br>
-                <button id="save-edit-button">保存</button>
-                <button id="cancel-edit-button">キャンセル</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(editForm);
-
-    const modal = editForm.querySelector('.modal');
-    const closeButton = editForm.querySelector('.close-button');
-
-    modal.style.display = 'block';
-
-    closeButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
-
-    const saveButton = editForm.querySelector('#save-edit-button');
-    saveButton.addEventListener('click', () => {
-        const editedName = editForm.querySelector('#edit-category-name').value.trim();
-
-        if (editedName) {
-            category.name = editedName;
-
-            const transaction = db.transaction(['categories'], 'readwrite');
-            const store = transaction.objectStore('categories');
-
-            const updateRequest = store.put(category);
-
-            updateRequest.onsuccess = () => {
-                console.log(`Category "${category.name}" updated successfully.`);
-                document.body.removeChild(editForm);
-                updateCategorySelects();
-                displayCategories();
-            };
-
-            updateRequest.onerror = (event) => {
-                console.error('Error updating category:', event.target.error);
-                showErrorModal('カテゴリの更新中にエラーが発生しました。');
-            };
-        } else {
-            alert('カテゴリ名を入力してください。');
-        }
-    });
-
-    const cancelButton = editForm.querySelector('#cancel-edit-button');
-    cancelButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
-}
-
-// テスト用のログ（正常に読み込まれているか確認）
-console.log('categories.js が正しく読み込まれました。');
