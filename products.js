@@ -13,10 +13,14 @@ export function updateProductCategorySelects() {
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
         const index = store.index('parentId');
-        const request = index.getAll(null);
+        const request = index.getAll(null); // 親カテゴリのみ取得
 
         request.onsuccess = (event) => {
             const parentCategories = event.target.result;
+
+            // デバッグ用ログ
+            console.log('Product Parent Categories:', parentCategories);
+
             // オプションをクリア
             while (parentCategorySelect.firstChild) {
                 parentCategorySelect.removeChild(parentCategorySelect.firstChild);
@@ -44,7 +48,7 @@ export function updateProductCategorySelects() {
     }
 
     if (parentCategorySelect && subcategorySelect) {
-        // 既存のイベントリスナーを削除（必要に応じて）
+        // 既存のイベントリスナーを削除
         parentCategorySelect.removeEventListener('change', handleParentCategoryChange);
 
         // 新しいイベントリスナーを追加
@@ -61,6 +65,10 @@ export function updateProductCategorySelects() {
 
             request.onsuccess = (event) => {
                 const subcategories = event.target.result;
+
+                // デバッグ用ログ
+                console.log(`Subcategories for Parent ID ${parentCategoryId}:`, subcategories);
+
                 // オプションをクリア
                 while (subcategorySelect.firstChild) {
                     subcategorySelect.removeChild(subcategorySelect.firstChild);
