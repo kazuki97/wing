@@ -1,11 +1,11 @@
 // eventListeners.js
 import { showSection } from './ui.js';
-import { saveCategoryToDB, saveSubcategoryToDB, updateCategorySelects, displayCategories } from './categories.js';
+import { saveCategoryToDB, updateCategorySelects, displayCategories } from './categories.js';
 import { saveProductToDB, updateProductCategorySelects, displayProducts } from './products.js';
 import { showErrorModal } from './errorHandling.js';
 import { initializeInventorySection, displayInventory } from './inventory.js';
 import { initializeSalesSection, completeTransaction, addManualSale } from './transactions.js';
-import { initializeGlobalInventorySection, displayGlobalInventory } from './inventory.js';
+import { initializeGlobalInventorySection, displayGlobalInventory } from './globalInventory.js';
 import { initializeUnitPriceSection, saveUnitPriceToDB, displayUnitPrices } from './unitPrice.js';
 import { initializeBarcodeScanner } from './barcodeScanner.js';
 
@@ -115,7 +115,7 @@ function setupCategoryManagement() {
             }
 
             const subcategory = { name: name, parentId: Number(parentId) };
-            saveSubcategoryToDB(subcategory);
+            saveCategoryToDB(subcategory); // サブカテゴリも saveCategoryToDB を使用
             subcategoryNameInput.value = '';
         });
     } else {
