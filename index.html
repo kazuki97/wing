@@ -19,7 +19,8 @@
             <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
             <li><a href="#" id="link-sales">売上管理</a></li>
             <li><a href="#" id="link-unit-price">単価管理</a></li>
-            <!-- <li><a href="#" id="link-global-inventory">全体在庫</a></li> --> <!-- 削除 -->
+            <!-- 必要に応じて以下を有効化 -->
+            <!-- <li><a href="#" id="link-global-inventory">全体在庫</a></li> -->
         </ul>
     </nav>
 
@@ -101,14 +102,14 @@
     <div id="inventory-section" class="section" style="display: none;">
         <h2>在庫管理</h2>
         
-        <!-- サブカテゴリセレクト -->
-        <select id="inventory-subcategory-select">
+        <!-- グローバルサブカテゴリセレクト -->
+        <select id="global-subcategory-select">
             <option value="">サブカテゴリを選択</option>
             <!-- JavaScriptで動的に選択肢を追加 -->
         </select>
 
         <!-- 在庫データを表示するためのテーブル -->
-        <table id="inventory-table" border="1">
+        <table id="global-inventory-table" border="1">
             <thead>
                 <tr>
                     <th>商品名</th>
