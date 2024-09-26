@@ -160,55 +160,5 @@ export function displaySales() {
     };
 }
 
-/**
- * 手動で売上を追加する関数
- */
-export function addManualSale() {
-    // 商品名を入力
-    const productName = prompt('商品名を入力してください:');
-    if (!productName) {
-        alert('商品名が入力されていません。');
-        return;
-    }
-
-    // 数量を入力
-    const quantityStr = prompt('数量を入力してください:');
-    const quantity = Number(quantityStr);
-    if (isNaN(quantity) || quantity <= 0) {
-        alert('有効な数量を入力してください。');
-        return;
-    }
-
-    // 商品をデータベースから取得
-    const transactionDB = db.transaction(['products'], 'readonly');
-    const productsStore = transactionDB.objectStore('products');
-    const index = productsStore.index('name'); // 'name' インデックスが存在することを前提としています
-    const request = index.get(productName);
-
-    request.onsuccess = (event) => {
-        const product = event.target.result;
-        if (!product) {
-            alert('指定された商品が見つかりません。');
-            return;
-        }
-
-        // トランザクションに商品を追加
-        currentTransaction.products.push({
-            product: product,
-            quantity: quantity
-        });
-
-        // UIを更新
-        updateTransactionUI();
-        toggleCompleteButton();
-        alert(`${product.name} を数量 ${quantity} で追加しました。`);
-    };
-
-    request.onerror = (event) => {
-        console.error('商品を取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('商品を取得中にエラーが発生しました。');
-    };
-}
-
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('transactions.js が正しく読み込まれました。');
