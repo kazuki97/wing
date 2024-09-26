@@ -2,8 +2,7 @@
 import { initializeTransactionUI } from './transactions.js';
 import { updateCategorySelects, displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
-import { displayUnitPrices } from './inventory.js';
-import { displayGlobalInventory } from './inventory.js';
+import { displayUnitPrices, displayGlobalInventory } from './inventory.js';
 import { initializeEventListeners } from './eventListeners.js';
 import { showErrorModal } from './errorHandling.js';
 
@@ -34,6 +33,7 @@ export function showSection(section) {
     sections.forEach(sec => {
         sec.style.display = 'none';
     });
+
     const targetSection = document.getElementById(`${section}-section`);
     if (targetSection) {
         targetSection.style.display = 'block';
@@ -42,3 +42,8 @@ export function showSection(section) {
         showErrorModal(`セクション "${section}" が見つかりません。`);
     }
 }
+
+// その他のUI関連関数があればここに追加
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('ui.js が正しく読み込まれました。');
