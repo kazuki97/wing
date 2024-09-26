@@ -230,6 +230,128 @@ export function displayInventoryProducts(subcategoryId) {
 }
 
 /**
+ * 単価一覧を表示する関数
+ */
+export function displayUnitPrices() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        return;
+    }
+
+    const unitPriceSubcategorySelect = document.getElementById('unit-price-subcategory-select');
+    if (!unitPriceSubcategorySelect) {
+        console.error('unit-price-subcategory-select が見つかりません。');
+        return;
+    }
+
+    const subcategoryId = Number(unitPriceSubcategorySelect.value);
+    if (!subcategoryId) {
+        console.error('サブカテゴリが選択されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['products'], 'readonly');
+    const store = transaction.objectStore('products');
+    const index = store.index('subcategoryId');
+    const request = index.getAll(subcategoryId);
+
+    request.onsuccess = (event) => {
+        const products = event.target.result;
+        const unitPriceTableBody = document.getElementById('unit-price-table')?.getElementsByTagName('tbody')[0];
+        if (unitPriceTableBody) {
+            unitPriceTableBody.innerHTML = '';
+
+            products.forEach(product => {
+                const row = unitPriceTableBody.insertRow();
+                row.insertCell(0).textContent = product.name;
+                row.insertCell(1).textContent = product.unitPrice || '未設定';
+
+                const editButton = document.createElement('button');
+                editButton.textContent = '編集';
+                editButton.className = 'product-button';
+                editButton.addEventListener('click', () => {
+                    showEditUnitPriceForm(product);
+                });
+                row.insertCell(2).appendChild(editButton);
+            });
+        } else {
+            console.error("unit-price-tableのtbodyが見つかりません。");
+            showErrorModal('単価一覧の表示エリアが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching products for unit prices:', event.target.error);
+        showErrorModal('単価の取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 単価編集フォームを表示する関数
+ * @param {Object} product - 編集する商品オブジェクト
+ */
+function showEditUnitPriceForm(product) {
+    const editForm = document.createElement('div');
+    editForm.className = 'edit-form';
+
+    editForm.innerHTML = `
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h3>単価を編集</h3>
+                <label>商品名: <span>${product.name}</span></label><br>
+                <label>単価: <input type="number" id="edit-unit-price" value="${product.unitPrice || ''}"></label><br>
+                <button id="save-unit-price-button">保存</button>
+                <button id="cancel-unit-price-button">キャンセル</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(editForm);
+
+    const modal = editForm.querySelector('.modal');
+    const closeButton = editForm.querySelector('.close-button');
+
+    modal.style.display = 'block';
+
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(editForm);
+    });
+
+    const saveButton = editForm.querySelector('#save-unit-price-button');
+    saveButton.addEventListener('click', () => {
+        const editedUnitPrice = Number(editForm.querySelector('#edit-unit-price').value.trim());
+
+        if (!isNaN(editedUnitPrice)) {
+            product.unitPrice = editedUnitPrice;
+
+            const transaction = db.transaction(['products'], 'readwrite');
+            const store = transaction.objectStore('products');
+
+            const updateRequest = store.put(product);
+
+            updateRequest.onsuccess = () => {
+                console.log(`Unit price for "${product.name}" updated successfully.`);
+                document.body.removeChild(editForm);
+                displayUnitPrices();
+            };
+
+            updateRequest.onerror = (event) => {
+                console.error('Error updating unit price:', event.target.error);
+                showErrorModal('単価の更新中にエラーが発生しました。');
+            };
+        } else {
+            alert('正しい単価を入力してください。');
+        }
+    });
+
+    const cancelButton = editForm.querySelector('#cancel-unit-price-button');
+    cancelButton.addEventListener('click', () => {
+        document.body.removeChild(editForm);
+    });
+}
+
+/**
  * 商品編集フォームを表示する関数
  * @param {Object} product - 編集する商品オブジェクト
  * @param {number} subcategoryId - サブカテゴリID
