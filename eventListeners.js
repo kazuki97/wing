@@ -6,7 +6,7 @@ import { processTransaction, currentTransaction, updateTransactionUI, toggleComp
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
-import { saveUnitPriceToDB, displayUnitPrices } from './inventory.js';  // displayUnitPrices をインポート
+import { saveUnitPriceToDB, displayUnitPrices, displayGlobalInventory } from './inventory.js';  // displayGlobalInventory をインポート
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
@@ -79,7 +79,7 @@ export function initializeEventListeners() {
         linkInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('inventory');
-            // displayInventory(); // 実装が必要な場合
+            displayGlobalInventory(); // 在庫データを表示
         });
     }
 
@@ -102,7 +102,7 @@ export function initializeEventListeners() {
         linkGlobalInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('global-inventory');
-            // displayGlobalInventory(); // 実装が必要な場合
+            displayGlobalInventory(); // 全体在庫データを表示
         });
     }
 
