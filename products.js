@@ -2,130 +2,65 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
-/**
- * 商品セレクトボックスを更新する関数
- */
 export function updateProductCategorySelects() {
-    const parentCategorySelect = document.getElementById('product-parent-category-select');
-    const subcategorySelect = document.getElementById('product-subcategory-select');
+    const productParentCategorySelect = document.getElementById('product-parent-category-select');
+    const productSubcategorySelect = document.getElementById('product-subcategory-select');
 
-    if (parentCategorySelect) {
-        const transaction = db.transaction(['categories'], 'readonly');
-        const store = transaction.objectStore('categories');
-        const index = store.index('parentId');
-        const request = index.getAll(null); // 親カテゴリのみ取得
+    if (productParentCategorySelect) {
+        productParentCategorySelect.addEventListener('change', () => {
+            const parentCategoryId = productParentCategorySelect.value;
+            if (parentCategoryId) {
+                const transaction = db.transaction(['categories'], 'readonly');
+                const store = transaction.objectStore('categories');
+                const index = store.index('parentId');
+                const request = index.getAll(Number(parentCategoryId));
 
-        request.onsuccess = (event) => {
-            const parentCategories = event.target.result;
+                request.onsuccess = (event) => {
+                    const subcategories = event.target.result;
+                    if (productSubcategorySelect) {
+                        productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-            // デバッグ用ログ
-            console.log('Product Parent Categories:', parentCategories);
+                        subcategories.forEach(subcategory => {
+                            const option = document.createElement('option');
+                            option.value = subcategory.id;
+                            option.text = subcategory.name;
+                            productSubcategorySelect.appendChild(option);
+                        });
+                    }
+                };
 
-            // オプションをクリア
-            while (parentCategorySelect.firstChild) {
-                parentCategorySelect.removeChild(parentCategorySelect.firstChild);
-            }
-
-            // デフォルトのオプションを追加
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.text = '親カテゴリを選択';
-            parentCategorySelect.appendChild(defaultOption);
-
-            // 親カテゴリのオプションを追加
-            parentCategories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.text = category.name;
-                parentCategorySelect.appendChild(option);
-            });
-        };
-
-        request.onerror = (event) => {
-            console.error('親カテゴリの取得中にエラーが発生しました:', event.target.error);
-            showErrorModal('親カテゴリの取得中にエラーが発生しました。');
-        };
-    }
-
-    if (parentCategorySelect && subcategorySelect) {
-        // 既存のイベントリスナーを削除
-        parentCategorySelect.removeEventListener('change', handleParentCategoryChange);
-
-        // 新しいイベントリスナーを追加
-        parentCategorySelect.addEventListener('change', handleParentCategoryChange);
-    }
-
-    function handleParentCategoryChange() {
-        const parentCategoryId = Number(parentCategorySelect.value);
-        if (parentCategoryId) {
-            const transaction = db.transaction(['categories'], 'readonly');
-            const store = transaction.objectStore('categories');
-            const index = store.index('parentId');
-            const request = index.getAll(parentCategoryId);
-
-            request.onsuccess = (event) => {
-                const subcategories = event.target.result;
-
-                // デバッグ用ログ
-                console.log(`Subcategories for Parent ID ${parentCategoryId}:`, subcategories);
-
-                // オプションをクリア
-                while (subcategorySelect.firstChild) {
-                    subcategorySelect.removeChild(subcategorySelect.firstChild);
+                request.onerror = (event) => {
+                    console.error('Error fetching subcategories for products:', event.target.error);
+                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+                };
+            } else {
+                if (productSubcategorySelect) {
+                    productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
                 }
-
-                // デフォルトのオプションを追加
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.text = 'サブカテゴリを選択';
-                subcategorySelect.appendChild(defaultOption);
-
-                // サブカテゴリのオプションを追加
-                subcategories.forEach(subcategory => {
-                    const option = document.createElement('option');
-                    option.value = subcategory.id;
-                    option.text = subcategory.name;
-                    subcategorySelect.appendChild(option);
-                });
-            };
-
-            request.onerror = (event) => {
-                console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-                showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-            };
-        } else {
-            // オプションをクリア
-            while (subcategorySelect.firstChild) {
-                subcategorySelect.removeChild(subcategorySelect.firstChild);
             }
+        });
+    }
 
-            // デフォルトのオプションを追加
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.text = 'サブカテゴリを選択';
-            subcategorySelect.appendChild(defaultOption);
-        }
+    if (productSubcategorySelect) {
+        productSubcategorySelect.addEventListener('change', () => {
+            const subcategoryId = Number(productSubcategorySelect.value);
+            if (subcategoryId) {
+                displayProducts(subcategoryId);
+            } else {
+                console.error('No subcategory selected.');
+            }
+        });
     }
 }
 
-/**
- * 商品をデータベースに保存する関数
- * @param {Object} product - 保存する商品情報
- */
 export function saveProductToDB(product) {
-    if (!db) {
-        console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
-
     const transaction = db.transaction(['products'], 'readwrite');
     const store = transaction.objectStore('products');
-    const addRequest = store.add(product);
+    const addRequest = store.put(product);
 
     addRequest.onsuccess = () => {
         console.log(`Product "${product.name}" saved successfully.`);
-        displayProducts();
+        displayProducts(product.subcategoryId);
     };
 
     addRequest.onerror = (event) => {
@@ -134,10 +69,7 @@ export function saveProductToDB(product) {
     };
 }
 
-/**
- * 商品一覧を表示する関数
- */
-export function displayProducts() {
+export function displayProducts(subcategoryId) {
     if (!db) {
         console.error('Database is not initialized.');
         return;
@@ -145,41 +77,56 @@ export function displayProducts() {
 
     const transaction = db.transaction(['products'], 'readonly');
     const store = transaction.objectStore('products');
-    const request = store.getAll();
+    const index = store.index('subcategoryId');
+    const request = index.getAll(subcategoryId);
 
     request.onsuccess = (event) => {
         const products = event.target.result;
-        const productList = document.getElementById('product-list');
-        if (productList) {
-            productList.innerHTML = '';
+        const productTableBody = document.getElementById('product-table')?.getElementsByTagName('tbody')[0];
+        if (productTableBody) {
+            productTableBody.innerHTML = '';
 
             products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'product-item';
-                productDiv.textContent = product.name;
+                const row = productTableBody.insertRow();
+                row.insertCell(0).textContent = product.name;
+                row.insertCell(1).textContent = product.quantity;
+                row.insertCell(2).textContent = product.price;
+                row.insertCell(3).textContent = product.cost;
+                row.insertCell(4).textContent = product.barcode;
+                row.insertCell(5).textContent = product.unitAmount;
 
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
-                    showEditProductForm(product);
+                    showEditProductForm(product, subcategoryId);
                 });
-                productDiv.appendChild(editButton);
+                row.insertCell(6).appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
                 deleteButton.className = 'product-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この商品を削除しますか？')) {
-                        deleteProduct(product.id);
+                        const deleteTransaction = db.transaction(['products'], 'readwrite');
+                        const deleteStore = deleteTransaction.objectStore('products');
+                        deleteStore.delete(product.id);
+
+                        deleteTransaction.oncomplete = () => {
+                            console.log(`Product "${product.name}" deleted successfully.`);
+                            displayProducts(subcategoryId);
+                        };
+
+                        deleteTransaction.onerror = (event) => {
+                            console.error('Error deleting product:', event.target.error);
+                            showErrorModal('商品の削除中にエラーが発生しました。');
+                        };
                     }
                 });
-                productDiv.appendChild(deleteButton);
-
-                productList.appendChild(productDiv);
+                row.insertCell(7).appendChild(deleteButton);
             });
         } else {
-            console.error("product-list が見つかりません。");
+            console.error("product-tableのtbodyが見つかりません。");
             showErrorModal('商品一覧の表示エリアが見つかりません。');
         }
     };
@@ -190,37 +137,7 @@ export function displayProducts() {
     };
 }
 
-/**
- * 商品を削除する関数
- * @param {number} productId - 削除する商品のID
- */
-function deleteProduct(productId) {
-    if (!db) {
-        console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['products'], 'readwrite');
-    const store = transaction.objectStore('products');
-    store.delete(productId);
-
-    transaction.oncomplete = () => {
-        console.log(`Product with ID ${productId} deleted successfully.`);
-        displayProducts();
-    };
-
-    transaction.onerror = (event) => {
-        console.error('Error deleting product:', event.target.error);
-        showErrorModal('商品の削除中にエラーが発生しました。');
-    };
-}
-
-/**
- * 商品編集フォームを表示する関数
- * @param {Object} product - 編集する商品オブジェクト
- */
-function showEditProductForm(product) {
+export function showEditProductForm(product, subcategoryId) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
 
@@ -281,7 +198,7 @@ function showEditProductForm(product) {
             updateRequest.onsuccess = () => {
                 console.log(`Product "${updatedProduct.name}" updated successfully.`);
                 document.body.removeChild(editForm);
-                displayProducts();
+                displayProducts(subcategoryId);
             };
 
             updateRequest.onerror = (event) => {
@@ -298,6 +215,3 @@ function showEditProductForm(product) {
         document.body.removeChild(editForm);
     });
 }
-
-// テスト用のログ（正常に読み込まれているか確認）
-console.log('products.js が正しく読み込まれました。');
