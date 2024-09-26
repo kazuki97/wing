@@ -1,16 +1,16 @@
+// eventListeners.js
 import { showSection } from './ui.js';
 import { updateCategorySelects, saveCategoryToDB, displayCategories } from './categories.js';
 import { saveProductToDB, displayProducts } from './products.js';
-import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton } from './transactions.js';
+import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton, displaySales } from './transactions.js';
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
-import { displayInventory } from './inventory.js';  // 在庫表示関数のインポート
-import { displayGlobalInventory } from './inventory.js';  // グローバル在庫表示関数のインポート
-import { displayUnitPrices } from './inventory.js';  // 単価表示関数のインポート
+import { saveUnitPriceToDB, displayUnitPrices } from './inventory.js';  // displayUnitPrices をインポート
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
+console.log('saveUnitPriceToDB がインポートされました。', saveUnitPriceToDB);
 
 /**
  * イベントリスナーを初期化する関数
@@ -79,7 +79,7 @@ export function initializeEventListeners() {
         linkInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('inventory');
-            displayInventory();  // 在庫表示関数を呼び出す
+            // displayInventory(); // 実装が必要な場合
         });
     }
 
@@ -94,7 +94,7 @@ export function initializeEventListeners() {
         linkSales.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('sales');
-            // displaySales(); // 実装されている場合
+            displaySales(); // 売上を表示
         });
     }
 
@@ -102,7 +102,7 @@ export function initializeEventListeners() {
         linkGlobalInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('global-inventory');
-            displayGlobalInventory(); // グローバル在庫の表示を呼び出す
+            // displayGlobalInventory(); // 実装が必要な場合
         });
     }
 
@@ -110,7 +110,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            displayUnitPrices(); // 単価表示の呼び出し
+            displayUnitPrices(); // 単価を表示
         });
     }
 
@@ -235,11 +235,12 @@ export function initializeEventListeners() {
     // 単価の追加ボタンのイベントリスナー
     if (addUnitPriceButton) {
         addUnitPriceButton.addEventListener('click', () => {
+            const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
             const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
             const tier = Number(document.getElementById('unit-price-tier').value.trim());
             const price = Number(document.getElementById('unit-price-price').value.trim());
 
-            if (!isNaN(subcategoryId) && !isNaN(tier) && !isNaN(price)) {
+            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(tier) && !isNaN(price)) {
                 const unitPrice = {
                     subcategoryId,
                     tier,
