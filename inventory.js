@@ -237,5 +237,8 @@ export function showEditInventoryForm(inventoryItem) {
     });
 }
 
+// 必要な関数をエクスポート
+export { updateGlobalSubcategorySelect };
+
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('inventory.js が正しく読み込まれました。');
