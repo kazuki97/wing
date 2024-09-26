@@ -12,12 +12,17 @@ export function updateCategorySelects() {
         console.error('Database is not initialized.');
         return;
     }
+
     const transaction = db.transaction(['categories'], 'readonly');
     const store = transaction.objectStore('categories');
-    const request = store.getAll();
+    const index = store.index('parentId');
+    const request = index.getAll(null); // 親カテゴリのみ取得
 
     request.onsuccess = (event) => {
-        const categories = event.target.result;
+        const parentCategories = event.target.result;
+
+        // デバッグ用ログ
+        console.log('親カテゴリの取得結果:', parentCategories);
 
         const parentCategorySelects = [
             document.getElementById('parent-category-select'),
@@ -41,7 +46,7 @@ export function updateCategorySelects() {
                 select.appendChild(defaultOption);
 
                 // 親カテゴリのオプションを追加
-                categories.filter(cat => cat.parentId === null).forEach(category => {
+                parentCategories.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.text = category.name;
@@ -59,8 +64,8 @@ export function updateCategorySelects() {
     };
 
     request.onerror = (event) => {
-        console.error('Error fetching categories:', event.target.error);
-        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+        console.error('Error fetching parent categories:', event.target.error);
+        showErrorModal('親カテゴリの取得中にエラーが発生しました。');
     };
 }
 
@@ -73,6 +78,17 @@ export function saveCategoryToDB(category) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
         return;
+    }
+
+    // parentIdが未定義の場合はnullに設定
+    if (typeof category.parentId === 'undefined') {
+        category.parentId = null;
+    } else {
+        // parentIdを数値に変換
+        category.parentId = Number(category.parentId);
+        if (isNaN(category.parentId)) {
+            category.parentId = null;
+        }
     }
 
     const transaction = db.transaction(['categories'], 'readwrite');
@@ -106,11 +122,16 @@ export function displayCategories() {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
+
+        // デバッグ用ログ
+        console.log('全カテゴリの取得結果:', categories);
+
         const categoryList = document.getElementById('category-list');
         if (categoryList) {
             categoryList.innerHTML = '';
 
-            categories.filter(cat => cat.parentId === null).forEach(parentCategory => {
+            const parentCategories = categories.filter(cat => cat.parentId === null);
+            parentCategories.forEach(parentCategory => {
                 const parentDiv = document.createElement('div');
                 parentDiv.className = 'parent-category';
                 parentDiv.textContent = parentCategory.name;
