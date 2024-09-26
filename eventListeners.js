@@ -1,16 +1,15 @@
 // eventListeners.js
 import { showSection } from './ui.js';
 import { updateCategorySelects, saveCategoryToDB, displayCategories } from './categories.js';
-import { saveProductToDB, displayProducts } from './products.js';
+import { saveProductToDB, updateProductCategorySelects, displayProducts } from './products.js';
 import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton, displaySales } from './transactions.js';
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
-import { saveUnitPriceToDB, displayUnitPrices } from './inventory.js';  // displayUnitPrices をインポート
+import { saveUnitPriceToDB, displayUnitPrices } from './inventory.js';
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
-console.log('saveUnitPriceToDB がインポートされました。', saveUnitPriceToDB);
 
 /**
  * イベントリスナーを初期化する関数
@@ -30,10 +29,10 @@ export function initializeEventListeners() {
     const completeTransactionButton = document.getElementById('complete-transaction');
     const startScanButton = document.getElementById('start-scan');
     const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    const addParentCategoryButton = document.getElementById('add-parent-category');
-    const addSubcategoryButton = document.getElementById('add-subcategory');
-    const addProductButton = document.getElementById('add-product');
-    const addUnitPriceButton = document.getElementById('add-unit-price');
+    const addParentCategoryButton = document.getElementById('add-parent-category-button');
+    const addSubcategoryButton = document.getElementById('add-subcategory-button');
+    const addProductButton = document.getElementById('add-product-button');
+    const addUnitPriceButton = document.getElementById('add-unit-price-button');
 
     // エラーモーダルの閉じるボタン
     const closeErrorModalButton = document.getElementById('closeErrorModal');
@@ -71,7 +70,7 @@ export function initializeEventListeners() {
         linkProduct.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('product');
-            updateCategorySelects();
+            updateProductCategorySelects();
         });
     }
 
@@ -110,7 +109,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            displayUnitPrices(); // 単価を表示
+            // displayUnitPrices(); // 初期化時には呼び出さない
         });
     }
 
@@ -162,12 +161,13 @@ export function initializeEventListeners() {
         });
     }
 
-    // カテゴリ追加ボタンのイベントリスナー
+    // 親カテゴリ追加ボタンのイベントリスナー
     if (addParentCategoryButton) {
         addParentCategoryButton.addEventListener('click', () => {
             const categoryName = document.getElementById('parent-category-name').value.trim();
             if (categoryName) {
                 const category = {
+                    id: Date.now(),
                     name: categoryName,
                     parentId: null
                 };
@@ -179,17 +179,20 @@ export function initializeEventListeners() {
         });
     }
 
+    // サブカテゴリ追加ボタンのイベントリスナー
     if (addSubcategoryButton) {
         addSubcategoryButton.addEventListener('click', () => {
             const subcategoryName = document.getElementById('subcategory-name').value.trim();
-            const parentCategoryId = Number(document.getElementById('parent-category-select').value);
+            const parentCategoryId = document.getElementById('subcategory-parent-category-select').value;
             if (subcategoryName && parentCategoryId) {
                 const subcategory = {
+                    id: Date.now(),
                     name: subcategoryName,
-                    parentId: parentCategoryId
+                    parentId: Number(parentCategoryId)
                 };
                 saveCategoryToDB(subcategory);
                 document.getElementById('subcategory-name').value = '';
+                document.getElementById('subcategory-parent-category-select').value = '';
             } else {
                 alert('サブカテゴリ名と親カテゴリを入力してください。');
             }
@@ -205,17 +208,18 @@ export function initializeEventListeners() {
             const cost = Number(document.getElementById('product-cost').value.trim());
             const barcode = document.getElementById('product-barcode').value.trim();
             const unitAmount = Number(document.getElementById('product-unit-amount').value.trim());
-            const subcategoryId = Number(document.getElementById('product-subcategory-select').value);
+            const subcategoryId = document.getElementById('product-subcategory-select').value;
 
             if (name && !isNaN(quantity) && !isNaN(price) && !isNaN(cost) && barcode && !isNaN(unitAmount) && subcategoryId) {
                 const product = {
+                    id: Date.now(),
                     name,
                     quantity,
                     price,
                     cost,
                     barcode,
                     unitAmount,
-                    subcategoryId
+                    subcategoryId: Number(subcategoryId)
                 };
 
                 saveProductToDB(product);
@@ -226,6 +230,8 @@ export function initializeEventListeners() {
                 document.getElementById('product-cost').value = '';
                 document.getElementById('product-barcode').value = '';
                 document.getElementById('product-unit-amount').value = '';
+                document.getElementById('product-parent-category-select').value = '';
+                document.getElementById('product-subcategory-select').innerHTML = '<option value="">サブカテゴリを選択</option>';
             } else {
                 alert('すべての項目を正しく入力してください。');
             }
@@ -235,32 +241,26 @@ export function initializeEventListeners() {
     // 単価の追加ボタンのイベントリスナー
     if (addUnitPriceButton) {
         addUnitPriceButton.addEventListener('click', () => {
-            const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
-            const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
-            const tier = Number(document.getElementById('unit-price-tier').value.trim());
-            const price = Number(document.getElementById('unit-price-price').value.trim());
+            const subcategoryId = document.getElementById('unit-price-subcategory-select').value;
+            const unitPriceValue = Number(document.getElementById('unit-price-value').value.trim());
 
-            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(tier) && !isNaN(price)) {
-                const unitPrice = {
-                    subcategoryId,
-                    tier,
-                    price
+            if (subcategoryId && !isNaN(unitPriceValue)) {
+                const product = {
+                    subcategoryId: Number(subcategoryId),
+                    unitPrice: unitPriceValue
                 };
 
-                saveUnitPriceToDB(unitPrice)
-                    .catch(error => {
-                        console.error('単価の保存に失敗しました:', error);
-                        showErrorModal('単価の保存に失敗しました。');
-                    });
+                saveUnitPriceToDB(product);
 
-                document.getElementById('unit-price-tier').value = '';
-                document.getElementById('unit-price-price').value = '';
+                document.getElementById('unit-price-value').value = '';
             } else {
-                alert('すべての項目を正しく入力してください。');
+                alert('サブカテゴリと単価を正しく入力してください。');
             }
         });
     }
 
+    // その他のイベントリスナーをここに追加...
+
     // テスト用のログ（正常に読み込まれているか確認）
-    console.log('eventListeners.js が正しく読み込まれました。');
+    console.log('eventListeners.js のイベントリスナーが初期化されました。');
 }
