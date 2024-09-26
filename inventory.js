@@ -99,79 +99,71 @@ export function displayUnitPrices() {
 }
 
 /**
- * グローバルサブカテゴリセレクトを更新する関数
+ * 全体在庫を表示する関数
  */
-export function updateGlobalSubcategorySelect() {
+export function displayGlobalInventory() {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
 
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
+    const transaction = db.transaction(['globalInventory'], 'readonly');
+    const store = transaction.objectStore('globalInventory');
     const request = store.getAll();
 
     request.onsuccess = (event) => {
-        const categories = event.target.result;
-        const subcategorySelect = document.getElementById('global-subcategory-select');
-        if (subcategorySelect) {
-            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-            categories.forEach(category => {
-                if (category.parentId !== null) { // サブカテゴリのみを対象
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    subcategorySelect.appendChild(option);
-                }
+        const globalInventory = event.target.result;
+        const globalInventoryTableBody = document.getElementById('global-inventory-table')?.getElementsByTagName('tbody')[0];
+        if (globalInventoryTableBody) {
+            globalInventoryTableBody.innerHTML = '';
+
+            globalInventory.forEach(item => {
+                const row = globalInventoryTableBody.insertRow();
+                row.insertCell(0).textContent = item.name;
+                row.insertCell(1).textContent = item.quantity;
+
+                // 編集ボタンの作成
+                const editButton = document.createElement('button');
+                editButton.textContent = '編集';
+                editButton.className = 'inventory-edit-button';
+                editButton.addEventListener('click', () => {
+                    showEditInventoryForm(item);
+                });
+                row.insertCell(2).appendChild(editButton);
+
+                // 削除ボタンの作成
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '削除';
+                deleteButton.className = 'inventory-delete-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm(`${item.name} を削除しますか？`)) {
+                        const deleteTransaction = db.transaction(['globalInventory'], 'readwrite');
+                        const deleteStore = deleteTransaction.objectStore('globalInventory');
+                        deleteStore.delete(item.id);
+
+                        deleteTransaction.oncomplete = () => {
+                            console.log(`${item.name} が削除されました。`);
+                            displayGlobalInventory();  // 再表示
+                        };
+
+                        deleteTransaction.onerror = (event) => {
+                            console.error('在庫削除中にエラーが発生しました:', event.target.error);
+                            showErrorModal('在庫削除中にエラーが発生しました。');
+                        };
+                    }
+                });
+                row.insertCell(3).appendChild(deleteButton);
             });
         } else {
-            console.error('global-subcategory-select が見つかりません。');
-            showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
+            console.error("global-inventory-tableのtbodyが見つかりません。");
+            showErrorModal('全体在庫の表示エリアが見つかりません。');
         }
     };
 
     request.onerror = (event) => {
-        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-    };
-}
-
-/**
- * 単価サブカテゴリセレクトを更新する関数
- */
-export function updateUnitPriceSubcategorySelect() {
-    if (!db) {
-        console.error('Database is not initialized.');
-        return;
-    }
-
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const categories = event.target.result;
-        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
-        if (subcategorySelect) {
-            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-            categories.forEach(category => {
-                if (category.parentId !== null) { // サブカテゴリのみを対象
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    subcategorySelect.appendChild(option);
-                }
-            });
-        } else {
-            console.error('unit-price-subcategory-select が見つかりません。');
-            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+        console.error('全体在庫の取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('全体在庫の取得中にエラーが発生しました。');
     };
 }
 
