@@ -99,6 +99,83 @@ export function displayUnitPrices() {
 }
 
 /**
+ * グローバルサブカテゴリセレクトを更新する関数
+ */
+export function updateGlobalSubcategorySelect() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('global-subcategory-select');
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId !== null) { // サブカテゴリのみを対象
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    subcategorySelect.appendChild(option);
+                }
+            });
+        } else {
+            console.error('global-subcategory-select が見つかりません。');
+            showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 単価サブカテゴリセレクトを更新する関数
+ */
+export function updateUnitPriceSubcategorySelect() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId !== null) { // サブカテゴリのみを対象
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    subcategorySelect.appendChild(option);
+                }
+            });
+        } else {
+            console.error('unit-price-subcategory-select が見つかりません。');
+            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
  * 在庫を表示する関数
  */
 export function displayInventory() {
@@ -235,44 +312,6 @@ export function showEditInventoryForm(inventoryItem) {
     cancelButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
     });
-}
-
-/**
- * 単価サブカテゴリセレクトを更新する関数
- */
-export function updateUnitPriceSubcategorySelect() {
-    if (!db) {
-        console.error('Database is not initialized.');
-        return;
-    }
-
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const categories = event.target.result;
-        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
-        if (subcategorySelect) {
-            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-            categories.forEach(category => {
-                if (category.parentId !== null) { // サブカテゴリのみを対象
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    subcategorySelect.appendChild(option);
-                }
-            });
-        } else {
-            console.error('unit-price-subcategory-select が見つかりません。');
-            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-    };
 }
 
 // テスト用のログ（正常に読み込まれているか確認）
