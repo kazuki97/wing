@@ -82,6 +82,82 @@ export function updateInventoryCategorySelects() {
 }
 
 /**
+ * グローバルサブカテゴリセレクトボックスを更新する関数
+ */
+export function updateGlobalSubcategorySelect() {
+    const globalParentCategorySelect = document.getElementById('global-parent-category-select');
+    const globalSubcategorySelect = document.getElementById('global-subcategory-select');
+
+    if (globalParentCategorySelect && globalSubcategorySelect) {
+        globalParentCategorySelect.addEventListener('change', () => {
+            const parentCategoryId = Number(globalParentCategorySelect.value);
+            if (parentCategoryId) {
+                const transaction = db.transaction(['categories'], 'readonly');
+                const store = transaction.objectStore('categories');
+                const index = store.index('parentId');
+                const request = index.getAll(parentCategoryId);
+
+                request.onsuccess = (event) => {
+                    const subcategories = event.target.result;
+                    globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    subcategories.forEach(subcategory => {
+                        const option = document.createElement('option');
+                        option.value = subcategory.id;
+                        option.text = subcategory.name;
+                        globalSubcategorySelect.appendChild(option);
+                    });
+                };
+
+                request.onerror = (event) => {
+                    console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+                };
+            } else {
+                globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            }
+        });
+    }
+}
+
+/**
+ * 単価サブカテゴリセレクトボックスを更新する関数
+ */
+export function updateUnitPriceSubcategorySelect() {
+    const unitPriceParentCategorySelect = document.getElementById('unit-price-parent-category-select');
+    const unitPriceSubcategorySelect = document.getElementById('unit-price-subcategory-select');
+
+    if (unitPriceParentCategorySelect && unitPriceSubcategorySelect) {
+        unitPriceParentCategorySelect.addEventListener('change', () => {
+            const parentCategoryId = Number(unitPriceParentCategorySelect.value);
+            if (parentCategoryId) {
+                const transaction = db.transaction(['categories'], 'readonly');
+                const store = transaction.objectStore('categories');
+                const index = store.index('parentId');
+                const request = index.getAll(parentCategoryId);
+
+                request.onsuccess = (event) => {
+                    const subcategories = event.target.result;
+                    unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    subcategories.forEach(subcategory => {
+                        const option = document.createElement('option');
+                        option.value = subcategory.id;
+                        option.text = subcategory.name;
+                        unitPriceSubcategorySelect.appendChild(option);
+                    });
+                };
+
+                request.onerror = (event) => {
+                    console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+                };
+            } else {
+                unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            }
+        });
+    }
+}
+
+/**
  * 在庫商品の表示を行う関数
  * @param {number} subcategoryId - 表示する商品のサブカテゴリID
  */
@@ -242,6 +318,8 @@ export function showEditProductForm(product, subcategoryId) {
  */
 export function initializeInventorySection() {
     updateInventoryCategorySelects();
+    updateGlobalSubcategorySelect();
+    updateUnitPriceSubcategorySelect();
 }
 
 // テスト用のログ（正常に読み込まれているか確認）
