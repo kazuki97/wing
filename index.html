@@ -19,7 +19,7 @@
             <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
             <li><a href="#" id="link-sales">売上管理</a></li>
             <li><a href="#" id="link-unit-price">単価管理</a></li>
-            <li><a href="#" id="link-global-inventory">全体在庫</a></li> <!-- 追加 -->
+            <!-- <li><a href="#" id="link-global-inventory">全体在庫</a></li> --> <!-- 削除 -->
         </ul>
     </nav>
 
@@ -101,47 +101,28 @@
     <div id="inventory-section" class="section" style="display: none;">
         <h2>在庫管理</h2>
         
-        <!-- グローバルサブカテゴリセレクト -->
-        <select id="global-subcategory-select">
+        <!-- サブカテゴリセレクト -->
+        <select id="inventory-subcategory-select">
             <option value="">サブカテゴリを選択</option>
             <!-- JavaScriptで動的に選択肢を追加 -->
         </select>
 
         <!-- 在庫データを表示するためのテーブル -->
-        <table id="global-inventory-table" border="1">
+        <table id="inventory-table" border="1">
             <thead>
                 <tr>
                     <th>商品名</th>
                     <th>数量</th>
+                    <th>価格</th>
+                    <th>原価</th>
+                    <th>バーコード</th>
+                    <th>サイズ（量）</th>
                     <th>編集</th>
                     <th>削除</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- JavaScriptで在庫データを表示 -->
-            </tbody>
-        </table>
-    </div>
-
-    <!-- 全体在庫セクション -->
-    <div id="global-inventory-section" class="section" style="display: none;">
-        <h2>全体在庫</h2>
-        <!-- グローバルサブカテゴリセレクト -->
-        <select id="global-subcategory-select">
-            <option value="">サブカテゴリを選択</option>
-            <!-- JavaScriptで動的に選択肢を追加 -->
-        </select>
-
-        <!-- 全体在庫の表示 -->
-        <table id="global-inventory-table" border="1">
-            <thead>
-                <tr>
-                    <th>サブカテゴリID</th>
-                    <th>数量</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- JavaScriptで全体在庫を表示 -->
             </tbody>
         </table>
     </div>
