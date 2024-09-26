@@ -17,7 +17,18 @@ export function updateProductCategorySelects() {
 
         request.onsuccess = (event) => {
             const parentCategories = event.target.result;
-            parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
+            // オプションをクリア
+            while (parentCategorySelect.firstChild) {
+                parentCategorySelect.removeChild(parentCategorySelect.firstChild);
+            }
+
+            // デフォルトのオプションを追加
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.text = '親カテゴリを選択';
+            parentCategorySelect.appendChild(defaultOption);
+
+            // 親カテゴリのオプションを追加
             parentCategories.forEach(category => {
                 const option = document.createElement('option');
                 option.value = category.id;
@@ -33,33 +44,59 @@ export function updateProductCategorySelects() {
     }
 
     if (parentCategorySelect && subcategorySelect) {
-        parentCategorySelect.addEventListener('change', () => {
-            const parentCategoryId = Number(parentCategorySelect.value);
-            if (parentCategoryId) {
-                const transaction = db.transaction(['categories'], 'readonly');
-                const store = transaction.objectStore('categories');
-                const index = store.index('parentId');
-                const request = index.getAll(parentCategoryId);
+        // 既存のイベントリスナーを削除（必要に応じて）
+        parentCategorySelect.removeEventListener('change', handleParentCategoryChange);
 
-                request.onsuccess = (event) => {
-                    const subcategories = event.target.result;
-                    subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-                    subcategories.forEach(subcategory => {
-                        const option = document.createElement('option');
-                        option.value = subcategory.id;
-                        option.text = subcategory.name;
-                        subcategorySelect.appendChild(option);
-                    });
-                };
+        // 新しいイベントリスナーを追加
+        parentCategorySelect.addEventListener('change', handleParentCategoryChange);
+    }
 
-                request.onerror = (event) => {
-                    console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-                };
-            } else {
-                subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+    function handleParentCategoryChange() {
+        const parentCategoryId = Number(parentCategorySelect.value);
+        if (parentCategoryId) {
+            const transaction = db.transaction(['categories'], 'readonly');
+            const store = transaction.objectStore('categories');
+            const index = store.index('parentId');
+            const request = index.getAll(parentCategoryId);
+
+            request.onsuccess = (event) => {
+                const subcategories = event.target.result;
+                // オプションをクリア
+                while (subcategorySelect.firstChild) {
+                    subcategorySelect.removeChild(subcategorySelect.firstChild);
+                }
+
+                // デフォルトのオプションを追加
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = 'サブカテゴリを選択';
+                subcategorySelect.appendChild(defaultOption);
+
+                // サブカテゴリのオプションを追加
+                subcategories.forEach(subcategory => {
+                    const option = document.createElement('option');
+                    option.value = subcategory.id;
+                    option.text = subcategory.name;
+                    subcategorySelect.appendChild(option);
+                });
+            };
+
+            request.onerror = (event) => {
+                console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+                showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+            };
+        } else {
+            // オプションをクリア
+            while (subcategorySelect.firstChild) {
+                subcategorySelect.removeChild(subcategorySelect.firstChild);
             }
-        });
+
+            // デフォルトのオプションを追加
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.text = 'サブカテゴリを選択';
+            subcategorySelect.appendChild(defaultOption);
+        }
     }
 }
 
