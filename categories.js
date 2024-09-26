@@ -29,8 +29,18 @@ export function updateCategorySelects() {
 
         parentCategorySelects.forEach(select => {
             if (select) {
-                select.innerHTML = '<option value="">親カテゴリを選択</option>';
+                // オプションをクリア
+                while (select.firstChild) {
+                    select.removeChild(select.firstChild);
+                }
 
+                // デフォルトのオプションを追加
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = '親カテゴリを選択';
+                select.appendChild(defaultOption);
+
+                // 親カテゴリのオプションを追加
                 categories.filter(cat => cat.parentId === null).forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
