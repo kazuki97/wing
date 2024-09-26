@@ -1,11 +1,12 @@
 // ui.js
 import { initializeTransactionUI } from './transactions.js';
-import { updateCategorySelects, displayCategories } from './categories.js';
+import { displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
 import { initializeEventListeners } from './eventListeners.js';
 import { showErrorModal } from './errorHandling.js';
 import { initializeInventorySection } from './inventory.js';
 import { updateProductCategorySelects } from './products.js';
+import { updateCategorySelects } from './uiHelpers.js'; // 新しく作成したモジュールからインポート
 
 /**
  * UIの初期化を行う関数
