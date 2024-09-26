@@ -80,23 +80,29 @@ export function saveCategoryToDB(category) {
         return;
     }
 
-    // parentIdが未定義の場合はnullに設定
-    if (typeof category.parentId === 'undefined') {
+    // parentIdが未定義または空の場合はnullに設定
+    if (typeof category.parentId === 'undefined' || category.parentId === '') {
         category.parentId = null;
     } else {
         // parentIdを数値に変換
-        category.parentId = Number(category.parentId);
-        if (isNaN(category.parentId)) {
+        const parsedParentId = Number(category.parentId);
+        if (!isNaN(parsedParentId)) {
+            category.parentId = parsedParentId;
+        } else {
             category.parentId = null;
+            console.warn(`Invalid parentId "${category.parentId}" provided. Setting parentId to null.`);
         }
     }
+
+    // デバッグ用ログ
+    console.log('Saving category:', category);
 
     const transaction = db.transaction(['categories'], 'readwrite');
     const store = transaction.objectStore('categories');
     const addRequest = store.add(category);
 
     addRequest.onsuccess = () => {
-        console.log(`Category "${category.name}" saved successfully.`);
+        console.log(`Category "${category.name}" saved successfully with parentId: ${category.parentId}`);
         updateCategorySelects();
         displayCategories();
     };
