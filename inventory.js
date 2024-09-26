@@ -230,6 +230,59 @@ export function displayInventoryProducts(subcategoryId) {
 }
 
 /**
+ * グローバル在庫を表示する関数
+ */
+export function displayGlobalInventory() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        return;
+    }
+
+    const globalSubcategorySelect = document.getElementById('global-subcategory-select');
+    if (!globalSubcategorySelect) {
+        console.error('global-subcategory-select が見つかりません。');
+        return;
+    }
+
+    const subcategoryId = Number(globalSubcategorySelect.value);
+    if (!subcategoryId) {
+        console.error('サブカテゴリが選択されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['products'], 'readonly');
+    const store = transaction.objectStore('products');
+    const index = store.index('subcategoryId');
+    const request = index.getAll(subcategoryId);
+
+    request.onsuccess = (event) => {
+        const products = event.target.result;
+        const globalInventoryTableBody = document.getElementById('global-inventory-table')?.getElementsByTagName('tbody')[0];
+        if (globalInventoryTableBody) {
+            globalInventoryTableBody.innerHTML = '';
+
+            products.forEach(product => {
+                const row = globalInventoryTableBody.insertRow();
+                row.insertCell(0).textContent = product.name;
+                row.insertCell(1).textContent = product.quantity;
+                row.insertCell(2).textContent = product.price;
+                row.insertCell(3).textContent = product.cost;
+                row.insertCell(4).textContent = product.barcode;
+                row.insertCell(5).textContent = product.unitAmount;
+            });
+        } else {
+            console.error("global-inventory-tableのtbodyが見つかりません。");
+            showErrorModal('グローバル在庫一覧の表示エリアが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching products for global inventory:', event.target.error);
+        showErrorModal('グローバル在庫の取得中にエラーが発生しました。');
+    };
+}
+
+/**
  * 単価一覧を表示する関数
  */
 export function displayUnitPrices() {
