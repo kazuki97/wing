@@ -2,11 +2,11 @@
 import { showSection } from './ui.js';
 import { updateCategorySelects, saveCategoryToDB, displayCategories } from './categories.js';
 import { saveProductToDB, displayProducts } from './products.js';
-import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton } from './transactions.js';
+import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton, displaySales } from './transactions.js'; // displaySalesを追加
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
-import { saveUnitPriceToDB } from './inventory.js';
+import { saveUnitPriceToDB, displayUnitPrices } from './inventory.js'; // displayUnitPricesを追加
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
@@ -94,7 +94,7 @@ export function initializeEventListeners() {
         linkSales.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('sales');
-            displaySales(); // 実装されている場合
+            displaySales(); // 修正済み
         });
     }
 
@@ -110,7 +110,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            displayUnitPrices(); // 実装が必要な場合
+            displayUnitPrices(); // 修正済み
         });
     }
 
