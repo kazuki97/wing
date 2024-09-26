@@ -287,6 +287,32 @@ export function displayUnitPrices() {
 }
 
 /**
+ * 単価をデータベースに保存する関数
+ * @param {Object} product - 更新する商品オブジェクト
+ */
+export function saveUnitPriceToDB(product) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['products'], 'readwrite');
+    const store = transaction.objectStore('products');
+    const updateRequest = store.put(product);
+
+    updateRequest.onsuccess = () => {
+        console.log(`Unit price for "${product.name}" saved successfully.`);
+        displayUnitPrices();
+    };
+
+    updateRequest.onerror = (event) => {
+        console.error('Error saving unit price:', event.target.error);
+        showErrorModal('単価の保存中にエラーが発生しました。');
+    };
+}
+
+/**
  * 単価編集フォームを表示する関数
  * @param {Object} product - 編集する商品オブジェクト
  */
@@ -324,22 +350,8 @@ function showEditUnitPriceForm(product) {
 
         if (!isNaN(editedUnitPrice)) {
             product.unitPrice = editedUnitPrice;
-
-            const transaction = db.transaction(['products'], 'readwrite');
-            const store = transaction.objectStore('products');
-
-            const updateRequest = store.put(product);
-
-            updateRequest.onsuccess = () => {
-                console.log(`Unit price for "${product.name}" updated successfully.`);
-                document.body.removeChild(editForm);
-                displayUnitPrices();
-            };
-
-            updateRequest.onerror = (event) => {
-                console.error('Error updating unit price:', event.target.error);
-                showErrorModal('単価の更新中にエラーが発生しました。');
-            };
+            saveUnitPriceToDB(product);
+            document.body.removeChild(editForm);
         } else {
             alert('正しい単価を入力してください。');
         }
