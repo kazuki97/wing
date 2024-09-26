@@ -1,7 +1,7 @@
 // categories.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
-import { updateCategorySelects } from './ui.js'; // 正しいモジュールからインポート
+import { updateCategorySelects } from './uiHelpers.js'; // 新しく作成したモジュールからインポート
 
 /**
  * カテゴリをデータベースに保存する関数
