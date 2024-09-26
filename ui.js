@@ -6,6 +6,8 @@ import { displayUnitPrices } from './inventory.js';
 import { displayGlobalInventory } from './inventory.js';
 import { initializeEventListeners } from './eventListeners.js';
 import { showErrorModal } from './errorHandling.js';
+import { initializeInventorySection } from './inventory.js';
+import { updateProductCategorySelects } from './products.js';
 
 /**
  * UIの初期化を行う関数
@@ -20,6 +22,12 @@ export function initializeUI() {
     displaySales();
     displayUnitPrices();
     displayGlobalInventory();
+
+    // 商品管理セクションの初期化
+    updateProductCategorySelects();
+
+    // 在庫管理セクションの初期化
+    initializeInventorySection();
 
     // イベントリスナーの初期化
     initializeEventListeners();
