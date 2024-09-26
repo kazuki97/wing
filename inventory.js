@@ -238,9 +238,9 @@ export function showEditInventoryForm(inventoryItem) {
 }
 
 /**
- * グローバルサブカテゴリセレクトを更新する関数
+ * 単価サブカテゴリセレクトを更新する関数
  */
-export function updateGlobalSubcategorySelect() {
+export function updateUnitPriceSubcategorySelect() {
     if (!db) {
         console.error('Database is not initialized.');
         return;
@@ -252,7 +252,7 @@ export function updateGlobalSubcategorySelect() {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const subcategorySelect = document.getElementById('global-subcategory-select');
+        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             categories.forEach(category => {
@@ -264,8 +264,8 @@ export function updateGlobalSubcategorySelect() {
                 }
             });
         } else {
-            console.error('global-subcategory-select が見つかりません。');
-            showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
+            console.error('unit-price-subcategory-select が見つかりません。');
+            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
         }
     };
 
