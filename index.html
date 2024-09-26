@@ -77,31 +77,41 @@
             <input type="number" id="product-unit-amount" placeholder="サイズ（量）">
             <button id="add-product">追加</button>
         </div>
-        <!-- 商品一覧の表示 -->
-        <table id="product-table">
-            <thead>
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>価格</th>
-                    <th>原価</th>
-                    <th>バーコード</th>
-                    <th>サイズ（量）</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- JavaScriptで商品一覧を表示 -->
-            </tbody>
-        </table>
+        <!-- 商品一覧は在庫管理に移動 -->
     </div>
 
     <!-- 在庫管理セクション -->
     <div id="inventory-section" class="section" style="display: none;">
         <h2>在庫管理</h2>
-        <!-- 在庫管理のコンテンツをここに追加 -->
-        <p>在庫管理機能は現在準備中です。</p>
+        <!-- 商品一覧の表示 -->
+        <div>
+            <h3>在庫一覧</h3>
+            <select id="inventory-parent-category-select">
+                <option value="">親カテゴリを選択</option>
+                <!-- JavaScriptで動的に選択肢を追加 -->
+            </select>
+            <select id="inventory-subcategory-select">
+                <option value="">サブカテゴリを選択</option>
+                <!-- JavaScriptで動的に選択肢を追加 -->
+            </select>
+            <table id="inventory-table">
+                <thead>
+                    <tr>
+                        <th>商品名</th>
+                        <th>数量</th>
+                        <th>価格</th>
+                        <th>原価</th>
+                        <th>バーコード</th>
+                        <th>サイズ（量）</th>
+                        <th>編集</th>
+                        <th>削除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- JavaScriptで商品一覧を表示 -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- バーコードスキャンセクション -->
