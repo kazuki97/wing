@@ -1,5 +1,5 @@
 // inventory.js
-import { db } from './db.js';
+import { db, initializeDatabase } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
 /**
@@ -95,7 +95,13 @@ export function displayUnitPrices() {
  * 単価を削除する関数
  * @param {number} id - 削除する単価のID
  */
-function deleteUnitPrice(id) {
+export function deleteUnitPrice(id) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
     const transaction = db.transaction(['unitPrices'], 'readwrite');
     const store = transaction.objectStore('unitPrices');
     const deleteRequest = store.delete(id);
@@ -329,7 +335,13 @@ export function displayGlobalInventory() {
  * 在庫アイテムを削除する関数
  * @param {number} id - 削除する在庫アイテムのID
  */
-function deleteInventoryItem(id) {
+export function deleteInventoryItem(id) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
     const transaction = db.transaction(['globalInventory'], 'readwrite');
     const store = transaction.objectStore('globalInventory');
     const deleteRequest = store.delete(id);
@@ -346,7 +358,7 @@ function deleteInventoryItem(id) {
 }
 
 /**
- * 全体在庫編集フォームを表示する関数
+ * 在庫編集フォームを表示する関数
  * @param {Object} inventoryItem - 編集する在庫アイテム
  */
 export function showEditInventoryForm(inventoryItem) {
@@ -416,6 +428,35 @@ export function showEditInventoryForm(inventoryItem) {
     const cancelButton = editForm.querySelector('#cancel-inventory-button');
     cancelButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
+    });
+}
+
+/**
+ * テスト用の在庫データを追加する関数
+ */
+export function addTestInventoryItems() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        return;
+    }
+
+    const testItems = [
+        { subcategoryId: 1, name: '商品A', quantity: 100 },
+        { subcategoryId: 2, name: '商品B', quantity: 50 },
+        { subcategoryId: 3, name: '商品C', quantity: 200 }
+    ];
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+
+    testItems.forEach(item => {
+        store.add(item).onsuccess = () => {
+            console.log(`テストデータ '${item.name}' が追加されました。`);
+        };
+
+        store.add(item).onerror = (event) => {
+            console.error(`テストデータ '${item.name}' の追加中にエラーが発生しました:`, event.target.error);
+        };
     });
 }
 
