@@ -5,8 +5,8 @@ import { saveProductToDB, updateProductCategorySelects, displayProducts } from '
 import { showErrorModal } from './errorHandling.js';
 import { initializeInventorySection, displayInventory } from './inventory.js';
 import { initializeSalesSection, completeTransaction, addManualSale } from './transactions.js';
-import { initializeGlobalInventorySection, displayGlobalInventory } from './globalInventory.js';
-import { initializeUnitPriceSection, saveUnitPriceToDB, displayUnitPrices } from './unitPrice.js';
+import { initializeGlobalInventorySection, displayGlobalInventory } from './globalInventory.js'; // 修正
+import { initializeUnitPriceSection, saveUnitPriceToDB, displayUnitPrices } from './unitPrice.js'; // 修正
 import { initializeBarcodeScanner } from './barcodeScanner.js';
 
 /**
