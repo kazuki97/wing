@@ -62,10 +62,8 @@ export function updateInventoryCategorySelects() {
                 subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             }
         });
-    }
 
-    // サブカテゴリ選択時に商品を表示
-    if (subcategorySelect) {
+        // サブカテゴリ選択時に商品を表示
         subcategorySelect.addEventListener('change', () => {
             const subcategoryId = Number(subcategorySelect.value);
             if (subcategoryId) {
@@ -116,6 +114,20 @@ export function updateGlobalSubcategorySelect() {
                 globalSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             }
         });
+
+        // サブカテゴリ選択時にグローバル在庫を表示
+        globalSubcategorySelect.addEventListener('change', () => {
+            const subcategoryId = Number(globalSubcategorySelect.value);
+            if (subcategoryId) {
+                displayGlobalInventory(subcategoryId);
+            } else {
+                // サブカテゴリが未選択の場合、テーブルをクリア
+                const globalInventoryTableBody = document.getElementById('global-inventory-table')?.getElementsByTagName('tbody')[0];
+                if (globalInventoryTableBody) {
+                    globalInventoryTableBody.innerHTML = '';
+                }
+            }
+        });
     }
 }
 
@@ -152,6 +164,20 @@ export function updateUnitPriceSubcategorySelect() {
                 };
             } else {
                 unitPriceSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            }
+        });
+
+        // サブカテゴリ選択時に単価一覧を表示
+        unitPriceSubcategorySelect.addEventListener('change', () => {
+            const subcategoryId = Number(unitPriceSubcategorySelect.value);
+            if (subcategoryId) {
+                displayUnitPrices(subcategoryId);
+            } else {
+                // サブカテゴリが未選択の場合、テーブルをクリア
+                const unitPriceTableBody = document.getElementById('unit-price-table')?.getElementsByTagName('tbody')[0];
+                if (unitPriceTableBody) {
+                    unitPriceTableBody.innerHTML = '';
+                }
             }
         });
     }
@@ -231,22 +257,11 @@ export function displayInventoryProducts(subcategoryId) {
 
 /**
  * グローバル在庫を表示する関数
+ * @param {number} subcategoryId - 表示する商品のサブカテゴリID
  */
-export function displayGlobalInventory() {
+export function displayGlobalInventory(subcategoryId) {
     if (!db) {
         console.error('Database is not initialized.');
-        return;
-    }
-
-    const globalSubcategorySelect = document.getElementById('global-subcategory-select');
-    if (!globalSubcategorySelect) {
-        console.error('global-subcategory-select が見つかりません。');
-        return;
-    }
-
-    const subcategoryId = Number(globalSubcategorySelect.value);
-    if (!subcategoryId) {
-        console.error('サブカテゴリが選択されていません。');
         return;
     }
 
@@ -284,22 +299,11 @@ export function displayGlobalInventory() {
 
 /**
  * 単価一覧を表示する関数
+ * @param {number} subcategoryId - 表示する商品のサブカテゴリID
  */
-export function displayUnitPrices() {
+export function displayUnitPrices(subcategoryId) {
     if (!db) {
         console.error('Database is not initialized.');
-        return;
-    }
-
-    const unitPriceSubcategorySelect = document.getElementById('unit-price-subcategory-select');
-    if (!unitPriceSubcategorySelect) {
-        console.error('unit-price-subcategory-select が見つかりません。');
-        return;
-    }
-
-    const subcategoryId = Number(unitPriceSubcategorySelect.value);
-    if (!subcategoryId) {
-        console.error('サブカテゴリが選択されていません。');
         return;
     }
 
@@ -356,7 +360,13 @@ export function saveUnitPriceToDB(product) {
 
     updateRequest.onsuccess = () => {
         console.log(`Unit price for "${product.name}" saved successfully.`);
-        displayUnitPrices();
+        const unitPriceSubcategorySelect = document.getElementById('unit-price-subcategory-select');
+        if (unitPriceSubcategorySelect) {
+            const subcategoryId = Number(unitPriceSubcategorySelect.value);
+            if (subcategoryId) {
+                displayUnitPrices(subcategoryId);
+            }
+        }
     };
 
     updateRequest.onerror = (event) => {
