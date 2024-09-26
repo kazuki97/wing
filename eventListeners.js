@@ -5,12 +5,12 @@ import { processTransaction, currentTransaction, updateTransactionUI, toggleComp
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
-import { displayInventory } from './inventory.js';  // 新しく追加
-import { saveUnitPriceToDB } from './inventory.js';
+import { displayInventory } from './inventory.js';  // 在庫表示関数のインポート
+import { displayGlobalInventory } from './inventory.js';  // グローバル在庫表示関数のインポート
+import { displayUnitPrices } from './inventory.js';  // 単価表示関数のインポート
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
-console.log('saveUnitPriceToDB がインポートされました。', saveUnitPriceToDB);
 
 /**
  * イベントリスナーを初期化する関数
@@ -79,7 +79,7 @@ export function initializeEventListeners() {
         linkInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('inventory');
-            displayInventory();  // 新しい在庫表示関数を呼び出す
+            displayInventory();  // 在庫表示関数を呼び出す
         });
     }
 
@@ -102,7 +102,7 @@ export function initializeEventListeners() {
         linkGlobalInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('global-inventory');
-            // displayGlobalInventory(); // 実装が必要な場合
+            displayGlobalInventory(); // グローバル在庫の表示を呼び出す
         });
     }
 
@@ -110,7 +110,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            // displayUnitPrices(); // 実装が必要な場合
+            displayUnitPrices(); // 単価表示の呼び出し
         });
     }
 
@@ -235,12 +235,11 @@ export function initializeEventListeners() {
     // 単価の追加ボタンのイベントリスナー
     if (addUnitPriceButton) {
         addUnitPriceButton.addEventListener('click', () => {
-            const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
             const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
             const tier = Number(document.getElementById('unit-price-tier').value.trim());
             const price = Number(document.getElementById('unit-price-price').value.trim());
 
-            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(tier) && !isNaN(price)) {
+            if (!isNaN(subcategoryId) && !isNaN(tier) && !isNaN(price)) {
                 const unitPrice = {
                     subcategoryId,
                     tier,
