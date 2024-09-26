@@ -1,12 +1,12 @@
-// eventListeners.js
 import { showSection } from './ui.js';
 import { updateCategorySelects, saveCategoryToDB, displayCategories } from './categories.js';
 import { saveProductToDB, displayProducts } from './products.js';
-import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton, displaySales } from './transactions.js';
+import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton } from './transactions.js';
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
-import { saveUnitPriceToDB, displayUnitPrices } from './inventory.js';  // displayUnitPrices をインポート
+import { displayInventory } from './inventory.js';  // 新しく追加
+import { saveUnitPriceToDB } from './inventory.js';
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
@@ -79,7 +79,7 @@ export function initializeEventListeners() {
         linkInventory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('inventory');
-            // displayInventory(); // 実装が必要な場合
+            displayInventory();  // 新しい在庫表示関数を呼び出す
         });
     }
 
@@ -94,7 +94,7 @@ export function initializeEventListeners() {
         linkSales.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('sales');
-            displaySales(); // 売上を表示
+            // displaySales(); // 実装されている場合
         });
     }
 
@@ -110,7 +110,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            displayUnitPrices(); // 単価を表示
+            // displayUnitPrices(); // 実装が必要な場合
         });
     }
 
