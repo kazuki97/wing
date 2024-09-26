@@ -11,23 +11,34 @@ import { updateProductCategorySelects } from './products.js';
  * UIの初期化を行う関数
  */
 export function initializeUI() {
-    // 最初に表示するセクションを設定（例：homeセクション）
-    showSection('home');
+    // データベースの初期化が完了してからUIを初期化する
+    import('./db.js').then(({ initializeDatabase }) => {
+        initializeDatabase().then(() => {
+            // 最初に表示するセクションを設定（例：homeセクション）
+            showSection('home');
 
-    // 各種初期化関数を呼び出す
-    initializeTransactionUI();
-    updateCategorySelects();
-    displayCategories();
-    displaySales();
+            // 各種初期化関数を呼び出す
+            initializeTransactionUI();
+            updateCategorySelects();
+            displayCategories();
+            displaySales();
 
-    // 商品管理セクションの初期化
-    updateProductCategorySelects();
+            // 商品管理セクションの初期化
+            updateProductCategorySelects();
 
-    // 在庫管理セクションの初期化
-    initializeInventorySection();
+            // 在庫管理セクションの初期化
+            initializeInventorySection();
 
-    // イベントリスナーの初期化
-    initializeEventListeners();
+            // イベントリスナーの初期化
+            initializeEventListeners();
+        }).catch(error => {
+            console.error('Database initialization failed:', error);
+            showErrorModal('データベースの初期化に失敗しました。');
+        });
+    }).catch(error => {
+        console.error('Error importing db.js:', error);
+        showErrorModal('必要なモジュールの読み込みに失敗しました。');
+    });
 }
 
 /**
