@@ -1,3 +1,4 @@
+// inventory.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
@@ -37,6 +38,7 @@ export function saveUnitPriceToDB(unitPrice) {
 export function displayUnitPrices() {
     if (!db) {
         console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
         return;
     }
 
@@ -46,7 +48,8 @@ export function displayUnitPrices() {
 
     request.onsuccess = (event) => {
         const unitPrices = event.target.result;
-        const unitPriceTableBody = document.getElementById('unit-price-table')?.getElementsByTagName('tbody')[0];
+        const unitPriceTableBody = document.querySelector('#unit-price-table tbody');
+
         if (unitPriceTableBody) {
             unitPriceTableBody.innerHTML = '';
 
@@ -56,6 +59,7 @@ export function displayUnitPrices() {
                 row.insertCell(1).textContent = unitPrice.tier;
                 row.insertCell(2).textContent = unitPrice.price;
 
+                // 編集ボタンの作成
                 const editButton = document.createElement('button');
                 editButton.textContent = '編集';
                 editButton.className = 'unit-price-button';
@@ -64,24 +68,13 @@ export function displayUnitPrices() {
                 });
                 row.insertCell(3).appendChild(editButton);
 
+                // 削除ボタンの作成
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '削除';
                 deleteButton.className = 'unit-price-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この単価を削除しますか？')) {
-                        const deleteTransaction = db.transaction(['unitPrices'], 'readwrite');
-                        const deleteStore = deleteTransaction.objectStore('unitPrices');
-                        deleteStore.delete(unitPrice.id);
-
-                        deleteTransaction.oncomplete = () => {
-                            console.log('単価が正常に削除されました。');
-                            displayUnitPrices();
-                        };
-
-                        deleteTransaction.onerror = (event) => {
-                            console.error('単価の削除中にエラーが発生しました:', event.target.error);
-                            showErrorModal('単価の削除中にエラーが発生しました。');
-                        };
+                        deleteUnitPrice(unitPrice.id);
                     }
                 });
                 row.insertCell(4).appendChild(deleteButton);
@@ -99,11 +92,32 @@ export function displayUnitPrices() {
 }
 
 /**
+ * 単価を削除する関数
+ * @param {number} id - 削除する単価のID
+ */
+function deleteUnitPrice(id) {
+    const transaction = db.transaction(['unitPrices'], 'readwrite');
+    const store = transaction.objectStore('unitPrices');
+    const deleteRequest = store.delete(id);
+
+    deleteRequest.onsuccess = () => {
+        console.log('単価が正常に削除されました。');
+        displayUnitPrices();
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('単価の削除中にエラーが発生しました:', event.target.error);
+        showErrorModal('単価の削除中にエラーが発生しました。');
+    };
+}
+
+/**
  * グローバルサブカテゴリセレクトを更新する関数
  */
 export function updateGlobalSubcategorySelect() {
     if (!db) {
         console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
         return;
     }
 
@@ -114,6 +128,7 @@ export function updateGlobalSubcategorySelect() {
     request.onsuccess = (event) => {
         const categories = event.target.result;
         const subcategorySelect = document.getElementById('global-subcategory-select');
+
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             categories.forEach(category => {
@@ -142,6 +157,7 @@ export function updateGlobalSubcategorySelect() {
 export function updateUnitPriceSubcategorySelect() {
     if (!db) {
         console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
         return;
     }
 
@@ -152,6 +168,7 @@ export function updateUnitPriceSubcategorySelect() {
     request.onsuccess = (event) => {
         const categories = event.target.result;
         const subcategorySelect = document.getElementById('unit-price-subcategory-select');
+
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             categories.forEach(category => {
@@ -201,12 +218,15 @@ export function showEditUnitPriceForm(unitPrice) {
     const modal = editForm.querySelector('.modal');
     const closeButton = editForm.querySelector('.close-button');
 
+    // モーダルを表示
     modal.style.display = 'block';
 
+    // 閉じるボタンのイベントリスナー
     closeButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
     });
 
+    // 保存ボタンのイベントリスナー
     const saveButton = editForm.querySelector('#save-unit-price-button');
     saveButton.addEventListener('click', () => {
         const editedTier = Number(editForm.querySelector('#edit-unit-price-tier').value.trim());
@@ -240,6 +260,7 @@ export function showEditUnitPriceForm(unitPrice) {
         }
     });
 
+    // キャンセルボタンのイベントリスナー
     const cancelButton = editForm.querySelector('#cancel-unit-price-button');
     cancelButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
@@ -262,7 +283,8 @@ export function displayGlobalInventory() {
 
     request.onsuccess = (event) => {
         const globalInventory = event.target.result;
-        const globalInventoryTableBody = document.getElementById('global-inventory-table')?.getElementsByTagName('tbody')[0];
+        const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
+
         if (globalInventoryTableBody) {
             globalInventoryTableBody.innerHTML = '';
 
@@ -286,19 +308,7 @@ export function displayGlobalInventory() {
                 deleteButton.className = 'inventory-delete-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm(`${item.name} を削除しますか？`)) {
-                        const deleteTransaction = db.transaction(['globalInventory'], 'readwrite');
-                        const deleteStore = deleteTransaction.objectStore('globalInventory');
-                        deleteStore.delete(item.id);
-
-                        deleteTransaction.oncomplete = () => {
-                            console.log(`${item.name} が削除されました。`);
-                            displayGlobalInventory();  // 再表示
-                        };
-
-                        deleteTransaction.onerror = (event) => {
-                            console.error('在庫削除中にエラーが発生しました:', event.target.error);
-                            showErrorModal('在庫削除中にエラーが発生しました。');
-                        };
+                        deleteInventoryItem(item.id);
                     }
                 });
                 row.insertCell(3).appendChild(deleteButton);
@@ -312,6 +322,26 @@ export function displayGlobalInventory() {
     request.onerror = (event) => {
         console.error('全体在庫の取得中にエラーが発生しました:', event.target.error);
         showErrorModal('全体在庫の取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 在庫アイテムを削除する関数
+ * @param {number} id - 削除する在庫アイテムのID
+ */
+function deleteInventoryItem(id) {
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const deleteRequest = store.delete(id);
+
+    deleteRequest.onsuccess = () => {
+        console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
+        displayGlobalInventory();  // 再表示
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('在庫削除中にエラーが発生しました:', event.target.error);
+        showErrorModal('在庫削除中にエラーが発生しました。');
     };
 }
 
@@ -341,12 +371,15 @@ export function showEditInventoryForm(inventoryItem) {
     const modal = editForm.querySelector('.modal');
     const closeButton = editForm.querySelector('.close-button');
 
+    // モーダルを表示
     modal.style.display = 'block';
 
+    // 閉じるボタンのイベントリスナー
     closeButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
     });
 
+    // 保存ボタンのイベントリスナー
     const saveButton = editForm.querySelector('#save-inventory-button');
     saveButton.addEventListener('click', () => {
         const editedName = editForm.querySelector('#edit-inventory-name').value.trim();
@@ -379,6 +412,7 @@ export function showEditInventoryForm(inventoryItem) {
         }
     });
 
+    // キャンセルボタンのイベントリスナー
     const cancelButton = editForm.querySelector('#cancel-inventory-button');
     cancelButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
