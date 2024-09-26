@@ -1,7 +1,7 @@
 // categories.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
-import { updateCategorySelects, displayCategories } from './categories.js';
+import { updateCategorySelects } from './ui.js'; // 正しいモジュールからインポート
 
 /**
  * カテゴリをデータベースに保存する関数
@@ -38,7 +38,7 @@ export function saveCategoryToDB(category) {
     addRequest.onsuccess = () => {
         console.log(`Category "${category.name}" saved successfully with parentId: ${category.parentId}`);
         updateCategorySelects();
-        displayCategories();
+        displayCategories(); // 同じファイル内の関数を呼び出す
     };
 
     addRequest.onerror = (event) => {
