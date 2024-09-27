@@ -353,7 +353,7 @@ export async function displayGlobalInventory() {
                     editButton.textContent = '編集';
                     editButton.className = 'inventory-edit-button';
                     editButton.addEventListener('click', () => {
-                        showEditInventoryForm(item);
+                        showEditInventoryForm(item, product);
                     });
                     row.insertCell(6).appendChild(editButton);
 
@@ -413,8 +413,9 @@ export function deleteInventoryItem(id) {
 /**
  * 在庫編集フォームを表示する関数
  * @param {Object} inventoryItem - 編集する在庫アイテム
+ * @param {Object} product - 編集対象の在庫アイテムに関連する商品
  */
-export function showEditInventoryForm(inventoryItem) {
+export function showEditInventoryForm(inventoryItem, product) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
 
@@ -423,7 +424,7 @@ export function showEditInventoryForm(inventoryItem) {
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${inventoryItem.name || ''}" disabled></label><br>
+                <label>商品名: <input type="text" id="edit-inventory-name" value="${product.name}" disabled></label><br>
                 <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
                 <button id="save-inventory-button">保存</button>
                 <button id="cancel-inventory-button">キャンセル</button>
@@ -452,6 +453,7 @@ export function showEditInventoryForm(inventoryItem) {
         if (!isNaN(editedQuantity)) {
             const updatedInventory = {
                 id: inventoryItem.id,
+                productId: inventoryItem.productId, // productId を保持
                 quantity: editedQuantity
             };
 
@@ -515,6 +517,45 @@ export function addTestInventoryItems() {
             console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
         };
     });
+}
+
+/**
+ * 在庫データの整合性を確認し、必要に応じて修正する関数
+ * （オプション）
+ */
+export async function verifyAndFixInventoryData() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const request = store.getAll();
+
+    request.onsuccess = async (event) => {
+        const globalInventory = event.target.result;
+
+        for (const item of globalInventory) {
+            if (typeof item.productId === 'undefined' || item.productId === null) {
+                console.warn('未定義の productId を持つ在庫アイテム:', item);
+                // ここで適切な処理を行います。例えば削除するか、修正する。
+                // 以下は削除の例です。
+                try {
+                    await deleteInventoryItem(item.id);
+                    console.log(`未定義の productId を持つ在庫アイテム (ID: ${item.id}) を削除しました。`);
+                } catch (error) {
+                    console.error(`在庫アイテム (ID: ${item.id}) の削除中にエラーが発生しました:`, error);
+                }
+            }
+        }
+
+        console.log('在庫データの整合性確認が完了しました。');
+    };
+
+    request.onerror = (event) => {
+        console.error('在庫データの取得中にエラーが発生しました:', event.target.error);
+    };
 }
 
 // テスト用のログ（正常に読み込まれているか確認）
