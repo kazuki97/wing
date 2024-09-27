@@ -1,4 +1,3 @@
-// categories.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
@@ -10,8 +9,10 @@ import { updateGlobalSubcategorySelect, updateUnitPriceSubcategorySelect } from 
 export function updateCategorySelects() {
     if (!db) {
         console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
         return;
     }
+
     const transaction = db.transaction(['categories'], 'readonly');
     const store = transaction.objectStore('categories');
     const request = store.getAll();
@@ -47,7 +48,7 @@ export function updateCategorySelects() {
     };
 
     request.onerror = (event) => {
-        console.error('Error fetching categories:', event.target.error);
+        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
         showErrorModal('カテゴリの取得中にエラーが発生しました。');
     };
 }
@@ -74,7 +75,7 @@ export function saveCategoryToDB(category) {
     };
 
     addRequest.onerror = (event) => {
-        console.error('Error saving category:', event.target.error);
+        console.error('カテゴリの保存中にエラーが発生しました:', event.target.error);
         showErrorModal('カテゴリの保存中にエラーが発生しました。');
     };
 }
@@ -121,7 +122,7 @@ export function displayCategories() {
                         };
 
                         transaction.onerror = (event) => {
-                            console.error('Error updating category:', event.target.error);
+                            console.error('カテゴリの更新中にエラーが発生しました:', event.target.error);
                             showErrorModal('カテゴリの更新中にエラーが発生しました。');
                         };
                     }
@@ -162,7 +163,7 @@ export function displayCategories() {
                             };
 
                             transaction.onerror = (event) => {
-                                console.error('Error updating subcategory:', event.target.error);
+                                console.error('サブカテゴリの更新中にエラーが発生しました:', event.target.error);
                                 showErrorModal('サブカテゴリの更新中にエラーが発生しました。');
                             };
                         }
@@ -191,7 +192,7 @@ export function displayCategories() {
     };
 
     request.onerror = (event) => {
-        console.error('Error fetching categories for display:', event.target.error);
+        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
         showErrorModal('カテゴリの取得中にエラーが発生しました。');
     };
 }
@@ -224,7 +225,7 @@ function deleteCategoryAndSubcategories(categoryId) {
     };
 
     subRequest.onerror = (event) => {
-        console.error('Error fetching subcategories for deletion:', event.target.error);
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
         showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
     };
 
@@ -235,7 +236,7 @@ function deleteCategoryAndSubcategories(categoryId) {
     };
 
     transaction.onerror = (event) => {
-        console.error('Error deleting category and subcategories:', event.target.error);
+        console.error('カテゴリの削除中にエラーが発生しました:', event.target.error);
         showErrorModal('カテゴリの削除中にエラーが発生しました。');
     };
 }
@@ -262,7 +263,7 @@ function deleteCategory(categoryId) {
     };
 
     transaction.onerror = (event) => {
-        console.error('Error deleting category:', event.target.error);
+        console.error('カテゴリの削除中にエラーが発生しました:', event.target.error);
         showErrorModal('カテゴリの削除中にエラーが発生しました。');
     };
 }
