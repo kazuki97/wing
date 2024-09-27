@@ -167,7 +167,7 @@ export function updateGlobalSubcategorySelect() {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const subcategorySelect = document.getElementById('global-subcategory-select');
+        const subcategorySelect = document.getElementById('inventory-subcategory-select'); // 修正箇所
 
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
@@ -180,7 +180,7 @@ export function updateGlobalSubcategorySelect() {
                 }
             });
         } else {
-            console.error('global-subcategory-select が見つかりません。');
+            console.error('inventory-subcategory-select が見つかりません。');
             showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
         }
     };
