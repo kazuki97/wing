@@ -315,7 +315,7 @@ export function showEditInventoryForm(inventoryItem, product) {
  */
 export async function displayGlobalInventory(selectedSubcategoryId) {
     console.log('displayGlobalInventory called with subcategoryId:', selectedSubcategoryId);
-    
+
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -329,6 +329,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
         try {
             const productIds = await getProductIdsBySubcategory(selectedSubcategoryId);
             console.log('取得した商品ID:', productIds);
+
             if (productIds.length === 0) {
                 console.log('選択されたサブカテゴリに属する商品がありません。');
                 const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
@@ -341,6 +342,8 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
             // productIdに基づいて在庫アイテムを取得
             const promises = productIds.map(productId => {
                 return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['globalInventory'], 'readonly'); // ここで新たなトランザクションを作成
+                    const inventoryStore = transaction.objectStore('globalInventory');
                     const request = inventoryStore.index('productId').getAll(IDBKeyRange.only(productId));
                     request.onsuccess = (event) => {
                         resolve(event.target.result);
