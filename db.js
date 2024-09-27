@@ -55,7 +55,7 @@ export function initializeDatabase() {
                     keyPath: 'id',          // keyPathを'subcategoryId'から'id'に変更
                     autoIncrement: true     // 自動インクリメントを有効にする
                 });
-                globalInventoryStore.createIndex('productId', 'productId', { unique: false }); // 新規追加
+                globalInventoryStore.createIndex('productId', 'productId', { unique: false });
                 globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
                 globalInventoryStore.createIndex('name', 'name', { unique: false });
                 globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
@@ -63,7 +63,6 @@ export function initializeDatabase() {
                 // 既存の 'globalInventory' ストアに 'productId' インデックスがない場合、追加
                 const transaction = event.target.transaction;
                 const store = transaction.objectStore('globalInventory');
-
                 if (!store.indexNames.contains('productId')) {
                     store.createIndex('productId', 'productId', { unique: false });
                     console.log('productId インデックスを globalInventory ストアに追加しました。');
@@ -103,7 +102,6 @@ export function deleteDatabase() {
 
     deleteRequest.onsuccess = () => {
         console.log('データベースが正常に削除されました。');
-        // データベースを再初期化する場合は initializeDatabase() を呼び出します
         initializeDatabase().then(() => {
             console.log('データベースが再初期化されました。');
         }).catch(error => {
@@ -122,7 +120,6 @@ export function deleteDatabase() {
 
 /**
  * 在庫データの整合性を確認し、必要に応じて修正する関数
- * （オプション）
  */
 export async function verifyAndFixInventoryData() {
     if (!db) {
@@ -180,6 +177,9 @@ export function deleteInventoryItem(id) {
         console.error('在庫削除中にエラーが発生しました:', event.target.error);
     };
 }
+
+// displayGlobalInventory関数をインポート
+import { displayGlobalInventory } from './inventory.js';
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('db.js が正しく読み込まれました。');
