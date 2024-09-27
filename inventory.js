@@ -38,6 +38,8 @@ export function saveUnitPriceToDB(unitPrice) {
  * @returns {Promise<void>}
  */
 export function addInventoryItem(inventoryItem) {
+    console.log('Adding inventory item:', inventoryItem); // デバッグログ
+
     return new Promise((resolve, reject) => {
         if (!db) {
             reject(new Error('データベースが初期化されていません。'));
@@ -359,6 +361,7 @@ export async function displayGlobalInventory() {
 
     request.onsuccess = async (event) => {
         const globalInventory = event.target.result;
+        console.log('Retrieved global inventory:', globalInventory); // デバッグログ
         const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
 
         if (globalInventoryTableBody) {
@@ -373,6 +376,7 @@ export async function displayGlobalInventory() {
 
                 try {
                     const product = await getProductById(item.productId);
+                    console.log(`Retrieved product for inventory item ID ${item.id}:`, product); // デバッグログ
                     const row = globalInventoryTableBody.insertRow();
 
                     row.insertCell(0).textContent = product.name;
@@ -416,115 +420,6 @@ export async function displayGlobalInventory() {
         console.error('全体在庫の取得中にエラーが発生しました:', event.target.error);
         showErrorModal('全体在庫の取得中にエラーが発生しました。');
     };
-}
-
-/**
- * 在庫編集フォームを表示する関数
- * @param {Object} inventoryItem - 編集する在庫アイテム
- * @param {Object} product - 編集対象の在庫アイテムに関連する商品
- */
-export function showEditInventoryForm(inventoryItem, product) {
-    const editForm = document.createElement('div');
-    editForm.className = 'edit-form';
-
-    editForm.innerHTML = `
-        <div class="modal">
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${product.name}" disabled></label><br>
-                <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
-                <button id="save-inventory-button">保存</button>
-                <button id="cancel-inventory-button">キャンセル</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(editForm);
-
-    const modal = editForm.querySelector('.modal');
-    const closeButton = editForm.querySelector('.close-button');
-
-    // モーダルを表示
-    modal.style.display = 'block';
-
-    // 閉じるボタンのイベントリスナー
-    closeButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
-
-    // 保存ボタンのイベントリスナー
-    const saveButton = editForm.querySelector('#save-inventory-button');
-    saveButton.addEventListener('click', async () => {
-        const editedQuantity = Number(editForm.querySelector('#edit-inventory-quantity').value.trim());
-
-        if (!isNaN(editedQuantity)) {
-            const updatedInventory = {
-                id: inventoryItem.id,
-                productId: inventoryItem.productId, // productId を保持
-                quantity: editedQuantity
-            };
-
-            try {
-                const transaction = db.transaction(['globalInventory'], 'readwrite');
-                const store = transaction.objectStore('globalInventory');
-                const updateRequest = store.put(updatedInventory);
-
-                updateRequest.onsuccess = () => {
-                    console.log('在庫が正常に更新されました。');
-                    document.body.removeChild(editForm);
-                    displayGlobalInventory();  // 更新後に再表示
-                };
-
-                updateRequest.onerror = (event) => {
-                    console.error('在庫の更新中にエラーが発生しました:', event.target.error);
-                    showErrorModal('在庫の更新中にエラーが発生しました。');
-                };
-            } catch (error) {
-                console.error('在庫の更新中に例外が発生しました:', error);
-                showErrorModal('在庫の更新中に予期せぬエラーが発生しました。');
-            }
-        } else {
-            alert('数量を正しく入力してください。');
-        }
-    });
-
-    // キャンセルボタンのイベントリスナー
-    const cancelButton = editForm.querySelector('#cancel-inventory-button');
-    cancelButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
-}
-
-/**
- * テスト用の在庫データを追加する関数
- */
-export function addTestInventoryItems() {
-    if (!db) {
-        console.error('Databaseが初期化されていません。');
-        return;
-    }
-
-    const testItems = [
-        { productId: 1, quantity: 100 },
-        { productId: 2, quantity: 50 },
-        { productId: 3, quantity: 200 }
-    ];
-
-    const transaction = db.transaction(['globalInventory'], 'readwrite');
-    const store = transaction.objectStore('globalInventory');
-
-    testItems.forEach(item => {
-        const addRequest = store.add(item);
-
-        addRequest.onsuccess = () => {
-            console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
-        };
-
-        addRequest.onerror = (event) => {
-            console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
-        };
-    });
 }
 
 /**
