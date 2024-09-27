@@ -153,8 +153,9 @@ export function deleteUnitPrice(id) {
 
 /**
  * グローバルサブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
  */
-export function updateGlobalSubcategorySelect() {
+export function updateGlobalSubcategorySelect(parentCategoryId) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -172,7 +173,7 @@ export function updateGlobalSubcategorySelect() {
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             categories.forEach(category => {
-                if (category.parentId !== null) { // サブカテゴリのみを対象
+                if (category.parentId === parentCategoryId) { // 修正箇所: 親カテゴリに基づいてサブカテゴリを表示
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
@@ -218,6 +219,12 @@ export function updateInventoryParentCategorySelect() {
                     option.textContent = category.name;
                     parentCategorySelect.appendChild(option);
                 }
+            });
+
+            // 修正箇所: 親カテゴリ選択に応じてサブカテゴリを更新
+            parentCategorySelect.addEventListener('change', () => {
+                const selectedParentCategoryId = Number(parentCategorySelect.value);
+                updateGlobalSubcategorySelect(selectedParentCategoryId); // 選択された親カテゴリに基づいてサブカテゴリを更新
             });
         } else {
             console.error('inventory-parent-category-select が見つかりません。');
