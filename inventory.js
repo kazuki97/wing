@@ -1,5 +1,5 @@
 // inventory.js
-import { db, initializeDatabase } from './db.js';
+import { db, initializeDatabase, verifyAndFixInventoryData } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
 /**
@@ -517,45 +517,6 @@ export function addTestInventoryItems() {
             console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
         };
     });
-}
-
-/**
- * 在庫データの整合性を確認し、必要に応じて修正する関数
- * （オプション）
- */
-export async function verifyAndFixInventoryData() {
-    if (!db) {
-        console.error('Databaseが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['globalInventory'], 'readwrite');
-    const store = transaction.objectStore('globalInventory');
-    const request = store.getAll();
-
-    request.onsuccess = async (event) => {
-        const globalInventory = event.target.result;
-
-        for (const item of globalInventory) {
-            if (typeof item.productId === 'undefined' || item.productId === null) {
-                console.warn('未定義の productId を持つ在庫アイテム:', item);
-                // ここで適切な処理を行います。例えば削除するか、修正する。
-                // 以下は削除の例です。
-                try {
-                    await deleteInventoryItem(item.id);
-                    console.log(`未定義の productId を持つ在庫アイテム (ID: ${item.id}) を削除しました。`);
-                } catch (error) {
-                    console.error(`在庫アイテム (ID: ${item.id}) の削除中にエラーが発生しました:`, error);
-                }
-            }
-        }
-
-        console.log('在庫データの整合性確認が完了しました。');
-    };
-
-    request.onerror = (event) => {
-        console.error('在庫データの取得中にエラーが発生しました:', event.target.error);
-    };
 }
 
 // テスト用のログ（正常に読み込まれているか確認）
