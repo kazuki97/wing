@@ -554,6 +554,37 @@ export function showEditInventoryForm(inventoryItem) {
 }
 
 /**
+ * テスト用の商品データを追加する関数
+ */
+export function addTestProducts() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        return;
+    }
+
+    const testProducts = [
+        { subcategoryId: 1, name: '商品A', quantity: 50, price: 1000, cost: 700, barcode: '1234567890123', unitAmount: 1 },
+        { subcategoryId: 1, name: '商品B', quantity: 30, price: 1500, cost: 1000, barcode: '1234567890124', unitAmount: 2 },
+        { subcategoryId: 2, name: '商品C', quantity: 20, price: 2000, cost: 1300, barcode: '1234567890125', unitAmount: 1.5 },
+    ];
+
+    const transaction = db.transaction(['products'], 'readwrite');
+    const store = transaction.objectStore('products');
+
+    testProducts.forEach(product => {
+        const addRequest = store.add(product);
+
+        addRequest.onsuccess = () => {
+            console.log(`テスト商品 (${product.name}) が追加されました。`);
+        };
+
+        addRequest.onerror = (event) => {
+            console.error(`テスト商品 (${product.name}) の追加中にエラーが発生しました:`, event.target.error);
+        };
+    });
+}
+
+/**
  * テスト用の在庫データを追加する関数
  */
 export function addTestInventoryItems() {
@@ -572,11 +603,13 @@ export function addTestInventoryItems() {
     const store = transaction.objectStore('globalInventory');
 
     testItems.forEach(item => {
-        store.add(item).onsuccess = () => {
+        const addRequest = store.add(item);
+
+        addRequest.onsuccess = () => {
             console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
         };
 
-        store.add(item).onerror = (event) => {
+        addRequest.onerror = (event) => {
             console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
         };
     });
