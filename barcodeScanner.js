@@ -1,83 +1,271 @@
-// barcodeScanner.js
-import { findProductByBarcode } from './productSearch.js';
+// categories.js
+import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
+import { updateProductCategorySelects } from './products.js';
+import { updateGlobalSubcategorySelect, updateUnitPriceSubcategorySelect } from './inventory.js';
 
 /**
- * Quagga.jsを使用してバーコードスキャンを初期化する関数
+ * カテゴリセレクトを更新する関数
  */
-export function initializeQuagga() {
-    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
-        showErrorModal('カメラがサポートされていないブラウザです。');
+export function updateCategorySelects() {
+    if (!db) {
+        console.error('Database is not initialized.');
         return;
     }
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
 
-    // Quaggaがグローバルにロードされていることを確認
-    if (typeof Quagga === 'undefined') {
-        showErrorModal('Quagga.jsがロードされていません。');
-        return;
-    }
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
 
-    Quagga.init({
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector('#barcode-scanner'), // スキャン用のDOM要素
-            constraints: {
-                facingMode: "environment" // 背面カメラを使用
-            },
-        },
-        decoder: {
-            readers: ["ean_reader", "code_128_reader"] // 読み取るバーコードの種類
-        },
-    }, function(err) {
-        if (err) {
-            console.error('Quaggaの初期化エラー:', err);
-            showErrorModal('バーコードスキャンの初期化に失敗しました。');
-            return;
-        }
-        Quagga.start();
-        console.log('Quaggaが正常に起動しました。');
-    });
+        const parentCategorySelects = [
+            document.getElementById('parent-category-select'),
+            document.getElementById('product-parent-category-select'),
+            document.getElementById('global-parent-category-select'),
+            document.getElementById('unit-price-parent-category-select')
+        ];
 
-    // バーコード検出時のイベントリスナーを設定
-    Quagga.onDetected(handleBarcodeDetected);
+        parentCategorySelects.forEach(select => {
+            if (select) {
+                select.innerHTML = '<option value="">親カテゴリを選択</option>';
+
+                categories.filter(cat => cat.parentId === null).forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.text = category.name;
+                    select.appendChild(option);
+                });
+            }
+        });
+
+        updateProductCategorySelects();
+        updateGlobalSubcategorySelect();
+        updateUnitPriceSubcategorySelect();
+
+        displayCategories();
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching categories:', event.target.error);
+        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+    };
 }
 
 /**
- * バーコードが検出されたときの処理
- * @param {Object} result - Quagga.jsからの検出結果
+ * カテゴリをデータベースに保存する関数
+ * @param {Object} category - 保存するカテゴリ情報
  */
-function handleBarcodeDetected(result) {
-    const code = result.codeResult.code;
-    console.log('バーコード検出:', code);
+export function saveCategoryToDB(category) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
 
-    // 重複検出を防ぐためにQuaggaを一時停止
-    Quagga.pause();
+    const transaction = db.transaction(['categories'], 'readwrite');
+    const store = transaction.objectStore('categories');
+    const addRequest = store.add(category);
 
-    // 商品を検索し、結果に基づいてアラートを表示
-    findProductByBarcode(code).then(product => {
-        if (product) {
-            alert(`商品名: ${product.name}\n数量: ${product.quantity}`);
-            // 必要に応じてUIを更新
+    addRequest.onsuccess = () => {
+        console.log(`Category "${category.name}" saved successfully.`);
+        updateCategorySelects();
+        displayCategories();
+    };
+
+    addRequest.onerror = (event) => {
+        console.error('Error saving category:', event.target.error);
+        showErrorModal('カテゴリの保存中にエラーが発生しました。');
+    };
+}
+
+/**
+ * カテゴリ一覧を表示する関数
+ */
+export function displayCategories() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const categoryList = document.getElementById('category-list');
+        if (categoryList) {
+            categoryList.innerHTML = '';
+
+            categories.filter(cat => cat.parentId === null).forEach(parentCategory => {
+                const parentDiv = document.createElement('div');
+                parentDiv.className = 'parent-category';
+                parentDiv.textContent = parentCategory.name;
+
+                const editParentButton = document.createElement('button');
+                editParentButton.textContent = '編集';
+                editParentButton.className = 'category-button';
+                editParentButton.addEventListener('click', () => {
+                    const newName = prompt('新しいカテゴリ名を入力してください:', parentCategory.name);
+                    if (newName) {
+                        parentCategory.name = newName;
+                        const transaction = db.transaction(['categories'], 'readwrite');
+                        const store = transaction.objectStore('categories');
+                        store.put(parentCategory);
+
+                        transaction.oncomplete = () => {
+                            console.log(`Category "${newName}" updated successfully.`);
+                            displayCategories();
+                            updateCategorySelects();
+                        };
+
+                        transaction.onerror = (event) => {
+                            console.error('Error updating category:', event.target.error);
+                            showErrorModal('カテゴリの更新中にエラーが発生しました。');
+                        };
+                    }
+                });
+                parentDiv.appendChild(editParentButton);
+
+                const deleteParentButton = document.createElement('button');
+                deleteParentButton.textContent = '削除';
+                deleteParentButton.className = 'category-button';
+                deleteParentButton.addEventListener('click', () => {
+                    if (confirm('このカテゴリとそのサブカテゴリを削除しますか？')) {
+                        deleteCategoryAndSubcategories(parentCategory.id);
+                    }
+                });
+                parentDiv.appendChild(deleteParentButton);
+
+                const subcategories = categories.filter(cat => cat.parentId === parentCategory.id);
+                subcategories.forEach(subcategory => {
+                    const subDiv = document.createElement('div');
+                    subDiv.className = 'subcategory';
+                    subDiv.textContent = ` - ${subcategory.name}`;
+
+                    const editSubButton = document.createElement('button');
+                    editSubButton.textContent = '編集';
+                    editSubButton.className = 'category-button';
+                    editSubButton.addEventListener('click', () => {
+                        const newName = prompt('新しいサブカテゴリ名を入力してください:', subcategory.name);
+                        if (newName) {
+                            subcategory.name = newName;
+                            const transaction = db.transaction(['categories'], 'readwrite');
+                            const store = transaction.objectStore('categories');
+                            store.put(subcategory);
+
+                            transaction.oncomplete = () => {
+                                console.log(`Subcategory "${newName}" updated successfully.`);
+                                displayCategories();
+                                updateCategorySelects();
+                            };
+
+                            transaction.onerror = (event) => {
+                                console.error('Error updating subcategory:', event.target.error);
+                                showErrorModal('サブカテゴリの更新中にエラーが発生しました。');
+                            };
+                        }
+                    });
+                    subDiv.appendChild(editSubButton);
+
+                    const deleteSubButton = document.createElement('button');
+                    deleteSubButton.textContent = '削除';
+                    deleteSubButton.className = 'category-button';
+                    deleteSubButton.addEventListener('click', () => {
+                        if (confirm('このサブカテゴリを削除しますか？')) {
+                            deleteCategory(subcategory.id);
+                        }
+                    });
+                    subDiv.appendChild(deleteSubButton);
+
+                    parentDiv.appendChild(subDiv);
+                });
+
+                categoryList.appendChild(parentDiv);
+            });
         } else {
-            alert('該当する商品が見つかりませんでした。');
+            console.error("category-list が見つかりません。");
+            showErrorModal('カテゴリ一覧の表示エリアが見つかりません。');
         }
-        // スキャンを再開
-        Quagga.resume();
-    }).catch(error => {
-        console.error('商品検索エラー:', error);
-        showErrorModal('商品検索中にエラーが発生しました。');
-        // スキャンを再開
-        Quagga.resume();
-    });
+    };
+
+    request.onerror = (event) => {
+        console.error('Error fetching categories for display:', event.target.error);
+        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+    };
 }
 
 /**
- * Quagga.jsを停止する関数
+ * カテゴリとそのサブカテゴリを削除する関数
+ * @param {number} categoryId - 削除するカテゴリのID
  */
-export function stopQuagga() {
-    if (typeof Quagga !== 'undefined' && Quagga.active) {
-        Quagga.stop();
-        console.log('Quaggaが停止されました。');
+function deleteCategoryAndSubcategories(categoryId) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
     }
+
+    const transaction = db.transaction(['categories'], 'readwrite');
+    const store = transaction.objectStore('categories');
+    const index = store.index('parentId');
+
+    // 親カテゴリを削除
+    store.delete(categoryId);
+
+    // サブカテゴリを取得して削除
+    const subRequest = index.getAll(categoryId);
+    subRequest.onsuccess = (event) => {
+        const subcategories = event.target.result;
+        subcategories.forEach(subcategory => {
+            store.delete(subcategory.id);
+        });
+    };
+
+    subRequest.onerror = (event) => {
+        console.error('Error fetching subcategories for deletion:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+
+    transaction.oncomplete = () => {
+        console.log(`Category ID ${categoryId} and its subcategories deleted successfully.`);
+        displayCategories();
+        updateCategorySelects();
+    };
+
+    transaction.onerror = (event) => {
+        console.error('Error deleting category and subcategories:', event.target.error);
+        showErrorModal('カテゴリの削除中にエラーが発生しました。');
+    };
 }
+
+/**
+ * サブカテゴリを削除する関数
+ * @param {number} categoryId - 削除するサブカテゴリのID
+ */
+function deleteCategory(categoryId) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readwrite');
+    const store = transaction.objectStore('categories');
+    store.delete(categoryId);
+
+    transaction.oncomplete = () => {
+        console.log(`Category with ID ${categoryId} deleted successfully.`);
+        displayCategories();
+        updateCategorySelects();
+    };
+
+    transaction.onerror = (event) => {
+        console.error('Error deleting category:', event.target.error);
+        showErrorModal('カテゴリの削除中にエラーが発生しました。');
+    };
+}
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('categories.js が正しく読み込まれました。');
