@@ -7,7 +7,7 @@ export let db;
  */
 export function initializeDatabase() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('inventoryDB', 14); // バージョン番号を14に更新
+        const request = indexedDB.open('inventoryDB', 15); // バージョン番号を15に更新
 
         request.onupgradeneeded = function(event) {
             db = event.target.result;
@@ -41,15 +41,34 @@ export function initializeDatabase() {
                 salesStore.createIndex('productName', 'productName', { unique: false });
             }
 
-            // グローバル在庫ストアの作成
+            // グローバル在庫ストアの作成または更新
             if (!db.objectStoreNames.contains('globalInventory')) {
                 const globalInventoryStore = db.createObjectStore('globalInventory', {
                     keyPath: 'id',          // keyPathを'subcategoryId'から'id'に変更
                     autoIncrement: true     // 自動インクリメントを有効にする
                 });
+                globalInventoryStore.createIndex('productId', 'productId', { unique: false }); // 新規追加
                 globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
                 globalInventoryStore.createIndex('name', 'name', { unique: false });
                 globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
+            } else {
+                // 既存の 'globalInventory' ストアに 'productId' インデックスがない場合、追加
+                const transaction = event.target.transaction;
+                const store = transaction.objectStore('globalInventory');
+
+                if (!store.indexNames.contains('productId')) {
+                    store.createIndex('productId', 'productId', { unique: false });
+                    console.log('productId インデックスを globalInventory ストアに追加しました。');
+                }
+
+                // 必要に応じて 'subcategoryId' インデックスを削除
+                // 例えば、不要であれば以下のコメントを外して削除します
+                /*
+                if (store.indexNames.contains('subcategoryId')) {
+                    store.deleteIndex('subcategoryId');
+                    console.log('subcategoryId インデックスを globalInventory ストアから削除しました。');
+                }
+                */
             }
 
             // 単価ストアの作成
@@ -78,5 +97,5 @@ export function initializeDatabase() {
             console.error('Database error:', event.target.errorCode);
             reject(event.target.error); // エラーを通知
         };
-    });
+    }
 }
