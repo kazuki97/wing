@@ -1,4 +1,3 @@
-// inventory.js
 import { db, initializeDatabase, verifyAndFixInventoryData } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
