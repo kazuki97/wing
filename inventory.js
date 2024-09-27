@@ -33,6 +33,40 @@ export function saveUnitPriceToDB(unitPrice) {
 }
 
 /**
+ * 在庫アイテムを追加する関数
+ * @param {Object} inventoryItem - 追加する在庫アイテム
+ * @returns {Promise<void>}
+ */
+export function addInventoryItem(inventoryItem) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('データベースが初期化されていません。'));
+            return;
+        }
+
+        // productId を使用するように修正
+        const transaction = db.transaction(['globalInventory'], 'readwrite');
+        const store = transaction.objectStore('globalInventory');
+        const addRequest = store.add({
+            productId: inventoryItem.productId, // 正しく productId を使用
+            quantity: inventoryItem.quantity
+        });
+
+        addRequest.onsuccess = () => {
+            console.log('在庫アイテムが正常に追加されました。');
+            displayGlobalInventory();
+            resolve();
+        };
+
+        addRequest.onerror = (event) => {
+            console.error('在庫アイテムの追加中にエラーが発生しました:', event.target.error);
+            showErrorModal('在庫アイテムの追加中にエラーが発生しました。');
+            reject(event.target.error);
+        };
+    });
+}
+
+/**
  * 単価の表示を行う関数
  */
 export function displayUnitPrices() {
@@ -385,32 +419,6 @@ export async function displayGlobalInventory() {
 }
 
 /**
- * 在庫アイテムを削除する関数
- * @param {number} id - 削除する在庫アイテムのID
- */
-export function deleteInventoryItem(id) {
-    if (!db) {
-        console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['globalInventory'], 'readwrite');
-    const store = transaction.objectStore('globalInventory');
-    const deleteRequest = store.delete(id);
-
-    deleteRequest.onsuccess = () => {
-        console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
-        displayGlobalInventory();  // 再表示
-    };
-
-    deleteRequest.onerror = (event) => {
-        console.error('在庫削除中にエラーが発生しました:', event.target.error);
-        showErrorModal('在庫削除中にエラーが発生しました。');
-    };
-}
-
-/**
  * 在庫編集フォームを表示する関数
  * @param {Object} inventoryItem - 編集する在庫アイテム
  * @param {Object} product - 編集対象の在庫アイテムに関連する商品
@@ -517,6 +525,70 @@ export function addTestInventoryItems() {
             console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
         };
     });
+}
+
+/**
+ * 在庫データの整合性を確認し、必要に応じて修正する関数
+ */
+export async function verifyAndFixInventoryData() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const request = store.getAll();
+
+    request.onsuccess = async (event) => {
+        const globalInventory = event.target.result;
+
+        for (const item of globalInventory) {
+            if (typeof item.productId === 'undefined' || item.productId === null) {
+                console.warn('未定義の productId を持つ在庫アイテム:', item);
+                // ここで適切な処理を行います。例えば削除するか、修正する。
+                // 以下は削除の例です。
+                try {
+                    await deleteInventoryItem(item.id);
+                    console.log(`未定義の productId を持つ在庫アイテム (ID: ${item.id}) を削除しました。`);
+                } catch (error) {
+                    console.error(`在庫アイテム (ID: ${item.id}) の削除中にエラーが発生しました:`, error);
+                }
+            }
+        }
+
+        console.log('在庫データの整合性確認が完了しました。');
+    };
+
+    request.onerror = (event) => {
+        console.error('在庫データの取得中にエラーが発生しました:', event.target.error);
+    };
+}
+
+/**
+ * 在庫アイテムを削除する関数
+ * @param {number} id - 削除する在庫アイテムのID
+ */
+export function deleteInventoryItem(id) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const deleteRequest = store.delete(id);
+
+    deleteRequest.onsuccess = () => {
+        console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
+        displayGlobalInventory();  // 再表示
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('在庫削除中にエラーが発生しました:', event.target.error);
+        showErrorModal('在庫削除中にエラーが発生しました。');
+    };
 }
 
 // テスト用のログ（正常に読み込まれているか確認）
