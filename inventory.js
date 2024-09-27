@@ -285,6 +285,11 @@ function getProductById(productId) {
             return;
         }
 
+        if (typeof productId === 'undefined' || productId === null) {
+            reject(new Error('有効な productId が指定されていません。'));
+            return;
+        }
+
         const transaction = db.transaction(['products'], 'readonly');
         const store = transaction.objectStore('products');
         const request = store.get(productId);
@@ -326,6 +331,12 @@ export async function displayGlobalInventory() {
             globalInventoryTableBody.innerHTML = '';
 
             for (const item of globalInventory) {
+                if (typeof item.productId === 'undefined' || item.productId === null) {
+                    console.error('在庫アイテムに未定義の productId が含まれています:', item);
+                    showErrorModal('在庫アイテムに未定義の productId が含まれています。');
+                    continue; // このアイテムの処理をスキップ
+                }
+
                 try {
                     const product = await getProductById(item.productId);
                     const row = globalInventoryTableBody.insertRow();
@@ -412,7 +423,7 @@ export function showEditInventoryForm(inventoryItem) {
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${inventoryItem.name}" disabled></label><br>
+                <label>商品名: <input type="text" id="edit-inventory-name" value="${inventoryItem.name || ''}" disabled></label><br>
                 <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
                 <button id="save-inventory-button">保存</button>
                 <button id="cancel-inventory-button">キャンセル</button>
@@ -494,11 +505,13 @@ export function addTestInventoryItems() {
     const store = transaction.objectStore('globalInventory');
 
     testItems.forEach(item => {
-        store.add(item).onsuccess = () => {
+        const addRequest = store.add(item);
+
+        addRequest.onsuccess = () => {
             console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
         };
 
-        store.add(item).onerror = (event) => {
+        addRequest.onerror = (event) => {
             console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
         };
     });
