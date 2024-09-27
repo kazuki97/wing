@@ -96,15 +96,37 @@ export function addTestProducts() {
         const transaction = db.transaction(['products'], 'readwrite');
         const store = transaction.objectStore('products');
 
-        testProducts.forEach(product => {
-            const addRequest = store.add(product);
-            addRequest.onsuccess = () => {
-                console.log(`テスト商品 (${product.name}) が追加されました。`);
-            };
-            addRequest.onerror = (event) => {
-                console.error(`テスト商品 (${product.name}) の追加中にエラーが発生しました:`, event.target.error);
-            };
-        });
+        // バーコードの一意性を確保するため、既存のバーコードをチェック
+        const barcodeSet = new Set();
+
+        const getAllRequest = store.getAll();
+
+        getAllRequest.onsuccess = (event) => {
+            const existingProducts = event.target.result;
+            existingProducts.forEach(product => {
+                barcodeSet.add(product.barcode);
+            });
+
+            testProducts.forEach(product => {
+                if (barcodeSet.has(product.barcode)) {
+                    console.warn(`テスト商品 (${product.name}) は既に存在します。スキップします。`);
+                    return;
+                }
+
+                const addRequest = store.add(product);
+                addRequest.onsuccess = () => {
+                    console.log(`テスト商品 (${product.name}) が追加されました。`);
+                };
+                addRequest.onerror = (event) => {
+                    console.error(`テスト商品 (${product.name}) の追加中にエラーが発生しました:`, event.target.error);
+                };
+            });
+        };
+
+        getAllRequest.onerror = (event) => {
+            console.error('既存商品の取得中にエラーが発生しました:', event.target.error);
+            reject(event.target.error);
+        };
 
         transaction.oncomplete = () => {
             resolve();
@@ -112,6 +134,57 @@ export function addTestProducts() {
 
         transaction.onerror = (event) => {
             console.error('テスト商品の追加中にトランザクションエラーが発生しました:', event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
+
+/**
+ * テスト用の在庫データを追加する関数
+ * @returns {Promise<void>}
+ */
+export function addTestInventoryItems() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('データベースが初期化されていません。'));
+            return;
+        }
+
+        // 追加する在庫アイテム
+        const testItems = [
+            { productId: 1, quantity: 100 },
+            { productId: 2, quantity: 50 },
+            { productId: 3, quantity: 200 }
+        ];
+
+        const transaction = db.transaction(['globalInventory'], 'readwrite');
+        const store = transaction.objectStore('globalInventory');
+
+        testItems.forEach(item => {
+            // productIdが存在するか確認
+            getProductById(item.productId)
+                .then(product => {
+                    const addRequest = store.add(item);
+                    addRequest.onsuccess = () => {
+                        console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
+                    };
+                    addRequest.onerror = (event) => {
+                        console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
+                    };
+                })
+                .catch(error => {
+                    console.error(`テスト在庫アイテムの追加に失敗しました。Product ID: ${item.productId} が存在しません。`, error);
+                    showErrorModal(`テスト在庫アイテムの追加に失敗しました。Product ID: ${item.productId} が存在しません。`);
+                });
+        });
+
+        transaction.oncomplete = () => {
+            console.log('すべてのテスト在庫データが追加されました。');
+            resolve();
+        };
+
+        transaction.onerror = (event) => {
+            console.error('テスト在庫データの追加中にトランザクションエラーが発生しました:', event.target.error);
             reject(event.target.error);
         };
     });
@@ -593,43 +666,3 @@ export function showEditInventoryForm(inventoryItem) {
             showErrorModal('商品データの取得に失敗しました。');
         });
 }
-
-/**
- * テスト用の在庫データを追加する関数
- */
-export function addTestInventoryItems() {
-    if (!db) {
-        console.error('Databaseが初期化されていません。');
-        return;
-    }
-
-    const testItems = [
-        { productId: 1, quantity: 100 },
-        { productId: 2, quantity: 50 },
-        { productId: 3, quantity: 200 }
-    ];
-
-    const transaction = db.transaction(['globalInventory'], 'readwrite');
-    const store = transaction.objectStore('globalInventory');
-
-    testItems.forEach(item => {
-        const addRequest = store.add(item);
-        addRequest.onsuccess = () => {
-            console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
-        };
-        addRequest.onerror = (event) => {
-            console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
-        };
-    });
-
-    transaction.oncomplete = () => {
-        console.log('すべてのテスト在庫データが追加されました。');
-    };
-
-    transaction.onerror = (event) => {
-        console.error('テスト在庫データの追加中にトランザクションエラーが発生しました:', event.target.error);
-    };
-}
-
-// テスト用のログ（正常に読み込まれているか確認）
-console.log('inventory.js が正しく読み込まれました。');
