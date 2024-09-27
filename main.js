@@ -8,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDatabase()
         .then(() => {
             initializeUI();
-            addTestProducts();        // テスト製品を追加
-            addTestInventoryItems();  // テスト在庫を追加
+            return addTestProducts();        // テスト製品を追加
+        })
+        .then(() => {
+            return addTestInventoryItems();  // テスト在庫を追加
         })
         .catch((error) => {
             console.error('Database initialization failed:', error);
