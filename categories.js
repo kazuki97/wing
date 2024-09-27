@@ -1,7 +1,7 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
-import { updateGlobalSubcategorySelect, updateUnitPriceSubcategorySelect } from './inventory.js';
+import { updateGlobalSubcategorySelect, updateUnitPriceSubcategorySelect, displayGlobalInventory } from './inventory.js';
 
 /**
  * カテゴリセレクトを更新する関数
@@ -40,11 +40,25 @@ export function updateCategorySelects() {
             }
         });
 
+        // サブカテゴリセレクトの更新
         updateProductCategorySelects();
         updateGlobalSubcategorySelect();
         updateUnitPriceSubcategorySelect();
 
+        // カテゴリ一覧の表示
         displayCategories();
+
+        // 在庫管理画面に表示するサブカテゴリの更新
+        const subcategorySelect = document.getElementById('global-subcategory-select');
+        if (subcategorySelect) {
+            subcategorySelect.addEventListener('change', () => {
+                const selectedSubcategoryId = Number(subcategorySelect.value);
+                if (selectedSubcategoryId) {
+                    // 在庫表示の関数にサブカテゴリIDを渡す
+                    displayGlobalInventory(selectedSubcategoryId);
+                }
+            });
+        }
     };
 
     request.onerror = (event) => {
