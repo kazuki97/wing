@@ -192,6 +192,46 @@ export function updateGlobalSubcategorySelect() {
 }
 
 /**
+ * 親カテゴリセレクトボックスを更新する関数（在庫管理用）
+ */
+export function updateInventoryParentCategorySelect() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const parentCategorySelect = document.getElementById('inventory-parent-category-select'); // 在庫管理の親カテゴリセレクト
+
+        if (parentCategorySelect) {
+            parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId === null) { // 親カテゴリのみを対象
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    parentCategorySelect.appendChild(option);
+                }
+            });
+        } else {
+            console.error('inventory-parent-category-select が見つかりません。');
+            showErrorModal('親カテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('親カテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('親カテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
  * 単価サブカテゴリセレクトを更新する関数
  */
 export function updateUnitPriceSubcategorySelect() {
