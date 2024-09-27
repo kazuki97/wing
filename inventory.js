@@ -1,7 +1,7 @@
 // inventory.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
-import { getProductById } from './products.js'; // 追加
+import { getProductById } from './products.js'; // 必要な関数をインポート
 
 /**
  * 単価をデータベースに保存する関数
@@ -170,12 +170,12 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const subcategorySelect = document.getElementById('inventory-subcategory-select'); // 修正箇所
+        const subcategorySelect = document.getElementById('inventory-subcategory-select'); // 在庫管理のサブカテゴリセレクト
 
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             categories.forEach(category => {
-                if (category.parentId === parentCategoryId) { // 修正箇所: 親カテゴリに基づいてサブカテゴリを表示
+                if (category.parentId === parentCategoryId) { // 親カテゴリに基づいてサブカテゴリを表示
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
@@ -195,7 +195,7 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
 }
 
 /**
- * 親カテゴリセレクトボックスを更新する関数（在庫管理用）
+ * 在庫管理用の親カテゴリセレクトボックスを更新する関数
  */
 export function updateInventoryParentCategorySelect() {
     if (!db) {
