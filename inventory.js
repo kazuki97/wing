@@ -322,7 +322,8 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
         return;
     }
 
-    const inventoryStore = db.transaction(['globalInventory'], 'readonly').objectStore('globalInventory');
+    const transaction = db.transaction(['globalInventory'], 'readonly');
+    const inventoryStore = transaction.objectStore('globalInventory');
     let inventoryItems = [];
 
     if (selectedSubcategoryId) {
