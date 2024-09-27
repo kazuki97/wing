@@ -1,14 +1,15 @@
 // main.js
 import { initializeUI } from './ui.js';
 import { initializeDatabase } from './db.js';
-import { addTestInventoryItems, addTestProducts } from './inventory.js'; // 必要に応じて追加
+import { addTestInventoryItems, addTestProducts } from './inventory.js'; // 必要な関数をインポート
+import { showErrorModal } from './errorHandling.js'; // エラーハンドリング用のインポート
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeDatabase()
         .then(() => {
             initializeUI();
-            addTestProducts();        // テスト製品を追加（必要に応じて）
-            addTestInventoryItems();  // テスト在庫を追加（必要に応じて）
+            addTestProducts();        // テスト製品を追加
+            addTestInventoryItems();  // テスト在庫を追加
         })
         .catch((error) => {
             console.error('Database initialization failed:', error);
