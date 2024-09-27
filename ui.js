@@ -1,49 +1,80 @@
-// ui.js
-import { initializeTransactionUI } from './transactions.js';
-import { updateCategorySelects, displayCategories } from './categories.js';
-import { displaySales } from './transactions.js';
-import { displayUnitPrices, displayGlobalInventory } from './inventory.js';
-import { initializeEventListeners } from './eventListeners.js';
-import { showErrorModal } from './errorHandling.js';
+// db.js
+export let db;
 
 /**
- * UIの初期化を行う関数
+ * データベースの初期化を行う関数
+ * @returns {Promise<void>} データベースの初期化が完了したら解決される
  */
-export function initializeUI() {
-    showSection('home');
-    initializeTransactionUI();
+export function initializeDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('inventoryDB', 15); // バージョン番号を15に更新
 
-    // 初期ロード処理
-    updateCategorySelects();
-    displayCategories();
-    displaySales();
-    displayUnitPrices();
-    displayGlobalInventory();
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
 
-    // イベントリスナーの初期化
-    initializeEventListeners();
-}
+            // カテゴリストアの作成
+            if (!db.objectStoreNames.contains('categories')) {
+                const categoryStore = db.createObjectStore('categories', {
+                    keyPath: 'id',
+                    autoIncrement: true
+                });
+                categoryStore.createIndex('parentId', 'parentId', { unique: false });
+            }
 
-/**
- * 指定されたセクションを表示し、他を非表示にする関数
- * @param {string} section - 表示するセクションの名前（idのプレフィックス）
- */
-export function showSection(section) {
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(sec => {
-        sec.style.display = 'none';
+            // 商品ストアの作成
+            if (!db.objectStoreNames.contains('products')) {
+                const productStore = db.createObjectStore('products', {
+                    keyPath: 'id',
+                    autoIncrement: true
+                });
+                productStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+                productStore.createIndex('barcode', 'barcode', { unique: true });
+                productStore.createIndex('name', 'name', { unique: false });
+            }
+
+            // 売上ストアの作成
+            if (!db.objectStoreNames.contains('sales')) {
+                const salesStore = db.createObjectStore('sales', {
+                    keyPath: 'id',
+                    autoIncrement: true
+                });
+                salesStore.createIndex('productName', 'productName', { unique: false });
+            }
+
+            // グローバル在庫ストアの作成
+            if (!db.objectStoreNames.contains('globalInventory')) {
+                const globalInventoryStore = db.createObjectStore('globalInventory', {
+                    keyPath: 'id',          // keyPathを'subcategoryId'から'id'に変更
+                    autoIncrement: true     // 自動インクリメントを有効にする
+                });
+                globalInventoryStore.createIndex('productId', 'productId', { unique: false }); // 追加
+                globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+                globalInventoryStore.createIndex('name', 'name', { unique: false });
+                globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
+            }
+
+            // 単価ストアの作成
+            if (!db.objectStoreNames.contains('unitPrices')) {
+                const unitPriceStore = db.createObjectStore('unitPrices', {
+                    keyPath: 'id',
+                    autoIncrement: true
+                });
+                unitPriceStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+            }
+
+            console.log('Database upgrade completed.');
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            console.log('Database initialized successfully.');
+
+            resolve(); // 初期化が完了したことを通知
+        };
+
+        request.onerror = function(event) {
+            console.error('Database error:', event.target.errorCode);
+            reject(event.target.error); // エラーを通知
+        };
     });
-
-    const targetSection = document.getElementById(`${section}-section`);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-    } else {
-        console.error(`セクション "${section}-section" が見つかりません。`);
-        showErrorModal(`セクション "${section}" が見つかりません。`);
-    }
 }
-
-// その他のUI関連関数があればここに追加
-
-// テスト用のログ（正常に読み込まれているか確認）
-console.log('ui.js が正しく読み込まれました。');
