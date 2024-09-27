@@ -1,4 +1,3 @@
-// products.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
@@ -203,6 +202,14 @@ export function getProductById(productId) {
             reject(event.target.error);
         };
     });
+}
+
+/**
+ * カテゴリセレクトボックスを更新する関数
+ */
+export function updateProductCategorySelects() {
+    console.log('Product category selects updated.');
+    // カテゴリセレクトを更新するロジックをここに追加
 }
 
 // テスト用のログ（正常に読み込まれているか確認）
