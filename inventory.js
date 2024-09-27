@@ -192,9 +192,9 @@ export function updateGlobalSubcategorySelect() {
 }
 
 /**
- * 単価サブカテゴリセレクトを更新する関数
+ * 親カテゴリセレクトを更新する関数
  */
-export function updateUnitPriceSubcategorySelect() {
+export function updateGlobalParentCategorySelect() {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -207,27 +207,27 @@ export function updateUnitPriceSubcategorySelect() {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
+        const parentCategorySelect = document.getElementById('global-parent-category-select');
 
-        if (subcategorySelect) {
-            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+        if (parentCategorySelect) {
+            parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
             categories.forEach(category => {
-                if (category.parentId !== null) { // サブカテゴリのみを対象
+                if (category.parentId === null) { // 親カテゴリのみを対象
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
-                    subcategorySelect.appendChild(option);
+                    parentCategorySelect.appendChild(option);
                 }
             });
         } else {
-            console.error('unit-price-subcategory-select が見つかりません。');
-            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
+            console.error('global-parent-category-select が見つかりません。');
+            showErrorModal('親カテゴリセレクトが見つかりません。');
         }
     };
 
     request.onerror = (event) => {
-        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+        console.error('親カテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('親カテゴリの取得中にエラーが発生しました。');
     };
 }
 
