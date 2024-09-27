@@ -1,80 +1,63 @@
-// db.js
-export let db;
+// ui.js
+import { 
+    displayUnitPrices, 
+    displayGlobalInventory, 
+    populateInventoryProductSelect, 
+    saveInventoryToDB 
+} from './inventory.js';
+import { showErrorModal } from './errorHandling.js';
 
 /**
- * データベースの初期化を行う関数
- * @returns {Promise<void>} データベースの初期化が完了したら解決される
+ * UIの初期化を行う関数
  */
-export function initializeDatabase() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('inventoryDB', 15); // バージョン番号を15に更新
+export function initializeUI() {
+    // 在庫管理セクションの初期化
+    populateInventoryProductSelect(); // 商品選択セレクトボックスを設定
+    displayUnitPrices();             // 単価一覧を表示
+    displayGlobalInventory();        // 全体在庫を表示
 
-        request.onupgradeneeded = function(event) {
-            db = event.target.result;
+    // 在庫追加フォームのイベントリスナー設定
+    const addInventoryButton = document.getElementById('add-inventory-button');
+    if (addInventoryButton) {
+        addInventoryButton.addEventListener('click', handleAddInventory);
+    } else {
+        console.error('add-inventory-button が見つかりません。');
+        showErrorModal('在庫追加ボタンが見つかりません。');
+    }
 
-            // カテゴリストアの作成
-            if (!db.objectStoreNames.contains('categories')) {
-                const categoryStore = db.createObjectStore('categories', {
-                    keyPath: 'id',
-                    autoIncrement: true
-                });
-                categoryStore.createIndex('parentId', 'parentId', { unique: false });
-            }
+    // 必要に応じて他のUI初期化処理をここに追加
+}
 
-            // 商品ストアの作成
-            if (!db.objectStoreNames.contains('products')) {
-                const productStore = db.createObjectStore('products', {
-                    keyPath: 'id',
-                    autoIncrement: true
-                });
-                productStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-                productStore.createIndex('barcode', 'barcode', { unique: true });
-                productStore.createIndex('name', 'name', { unique: false });
-            }
+/**
+ * 在庫追加ボタンのイベントハンドラー
+ */
+async function handleAddInventory() {
+    const productSelect = document.getElementById('inventory-product-select');
+    const quantityInput = document.getElementById('inventory-quantity');
 
-            // 売上ストアの作成
-            if (!db.objectStoreNames.contains('sales')) {
-                const salesStore = db.createObjectStore('sales', {
-                    keyPath: 'id',
-                    autoIncrement: true
-                });
-                salesStore.createIndex('productName', 'productName', { unique: false });
-            }
+    if (!productSelect || !quantityInput) {
+        showErrorModal('在庫追加フォームの要素が見つかりません。');
+        return;
+    }
 
-            // グローバル在庫ストアの作成
-            if (!db.objectStoreNames.contains('globalInventory')) {
-                const globalInventoryStore = db.createObjectStore('globalInventory', {
-                    keyPath: 'id',          // keyPathを'subcategoryId'から'id'に変更
-                    autoIncrement: true     // 自動インクリメントを有効にする
-                });
-                globalInventoryStore.createIndex('productId', 'productId', { unique: false }); // 追加
-                globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-                globalInventoryStore.createIndex('name', 'name', { unique: false });
-                globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
-            }
+    const productId = Number(productSelect.value);
+    const quantity = Number(quantityInput.value);
 
-            // 単価ストアの作成
-            if (!db.objectStoreNames.contains('unitPrices')) {
-                const unitPriceStore = db.createObjectStore('unitPrices', {
-                    keyPath: 'id',
-                    autoIncrement: true
-                });
-                unitPriceStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-            }
+    if (isNaN(productId) || isNaN(quantity) || quantity < 0) {
+        alert('正しい商品と数量を選択してください。');
+        return;
+    }
 
-            console.log('Database upgrade completed.');
-        };
+    const inventoryItem = { productId, quantity };
 
-        request.onsuccess = function(event) {
-            db = event.target.result;
-            console.log('Database initialized successfully.');
-
-            resolve(); // 初期化が完了したことを通知
-        };
-
-        request.onerror = function(event) {
-            console.error('Database error:', event.target.errorCode);
-            reject(event.target.error); // エラーを通知
-        };
-    });
+    try {
+        await saveInventoryToDB(inventoryItem);
+        alert('在庫が正常に追加されました。');
+        // フォームをリセット
+        productSelect.value = '';
+        quantityInput.value = '';
+    } catch (error) {
+        console.error('在庫の追加に失敗しました:', error);
+        showErrorModal('在庫の追加に失敗しました。');
+    }
 }
