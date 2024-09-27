@@ -45,11 +45,10 @@ export function addInventoryItem(inventoryItem) {
             return;
         }
 
-        // productId を使用するように修正
         const transaction = db.transaction(['globalInventory'], 'readwrite');
         const store = transaction.objectStore('globalInventory');
         const addRequest = store.add({
-            productId: inventoryItem.productId, // 正しく productId を使用
+            productId: inventoryItem.productId,
             quantity: inventoryItem.quantity
         });
 
@@ -275,7 +274,7 @@ export function showEditInventoryForm(inventoryItem, product) {
         if (!isNaN(editedQuantity)) {
             const updatedInventory = {
                 id: inventoryItem.id,
-                productId: inventoryItem.productId, // productId を保持
+                productId: inventoryItem.productId,
                 quantity: editedQuantity
             };
 
@@ -457,7 +456,7 @@ export async function getProductIdsBySubcategory(subcategoryId) {
 }
 
 /**
- * 在庫削除関数（実装が抜けているようなので追加します）
+ * 在庫削除関数
  * @param {number} id - 削除する在庫アイテムのID
  */
 export function deleteInventoryItem(id) {
