@@ -68,7 +68,7 @@ export function saveUnitPriceToDB(unitPrice) {
  */
 export function displayUnitPrices() {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -128,7 +128,7 @@ export function displayUnitPrices() {
  */
 export function deleteUnitPrice(id) {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
