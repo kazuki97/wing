@@ -346,6 +346,46 @@ export function showEditInventoryForm(inventoryItem, product) {
 }
 
 /**
+ * 単価サブカテゴリセレクトを更新する関数
+ */
+export function updateUnitPriceSubcategorySelect() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
+
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId !== null) { // サブカテゴリのみを対象
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    subcategorySelect.appendChild(option);
+                }
+            });
+        } else {
+            console.error('unit-price-subcategory-select が見つかりません。');
+            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
  * 単価をデータベースに保存する関数
  * @param {Object} unitPrice - 保存する単価情報
  * @returns {Promise<void>}
@@ -496,37 +536,10 @@ export function deleteUnitPrice(id) {
 }
 
 /**
- * 在庫削除関数
- * @param {number} id - 削除する在庫アイテムのID
+ * 単価編集フォームを表示する関数
+ * @param {Object} unitPrice - 編集する単価
  */
-export function deleteInventoryItem(id) {
-    if (!db) {
-        console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['globalInventory'], 'readwrite');
-    const store = transaction.objectStore('globalInventory');
-    const deleteRequest = store.delete(id);
-
-    deleteRequest.onsuccess = () => {
-        console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
-        displayGlobalInventory(); // 削除後に再表示
-    };
-
-    deleteRequest.onerror = (event) => {
-        console.error('在庫削除中にエラーが発生しました:', event.target.error);
-        showErrorModal('在庫削除中にエラーが発生しました。');
-    };
-}
-
-/**
- * 在庫編集フォームを表示する関数
- * @param {Object} inventoryItem - 編集する在庫アイテム
- * @param {Object} product - 編集対象の在庫アイテムに関連する商品
- */
-export function showEditInventoryForm(inventoryItem, product) {
+export function showEditUnitPriceForm(unitPrice) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
 
@@ -534,11 +547,12 @@ export function showEditInventoryForm(inventoryItem, product) {
         <div class="modal">
             <div class="modal-content">
                 <span class="close-button">&times;</span>
-                <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${product.name}" disabled></label><br>
-                <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
-                <button id="save-inventory-button">保存</button>
-                <button id="cancel-inventory-button">キャンセル</button>
+                <h3>単価を編集</h3>
+                <label>サブカテゴリID: <input type="number" id="edit-unit-price-subcategory-id" value="${unitPrice.subcategoryId}"></label><br>
+                <label>階層: <input type="text" id="edit-unit-price-tier" value="${unitPrice.tier}"></label><br>
+                <label>価格: <input type="number" id="edit-unit-price-price" value="${unitPrice.price}"></label><br>
+                <button id="save-unit-price-button">保存</button>
+                <button id="cancel-unit-price-button">キャンセル</button>
             </div>
         </div>
     `;
@@ -557,212 +571,46 @@ export function showEditInventoryForm(inventoryItem, product) {
     });
 
     // 保存ボタンのイベントリスナー
-    const saveButton = editForm.querySelector('#save-inventory-button');
+    const saveButton = editForm.querySelector('#save-unit-price-button');
     saveButton.addEventListener('click', async () => {
-        const editedQuantity = Number(editForm.querySelector('#edit-inventory-quantity').value.trim());
+        const editedSubcategoryId = Number(editForm.querySelector('#edit-unit-price-subcategory-id').value.trim());
+        const editedTier = editForm.querySelector('#edit-unit-price-tier').value.trim();
+        const editedPrice = Number(editForm.querySelector('#edit-unit-price-price').value.trim());
 
-        if (!isNaN(editedQuantity)) {
-            const updatedInventory = {
-                id: inventoryItem.id,
-                productId: inventoryItem.productId,
-                quantity: editedQuantity
+        if (!isNaN(editedSubcategoryId) && editedTier && !isNaN(editedPrice)) {
+            const updatedUnitPrice = {
+                id: unitPrice.id,
+                subcategoryId: editedSubcategoryId,
+                tier: editedTier,
+                price: editedPrice
             };
 
             try {
-                const transaction = db.transaction(['globalInventory'], 'readwrite');
-                const store = transaction.objectStore('globalInventory');
-                const updateRequest = store.put(updatedInventory);
+                const transaction = db.transaction(['unitPrices'], 'readwrite');
+                const store = transaction.objectStore('unitPrices');
+                const updateRequest = store.put(updatedUnitPrice);
 
                 updateRequest.onsuccess = () => {
-                    console.log('在庫が正常に更新されました。');
+                    console.log('単価が正常に更新されました。');
                     document.body.removeChild(editForm);
-                    displayGlobalInventory();  // 更新後に再表示
+                    displayUnitPrices();  // 更新後に再表示
                 };
 
                 updateRequest.onerror = (event) => {
-                    console.error('在庫の更新中にエラーが発生しました:', event.target.error);
-                    showErrorModal('在庫の更新中にエラーが発生しました。');
+                    console.error('単価の更新中にエラーが発生しました:', event.target.error);
+                    showErrorModal('単価の更新中にエラーが発生しました。');
                 };
             } catch (error) {
-                console.error('在庫の更新中に例外が発生しました:', error);
-                showErrorModal('在庫の更新中に予期せぬエラーが発生しました。');
+                console.error('単価の更新中に例外が発生しました:', error);
+                showErrorModal('単価の更新中に予期せぬエラーが発生しました。');
             }
         } else {
-            alert('数量を正しく入力してください。');
+            alert('すべての項目を正しく入力してください。');
         }
     });
 
     // キャンセルボタンのイベントリスナー
-    const cancelButton = editForm.querySelector('#cancel-inventory-button');
-    cancelButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
-}
-
-/**
- * 単価サブカテゴリセレクトを更新する関数
- */
-export function updateUnitPriceSubcategorySelect() {
-    if (!db) {
-        console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const categories = event.target.result;
-        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
-
-        if (subcategorySelect) {
-            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-            categories.forEach(category => {
-                if (category.parentId !== null) { // サブカテゴリのみを対象
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    subcategorySelect.appendChild(option);
-                }
-            });
-        } else {
-            console.error('unit-price-subcategory-select が見つかりません。');
-            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-    };
-}
-
-/**
- * 商品IDから商品情報を取得する関数
- * @param {number} productId - 商品のID
- * @returns {Promise<Object>} - 商品情報
- */
-export function getProductById(productId) {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['products'], 'readonly');
-        const store = transaction.objectStore('products');
-        const request = store.get(productId);
-
-        request.onsuccess = (event) => {
-            const product = event.target.result;
-            if (product) {
-                resolve(product);
-            } else {
-                reject(new Error(`Product with ID ${productId} not found.`));
-            }
-        };
-
-        request.onerror = (event) => {
-            reject(event.target.error);
-        };
-    });
-}
-
-/**
- * 指定された親カテゴリIDに属する商品IDのリストを取得する関数
- * @param {number} parentCategoryId - 親カテゴリのID
- * @returns {Promise<number[]>} - 商品IDのリスト
- */
-export async function getProductIdsByParentCategory(parentCategoryId) {
-    console.log('Fetching product IDs for parentCategoryId:', parentCategoryId);
-    return new Promise((resolve, reject) => {
-        const productsStore = db.transaction(['products'], 'readonly').objectStore('products');
-        const index = productsStore.index('parentId'); // 親カテゴリIDでインデックスが設定されていると仮定
-        const request = index.getAll(IDBKeyRange.only(parentCategoryId));
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            const productIds = products.map(product => product.id);
-            resolve(productIds);
-        };
-
-        request.onerror = (event) => {
-            console.error('親カテゴリIDで商品を取得中にエラーが発生しました:', event.target.error);
-            reject(event.target.error);
-        };
-    });
-}
-
-/**
- * 在庫編集フォームを表示する関数
- * @param {Object} inventoryItem - 編集する在庫アイテム
- * @param {Object} product - 編集対象の在庫アイテムに関連する商品
- */
-export function showEditInventoryForm(inventoryItem, product) {
-    const editForm = document.createElement('div');
-    editForm.className = 'edit-form';
-
-    editForm.innerHTML = `
-        <div class="modal">
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${product.name}" disabled></label><br>
-                <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
-                <button id="save-inventory-button">保存</button>
-                <button id="cancel-inventory-button">キャンセル</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(editForm);
-
-    const modal = editForm.querySelector('.modal');
-    const closeButton = editForm.querySelector('.close-button');
-
-    // モーダルを表示
-    modal.style.display = 'block';
-
-    // 閉じるボタンのイベントリスナー
-    closeButton.addEventListener('click', () => {
-        document.body.removeChild(editForm);
-    });
-
-    // 保存ボタンのイベントリスナー
-    const saveButton = editForm.querySelector('#save-inventory-button');
-    saveButton.addEventListener('click', async () => {
-        const editedQuantity = Number(editForm.querySelector('#edit-inventory-quantity').value.trim());
-
-        if (!isNaN(editedQuantity)) {
-            const updatedInventory = {
-                id: inventoryItem.id,
-                productId: inventoryItem.productId,
-                quantity: editedQuantity
-            };
-
-            try {
-                const transaction = db.transaction(['globalInventory'], 'readwrite');
-                const store = transaction.objectStore('globalInventory');
-                const updateRequest = store.put(updatedInventory);
-
-                updateRequest.onsuccess = () => {
-                    console.log('在庫が正常に更新されました。');
-                    document.body.removeChild(editForm);
-                    displayGlobalInventory();  // 更新後に再表示
-                };
-
-                updateRequest.onerror = (event) => {
-                    console.error('在庫の更新中にエラーが発生しました:', event.target.error);
-                    showErrorModal('在庫の更新中にエラーが発生しました。');
-                };
-            } catch (error) {
-                console.error('在庫の更新中に例外が発生しました:', error);
-                showErrorModal('在庫の更新中に予期せぬエラーが発生しました。');
-            }
-        } else {
-            alert('数量を正しく入力してください。');
-        }
-    });
-
-    // キャンセルボタンのイベントリスナー
-    const cancelButton = editForm.querySelector('#cancel-inventory-button');
+    const cancelButton = editForm.querySelector('#cancel-unit-price-button');
     cancelButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
     });
