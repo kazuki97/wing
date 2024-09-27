@@ -2,7 +2,7 @@
 import { initializeTransactionUI } from './transactions.js';
 import { updateCategorySelects, displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
-import { displayUnitPrices, displayGlobalInventory } from './inventory.js';
+import { displayUnitPrices, displayGlobalInventory, updateInventoryParentCategorySelect } from './inventory.js'; // 追加
 import { initializeEventListeners } from './eventListeners.js';
 import { showErrorModal } from './errorHandling.js';
 
@@ -15,6 +15,7 @@ export function initializeUI() {
 
     // 初期ロード処理
     updateCategorySelects();
+    updateInventoryParentCategorySelect(); // 追加
     displayCategories();
     displaySales();
     displayUnitPrices();
