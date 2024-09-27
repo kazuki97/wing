@@ -1,4 +1,3 @@
-// db.js
 export let db;
 
 /**
@@ -30,6 +29,15 @@ export function initializeDatabase() {
                 productStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
                 productStore.createIndex('barcode', 'barcode', { unique: true });
                 productStore.createIndex('name', 'name', { unique: false });
+                productStore.createIndex('parentId', 'parentId', { unique: false }); // parentIdインデックスを追加
+            } else {
+                // 既存の products ストアに 'parentId' インデックスがない場合、追加
+                const transaction = event.target.transaction;
+                const productStore = transaction.objectStore('products');
+                if (!productStore.indexNames.contains('parentId')) {
+                    productStore.createIndex('parentId', 'parentId', { unique: false });
+                    console.log('parentId インデックスを products ストアに追加しました。');
+                }
             }
 
             // 売上ストアの作成
@@ -60,15 +68,6 @@ export function initializeDatabase() {
                     store.createIndex('productId', 'productId', { unique: false });
                     console.log('productId インデックスを globalInventory ストアに追加しました。');
                 }
-
-                // 必要に応じて 'subcategoryId' インデックスを削除
-                // 例えば、不要であれば以下のコメントを外して削除します
-                /*
-                if (store.indexNames.contains('subcategoryId')) {
-                    store.deleteIndex('subcategoryId');
-                    console.log('subcategoryId インデックスを globalInventory ストアから削除しました。');
-                }
-                */
             }
 
             // 単価ストアの作成
@@ -86,10 +85,6 @@ export function initializeDatabase() {
         request.onsuccess = function(event) {
             db = event.target.result;
             console.log('Database initialized successfully.');
-
-            // データベースのバージョンが変更された場合、不要なオブジェクトストアを削除することも検討できます
-            // ただし、データ損失に注意が必要です
-
             resolve(); // 初期化が完了したことを通知
         };
 
@@ -111,8 +106,6 @@ export function deleteDatabase() {
         // データベースを再初期化する場合は initializeDatabase() を呼び出します
         initializeDatabase().then(() => {
             console.log('データベースが再初期化されました。');
-            // 必要に応じてテストデータを再追加
-            // addTestInventoryItems();
         }).catch(error => {
             console.error('データベースの再初期化中にエラーが発生しました:', error);
         });
@@ -147,8 +140,6 @@ export async function verifyAndFixInventoryData() {
         for (const item of globalInventory) {
             if (typeof item.productId === 'undefined' || item.productId === null) {
                 console.warn('未定義の productId を持つ在庫アイテム:', item);
-                // ここで適切な処理を行います。例えば削除するか、修正する。
-                // 以下は削除の例です。
                 try {
                     await deleteInventoryItem(item.id);
                     console.log(`未定義の productId を持つ在庫アイテム (ID: ${item.id}) を削除しました。`);
@@ -173,7 +164,6 @@ export async function verifyAndFixInventoryData() {
 export function deleteInventoryItem(id) {
     if (!db) {
         console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
         return;
     }
 
@@ -188,7 +178,6 @@ export function deleteInventoryItem(id) {
 
     deleteRequest.onerror = (event) => {
         console.error('在庫削除中にエラーが発生しました:', event.target.error);
-        showErrorModal('在庫削除中にエラーが発生しました。');
     };
 }
 
