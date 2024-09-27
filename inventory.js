@@ -1,5 +1,7 @@
+// inventory.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
+import { getProductById } from './products.js'; // 追加
 
 /**
  * 単価をデータベースに保存する関数
@@ -221,10 +223,10 @@ export function updateInventoryParentCategorySelect() {
                 }
             });
 
-            // 修正箇所: 親カテゴリ選択に応じてサブカテゴリを更新
+            // 親カテゴリ選択に応じてサブカテゴリを更新
             parentCategorySelect.addEventListener('change', () => {
                 const selectedParentCategoryId = Number(parentCategorySelect.value);
-                updateGlobalSubcategorySelect(selectedParentCategoryId); // 選択された親カテゴリに基づいてサブカテゴリを更新
+                updateGlobalSubcategorySelect(selectedParentCategoryId);
             });
         } else {
             console.error('inventory-parent-category-select が見つかりません。');
@@ -361,7 +363,8 @@ export function showEditInventoryForm(inventoryItem, product) {
  * @param {number} [selectedSubcategoryId] - 選択されたサブカテゴリID（オプション）
  */
 export async function displayGlobalInventory(selectedSubcategoryId) {
-    console.log('displayGlobalInventory called with subcategoryId:', selectedSubcategoryId);
+    console.log('displayGlobalInventory が呼び出されました。');
+    console.log('選択されたサブカテゴリID:', selectedSubcategoryId);
 
     if (!db) {
         console.error('Database is not initialized.');
@@ -389,7 +392,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
             // productIdに基づいて在庫アイテムを取得
             const promises = productIds.map(productId => {
                 return new Promise((resolve, reject) => {
-                    const transaction = db.transaction(['globalInventory'], 'readonly'); // ここで新たなトランザクションを作成
+                    const transaction = db.transaction(['globalInventory'], 'readonly'); // 新たなトランザクションを作成
                     const inventoryStore = transaction.objectStore('globalInventory');
                     const request = inventoryStore.index('productId').getAll(IDBKeyRange.only(productId));
                     request.onsuccess = (event) => {
