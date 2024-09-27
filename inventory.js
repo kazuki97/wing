@@ -7,7 +7,7 @@ import { showErrorModal } from './errorHandling.js';
  * @param {number} productId - 商品のID
  * @returns {Promise<Object>} - 商品の詳細オブジェクト
  */
-function getProductById(productId) {
+export function getProductById(productId) {
     return new Promise((resolve, reject) => {
         if (!db) {
             reject(new Error('データベースが初期化されていません。'));
@@ -28,6 +28,49 @@ function getProductById(productId) {
         };
 
         request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+}
+
+/**
+ * 商品一覧を取得して、在庫管理用のセレクトボックスを埋める関数
+ * @returns {Promise<void>}
+ */
+export function populateInventoryProductSelect() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('データベースが初期化されていません。'));
+            return;
+        }
+
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const request = store.getAll();
+
+        request.onsuccess = (event) => {
+            const products = event.target.result;
+            const productSelect = document.getElementById('inventory-product-select');
+
+            if (productSelect) {
+                productSelect.innerHTML = '<option value="">商品を選択</option>';
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.name;
+                    productSelect.appendChild(option);
+                });
+                resolve();
+            } else {
+                console.error('inventory-product-select が見つかりません。');
+                showErrorModal('在庫追加セレクトが見つかりません。');
+                reject(new Error('inventory-product-select が見つかりません。'));
+            }
+        };
+
+        request.onerror = (event) => {
+            console.error('商品一覧の取得中にエラーが発生しました:', event.target.error);
+            showErrorModal('商品一覧の取得中にエラーが発生しました。');
             reject(event.target.error);
         };
     });
