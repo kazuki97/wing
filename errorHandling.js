@@ -1,17 +1,27 @@
 // errorHandling.js
+/**
+ * エラーモーダルを表示する関数
+ * @param {string} message - 表示するエラーメッセージ
+ */
 export function showErrorModal(message) {
-    const errorMessage = document.getElementById('errorMessage');
     const errorModal = document.getElementById('errorModal');
-    const closeErrorModalButton = document.getElementById('closeErrorModal');
+    const errorMessage = document.getElementById('errorMessage');
+    const closeErrorModal = document.getElementById('closeErrorModal');
 
-    if (errorMessage && errorModal && closeErrorModalButton) {
+    if (errorModal && errorMessage && closeErrorModal) {
         errorMessage.textContent = message;
         errorModal.style.display = 'block';
 
-        closeErrorModalButton.onclick = () => {
+        closeErrorModal.onclick = () => {
             errorModal.style.display = 'none';
         };
+
+        window.onclick = (event) => {
+            if (event.target === errorModal) {
+                errorModal.style.display = 'none';
+            }
+        };
     } else {
-        alert(message);
+        console.error('エラーモーダルの要素が見つかりません。');
     }
 }
