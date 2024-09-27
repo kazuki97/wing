@@ -19,14 +19,11 @@
             <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
             <li><a href="#" id="link-sales">売上管理</a></li>
             <li><a href="#" id="link-unit-price">単価管理</a></li>
-            <!-- 必要に応じて以下を有効化 -->
-            <!-- <li><a href="#" id="link-global-inventory">全体在庫</a></li> -->
         </ul>
     </nav>
 
     <!-- 各セクションのコンテナ -->
     <div id="home-section" class="section active">
-        <!-- ホーム画面の内容 -->
         <h1>在庫管理システムへようこそ</h1>
         <p>ここでは、カテゴリ管理、商品管理、在庫管理、売上管理などの機能を使用できます。</p>
     </div>
@@ -34,41 +31,32 @@
     <!-- カテゴリ管理セクション -->
     <div id="category-section" class="section" style="display: none;">
         <h2>カテゴリ管理</h2>
-        <!-- 親カテゴリの追加フォーム -->
         <div>
             <h3>親カテゴリの追加</h3>
             <input type="text" id="parent-category-name" placeholder="親カテゴリ名">
             <button id="add-parent-category">追加</button>
         </div>
-        <!-- サブカテゴリの追加フォーム -->
         <div>
             <h3>サブカテゴリの追加</h3>
             <select id="parent-category-select">
                 <option value="">親カテゴリを選択</option>
-                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
             <input type="text" id="subcategory-name" placeholder="サブカテゴリ名">
             <button id="add-subcategory">追加</button>
         </div>
-        <!-- カテゴリ一覧の表示 -->
-        <div id="category-list">
-            <!-- JavaScriptでカテゴリ一覧を表示 -->
-        </div>
+        <div id="category-list"></div>
     </div>
 
     <!-- 商品管理セクション -->
     <div id="product-section" class="section" style="display: none;">
         <h2>商品管理</h2>
-        <!-- 商品追加フォーム -->
         <div>
             <h3>商品を追加</h3>
             <select id="product-parent-category-select">
                 <option value="">親カテゴリを選択</option>
-                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
             <select id="product-subcategory-select">
                 <option value="">サブカテゴリを選択</option>
-                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
             <input type="text" id="product-name" placeholder="商品名">
             <input type="number" id="product-quantity" placeholder="数量">
@@ -78,7 +66,6 @@
             <input type="number" id="product-unit-amount" placeholder="サイズ（量）">
             <button id="add-product">追加</button>
         </div>
-        <!-- 商品一覧の表示 -->
         <table id="product-table" border="1">
             <thead>
                 <tr>
@@ -92,20 +79,20 @@
                     <th>削除</th>
                 </tr>
             </thead>
-            <tbody>
-                <!-- JavaScriptで商品一覧を表示 -->
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 
     <!-- 在庫管理セクション -->
     <div id="inventory-section" class="section" style="display: none;">
         <h2>在庫管理</h2>
-        
-        <!-- グローバルサブカテゴリセレクト -->
-        <select id="global-subcategory-select">
+
+        <!-- 親カテゴリとサブカテゴリの選択 -->
+        <select id="inventory-parent-category-select">
+            <option value="">親カテゴリを選択</option>
+        </select>
+        <select id="inventory-subcategory-select">
             <option value="">サブカテゴリを選択</option>
-            <!-- JavaScriptで動的に選択肢を追加 -->
         </select>
 
         <!-- 在庫データを表示するためのテーブル -->
@@ -122,9 +109,7 @@
                     <th>削除</th>
                 </tr>
             </thead>
-            <tbody>
-                <!-- JavaScriptで在庫データを表示 -->
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 
@@ -138,13 +123,9 @@
     <!-- 売上管理セクション -->
     <div id="sales-section" class="section" style="display: none;">
         <h2>売上管理</h2>
-        <!-- 現在のトランザクション一覧 -->
-        <ul id="current-transaction-list">
-            <!-- JavaScriptで現在のトランザクションを表示 -->
-        </ul>
+        <ul id="current-transaction-list"></ul>
         <button id="complete-transaction">トランザクション完了</button>
         <button id="manualAddSalesButton">手動で売上を追加</button>
-        <!-- 売上一覧の表示 -->
         <table id="sales-table" border="1">
             <thead>
                 <tr>
@@ -153,31 +134,25 @@
                     <th>日時</th>
                 </tr>
             </thead>
-            <tbody>
-                <!-- JavaScriptで売上一覧を表示 -->
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 
     <!-- 単価管理セクション -->
     <div id="unit-price-section" class="section" style="display: none;">
         <h2>単価管理</h2>
-        <!-- 単価追加フォーム -->
         <div>
             <h3>単価を追加</h3>
             <select id="unit-price-parent-category-select">
                 <option value="">親カテゴリを選択</option>
-                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
             <select id="unit-price-subcategory-select">
                 <option value="">サブカテゴリを選択</option>
-                <!-- JavaScriptで動的に選択肢を追加 -->
             </select>
             <input type="number" id="unit-price-tier" placeholder="階層">
             <input type="number" id="unit-price-price" placeholder="価格">
             <button id="add-unit-price">追加</button>
         </div>
-        <!-- 単価一覧の表示 -->
         <table id="unit-price-table" border="1">
             <thead>
                 <tr>
@@ -188,9 +163,7 @@
                     <th>削除</th>
                 </tr>
             </thead>
-            <tbody>
-                <!-- JavaScriptで単価一覧を表示 -->
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 
