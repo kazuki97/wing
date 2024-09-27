@@ -2,57 +2,11 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
-export function updateProductCategorySelects() {
-    const productParentCategorySelect = document.getElementById('product-parent-category-select');
-    const productSubcategorySelect = document.getElementById('product-subcategory-select');
-
-    if (productParentCategorySelect) {
-        productParentCategorySelect.addEventListener('change', () => {
-            const parentCategoryId = productParentCategorySelect.value;
-            if (parentCategoryId) {
-                const transaction = db.transaction(['categories'], 'readonly');
-                const store = transaction.objectStore('categories');
-                const index = store.index('parentId');
-                const request = index.getAll(Number(parentCategoryId));
-
-                request.onsuccess = (event) => {
-                    const subcategories = event.target.result;
-                    if (productSubcategorySelect) {
-                        productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-
-                        subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.text = subcategory.name;
-                            productSubcategorySelect.appendChild(option);
-                        });
-                    }
-                };
-
-                request.onerror = (event) => {
-                    console.error('Error fetching subcategories for products:', event.target.error);
-                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-                };
-            } else {
-                if (productSubcategorySelect) {
-                    productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-                }
-            }
-        });
-    }
-
-    if (productSubcategorySelect) {
-        productSubcategorySelect.addEventListener('change', () => {
-            const subcategoryId = Number(productSubcategorySelect.value);
-            if (subcategoryId) {
-                displayProducts(subcategoryId);
-            } else {
-                console.error('No subcategory selected.');
-            }
-        });
-    }
-}
-
+/**
+ * 商品をデータベースに保存する関数
+ * @param {Object} product - 保存する商品情報
+ * @returns {Promise<void>}
+ */
 export function saveProductToDB(product) {
     const transaction = db.transaction(['products'], 'readwrite');
     const store = transaction.objectStore('products');
@@ -69,6 +23,10 @@ export function saveProductToDB(product) {
     };
 }
 
+/**
+ * 商品を表示する関数
+ * @param {number} subcategoryId - サブカテゴリID
+ */
 export function displayProducts(subcategoryId) {
     if (!db) {
         console.error('Database is not initialized.');
@@ -137,6 +95,11 @@ export function displayProducts(subcategoryId) {
     };
 }
 
+/**
+ * 商品編集フォームを表示する関数
+ * @param {Object} product - 編集する商品
+ * @param {number} subcategoryId - サブカテゴリID
+ */
 export function showEditProductForm(product, subcategoryId) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
@@ -215,3 +178,32 @@ export function showEditProductForm(product, subcategoryId) {
         document.body.removeChild(editForm);
     });
 }
+
+/**
+ * 商品IDから商品情報を取得する関数
+ * @param {number} productId - 商品のID
+ * @returns {Promise<Object>} - 商品情報
+ */
+export function getProductById(productId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['products'], 'readonly');
+        const store = transaction.objectStore('products');
+        const request = store.get(productId);
+
+        request.onsuccess = (event) => {
+            const product = event.target.result;
+            if (product) {
+                resolve(product);
+            } else {
+                reject(new Error(`Product with ID ${productId} not found.`));
+            }
+        };
+
+        request.onerror = (event) => {
+            reject(event.target.error);
+        };
+    });
+}
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('products.js が正しく読み込まれました。');
