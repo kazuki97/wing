@@ -1,4 +1,5 @@
-import { db, initializeDatabase, verifyAndFixInventoryData } from './db.js';
+// inventory.js
+import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
 /**
@@ -192,9 +193,9 @@ export function updateGlobalSubcategorySelect() {
 }
 
 /**
- * 親カテゴリセレクトを更新する関数
+ * 単価サブカテゴリセレクトを更新する関数
  */
-export function updateGlobalParentCategorySelect() {
+export function updateUnitPriceSubcategorySelect() {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -207,27 +208,27 @@ export function updateGlobalParentCategorySelect() {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const parentCategorySelect = document.getElementById('global-parent-category-select');
+        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
 
-        if (parentCategorySelect) {
-            parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             categories.forEach(category => {
-                if (category.parentId === null) { // 親カテゴリのみを対象
+                if (category.parentId !== null) { // サブカテゴリのみを対象
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
-                    parentCategorySelect.appendChild(option);
+                    subcategorySelect.appendChild(option);
                 }
             });
         } else {
-            console.error('global-parent-category-select が見つかりません。');
-            showErrorModal('親カテゴリセレクトが見つかりません。');
+            console.error('unit-price-subcategory-select が見つかりません。');
+            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
         }
     };
 
     request.onerror = (event) => {
-        console.error('親カテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('親カテゴリの取得中にエラーが発生しました。');
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
     };
 }
 
