@@ -215,3 +215,4 @@ export function showEditProductForm(product, subcategoryId) {
         document.body.removeChild(editForm);
     });
 }
+
