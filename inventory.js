@@ -180,11 +180,11 @@ export async function displayGlobalInventory(selectedParentCategoryId) {
                 const row = globalInventoryTableBody.insertRow();
 
                 row.insertCell(0).textContent = product.name;
-                row.insertCell(1).textContent = item.quantity; // 在庫数を表示
-                row.insertCell(2).textContent = product.price; // 商品の価格を表示
-                row.insertCell(3).textContent = product.cost; // 商品の原価を表示
-                row.insertCell(4).textContent = product.barcode; // バーコードを表示
-                row.insertCell(5).textContent = product.unitAmount; // サイズ（量）を表示
+                row.insertCell(1).textContent = item.quantity;
+                row.insertCell(2).textContent = product.price;
+                row.insertCell(3).textContent = product.cost;
+                row.insertCell(4).textContent = product.barcode;
+                row.insertCell(5).textContent = product.unitAmount;
 
                 // 編集ボタンの作成
                 const editButton = document.createElement('button');
@@ -649,4 +649,3 @@ export function addTestInventoryItems() {
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('inventory.js が正しく読み込まれました。');
-
