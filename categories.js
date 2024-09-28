@@ -4,8 +4,8 @@ import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { 
     updateGlobalSubcategorySelect, 
-    updateUnitPriceSubcategorySelect, 
-    displayGlobalInventory 
+    updateUnitPriceSubcategorySelect 
+    // displayGlobalInventory を削除
 } from './inventory.js';
 
 /**
