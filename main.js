@@ -3,12 +3,14 @@ import { initializeUI } from './ui.js';
 import { initializeDatabase } from './db.js';
 import { showErrorModal } from './errorHandling.js'; // 追加
 import { initializeCategories } from './categories.js'; // 追加
+import { initializeInventorySection } from './inventory.js'; // 追加
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeDatabase()
         .then(() => {
             initializeUI();
-            initializeCategories(); // 追加: カテゴリの初期化を呼び出す
+            initializeCategories(); // カテゴリの初期化を呼び出す
+            initializeInventorySection(); // 在庫管理セクションの初期化を呼び出す
         })
         .catch((error) => {
             console.error('Database initialization failed:', error);
