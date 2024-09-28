@@ -561,3 +561,4 @@ export function initializeInventorySection() {
 // ※ ここでの初期化呼び出しを削除しました。
 // モジュールの読み込み時に在庫管理セクションを初期化
 // initializeInventorySection();
+
