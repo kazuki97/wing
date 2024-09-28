@@ -1,7 +1,12 @@
+// categories.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
-import { updateGlobalSubcategorySelect, updateUnitPriceSubcategorySelect, displayGlobalInventory } from './inventory.js';
+import { 
+    updateGlobalSubcategorySelect, 
+    updateUnitPriceSubcategorySelect, 
+    displayGlobalInventory 
+} from './inventory.js';
 
 /**
  * カテゴリセレクトを更新する関数
@@ -24,7 +29,8 @@ export function updateCategorySelects() {
             document.getElementById('parent-category-select'),
             document.getElementById('product-parent-category-select'),
             document.getElementById('global-parent-category-select'),
-            document.getElementById('unit-price-parent-category-select')
+            document.getElementById('unit-price-parent-category-select'),
+            document.getElementById('inventory-parent-category-select') // 追加
         ];
 
         parentCategorySelects.forEach(select => {
@@ -44,26 +50,87 @@ export function updateCategorySelects() {
         updateProductCategorySelects();
         updateGlobalSubcategorySelect();
         updateUnitPriceSubcategorySelect();
+        updateInventorySubcategorySelect(); // 追加
 
         // カテゴリ一覧の表示
         displayCategories();
+    };
 
-        // 在庫管理画面に表示するサブカテゴリの更新
-        const subcategorySelect = document.getElementById('global-subcategory-select');
+    request.onerror = (event) => {
+        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 在庫管理用のサブカテゴリセレクトを更新する関数
+ */
+export function updateInventorySubcategorySelect() {
+    const parentCategorySelect = document.getElementById('inventory-parent-category-select');
+    if (parentCategorySelect) {
+        parentCategorySelect.addEventListener('change', () => {
+            const selectedParentId = Number(parentCategorySelect.value);
+            console.log('Selected Inventory Parent Category ID:', selectedParentId); // 追加: 選択された親カテゴリIDをログ出力
+            if (selectedParentId) {
+                // サブカテゴリセレクトを更新
+                updateGlobalSubcategorySelectForInventory(selectedParentId);
+            } else {
+                const subcategorySelect = document.getElementById('inventory-subcategory-select');
+                if (subcategorySelect) {
+                    subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                }
+            }
+        });
+    }
+}
+
+/**
+ * 在庫管理用のサブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリのID
+ */
+export function updateGlobalSubcategorySelectForInventory(parentCategoryId) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const index = store.index('parentId');
+    const request = index.getAll(parentCategoryId);
+
+    request.onsuccess = (event) => {
+        const subcategories = event.target.result;
+        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+
         if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+
+            subcategories.forEach(subcategory => {
+                const option = document.createElement('option');
+                option.value = subcategory.id;
+                option.text = subcategory.name;
+                subcategorySelect.appendChild(option);
+            });
+
+            // サブカテゴリセレクトボックスのイベントリスナーを設定
             subcategorySelect.addEventListener('change', () => {
                 const selectedSubcategoryId = Number(subcategorySelect.value);
+                console.log('Selected Inventory Subcategory ID:', selectedSubcategoryId); // 追加: 選択されたサブカテゴリIDをログ出力
                 if (selectedSubcategoryId) {
                     // 在庫表示の関数にサブカテゴリIDを渡す
                     displayGlobalInventory(selectedSubcategoryId);
+                } else {
+                    console.warn('サブカテゴリが選択されていません。');
                 }
             });
         }
     };
 
     request.onerror = (event) => {
-        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
     };
 }
 
