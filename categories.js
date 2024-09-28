@@ -118,12 +118,9 @@ export function updateGlobalSubcategorySelectForInventory(parentCategoryId) {
             subcategorySelect.addEventListener('change', () => {
                 const selectedSubcategoryId = Number(subcategorySelect.value);
                 console.log('Selected Inventory Subcategory ID:', selectedSubcategoryId); // 追加: 選択されたサブカテゴリIDをログ出力
-                if (selectedSubcategoryId) {
-                    // 在庫表示の関数にサブカテゴリIDを渡す
-                    displayGlobalInventory(selectedSubcategoryId);
-                } else {
-                    console.warn('サブカテゴリが選択されていません。');
-                }
+
+                // displayGlobalInventory の呼び出しを削除
+                // displayGlobalInventory(selectedSubcategoryId); // 削除済み
             });
         }
     };
