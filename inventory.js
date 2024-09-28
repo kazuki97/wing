@@ -141,7 +141,7 @@ export function displayUnitPrices() {
  */
 export function deleteUnitPrice(id) {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -166,7 +166,7 @@ export function deleteUnitPrice(id) {
  */
 export function updateUnitPriceSubcategorySelect() {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -207,7 +207,7 @@ export function updateUnitPriceSubcategorySelect() {
  */
 export function updateGlobalSubcategorySelect(parentCategoryId) {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -255,7 +255,7 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
  */
 export function updateInventoryParentCategorySelect() {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -302,7 +302,7 @@ export function updateInventoryParentCategorySelect() {
  */
 export function deleteInventoryItem(id) {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -558,7 +558,285 @@ export function initializeInventorySection() {
     updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
 
-// ※ ここでの初期化呼び出しを削除しました。
-// モジュールの読み込み時に在庫管理セクションを初期化
-// initializeInventorySection();
+/**
+ * 全体在庫管理機能の追加
+ */
 
+/**
+ * 全体在庫を登録する関数
+ * @param {Object} globalInventoryItem - 登録する全体在庫情報
+ * @returns {Promise<void>}
+ */
+export function saveGlobalInventoryToDB(globalInventoryItem) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('データベースが初期化されていません。'));
+            return;
+        }
+
+        const transaction = db.transaction(['globalInventory'], 'readwrite');
+        const store = transaction.objectStore('globalInventory');
+        const addRequest = store.add(globalInventoryItem);
+
+        addRequest.onsuccess = () => {
+            console.log('全体在庫が正常に保存されました。');
+            displayGlobalInventoryList(); // 一覧を更新
+            resolve();
+        };
+
+        addRequest.onerror = (event) => {
+            console.error('全体在庫の保存中にエラーが発生しました:', event.target.error);
+            showErrorModal('全体在庫の保存中にエラーが発生しました。');
+            reject(event.target.error);
+        };
+    });
+}
+
+/**
+ * 全体在庫を表示する関数（一覧）
+ */
+export function displayGlobalInventoryList() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['globalInventory'], 'readonly');
+    const store = transaction.objectStore('globalInventory');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const globalInventories = event.target.result;
+        const inventoryTableBody = document.querySelector('#global-inventory-section #global-inventory-table tbody');
+
+        if (inventoryTableBody) {
+            inventoryTableBody.innerHTML = '';
+
+            globalInventories.forEach(inventory => {
+                const row = inventoryTableBody.insertRow();
+                row.insertCell(0).textContent = inventory.subcategoryName; // サブカテゴリ名を表示
+                row.insertCell(1).textContent = inventory.quantity + 'g';
+
+                // 編集ボタンの作成
+                const editButton = document.createElement('button');
+                editButton.textContent = '編集';
+                editButton.className = 'inventory-edit-button';
+                editButton.addEventListener('click', () => {
+                    showEditGlobalInventoryForm(inventory);
+                });
+                row.insertCell(2).appendChild(editButton);
+
+                // 削除ボタンの作成
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '削除';
+                deleteButton.className = 'inventory-delete-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm(`${inventory.subcategoryName} の全体在庫を削除しますか？`)) {
+                        deleteGlobalInventory(inventory.id);
+                    }
+                });
+                row.insertCell(3).appendChild(deleteButton);
+            });
+
+            if (globalInventories.length === 0) {
+                const row = inventoryTableBody.insertRow();
+                const noDataCell = row.insertCell(0);
+                noDataCell.colSpan = 4; // 列数に合わせて調整
+                noDataCell.textContent = '全体在庫データがありません。';
+                row.appendChild(noDataCell);
+            }
+        } else {
+            console.error('global-inventory-table の tbody が見つかりません。');
+            showErrorModal('全体在庫一覧の表示エリアが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('全体在庫データの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('全体在庫データの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 全体在庫を編集するフォームを表示する関数
+ * @param {Object} inventory - 編集対象の全体在庫データ
+ */
+function showEditGlobalInventoryForm(inventory) {
+    const editForm = document.createElement('div');
+    editForm.className = 'edit-form';
+
+    editForm.innerHTML = `
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h3>全体在庫を編集</h3>
+                <label>サブカテゴリ名: <input type="text" id="edit-global-inventory-name" value="${inventory.subcategoryName}" disabled></label><br>
+                <label>数量 (g): <input type="number" id="edit-global-inventory-quantity" value="${inventory.quantity}"></label><br>
+                <button id="save-global-inventory-button">保存</button>
+                <button id="cancel-global-inventory-button">キャンセル</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(editForm);
+
+    const modal = editForm.querySelector('.modal');
+    const closeButton = editForm.querySelector('.close-button');
+
+    // モーダルを表示
+    modal.style.display = 'block';
+
+    // 閉じるボタンのイベントリスナー
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(editForm);
+    });
+
+    // 保存ボタンのイベントリスナー
+    const saveButton = editForm.querySelector('#save-global-inventory-button');
+    saveButton.addEventListener('click', () => {
+        const editedQuantity = Number(editForm.querySelector('#edit-global-inventory-quantity').value.trim());
+
+        if (!isNaN(editedQuantity)) {
+            const updatedInventory = {
+                id: inventory.id,
+                subcategoryName: inventory.subcategoryName,
+                quantity: editedQuantity
+            };
+
+            updateGlobalInventory(updatedInventory);
+            document.body.removeChild(editForm);
+        } else {
+            alert('数量を正しく入力してください。');
+        }
+    });
+
+    // キャンセルボタンのイベントリスナー
+    const cancelButton = editForm.querySelector('#cancel-global-inventory-button');
+    cancelButton.addEventListener('click', () => {
+        document.body.removeChild(editForm);
+    });
+}
+
+/**
+ * 全体在庫を更新する関数
+ * @param {Object} updatedInventory - 更新する全体在庫情報
+ */
+function updateGlobalInventory(updatedInventory) {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const updateRequest = store.put(updatedInventory);
+
+    updateRequest.onsuccess = () => {
+        console.log('全体在庫が正常に更新されました。');
+        displayGlobalInventoryList();
+    };
+
+    updateRequest.onerror = (event) => {
+        console.error('全体在庫の更新中にエラーが発生しました:', event.target.error);
+        showErrorModal('全体在庫の更新中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 全体在庫を削除する関数
+ * @param {number} id - 削除する全体在庫のID
+ */
+function deleteGlobalInventory(id) {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const deleteRequest = store.delete(id);
+
+    deleteRequest.onsuccess = () => {
+        console.log(`全体在庫 (ID: ${id}) が削除されました。`);
+        displayGlobalInventoryList();
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('全体在庫削除中にエラーが発生しました:', event.target.error);
+        showErrorModal('全体在庫削除中にエラーが発生しました。');
+    };
+}
+
+// 初期化時に全体在庫一覧を表示
+export function initializeGlobalInventorySection() {
+    displayGlobalInventoryList();
+}
+
+// 全体在庫登録ボタンのイベントリスナー
+document.getElementById('add-global-inventory').addEventListener('click', () => {
+    const parentCategorySelect = document.getElementById('global-parent-category-select');
+    const subcategorySelect = document.getElementById('global-subcategory-select');
+    const quantityInput = document.getElementById('global-inventory-quantity');
+
+    const parentCategoryId = Number(parentCategorySelect.value);
+    const subcategoryId = Number(subcategorySelect.value);
+    const quantity = Number(quantityInput.value.trim());
+
+    if (!parentCategoryId) {
+        alert('親カテゴリを選択してください。');
+        return;
+    }
+
+    if (!subcategoryId) {
+        alert('サブカテゴリを選択してください。');
+        return;
+    }
+
+    if (isNaN(quantity) || quantity <= 0) {
+        alert('有効な数量を入力してください。');
+        return;
+    }
+
+    // サブカテゴリ名を取得
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const getRequest = store.get(subcategoryId);
+
+    getRequest.onsuccess = (event) => {
+        const category = event.target.result;
+        if (category) {
+            const globalInventoryItem = {
+                subcategoryId: subcategoryId,
+                subcategoryName: category.name,
+                quantity: quantity
+            };
+
+            saveGlobalInventoryToDB(globalInventoryItem)
+                .then(() => {
+                    // 登録後、フォームをリセット
+                    parentCategorySelect.value = '';
+                    subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+                    quantityInput.value = '';
+                })
+                .catch(error => {
+                    console.error('全体在庫の登録に失敗しました:', error);
+                });
+        } else {
+            alert('選択されたサブカテゴリが見つかりません。');
+        }
+    };
+
+    getRequest.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+// 全体在庫管理セクションの初期化関数を呼び出す
+document.addEventListener('DOMContentLoaded', () => {
+    initializeInventorySection();
+    initializeGlobalInventorySection();
+});
