@@ -282,5 +282,42 @@ function deleteCategory(categoryId) {
     };
 }
 
+/**
+ * カテゴリとサブカテゴリの parentId をコンソールに出力する関数
+ */
+export function logCategoryParentIds() {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        console.log('カテゴリとサブカテゴリの parentId を表示します:');
+        categories.forEach(category => {
+            console.log(`ID: ${category.id}, Name: ${category.name}, parentId: ${category.parentId}`);
+        });
+    };
+
+    request.onerror = (event) => {
+        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 初期化時にログを出力する関数（オプション）
+ */
+export function initializeCategories() {
+    updateCategorySelects();
+    displayCategories();
+    logCategoryParentIds(); // 追加: parentId のログ出力
+}
+
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('categories.js が正しく読み込まれました。');
