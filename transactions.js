@@ -162,3 +162,4 @@ export function displaySales() {
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('transactions.js が正しく読み込まれました。');
+
