@@ -558,5 +558,6 @@ export function initializeInventorySection() {
     updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
 
+// ※ ここでの初期化呼び出しを削除しました。
 // モジュールの読み込み時に在庫管理セクションを初期化
-initializeInventorySection();
+// initializeInventorySection();
