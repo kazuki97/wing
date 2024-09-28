@@ -18,3 +18,4 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorModal('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
         });
 });
+
