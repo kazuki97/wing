@@ -1,9 +1,9 @@
-// main.js
 import { initializeUI } from './ui.js';
 import { initializeDatabase } from './db.js';
-import { showErrorModal } from './errorHandling.js'; // 追加
-import { initializeCategories } from './categories.js'; // 追加
-import { initializeInventorySection } from './inventory.js'; // 追加
+import { showErrorModal } from './errorHandling.js';
+import { initializeCategories } from './categories.js';
+// 分割後のファイルに置き換える
+import { initializeInventorySection } from './inventoryManagement.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeDatabase()
@@ -18,4 +18,3 @@ document.addEventListener('DOMContentLoaded', () => {
             showErrorModal('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
         });
 });
-
