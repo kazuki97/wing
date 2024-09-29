@@ -1,8 +1,8 @@
-// ui.js
 import { initializeTransactionUI } from './transactions.js';
 import { updateCategorySelects, displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
-import { displayUnitPrices, displayGlobalInventory } from './inventory.js';
+import { displayUnitPrices } from './unitPriceCategoryManagement.js'; // 修正: 単価管理機能は unitPriceCategoryManagement.js に移動
+import { displayGlobalInventory } from './inventoryManagement.js'; // 修正: 在庫管理機能は inventoryManagement.js に移動
 import { initializeEventListeners } from './eventListeners.js';
 import { showErrorModal } from './errorHandling.js';
 
