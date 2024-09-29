@@ -2,8 +2,9 @@ import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { 
-    updateGlobalSubcategorySelect 
-} from './inventoryManagement.js'; // 修正: 'updateUnitPriceSubcategorySelect' の参照を削除
+    updateGlobalSubcategorySelectForInventory // 修正: 正しい関数をインポート
+    // displayGlobalInventory を削除
+} from './inventoryManagement.js'; // 修正: inventory.js を inventoryManagement.js に変更
 
 /**
  * カテゴリセレクトを更新する関数
@@ -26,6 +27,7 @@ export function updateCategorySelects() {
             document.getElementById('parent-category-select'),
             document.getElementById('product-parent-category-select'),
             document.getElementById('global-parent-category-select'),
+            // document.getElementById('unit-price-parent-category-select'), // 削除: 今は単価セクションは不要
             document.getElementById('inventory-parent-category-select') // 追加
         ];
 
@@ -44,7 +46,7 @@ export function updateCategorySelects() {
 
         // サブカテゴリセレクトの更新
         updateProductCategorySelects();
-        updateGlobalSubcategorySelect();
+        updateGlobalSubcategorySelectForInventory(); // 修正: 正しい関数を使用
         updateInventorySubcategorySelect(); // 追加
 
         // カテゴリ一覧の表示
@@ -68,7 +70,7 @@ export function updateInventorySubcategorySelect() {
             console.log('Selected Inventory Parent Category ID:', selectedParentId); // 追加: 選択された親カテゴリIDをログ出力
             if (selectedParentId) {
                 // サブカテゴリセレクトを更新
-                updateGlobalSubcategorySelectForInventory(selectedParentId);
+                updateGlobalSubcategorySelectForInventory(selectedParentId); // 修正済み
             } else {
                 const subcategorySelect = document.getElementById('inventory-subcategory-select');
                 if (subcategorySelect) {
