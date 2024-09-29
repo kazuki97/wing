@@ -202,3 +202,4 @@ export function updateInventoryParentCategorySelect() {
         showErrorModal('親カテゴリの取得中にエラーが発生しました。');
     };
 }
+
