@@ -306,3 +306,4 @@ console.log('inventoryManagement.js が正しく読み込まれました。');
 export function initializeInventorySection() {
     updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
+
