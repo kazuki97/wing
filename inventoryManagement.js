@@ -156,6 +156,55 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
 }
 
 /**
+ * 指定されたサブカテゴリIDに基づいてグローバルサブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
+ */
+export function updateGlobalSubcategorySelect(parentCategoryId) {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId === parentCategoryId) {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    subcategorySelect.appendChild(option);
+                }
+            });
+
+            // サブカテゴリが選択された際に在庫を表示
+            subcategorySelect.addEventListener('change', () => {
+                const selectedSubcategoryId = Number(subcategorySelect.value);
+                if (selectedSubcategoryId) {
+                    displayGlobalInventory(selectedSubcategoryId); // サブカテゴリIDで商品データを取得
+                }
+            });
+        } else {
+            console.error('inventory-subcategory-select が見つかりません。');
+            showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
  * 指定されたサブカテゴリIDに属する商品IDのリストを取得する関数
  * @param {number} subcategoryId - サブカテゴリのID
  * @returns {Promise<number[]>} - 商品IDのリスト
@@ -306,4 +355,3 @@ console.log('inventoryManagement.js が正しく読み込まれました。');
 export function initializeInventorySection() {
     updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
-
