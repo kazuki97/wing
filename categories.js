@@ -1,12 +1,10 @@
-// categories.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { 
     updateGlobalSubcategorySelect, 
     updateUnitPriceSubcategorySelect 
-    // displayGlobalInventory を削除
-} from './inventory.js';
+} from './inventoryManagement.js'; // 修正: inventory.js を inventoryManagement.js に変更
 
 /**
  * カテゴリセレクトを更新する関数
