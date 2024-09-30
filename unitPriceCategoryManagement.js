@@ -1,6 +1,7 @@
 // unitPriceCategoryManagement.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
+import { displayGlobalInventory } from './inventoryManagement.js'; // 必要に応じてインポート
 
 /**
  * 単価をデータベースに保存する関数
@@ -158,7 +159,7 @@ export function updateUnitPriceSubcategorySelect() {
 }
 
 /**
- * グローバルサブカテゴリセレクトを更新する関数
+ * 在庫サブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリID
  */
 export function updateGlobalSubcategorySelect(parentCategoryId) {
@@ -284,11 +285,4 @@ export function addTestInventoryItems() {
 }
 
 // テスト用のログ（正常に読み込まれているか確認）
-console.log('inventoryManagement.js が正しく読み込まれました。');
-
-/**
- * 在庫管理セクションの初期化
- */
-export function initializeInventorySection() {
-    updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
-}
+console.log('unitPriceCategoryManagement.js が正しく読み込まれました。');
