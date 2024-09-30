@@ -158,6 +158,55 @@ export function updateUnitPriceSubcategorySelect() {
 }
 
 /**
+ * グローバルサブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
+ */
+export function updateGlobalSubcategorySelect(parentCategoryId) {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId === parentCategoryId) {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    subcategorySelect.appendChild(option);
+                }
+            });
+
+            // サブカテゴリが選択された際に在庫を表示
+            subcategorySelect.addEventListener('change', () => {
+                const selectedSubcategoryId = Number(subcategorySelect.value);
+                if (selectedSubcategoryId) {
+                    displayGlobalInventory(selectedSubcategoryId); // サブカテゴリIDで商品データを取得
+                }
+            });
+        } else {
+            console.error('inventory-subcategory-select が見つかりません。');
+            showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
  * 親カテゴリセレクトボックスを更新する関数（在庫管理用）
  */
 export function updateInventoryParentCategorySelect() {
@@ -203,3 +252,43 @@ export function updateInventoryParentCategorySelect() {
     };
 }
 
+/**
+ * テスト用の在庫データを追加する関数
+ */
+export function addTestInventoryItems() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        return;
+    }
+
+    const testItems = [
+        { productId: 1, quantity: 100 },
+        { productId: 2, quantity: 50 },
+        { productId: 3, quantity: 200 }
+    ];
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+
+    testItems.forEach(item => {
+        const addRequest = store.add(item);
+
+        addRequest.onsuccess = () => {
+            console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
+        };
+
+        addRequest.onerror = (event) => {
+            console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
+        };
+    });
+}
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('inventoryManagement.js が正しく読み込まれました。');
+
+/**
+ * 在庫管理セクションの初期化
+ */
+export function initializeInventorySection() {
+    updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
+}
