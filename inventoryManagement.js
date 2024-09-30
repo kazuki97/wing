@@ -1,6 +1,8 @@
 // inventoryManagement.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
+import { displayGlobalInventory } from './inventoryManagement.js'; // 同じファイル内での関数呼び出しの場合、インポートは不要です。
+// ただし、もし他のモジュールからの呼び出しが必要であれば適切にインポートしてください。
 
 /**
  * 在庫アイテムを追加する関数
@@ -306,4 +308,3 @@ console.log('inventoryManagement.js が正しく読み込まれました。');
 export function initializeInventorySection() {
     updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
-
