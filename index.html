@@ -16,7 +16,7 @@
             <li><a href="#" id="link-category">カテゴリ管理</a></li>
             <li><a href="#" id="link-product">商品管理</a></li>
             <li><a href="#" id="link-inventory">在庫管理</a></li>
-            <li><a href="#" id="link-global-inventory">全体在庫管理</a></li> <!-- 追加: 全体在庫管理 -->
+            <li><a href="#" id="link-global-inventory">全体在庫管理</a></li>
             <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
             <li><a href="#" id="link-sales">売上管理</a></li>
             <li><a href="#" id="link-unit-price">単価管理</a></li>
@@ -87,8 +87,6 @@
     <!-- 在庫管理セクション -->
     <div id="inventory-section" class="section" style="display: none;">
         <h2>在庫管理</h2>
-        
-        <!-- 親カテゴリとサブカテゴリの選択 -->
         <select id="inventory-parent-category-select">
             <option value="">親カテゴリを選択</option>
         </select>
@@ -117,8 +115,6 @@
     <!-- 全体在庫管理セクション -->
     <div id="global-inventory-section" class="section" style="display: none;">
         <h2>全体在庫管理</h2>
-        
-        <!-- 全体在庫を登録するためのフォーム -->
         <div>
             <h3>全体在庫の登録</h3>
             <select id="global-parent-category-select">
@@ -130,7 +126,7 @@
             <input type="number" id="global-inventory-quantity" placeholder="全体在庫の数量">
             <button id="add-global-inventory">追加</button>
         </div>
-        
+
         <!-- 全体在庫の一覧表示 -->
         <h3>全体在庫の一覧</h3>
         <table id="global-inventory-table" border="1">
@@ -174,24 +170,38 @@
     <!-- 単価管理セクション -->
     <div id="unit-price-section" class="section" style="display: none;">
         <h2>単価管理</h2>
+        
+        <!-- 親カテゴリとサブカテゴリの選択 -->
         <div>
-            <h3>単価を追加</h3>
+            <h3>単価を設定するサブカテゴリを選択</h3>
             <select id="unit-price-parent-category-select">
                 <option value="">親カテゴリを選択</option>
             </select>
             <select id="unit-price-subcategory-select">
                 <option value="">サブカテゴリを選択</option>
             </select>
-            <input type="number" id="unit-price-tier" placeholder="階層">
-            <input type="number" id="unit-price-price" placeholder="価格">
-            <button id="add-unit-price">追加</button>
         </div>
+
+        <!-- 単価の追加フォーム -->
+        <div>
+            <h3>単価の追加</h3>
+            <label for="unit-price-tier">範囲（ml単位）</label>
+            <input type="text" id="unit-price-tier" placeholder="例: 0-9ml, 10-49ml">
+            
+            <label for="unit-price-price">価格（円）</label>
+            <input type="number" id="unit-price-price" placeholder="価格">
+            
+            <button id="add-unit-price">単価を追加</button>
+        </div>
+
+        <!-- 単価の一覧表示 -->
+        <h3>単価一覧</h3>
         <table id="unit-price-table" border="1">
             <thead>
                 <tr>
-                    <th>サブカテゴリID</th>
-                    <th>階層</th>
-                    <th>価格</th>
+                    <th>サブカテゴリ名</th>
+                    <th>範囲</th>
+                    <th>価格（円）</th>
                     <th>編集</th>
                     <th>削除</th>
                 </tr>
