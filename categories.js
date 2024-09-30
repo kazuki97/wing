@@ -1,10 +1,11 @@
+// categories.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { 
     updateGlobalSubcategorySelect, 
     updateUnitPriceSubcategorySelect 
-} from './inventoryManagement.js'; // 修正: inventory.js を inventoryManagement.js に変更
+} from './unitPriceCategoryManagement.js'; // 修正: inventoryManagement.js から unitPriceCategoryManagement.js に変更
 
 /**
  * カテゴリセレクトを更新する関数
@@ -71,7 +72,7 @@ export function updateInventorySubcategorySelect() {
             console.log('Selected Inventory Parent Category ID:', selectedParentId); // 追加: 選択された親カテゴリIDをログ出力
             if (selectedParentId) {
                 // サブカテゴリセレクトを更新
-                updateGlobalSubcategorySelectForInventory(selectedParentId);
+                updateInventorySubcategorySelectForInventory(selectedParentId);
             } else {
                 const subcategorySelect = document.getElementById('inventory-subcategory-select');
                 if (subcategorySelect) {
@@ -86,7 +87,7 @@ export function updateInventorySubcategorySelect() {
  * 在庫管理用のサブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリのID
  */
-export function updateGlobalSubcategorySelectForInventory(parentCategoryId) {
+export function updateInventorySubcategorySelectForInventory(parentCategoryId) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
