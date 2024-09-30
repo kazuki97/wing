@@ -1,6 +1,6 @@
-// inventoryManagement.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
+import { updateGlobalSubcategorySelect } from './unitPriceCategoryManagement.js'; // 正しいファイルからインポート
 
 /**
  * 在庫アイテムを追加する関数
