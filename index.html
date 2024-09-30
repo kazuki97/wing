@@ -81,7 +81,7 @@
                     <th>原価</th>
                     <th>バーコード</th>
                     <th>サイズ（量）</th>
-                    <th>単位</th> <!-- 新しい列: 単位 -->
+                    <th>単位</th>
                     <th>編集</th>
                     <th>削除</th>
                 </tr>
@@ -112,7 +112,7 @@
                     <th>原価</th>
                     <th>バーコード</th>
                     <th>サイズ（量）</th>
-                    <th>単位</th> <!-- 新しい列: 単位 -->
+                    <th>単位</th>
                     <th>編集</th>
                     <th>削除</th>
                 </tr>
@@ -135,7 +135,7 @@
                 <option value="">サブカテゴリを選択</option>
             </select>
             <input type="number" id="global-inventory-quantity" placeholder="全体在庫の数量">
-            <select id="global-inventory-unit-type"> <!-- 単位の選択 -->
+            <select id="global-inventory-unit-type">
                 <option value="ml">ml</option>
                 <option value="g">g</option>
                 <option value="個">個</option>
@@ -150,7 +150,7 @@
                 <tr>
                     <th>サブカテゴリ名</th>
                     <th>全体在庫数</th>
-                    <th>単位</th> <!-- 新しい列: 単位 -->
+                    <th>単位</th>
                     <th>編集</th>
                     <th>削除</th>
                 </tr>
@@ -196,8 +196,16 @@
                 <option value="">サブカテゴリを選択</option>
             </select>
             <input type="number" id="unit-price-tier" placeholder="階層">
+            
+            <!-- 範囲の入力フィールド -->
+            <label for="unit-price-range-min">範囲（最小）:</label>
+            <input type="number" id="unit-price-range-min" placeholder="最小">
+            
+            <label for="unit-price-range-max">範囲（最大）:</label>
+            <input type="number" id="unit-price-range-max" placeholder="最大">
+            
             <input type="number" id="unit-price-price" placeholder="価格">
-            <select id="unit-price-unit-type"> <!-- 単位の選択 -->
+            <select id="unit-price-unit-type">
                 <option value="ml">ml</option>
                 <option value="g">g</option>
                 <option value="個">個</option>
@@ -209,8 +217,9 @@
                 <tr>
                     <th>サブカテゴリID</th>
                     <th>階層</th>
+                    <th>範囲</th> <!-- 新しい列: 範囲 -->
                     <th>価格</th>
-                    <th>単位</th> <!-- 新しい列: 単位 -->
+                    <th>単位</th>
                     <th>編集</th>
                     <th>削除</th>
                 </tr>
