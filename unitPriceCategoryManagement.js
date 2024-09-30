@@ -57,7 +57,7 @@ export function displayUnitPrices() {
             unitPrices.forEach(unitPrice => {
                 const row = unitPriceTableBody.insertRow();
                 row.insertCell(0).textContent = unitPrice.subcategoryId;
-                row.insertCell(1).textContent = unitPrice.tier;
+                row.insertCell(1).textContent = `${unitPrice.minAmount} - ${unitPrice.maxAmount}`; // 階層を範囲で表示
                 row.insertCell(2).textContent = unitPrice.price;
 
                 // 編集ボタンの作成
