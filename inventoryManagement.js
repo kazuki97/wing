@@ -238,7 +238,7 @@ export function showEditInventoryForm(product) {
                     // 現在選択されているサブカテゴリIDを取得
                     const subcategorySelect = document.getElementById('inventory-subcategory-select');
                     const selectedSubcategoryId = Number(subcategorySelect.value);
-                    
+
                     if (selectedSubcategoryId) {
                         displayGlobalInventory(selectedSubcategoryId); // 正しいサブカテゴリIDで呼び出し
                     } else {
