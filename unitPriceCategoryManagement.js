@@ -159,7 +159,7 @@ export function updateUnitPriceSubcategorySelect() {
 }
 
 /**
- * 在庫サブカテゴリセレクトを更新する関数
+ * グローバルサブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリID
  */
 export function updateGlobalSubcategorySelect(parentCategoryId) {
