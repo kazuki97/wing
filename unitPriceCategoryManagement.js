@@ -205,7 +205,6 @@ export function setupUnitSelect() {
 /**
  * 全体在庫専用のサブカテゴリセレクトを更新する関数（独立した関数）
  * @param {number} parentCategoryId - 選択された親カテゴリID
- * @returns {Promise<void>}
  */
 export function updateGlobalInventorySubcategorySelect(parentCategoryId) {
     if (!db) {
