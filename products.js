@@ -1,4 +1,3 @@
-// products.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
@@ -215,4 +214,3 @@ export function showEditProductForm(product, subcategoryId) {
         document.body.removeChild(editForm);
     });
 }
-
