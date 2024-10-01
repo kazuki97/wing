@@ -26,14 +26,18 @@ export function addInventoryItem(inventoryItem) {
         addRequest.onsuccess = () => {
             console.log('在庫アイテムが正常に追加されました。');
             
-            const subcategorySelect = document.getElementById('inventory-subcategory-select');
-            const selectedSubcategoryId = Number(subcategorySelect.value);
+            // サブカテゴリセレクトボックスのID取得部分
+const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
-            if (selectedSubcategoryId) {
-                displayGlobalInventory(selectedSubcategoryId); // 正しいサブカテゴリIDで呼び出し
-            } else {
-                console.warn('サブカテゴリが選択されていません。');
-            }
+// サブカテゴリが正しく選択されているか確認
+const selectedSubcategoryId = subcategorySelect && subcategorySelect.value ? Number(subcategorySelect.value) : undefined;
+
+if (selectedSubcategoryId) {
+    console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
+    displayGlobalInventory(selectedSubcategoryId);  // 正しいサブカテゴリIDで呼び出し
+} else {
+    console.warn('サブカテゴリが選択されていないか、IDが無効です。');
+}
             resolve();
         };
 
