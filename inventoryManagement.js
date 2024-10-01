@@ -27,12 +27,20 @@ export function addInventoryItem(inventoryItem) {
             console.log('在庫アイテムが正常に追加されました。');
             
             // サブカテゴリセレクトボックスのID取得部分
+// サブカテゴリセレクトボックスのID取得部分
 const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
-// サブカテゴリが正しく選択されているか確認
+// サブカテゴリが正しく取得されているか確認するためのログを追加
+if (subcategorySelect) {
+    console.log('サブカテゴリセレクトボックスが見つかりました:', subcategorySelect);
+} else {
+    console.error('サブカテゴリセレクトボックスが見つかりません。IDが "inventory-subcategory-select" で正しいか確認してください。');
+}
+
+// サブカテゴリIDが正しく取得されているか確認する
 const selectedSubcategoryId = subcategorySelect && subcategorySelect.value ? Number(subcategorySelect.value) : undefined;
 
-if (selectedSubcategoryId) {
+if (selectedSubcategoryId && !isNaN(selectedSubcategoryId)) {
     console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
     displayGlobalInventory(selectedSubcategoryId);  // 正しいサブカテゴリIDで呼び出し
 } else {
