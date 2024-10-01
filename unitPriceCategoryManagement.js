@@ -1,4 +1,3 @@
-// unitPriceCategoryManagement.js
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { displayGlobalInventory } from './inventoryManagement.js'; // 必要に応じてインポート
@@ -57,12 +56,13 @@ export function displayUnitPrices() {
             // 各単価について、サブカテゴリIDからサブカテゴリ名を取得して表示
             for (const unitPrice of unitPrices) {
                 const subcategoryName = await getSubcategoryName(unitPrice.subcategoryId);
-                const unit = unitPrice.unit || '';  // 単位を取得
+                const unit = unitPrice.unit || '不明';  // 単位を取得
 
                 const row = unitPriceTableBody.insertRow();
                 row.insertCell(0).textContent = subcategoryName || 'サブカテゴリ不明';
-                row.insertCell(1).textContent = `${unitPrice.minAmount || 0} - ${unitPrice.maxAmount || '不明'} ${unit}`;
+                row.insertCell(1).textContent = `${unitPrice.minAmount || 0} - ${unitPrice.maxAmount || '不明'}`;
                 row.insertCell(2).textContent = unitPrice.price || '不明';
+                row.insertCell(3).textContent = unit;  // 単位を表示
 
                 // 編集ボタンの作成
                 const editButton = document.createElement('button');
@@ -71,7 +71,7 @@ export function displayUnitPrices() {
                 editButton.addEventListener('click', () => {
                     showEditUnitPriceForm(unitPrice);
                 });
-                row.insertCell(3).appendChild(editButton);
+                row.insertCell(4).appendChild(editButton);
 
                 // 削除ボタンの作成
                 const deleteButton = document.createElement('button');
@@ -82,7 +82,7 @@ export function displayUnitPrices() {
                         deleteUnitPrice(unitPrice.id);
                     }
                 });
-                row.insertCell(4).appendChild(deleteButton);
+                row.insertCell(5).appendChild(deleteButton); // 削除ボタンは6列目
             }
         } else {
             console.error("unit-price-tableのtbodyが見つかりません。");
