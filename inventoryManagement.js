@@ -387,3 +387,4 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
 export function initializeGlobalInventorySection() {
     updateGlobalParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
+
