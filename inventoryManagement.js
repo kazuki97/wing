@@ -318,12 +318,16 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
                 }
             });
 
-            subcategorySelect.addEventListener('change', () => {
-                const selectedSubcategoryId = Number(subcategorySelect.value);
-                if (selectedSubcategoryId || selectedSubcategoryId === 0) {
-                    displayGlobalInventory(selectedSubcategoryId);
-                }
-            });
+           // 修正後
+subcategorySelect.addEventListener('change', () => {
+    const selectedSubcategoryId = Number(subcategorySelect.value);
+    if (!isNaN(selectedSubcategoryId)) {  // 修正点: NaNチェックを追加して、選択されたIDが数字かを確認
+        displayGlobalInventory(selectedSubcategoryId);  // サブカテゴリ選択時に在庫を表示
+    } else {
+        console.warn('サブカテゴリが選択されていません。');  // サブカテゴリが無効な場合に警告
+    }
+});
+
         } else {
             console.error('inventory-subcategory-select が見つかりません。');
             showErrorModal('サブカテゴリセレクトが見つかりません。');
