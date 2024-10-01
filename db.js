@@ -1,6 +1,4 @@
-// db.js
-
-import { displayGlobalInventory } from './inventoryManagement.js'; // 修正後のファイルからインポート
+import { displayGlobalInventory } from './inventoryManagement.js'; // 修正: 分割後のファイルからインポート
 import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
 
 export let db;
@@ -11,7 +9,7 @@ export let db;
  */
 export function initializeDatabase() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('inventoryDB', 18); // バージョン番号を18に更新
+        const request = indexedDB.open('inventoryDB', 18); // **バージョン番号を18に更新**
 
         request.onupgradeneeded = function(event) {
             db = event.target.result;
@@ -46,25 +44,27 @@ export function initializeDatabase() {
             }
 
             // グローバル在庫ストアの作成または更新
-            let globalInventoryStore;
             if (!db.objectStoreNames.contains('globalInventory')) {
-                globalInventoryStore = db.createObjectStore('globalInventory', {
-                    keyPath: 'id',
-                    autoIncrement: true
+                const globalInventoryStore = db.createObjectStore('globalInventory', {
+                    keyPath: 'id',          // **修正点：keyPathを 'id' に設定**
+                    autoIncrement: true     // **修正点：自動増分を有効にする**
                 });
-            } else {
-                globalInventoryStore = event.currentTarget.transaction.objectStore('globalInventory');
-            }
-
-            // 必要なインデックスを確認または作成
-            if (!globalInventoryStore.indexNames.contains('productId')) {
-                globalInventoryStore.createIndex('productId', 'productId', { unique: false });
-            }
-            if (!globalInventoryStore.indexNames.contains('subcategoryId')) {
-                globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-            }
-            if (!globalInventoryStore.indexNames.contains('quantity')) {
+                globalInventoryStore.createIndex('productId', 'productId', { unique: false }); 
+                globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false }); // **修正点：subcategoryIdのインデックスを追加**
+                globalInventoryStore.createIndex('name', 'name', { unique: false });
                 globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
+            } else {
+                const transaction = event.target.transaction;
+                const store = transaction.objectStore('globalInventory');
+
+                if (!store.indexNames.contains('productId')) {
+                    store.createIndex('productId', 'productId', { unique: false });
+                    console.log('productId インデックスを globalInventory ストアに追加しました。');
+                }
+                if (!store.indexNames.contains('subcategoryId')) {
+                    store.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+                    console.log('subcategoryId インデックスを globalInventory ストアに追加しました。');
+                }
             }
 
             // 単価ストアの作成
@@ -82,12 +82,12 @@ export function initializeDatabase() {
         request.onsuccess = function(event) {
             db = event.target.result;
             console.log('Database initialized successfully.');
-            resolve();
+            resolve(); 
         };
 
         request.onerror = function(event) {
             console.error('Database error:', event.target.errorCode);
-            reject(event.target.error);
+            reject(event.target.error); 
         };
     });
 }
@@ -149,6 +149,32 @@ export async function verifyAndFixInventoryData() {
 
     request.onerror = (event) => {
         console.error('在庫データの取得中にエラーが発生しました:', event.target.error);
+    };
+}
+
+/**
+ * 在庫アイテムを削除する関数
+ * @param {number} id - 削除する在庫アイテムのID
+ */
+export function deleteInventoryItem(id) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    const deleteRequest = store.delete(id);
+
+    deleteRequest.onsuccess = () => {
+        console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
+        displayGlobalInventory(); 
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('在庫削除中にエラーが発生しました:', event.target.error);
+        showErrorModal('在庫削除中にエラーが発生しました。');
     };
 }
 
