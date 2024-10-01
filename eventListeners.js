@@ -232,17 +232,23 @@ export function initializeEventListeners() {
         });
     }
 
-    // 単価の追加ボタンのイベントリスナー
+    // 単価の追加ボタンのイベントリスナー（修正箇所）
     if (addUnitPriceButton) {
         addUnitPriceButton.addEventListener('click', () => {
             const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
             const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
+            const minAmount = Number(document.getElementById('unit-price-min-amount').value.trim());
+            const maxAmount = Number(document.getElementById('unit-price-max-amount').value.trim());
             const price = Number(document.getElementById('unit-price-price').value.trim());
+            const unit = document.getElementById('unit-price-unit-select').value; // 単位を取得
 
-            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(price)) {
+            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(minAmount) && !isNaN(maxAmount) && !isNaN(price) && unit) {
                 const unitPrice = {
                     subcategoryId,
-                    price
+                    minAmount,
+                    maxAmount,
+                    price,
+                    unit // 単位を保存
                 };
 
                 saveUnitPriceToDB(unitPrice)
@@ -251,7 +257,11 @@ export function initializeEventListeners() {
                         showErrorModal('単価の保存に失敗しました。');
                     });
 
+                // 入力フォームのリセット
+                document.getElementById('unit-price-min-amount').value = '';
+                document.getElementById('unit-price-max-amount').value = '';
                 document.getElementById('unit-price-price').value = '';
+                document.getElementById('unit-price-unit-select').value = '';
             } else {
                 alert('すべての項目を正しく入力してください。');
             }
