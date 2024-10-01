@@ -352,3 +352,56 @@ console.log('inventoryManagement.js が正しく読み込まれました。');
 export function initializeInventorySection() {
     updateInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
+
+/**
+ * 全体在庫管理用親カテゴリセレクトボックスを更新する関数
+ */
+export function updateGlobalInventoryParentCategorySelect() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const parentCategorySelect = document.getElementById('global-parent-category-select');
+
+        if (parentCategorySelect) {
+            parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId === null) { // 親カテゴリのみを対象
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    parentCategorySelect.appendChild(option);
+                }
+            });
+
+            // 親カテゴリ選択に応じてサブカテゴリを更新
+            parentCategorySelect.addEventListener('change', () => {
+                const selectedParentCategoryId = Number(parentCategorySelect.value);
+                updateGlobalSubcategorySelect(selectedParentCategoryId); // 選択された親カテゴリに基づいてサブカテゴリを更新
+            });
+        } else {
+            console.error('global-parent-category-select が見つかりません。');
+            showErrorModal('親カテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('親カテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('親カテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 全体在庫管理セクションの初期化
+ */
+export function initializeGlobalInventorySection() {
+    updateGlobalInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
+}
