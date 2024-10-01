@@ -9,7 +9,7 @@ import { showErrorModal } from './errorHandling.js';
  * @returns {Promise<void>}
  */
 export function addInventoryItem(inventoryItem) {
-    console.log('Adding inventory item:', inventoryItem); // デバッグログ
+    console.log('Adding inventory item:', inventoryItem);
 
     return new Promise((resolve, reject) => {
         if (!db) {
@@ -22,7 +22,7 @@ export function addInventoryItem(inventoryItem) {
         const addRequest = store.add({
             productId: inventoryItem.productId,
             quantity: inventoryItem.quantity,
-            subcategoryId: inventoryItem.subcategoryId  // 修正箇所：subcategoryIdを追加
+            subcategoryId: inventoryItem.subcategoryId // 修正箇所：subcategoryIdを追加
         });
 
         addRequest.onsuccess = () => {
