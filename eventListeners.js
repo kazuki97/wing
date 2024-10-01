@@ -237,13 +237,11 @@ export function initializeEventListeners() {
         addUnitPriceButton.addEventListener('click', () => {
             const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
             const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
-            const tier = Number(document.getElementById('unit-price-tier').value.trim());
             const price = Number(document.getElementById('unit-price-price').value.trim());
 
-            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(tier) && !isNaN(price)) {
+            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(price)) {
                 const unitPrice = {
                     subcategoryId,
-                    tier,
                     price
                 };
 
@@ -253,7 +251,6 @@ export function initializeEventListeners() {
                         showErrorModal('単価の保存に失敗しました。');
                     });
 
-                document.getElementById('unit-price-tier').value = '';
                 document.getElementById('unit-price-price').value = '';
             } else {
                 alert('すべての項目を正しく入力してください。');
