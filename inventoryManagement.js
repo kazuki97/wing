@@ -1,6 +1,6 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
-import { updateGlobalSubcategorySelect as updateUnitPriceSubcategorySelect } from './unitPriceCategoryManagement.js'; // 他のセクション用
+import { updateGlobalInventorySubcategorySelect } from './unitPriceCategoryManagement.js'; // 他のセクションで利用される関数
 
 /**
  * 在庫アイテムを追加する関数
