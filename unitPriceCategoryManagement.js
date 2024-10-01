@@ -47,18 +47,22 @@ export function displayUnitPrices() {
     const store = transaction.objectStore('unitPrices');
     const request = store.getAll();
 
-    request.onsuccess = (event) => {
+    request.onsuccess = async (event) => {
         const unitPrices = event.target.result;
         const unitPriceTableBody = document.querySelector('#unit-price-table tbody');
 
         if (unitPriceTableBody) {
             unitPriceTableBody.innerHTML = '';
 
-            unitPrices.forEach(unitPrice => {
+            // 各単価について、サブカテゴリIDからサブカテゴリ名を取得して表示
+            for (const unitPrice of unitPrices) {
+                const subcategoryName = await getSubcategoryName(unitPrice.subcategoryId);
+                const unit = unitPrice.unit || '';  // 単位を取得
+
                 const row = unitPriceTableBody.insertRow();
-                row.insertCell(0).textContent = unitPrice.subcategoryId;
-                row.insertCell(1).textContent = `${unitPrice.minAmount} - ${unitPrice.maxAmount}`; // 階層を範囲で表示
-                row.insertCell(2).textContent = unitPrice.price;
+                row.insertCell(0).textContent = subcategoryName || 'サブカテゴリ不明';
+                row.insertCell(1).textContent = `${unitPrice.minAmount || 0} - ${unitPrice.maxAmount || '不明'} ${unit}`;
+                row.insertCell(2).textContent = unitPrice.price || '不明';
 
                 // 編集ボタンの作成
                 const editButton = document.createElement('button');
@@ -79,7 +83,7 @@ export function displayUnitPrices() {
                     }
                 });
                 row.insertCell(4).appendChild(deleteButton);
-            });
+            }
         } else {
             console.error("unit-price-tableのtbodyが見つかりません。");
             showErrorModal('単価一覧の表示エリアが見つかりません。');
@@ -93,29 +97,29 @@ export function displayUnitPrices() {
 }
 
 /**
- * 単価を削除する関数
- * @param {number} id - 削除する単価のID
+ * サブカテゴリIDからサブカテゴリ名を取得する関数
+ * @param {number} subcategoryId - サブカテゴリのID
+ * @returns {Promise<string>} サブカテゴリ名
  */
-export function deleteUnitPrice(id) {
-    if (!db) {
-        console.error('Databaseが初期化されていません。');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
+function getSubcategoryName(subcategoryId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.get(subcategoryId);
 
-    const transaction = db.transaction(['unitPrices'], 'readwrite');
-    const store = transaction.objectStore('unitPrices');
-    const deleteRequest = store.delete(id);
+        request.onsuccess = (event) => {
+            const category = event.target.result;
+            if (category) {
+                resolve(category.name);
+            } else {
+                resolve(null);
+            }
+        };
 
-    deleteRequest.onsuccess = () => {
-        console.log('単価が正常に削除されました。');
-        displayUnitPrices();
-    };
-
-    deleteRequest.onerror = (event) => {
-        console.error('単価の削除中にエラーが発生しました:', event.target.error);
-        showErrorModal('単価の削除中にエラーが発生しました。');
-    };
+        request.onerror = (event) => {
+            reject(new Error('サブカテゴリ名の取得中にエラーが発生しました。'));
+        };
+    });
 }
 
 /**
@@ -156,6 +160,20 @@ export function updateUnitPriceSubcategorySelect() {
         console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
         showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
     };
+}
+
+/**
+ * 単位セレクトボックスを設定する関数
+ */
+export function setupUnitSelect() {
+    const unitSelect = document.getElementById('unit-price-unit-select');
+    if (unitSelect) {
+        unitSelect.innerHTML = `
+            <option value="ml">ml</option>
+            <option value="g">g</option>
+            <option value="個">個</option>
+        `;
+    }
 }
 
 /**
