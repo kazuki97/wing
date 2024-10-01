@@ -1,3 +1,5 @@
+// inventoryManagement.js
+
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 
@@ -20,21 +22,11 @@ export function addInventoryItem(inventoryItem) {
         const addRequest = store.add({
             productId: inventoryItem.productId,
             quantity: inventoryItem.quantity,
-            subcategoryId: inventoryItem.subcategoryId // 修正箇所：subcategoryIdを追加
+            subcategoryId: inventoryItem.subcategoryId  // 修正箇所：subcategoryIdを追加
         });
 
         addRequest.onsuccess = () => {
             console.log('在庫アイテムが正常に追加されました。');
-            
-            // 現在選択されているサブカテゴリIDを取得
-            const subcategorySelect = document.getElementById('global-subcategory-select');
-            const selectedSubcategoryId = Number(subcategorySelect.value);
-
-            if (selectedSubcategoryId) {
-                displayGlobalInventory(selectedSubcategoryId); // 正しいサブカテゴリIDで呼び出し
-            } else {
-                console.warn('サブカテゴリが選択されていません。');
-            }
             resolve();
         };
 
@@ -63,16 +55,10 @@ export function deleteInventoryItem(id) {
 
     deleteRequest.onsuccess = () => {
         console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
-        
-        // 現在選択されているサブカテゴリIDを取得
+        // 在庫表示を更新
         const subcategorySelect = document.getElementById('global-subcategory-select');
         const selectedSubcategoryId = Number(subcategorySelect.value);
-        
-        if (selectedSubcategoryId) {
-            displayGlobalInventory(selectedSubcategoryId); // 正しいサブカテゴリIDで呼び出し
-        } else {
-            console.warn('サブカテゴリが選択されていません。');
-        }
+        displayGlobalInventory(selectedSubcategoryId);
     };
 
     deleteRequest.onerror = (event) => {
@@ -89,13 +75,13 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
     console.log('displayGlobalInventory called with subcategoryId:', selectedSubcategoryId);
 
     if (!db) {
-        console.error('Databaseが初期化されていません。');
+        console.error('データベースが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
 
     const inventoryStore = db.transaction(['globalInventory'], 'readonly').objectStore('globalInventory');
-    const index = inventoryStore.index('subcategoryId'); // 修正箇所：正しいインデックスを使用
+    const index = inventoryStore.index('subcategoryId');
     const request = index.getAll(selectedSubcategoryId);
 
     request.onsuccess = async (event) => {
@@ -130,7 +116,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
                     editButton.textContent = '数量編集';
                     editButton.className = 'inventory-edit-button';
                     editButton.addEventListener('click', () => {
-                        showEditInventoryForm(inventoryItem);  // 修正箇所：inventoryItemを渡す
+                        showEditInventoryForm(inventoryItem);  // 在庫アイテムの数量編集フォームを表示
                     });
                     row.insertCell(6).appendChild(editButton);
 
@@ -140,10 +126,12 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
                     deleteButton.className = 'inventory-delete-button';
                     deleteButton.addEventListener('click', () => {
                         if (confirm(`${product.name} を削除しますか？`)) {
-                            deleteInventoryItem(inventoryItem.id);  // 修正箇所：inventoryItemのIDを使用
+                            deleteInventoryItem(inventoryItem.id);  // 在庫アイテム削除
                         }
                     });
                     row.insertCell(7).appendChild(deleteButton);
+                } else {
+                    console.warn(`Product not found for productId: ${inventoryItem.productId}`);
                 }
             }
 
@@ -168,31 +156,6 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
 }
 
 /**
- * 指定されたサブカテゴリIDに属する商品IDのリストを取得する関数
- * @param {number} subcategoryId - サブカテゴリのID
- * @returns {Promise<number[]>} - 商品IDのリスト
- */
-export async function getProductIdsBySubcategory(subcategoryId) {
-    console.log('Fetching product IDs for subcategoryId:', subcategoryId);
-    return new Promise((resolve, reject) => {
-        const productsStore = db.transaction(['products'], 'readonly').objectStore('products');
-        const index = productsStore.index('subcategoryId');
-        const request = index.getAll(IDBKeyRange.only(subcategoryId));
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            const productIds = products.map(product => product.id);
-            resolve(productIds);
-        };
-
-        request.onerror = (event) => {
-            console.error('サブカテゴリIDで商品を取得中にエラーが発生しました:', event.target.error);
-            reject(event.target.error);
-        };
-    });
-}
-
-/**
  * 在庫編集フォームを表示する関数
  * @param {Object} inventoryItem - 編集対象の在庫アイテム
  */
@@ -205,7 +168,6 @@ export function showEditInventoryForm(inventoryItem) {
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${inventoryItem.productId}" disabled></label><br>
                 <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
                 <button id="save-inventory-button">保存</button>
                 <button id="cancel-inventory-button">キャンセル</button>
@@ -233,10 +195,8 @@ export function showEditInventoryForm(inventoryItem) {
 
         if (!isNaN(editedQuantity)) {
             const updatedInventory = {
-                id: inventoryItem.id,
-                productId: inventoryItem.productId,
+                ...inventoryItem,
                 quantity: editedQuantity,
-                subcategoryId: inventoryItem.subcategoryId // 修正箇所：subcategoryIdを維持
             };
 
             try {
@@ -247,16 +207,11 @@ export function showEditInventoryForm(inventoryItem) {
                 updateRequest.onsuccess = () => {
                     console.log('在庫が正常に更新されました。');
                     document.body.removeChild(editForm);
-                    
-                    // 現在選択されているサブカテゴリIDを取得
+
+                    // 在庫表示を更新
                     const subcategorySelect = document.getElementById('global-subcategory-select');
                     const selectedSubcategoryId = Number(subcategorySelect.value);
-
-                    if (selectedSubcategoryId) {
-                        displayGlobalInventory(selectedSubcategoryId); // 正しいサブカテゴリIDで呼び出し
-                    } else {
-                        console.warn('サブカテゴリが選択されていません。');
-                    }
+                    displayGlobalInventory(selectedSubcategoryId);
                 };
 
                 updateRequest.onerror = (event) => {
@@ -276,37 +231,6 @@ export function showEditInventoryForm(inventoryItem) {
     const cancelButton = editForm.querySelector('#cancel-inventory-button');
     cancelButton.addEventListener('click', () => {
         document.body.removeChild(editForm);
-    });
-}
-
-/**
- * テスト用の在庫データを追加する関数
- */
-export function addTestInventoryItems() {
-    if (!db) {
-        console.error('Databaseが初期化されていません。');
-        return;
-    }
-
-    const testItems = [
-        { productId: 1, quantity: 100, subcategoryId: 1 },
-        { productId: 2, quantity: 50, subcategoryId: 1 },
-        { productId: 3, quantity: 200, subcategoryId: 2 }
-    ];
-
-    const transaction = db.transaction(['globalInventory'], 'readwrite');
-    const store = transaction.objectStore('globalInventory');
-
-    testItems.forEach(item => {
-        const addRequest = store.add(item);
-
-        addRequest.onsuccess = () => {
-            console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
-        };
-
-        addRequest.onerror = (event) => {
-            console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
-        };
     });
 }
 
@@ -342,7 +266,7 @@ export function updateInventoryParentCategorySelect() {
             // 親カテゴリ選択に応じてサブカテゴリを更新
             parentCategorySelect.addEventListener('change', () => {
                 const selectedParentCategoryId = Number(parentCategorySelect.value);
-                updateGlobalInventorySubcategorySelect(selectedParentCategoryId); // 選択された親カテゴリに基づいてサブカテゴリを更新
+                updateGlobalInventorySubcategorySelect(selectedParentCategoryId); // 修正箇所：正しい関数を呼び出す
             });
         } else {
             console.error('inventory-parent-category-select が見つかりません。');
@@ -406,8 +330,11 @@ export function updateGlobalInventorySubcategorySelect(parentCategoryId) {
 }
 
 /**
- * 全体在庫管理セクションの初期化
+ * 在庫管理セクションの初期化
  */
 export function initializeInventorySection() {
     updateInventoryParentCategorySelect(); // 在庫管理用の親カテゴリセレクトボックスを初期化
 }
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('inventoryManagement.js が正しく読み込まれました。');
