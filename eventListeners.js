@@ -240,30 +240,37 @@ export function initializeEventListeners() {
             const minAmount = Number(document.getElementById('unit-price-min-amount').value.trim());
             const maxAmount = Number(document.getElementById('unit-price-max-amount').value.trim());
             const price = Number(document.getElementById('unit-price-price').value.trim());
-            const unit = document.getElementById('unit-price-unit-select').value; // 単位を取得
+            const unitSelect = document.getElementById('unit-price-unit-select');
+            
+            if (unitSelect) {
+                const unit = unitSelect.value;
+                
+                if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(minAmount) && !isNaN(maxAmount) && !isNaN(price) && unit) {
+                    const unitPrice = {
+                        subcategoryId,
+                        minAmount,
+                        maxAmount,
+                        price,
+                        unit // 単位を保存
+                    };
 
-            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(minAmount) && !isNaN(maxAmount) && !isNaN(price) && unit) {
-                const unitPrice = {
-                    subcategoryId,
-                    minAmount,
-                    maxAmount,
-                    price,
-                    unit // 単位を保存
-                };
+                    saveUnitPriceToDB(unitPrice)
+                        .catch(error => {
+                            console.error('単価の保存に失敗しました:', error);
+                            showErrorModal('単価の保存に失敗しました。');
+                        });
 
-                saveUnitPriceToDB(unitPrice)
-                    .catch(error => {
-                        console.error('単価の保存に失敗しました:', error);
-                        showErrorModal('単価の保存に失敗しました。');
-                    });
-
-                // 入力フォームのリセット
-                document.getElementById('unit-price-min-amount').value = '';
-                document.getElementById('unit-price-max-amount').value = '';
-                document.getElementById('unit-price-price').value = '';
-                document.getElementById('unit-price-unit-select').value = '';
+                    // 入力フォームのリセット
+                    document.getElementById('unit-price-min-amount').value = '';
+                    document.getElementById('unit-price-max-amount').value = '';
+                    document.getElementById('unit-price-price').value = '';
+                    unitSelect.value = '';
+                } else {
+                    alert('すべての項目を正しく入力してください。');
+                }
             } else {
-                alert('すべての項目を正しく入力してください。');
+                console.error('単位セレクトボックスが見つかりません。');
+                showErrorModal('単位セレクトボックスが見つかりません。');
             }
         });
     }
