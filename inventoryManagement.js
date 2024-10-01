@@ -1,6 +1,6 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
-import { updateGlobalSubcategorySelect } from './unitPriceCategoryManagement.js'; // 正しいファイルからインポート
+import { updateGlobalSubcategorySelect as updateUnitPriceSubcategorySelect } from './unitPriceCategoryManagement.js'; // 他のセクション用
 
 /**
  * 在庫アイテムを追加する関数
@@ -298,9 +298,9 @@ export function addTestInventoryItems() {
 }
 
 /**
- * 親カテゴリセレクトボックスを更新する関数（全体在庫管理用）
+ * 親カテゴリセレクトボックスを更新する関数（在庫管理用）
  */
-export function updateGlobalParentCategorySelect() {
+export function updateInventoryParentCategorySelect() {
     if (!db) {
         console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
@@ -313,12 +313,12 @@ export function updateGlobalParentCategorySelect() {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const parentCategorySelect = document.getElementById('global-parent-category-select');
+        const parentCategorySelect = document.getElementById('inventory-parent-category-select');
 
         if (parentCategorySelect) {
             parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
             categories.forEach(category => {
-                if (category.parentId === null) {  // 親カテゴリのみを対象
+                if (category.parentId === null) { // 親カテゴリのみを対象
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
@@ -329,10 +329,10 @@ export function updateGlobalParentCategorySelect() {
             // 親カテゴリ選択に応じてサブカテゴリを更新
             parentCategorySelect.addEventListener('change', () => {
                 const selectedParentCategoryId = Number(parentCategorySelect.value);
-                updateGlobalSubcategorySelect(selectedParentCategoryId);  // サブカテゴリを更新
+                updateGlobalInventorySubcategorySelect(selectedParentCategoryId); // 選択された親カテゴリに基づいてサブカテゴリを更新
             });
         } else {
-            console.error('global-parent-category-select が見つかりません。');
+            console.error('inventory-parent-category-select が見つかりません。');
             showErrorModal('親カテゴリセレクトが見つかりません。');
         }
     };
@@ -344,9 +344,10 @@ export function updateGlobalParentCategorySelect() {
 }
 
 /**
- * サブカテゴリセレクトボックスを更新する関数（全体在庫管理用）
+ * 全体在庫専用のサブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
  */
-export function updateGlobalSubcategorySelect(parentCategoryId) {
+export function updateGlobalInventorySubcategorySelect(parentCategoryId) {
     if (!db) {
         console.error('データベースが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
@@ -364,11 +365,19 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
             categories.forEach(category => {
-                if (category.parentId === parentCategoryId) {  // 親カテゴリに基づくサブカテゴリを取得
+                if (category.parentId === parentCategoryId) {
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
                     subcategorySelect.appendChild(option);
+                }
+            });
+
+            // サブカテゴリが選択された際に在庫を表示
+            subcategorySelect.addEventListener('change', () => {
+                const selectedSubcategoryId = Number(subcategorySelect.value);
+                if (selectedSubcategoryId) {
+                    displayGlobalInventory(selectedSubcategoryId); // サブカテゴリIDで商品データを取得
                 }
             });
         } else {
@@ -383,8 +392,9 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
     };
 }
 
-// 全体在庫管理セクションの初期化
+/**
+ * 全体在庫管理セクションの初期化
+ */
 export function initializeGlobalInventorySection() {
-    updateGlobalParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
+    updateGlobalInventoryParentCategorySelect(); // 親カテゴリセレクトボックスを初期化
 }
-
