@@ -203,12 +203,12 @@ export function setupUnitSelect() {
 }
 
 /**
- * グローバルサブカテゴリセレクトを更新する関数
+ * 全体在庫専用のサブカテゴリセレクトを更新する関数（独立した関数）
  * @param {number} parentCategoryId - 選択された親カテゴリID
  */
-export function updateGlobalSubcategorySelect(parentCategoryId) {
+export function updateGlobalInventorySubcategorySelect(parentCategoryId) {
     if (!db) {
-        console.error('Databaseが初期化されていません。');
+        console.error('データベースが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -219,7 +219,7 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+        const subcategorySelect = document.getElementById('global-subcategory-select'); // 全体在庫専用のセレクトボックス
 
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
@@ -240,7 +240,7 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
                 }
             });
         } else {
-            console.error('inventory-subcategory-select が見つかりません。');
+            console.error('global-subcategory-select が見つかりません。');
             showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
         }
     };
@@ -252,9 +252,9 @@ export function updateGlobalSubcategorySelect(parentCategoryId) {
 }
 
 /**
- * 親カテゴリセレクトボックスを更新する関数（在庫管理用）
+ * 親カテゴリセレクトボックスを更新する関数（全体在庫管理用）
  */
-export function updateInventoryParentCategorySelect() {
+export function updateGlobalInventoryParentCategorySelect() {
     if (!db) {
         console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
@@ -267,12 +267,12 @@ export function updateInventoryParentCategorySelect() {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-        const parentCategorySelect = document.getElementById('inventory-parent-category-select');
+        const parentCategorySelect = document.getElementById('global-parent-category-select'); // 全体在庫用
 
         if (parentCategorySelect) {
             parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
             categories.forEach(category => {
-                if (category.parentId === null) { // 親カテゴリのみを対象
+                if (category.parentId === null) {  // 親カテゴリのみを対象
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
@@ -283,10 +283,10 @@ export function updateInventoryParentCategorySelect() {
             // 親カテゴリ選択に応じてサブカテゴリを更新
             parentCategorySelect.addEventListener('change', () => {
                 const selectedParentCategoryId = Number(parentCategorySelect.value);
-                updateGlobalSubcategorySelect(selectedParentCategoryId); // 選択された親カテゴリに基づいてサブカテゴリを更新
+                updateGlobalInventorySubcategorySelect(selectedParentCategoryId); // 全体在庫専用のサブカテゴリを更新
             });
         } else {
-            console.error('inventory-parent-category-select が見つかりません。');
+            console.error('global-parent-category-select が見つかりません。');
             showErrorModal('親カテゴリセレクトが見つかりません。');
         }
     };
