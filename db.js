@@ -9,7 +9,7 @@ export let db;
  */
 export function initializeDatabase() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('inventoryDB', 16); // バージョン番号を16に更新
+        const request = indexedDB.open('inventoryDB', 17); // バージョン番号を17に更新
 
         request.onupgradeneeded = function(event) {
             db = event.target.result;
@@ -44,23 +44,32 @@ export function initializeDatabase() {
             }
 
             // グローバル在庫ストアの作成または更新
+            let globalInventoryStore;
             if (!db.objectStoreNames.contains('globalInventory')) {
-                const globalInventoryStore = db.createObjectStore('globalInventory', {
+                globalInventoryStore = db.createObjectStore('globalInventory', {
                     keyPath: 'id',          
                     autoIncrement: true    
                 });
-                globalInventoryStore.createIndex('productId', 'productId', { unique: false }); 
-                globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
-                globalInventoryStore.createIndex('name', 'name', { unique: false });
-                globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
             } else {
-                const transaction = event.target.transaction;
-                const store = transaction.objectStore('globalInventory');
+                globalInventoryStore = event.currentTarget.transaction.objectStore('globalInventory');
+            }
 
-                if (!store.indexNames.contains('productId')) {
-                    store.createIndex('productId', 'productId', { unique: false });
-                    console.log('productId インデックスを globalInventory ストアに追加しました。');
-                }
+            // 必要なインデックスを確認または作成
+            if (!globalInventoryStore.indexNames.contains('productId')) {
+                globalInventoryStore.createIndex('productId', 'productId', { unique: false });
+                console.log('productId インデックスを globalInventory ストアに追加しました。');
+            }
+            if (!globalInventoryStore.indexNames.contains('subcategoryId')) {
+                globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false });
+                console.log('subcategoryId インデックスを globalInventory ストアに追加しました。');
+            }
+            if (!globalInventoryStore.indexNames.contains('name')) {
+                globalInventoryStore.createIndex('name', 'name', { unique: false });
+                console.log('name インデックスを globalInventory ストアに追加しました。');
+            }
+            if (!globalInventoryStore.indexNames.contains('quantity')) {
+                globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
+                console.log('quantity インデックスを globalInventory ストアに追加しました。');
             }
 
             // 単価ストアの作成
