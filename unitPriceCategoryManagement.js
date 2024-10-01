@@ -97,6 +97,32 @@ export function displayUnitPrices() {
 }
 
 /**
+ * 単価を削除する関数
+ * @param {number} id - 削除する単価のID
+ */
+export function deleteUnitPrice(id) {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['unitPrices'], 'readwrite');
+    const store = transaction.objectStore('unitPrices');
+    const deleteRequest = store.delete(id);
+
+    deleteRequest.onsuccess = () => {
+        console.log('単価が正常に削除されました。');
+        displayUnitPrices(); // 削除後、一覧を更新
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('単価の削除中にエラーが発生しました:', event.target.error);
+        showErrorModal('単価の削除中にエラーが発生しました。');
+    };
+}
+
+/**
  * サブカテゴリIDからサブカテゴリ名を取得する関数
  * @param {number} subcategoryId - サブカテゴリのID
  * @returns {Promise<string>} サブカテゴリ名
