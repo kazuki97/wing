@@ -155,31 +155,6 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
 }
 
 /**
- * 指定されたサブカテゴリIDに属する商品IDのリストを取得する関数
- * @param {number} subcategoryId - サブカテゴリのID
- * @returns {Promise<number[]>} - 商品IDのリスト
- */
-export async function getProductIdsBySubcategory(subcategoryId) {
-    console.log('Fetching product IDs for subcategoryId:', subcategoryId);
-    return new Promise((resolve, reject) => {
-        const productsStore = db.transaction(['products'], 'readonly').objectStore('products');
-        const index = productsStore.index('subcategoryId');
-        const request = index.getAll(IDBKeyRange.only(subcategoryId));
-
-        request.onsuccess = (event) => {
-            const products = event.target.result;
-            const productIds = products.map(product => product.id);
-            resolve(productIds);
-        };
-
-        request.onerror = (event) => {
-            console.error('サブカテゴリIDで商品を取得中にエラーが発生しました:', event.target.error);
-            reject(event.target.error);
-        };
-    });
-}
-
-/**
  * 在庫編集フォームを表示する関数
  * @param {Object} product - 編集対象の商品
  */
