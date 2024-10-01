@@ -94,3 +94,4 @@ export function initializeDatabase() {
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('db.js が正しく読み込まれました。');
+
