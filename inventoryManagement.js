@@ -19,7 +19,8 @@ export function addInventoryItem(inventoryItem) {
         const store = transaction.objectStore('globalInventory');
         const addRequest = store.add({
             productId: inventoryItem.productId,
-            quantity: inventoryItem.quantity
+            quantity: inventoryItem.quantity,
+            subcategoryId: inventoryItem.subcategoryId // 修正箇所：subcategoryIdを追加
         });
 
         addRequest.onsuccess = () => {
@@ -93,48 +94,60 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
         return;
     }
 
-    const inventoryStore = db.transaction(['products'], 'readonly').objectStore('products');
-    const index = inventoryStore.index('subcategoryId');
+    const inventoryStore = db.transaction(['globalInventory'], 'readonly').objectStore('globalInventory');
+    const index = inventoryStore.index('subcategoryId'); // 修正箇所：正しいインデックスを使用
     const request = index.getAll(selectedSubcategoryId);
 
-    request.onsuccess = (event) => {
-        const products = event.target.result;
+    request.onsuccess = async (event) => {
+        const inventoryItems = event.target.result;
         const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
 
         if (globalInventoryTableBody) {
             globalInventoryTableBody.innerHTML = '';
 
-            products.forEach(product => {
-                const row = globalInventoryTableBody.insertRow();
-                row.insertCell(0).textContent = product.name;
-                row.insertCell(1).textContent = product.quantity;  // 在庫数量として表示
-                row.insertCell(2).textContent = product.price;
-                row.insertCell(3).textContent = product.cost;
-                row.insertCell(4).textContent = product.barcode;
-                row.insertCell(5).textContent = product.unitAmount;
+            for (const inventoryItem of inventoryItems) {
+                // 対応する商品情報を取得
+                const productRequest = db.transaction(['products'], 'readonly')
+                    .objectStore('products')
+                    .get(inventoryItem.productId);
 
-                // 数量編集ボタン
-                const editButton = document.createElement('button');
-                editButton.textContent = '数量編集';
-                editButton.className = 'inventory-edit-button';
-                editButton.addEventListener('click', () => {
-                    showEditInventoryForm(product);  // 商品の数量編集フォームを表示
+                const product = await new Promise((resolve, reject) => {
+                    productRequest.onsuccess = (event) => resolve(event.target.result);
+                    productRequest.onerror = (event) => reject(event.target.error);
                 });
-                row.insertCell(6).appendChild(editButton);
 
-                // 削除ボタン
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = '削除';
-                deleteButton.className = 'inventory-delete-button';
-                deleteButton.addEventListener('click', () => {
-                    if (confirm(`${product.name} を削除しますか？`)) {
-                        deleteInventoryItem(product.id);  // 商品削除
-                    }
-                });
-                row.insertCell(7).appendChild(deleteButton);
-            });
+                if (product) {
+                    const row = globalInventoryTableBody.insertRow();
+                    row.insertCell(0).textContent = product.name;
+                    row.insertCell(1).textContent = inventoryItem.quantity;  // 在庫数量として表示
+                    row.insertCell(2).textContent = product.price;
+                    row.insertCell(3).textContent = product.cost;
+                    row.insertCell(4).textContent = product.barcode;
+                    row.insertCell(5).textContent = product.unitAmount;
 
-            if (products.length === 0) {
+                    // 数量編集ボタン
+                    const editButton = document.createElement('button');
+                    editButton.textContent = '数量編集';
+                    editButton.className = 'inventory-edit-button';
+                    editButton.addEventListener('click', () => {
+                        showEditInventoryForm(inventoryItem);  // 修正箇所：inventoryItemを渡す
+                    });
+                    row.insertCell(6).appendChild(editButton);
+
+                    // 削除ボタン
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = '削除';
+                    deleteButton.className = 'inventory-delete-button';
+                    deleteButton.addEventListener('click', () => {
+                        if (confirm(`${product.name} を削除しますか？`)) {
+                            deleteInventoryItem(inventoryItem.id);  // 修正箇所：inventoryItemのIDを使用
+                        }
+                    });
+                    row.insertCell(7).appendChild(deleteButton);
+                }
+            }
+
+            if (inventoryItems.length === 0) {
                 const row = document.createElement('tr');
                 const noDataCell = document.createElement('td');
                 noDataCell.colSpan = 8; // 列数に合わせて調整
@@ -149,8 +162,8 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
     };
 
     request.onerror = (event) => {
-        console.error('商品の取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('商品の取得中にエラーが発生しました。');
+        console.error('在庫アイテムの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('在庫アイテムの取得中にエラーが発生しました。');
     };
 }
 
@@ -181,9 +194,9 @@ export async function getProductIdsBySubcategory(subcategoryId) {
 
 /**
  * 在庫編集フォームを表示する関数
- * @param {Object} product - 編集対象の商品
+ * @param {Object} inventoryItem - 編集対象の在庫アイテム
  */
-export function showEditInventoryForm(product) {
+export function showEditInventoryForm(inventoryItem) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
 
@@ -192,8 +205,8 @@ export function showEditInventoryForm(product) {
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h3>在庫を編集</h3>
-                <label>商品名: <input type="text" id="edit-inventory-name" value="${product.name}" disabled></label><br>
-                <label>数量: <input type="number" id="edit-inventory-quantity" value="${product.quantity}"></label><br>
+                <label>商品名: <input type="text" id="edit-inventory-name" value="${inventoryItem.productId}" disabled></label><br>
+                <label>数量: <input type="number" id="edit-inventory-quantity" value="${inventoryItem.quantity}"></label><br>
                 <button id="save-inventory-button">保存</button>
                 <button id="cancel-inventory-button">キャンセル</button>
             </div>
@@ -220,9 +233,10 @@ export function showEditInventoryForm(product) {
 
         if (!isNaN(editedQuantity)) {
             const updatedInventory = {
-                id: product.id,
-                productId: product.productId,
-                quantity: editedQuantity
+                id: inventoryItem.id,
+                productId: inventoryItem.productId,
+                quantity: editedQuantity,
+                subcategoryId: inventoryItem.subcategoryId // 修正箇所：subcategoryIdを維持
             };
 
             try {
@@ -275,9 +289,9 @@ export function addTestInventoryItems() {
     }
 
     const testItems = [
-        { productId: 1, quantity: 100 },
-        { productId: 2, quantity: 50 },
-        { productId: 3, quantity: 200 }
+        { productId: 1, quantity: 100, subcategoryId: 1 },
+        { productId: 2, quantity: 50, subcategoryId: 1 },
+        { productId: 3, quantity: 200, subcategoryId: 2 }
     ];
 
     const transaction = db.transaction(['globalInventory'], 'readwrite');
@@ -375,7 +389,7 @@ export function updateGlobalInventorySubcategorySelect(parentCategoryId) {
             // サブカテゴリが選択された際に在庫を表示
             subcategorySelect.addEventListener('change', () => {
                 const selectedSubcategoryId = Number(subcategorySelect.value);
-                if (selectedSubcategoryId) {
+                if (selectedSubcategoryId || selectedSubcategoryId === 0) {
                     displayGlobalInventory(selectedSubcategoryId); // サブカテゴリIDで商品データを取得
                 }
             });
