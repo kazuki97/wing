@@ -84,7 +84,7 @@ export function deleteInventoryItem(id) {
  * @param {number} [selectedSubcategoryId] - 選択されたサブカテゴリID（オプション）
  */
 export async function displayGlobalInventory(selectedSubcategoryId) {
-    console.log('displayGlobalInventory called with subcategoryId:', selectedSubcategoryId);
+    console.log('displayGlobalInventory called with subcategoryId:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
 
     if (!db) {
         console.error('Databaseが初期化されていません。');
@@ -98,6 +98,8 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
 
     request.onsuccess = async (event) => {
         const inventoryItems = event.target.result;
+        console.log('Retrieved inventory items:', inventoryItems);  // 取得した在庫アイテムを表示して確認
+
         const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
 
         if (globalInventoryTableBody) {
@@ -116,7 +118,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
                 if (product) {
                     const row = globalInventoryTableBody.insertRow();
                     row.insertCell(0).textContent = product.name;
-                    row.insertCell(1).textContent = inventoryItem.quantity; 
+                    row.insertCell(1).textContent = inventoryItem.quantity;
                     row.insertCell(2).textContent = product.price;
                     row.insertCell(3).textContent = product.cost;
                     row.insertCell(4).textContent = product.barcode;
@@ -126,7 +128,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
                     editButton.textContent = '数量編集';
                     editButton.className = 'inventory-edit-button';
                     editButton.addEventListener('click', () => {
-                        showEditInventoryForm(inventoryItem); 
+                        showEditInventoryForm(inventoryItem);
                     });
                     row.insertCell(6).appendChild(editButton);
 
@@ -135,7 +137,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
                     deleteButton.className = 'inventory-delete-button';
                     deleteButton.addEventListener('click', () => {
                         if (confirm(`${product.name} を削除しますか？`)) {
-                            deleteInventoryItem(inventoryItem.id);  
+                            deleteInventoryItem(inventoryItem.id);
                         }
                     });
                     row.insertCell(7).appendChild(deleteButton);
@@ -163,6 +165,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
         showErrorModal('在庫アイテムの取得中にエラーが発生しました。');
     };
 }
+
 
 /**
  * 在庫編集フォームを表示する関数
