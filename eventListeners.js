@@ -1,263 +1,305 @@
-import { showSection } from './ui.js';
-import { updateCategorySelects, saveCategoryToDB, displayCategories } from './categories.js';
-import { saveProductToDB, displayProducts } from './products.js';
-import { processTransaction, currentTransaction, updateTransactionUI, toggleCompleteButton, displaySales } from './transactions.js';
-import { initializeQuagga } from './barcodeScanner.js';
-import { findProductByName } from './productSearch.js';
+import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
-import { saveUnitPriceToDB, displayUnitPrices } from './unitPriceCategoryManagement.js';  // 修正: unitPriceCategoryManagement.js からインポート
-import { displayGlobalInventory } from './inventoryManagement.js';  // 修正: inventoryManagement.js からインポート
-
-// テスト用のログ（正常に読み込まれているか確認）
-console.log('eventListeners.js が正しく読み込まれました。');
-console.log('saveUnitPriceToDB がインポートされました。', saveUnitPriceToDB);
+import { displayGlobalInventory } from './inventoryManagement.js'; // 必要に応じてインポート
 
 /**
- * イベントリスナーを初期化する関数
+ * 単価をデータベースに保存する関数
+ * @param {Object} unitPrice - 保存する単価情報
+ * @returns {Promise<void>}
  */
-export function initializeEventListeners() {
-    // ナビゲーションリンク
-    const linkHome = document.getElementById('link-home');
-    const linkCategory = document.getElementById('link-category');
-    const linkProduct = document.getElementById('link-product');
-    const linkInventory = document.getElementById('link-inventory');
-    const linkBarcode = document.getElementById('link-barcode');
-    const linkSales = document.getElementById('link-sales');
-    const linkGlobalInventory = document.getElementById('link-global-inventory');
-    const linkUnitPrice = document.getElementById('link-unit-price');
-
-    // ボタン
-    const completeTransactionButton = document.getElementById('complete-transaction');
-    const startScanButton = document.getElementById('start-scan');
-    const manualAddSalesButton = document.getElementById('manualAddSalesButton');
-    const addParentCategoryButton = document.getElementById('add-parent-category');
-    const addSubcategoryButton = document.getElementById('add-subcategory');
-    const addProductButton = document.getElementById('add-product');
-    const addUnitPriceButton = document.getElementById('add-unit-price');
-
-    // エラーモーダルの閉じるボタン
-    const closeErrorModalButton = document.getElementById('closeErrorModal');
-    const errorModal = document.getElementById('errorModal');
-    if (closeErrorModalButton && errorModal) {
-        closeErrorModalButton.addEventListener('click', () => {
-            errorModal.style.display = 'none';
-        });
-    }
-
-    // クリックでモーダルを閉じる
-    window.addEventListener('click', (event) => {
-        if (event.target === errorModal) {
-            errorModal.style.display = 'none';
+export function saveUnitPriceToDB(unitPrice) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            reject(new Error('データベースが初期化されていません。'));
+            return;
         }
+
+        const transaction = db.transaction(['unitPrices'], 'readwrite');
+        const store = transaction.objectStore('unitPrices');
+        const addRequest = store.add(unitPrice);
+
+        addRequest.onsuccess = () => {
+            console.log('単価が正常に保存されました。');
+            displayUnitPrices(); // 単価一覧を更新
+            resolve();
+        };
+
+        addRequest.onerror = (event) => {
+            console.error('単価の保存中にエラーが発生しました:', event.target.error);
+            showErrorModal('単価の保存中にエラーが発生しました。');
+            reject(event.target.error);
+        };
     });
-
-    // ナビゲーションリンクのイベントリスナー
-    if (linkHome) {
-        linkHome.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('home');
-        });
-    }
-
-    if (linkCategory) {
-        linkCategory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('category');
-            displayCategories();
-        });
-    }
-
-    if (linkProduct) {
-        linkProduct.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('product');
-            updateCategorySelects();
-        });
-    }
-
-    if (linkInventory) {
-        linkInventory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('inventory');
-            displayGlobalInventory(); // 在庫データを表示
-        });
-    }
-
-    if (linkBarcode) {
-        linkBarcode.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('barcode');
-        });
-    }
-
-    if (linkSales) {
-        linkSales.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('sales');
-            displaySales(); // 売上を表示
-        });
-    }
-
-    if (linkGlobalInventory) {
-        linkGlobalInventory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('global-inventory');
-            displayGlobalInventory(); // 全体在庫データを表示
-        });
-    }
-
-    if (linkUnitPrice) {
-        linkUnitPrice.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('unit-price');
-            displayUnitPrices(); // 単価を表示
-        });
-    }
-
-    // トランザクション完了ボタンのイベントリスナー
-    if (completeTransactionButton) {
-        completeTransactionButton.addEventListener('click', async () => {
-            try {
-                await processTransaction();
-            } catch (error) {
-                console.error('Transaction processing failed:', error);
-                showErrorModal(error.message);
-            }
-        });
-    }
-
-    // バーコードスキャン開始ボタンのイベントリスナー
-    if (startScanButton) {
-        startScanButton.addEventListener('click', () => {
-            initializeQuagga();
-        });
-    }
-
-    // 手動で売上を追加するボタンのイベントリスナー
-    if (manualAddSalesButton) {
-        manualAddSalesButton.addEventListener('click', () => {
-            const productName = prompt('商品名を入力してください:');
-            const quantityStr = prompt('数量を入力してください:');
-            if (productName && quantityStr) {
-                const quantity = Number(quantityStr);
-                if (!isNaN(quantity) && quantity > 0) {
-                    findProductByName(productName).then(product => {
-                        if (product) {
-                            currentTransaction.products.push({ product, quantity });
-                            updateTransactionUI();
-                            toggleCompleteButton();
-                        } else {
-                            showErrorModal('該当する商品が見つかりませんでした。');
-                        }
-                    }).catch(error => {
-                        console.error('Error finding product by name:', error);
-                        showErrorModal('商品情報の取得中にエラーが発生しました。');
-                    });
-                } else {
-                    alert('有効な数量を入力してください。');
-                }
-            } else {
-                alert('商品名と数量を入力してください。');
-            }
-        });
-    }
-
-    // カテゴリ追加ボタンのイベントリスナー
-    if (addParentCategoryButton) {
-        addParentCategoryButton.addEventListener('click', () => {
-            const categoryName = document.getElementById('parent-category-name').value.trim();
-            if (categoryName) {
-                const category = {
-                    name: categoryName,
-                    parentId: null
-                };
-                saveCategoryToDB(category);
-                document.getElementById('parent-category-name').value = '';
-            } else {
-                alert('カテゴリ名を入力してください。');
-            }
-        });
-    }
-
-    if (addSubcategoryButton) {
-        addSubcategoryButton.addEventListener('click', () => {
-            const subcategoryName = document.getElementById('subcategory-name').value.trim();
-            const parentCategoryId = Number(document.getElementById('parent-category-select').value);
-            if (subcategoryName && parentCategoryId) {
-                const subcategory = {
-                    name: subcategoryName,
-                    parentId: parentCategoryId
-                };
-                saveCategoryToDB(subcategory);
-                document.getElementById('subcategory-name').value = '';
-            } else {
-                alert('サブカテゴリ名と親カテゴリを入力してください。');
-            }
-        });
-    }
-
-    // 商品登録ボタンのイベントリスナー
-    if (addProductButton) {
-        addProductButton.addEventListener('click', () => {
-            const name = document.getElementById('product-name').value.trim();
-            const quantity = Number(document.getElementById('product-quantity').value.trim());
-            const price = Number(document.getElementById('product-price').value.trim());
-            const cost = Number(document.getElementById('product-cost').value.trim());
-            const barcode = document.getElementById('product-barcode').value.trim();
-            const unitAmount = Number(document.getElementById('product-unit-amount').value.trim());
-            const subcategoryId = Number(document.getElementById('product-subcategory-select').value);
-
-            if (name && !isNaN(quantity) && !isNaN(price) && !isNaN(cost) && barcode && !isNaN(unitAmount) && subcategoryId) {
-                const product = {
-                    name,
-                    quantity,
-                    price,
-                    cost,
-                    barcode,
-                    unitAmount,
-                    subcategoryId
-                };
-
-                saveProductToDB(product);
-
-                document.getElementById('product-name').value = '';
-                document.getElementById('product-quantity').value = '';
-                document.getElementById('product-price').value = '';
-                document.getElementById('product-cost').value = '';
-                document.getElementById('product-barcode').value = '';
-                document.getElementById('product-unit-amount').value = '';
-            } else {
-                alert('すべての項目を正しく入力してください。');
-            }
-        });
-    }
-
-    // 単価の追加ボタンのイベントリスナー
-    if (addUnitPriceButton) {
-        addUnitPriceButton.addEventListener('click', () => {
-            const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
-            const subcategoryId = Number(document.getElementById('unit-price-subcategory-select').value);
-            const price = Number(document.getElementById('unit-price-price').value.trim());
-
-            if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(price)) {
-                const unitPrice = {
-                    subcategoryId,
-                    price
-                };
-
-                saveUnitPriceToDB(unitPrice)
-                    .catch(error => {
-                        console.error('単価の保存に失敗しました:', error);
-                        showErrorModal('単価の保存に失敗しました。');
-                    });
-
-                document.getElementById('unit-price-price').value = '';
-            } else {
-                alert('すべての項目を正しく入力してください。');
-            }
-        });
-    }
-
-    // テスト用のログ（正常に読み込まれているか確認）
-    console.log('eventListeners.js が正しく読み込まれました。');
 }
+
+/**
+ * 単価の表示を行う関数
+ */
+export function displayUnitPrices() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['unitPrices'], 'readonly');
+    const store = transaction.objectStore('unitPrices');
+    const request = store.getAll();
+
+    request.onsuccess = async (event) => {
+        const unitPrices = event.target.result;
+        const unitPriceTableBody = document.querySelector('#unit-price-table tbody');
+
+        if (unitPriceTableBody) {
+            unitPriceTableBody.innerHTML = '';
+
+            // 各単価について、サブカテゴリIDからサブカテゴリ名を取得して表示
+            for (const unitPrice of unitPrices) {
+                const subcategoryName = await getSubcategoryName(unitPrice.subcategoryId);
+                const unit = unitPrice.unit || '';  // 単位を取得
+
+                const row = unitPriceTableBody.insertRow();
+                row.insertCell(0).textContent = subcategoryName || 'サブカテゴリ不明';
+                row.insertCell(1).textContent = `${unitPrice.min || 0} - ${unitPrice.max || '不明'} ${unit}`;
+                row.insertCell(2).textContent = unitPrice.price || '不明';
+
+                // 編集ボタンの作成
+                const editButton = document.createElement('button');
+                editButton.textContent = '編集';
+                editButton.className = 'unit-price-button';
+                editButton.addEventListener('click', () => {
+                    showEditUnitPriceForm(unitPrice);
+                });
+                row.insertCell(3).appendChild(editButton);
+
+                // 削除ボタンの作成
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '削除';
+                deleteButton.className = 'unit-price-button';
+                deleteButton.addEventListener('click', () => {
+                    if (confirm('この単価を削除しますか？')) {
+                        deleteUnitPrice(unitPrice.id);
+                    }
+                });
+                row.insertCell(4).appendChild(deleteButton);
+            }
+        } else {
+            console.error("unit-price-tableのtbodyが見つかりません。");
+            showErrorModal('単価一覧の表示エリアが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('単価の取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('単価の取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * サブカテゴリIDからサブカテゴリ名を取得する関数
+ * @param {number} subcategoryId - サブカテゴリのID
+ * @returns {Promise<string>} サブカテゴリ名
+ */
+function getSubcategoryName(subcategoryId) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['categories'], 'readonly');
+        const store = transaction.objectStore('categories');
+        const request = store.get(subcategoryId);
+
+        request.onsuccess = (event) => {
+            const category = event.target.result;
+            if (category) {
+                resolve(category.name);
+            } else {
+                resolve(null);
+            }
+        };
+
+        request.onerror = (event) => {
+            reject(new Error('サブカテゴリ名の取得中にエラーが発生しました。'));
+        };
+    });
+}
+
+/**
+ * 単価サブカテゴリセレクトを更新する関数
+ */
+export function updateUnitPriceSubcategorySelect() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('unit-price-subcategory-select');
+
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId !== null) { // サブカテゴリのみを対象
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    subcategorySelect.appendChild(option);
+                }
+            });
+        } else {
+            console.error('unit-price-subcategory-select が見つかりません。');
+            showErrorModal('単価サブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 単位セレクトボックスを設定する関数
+ */
+export function setupUnitSelect() {
+    const unitSelect = document.getElementById('unit-price-unit-select');
+    if (unitSelect) {
+        unitSelect.innerHTML = `
+            <option value="ml">ml</option>
+            <option value="g">g</option>
+            <option value="個">個</option>
+        `;
+    }
+}
+
+/**
+ * グローバルサブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
+ */
+export function updateGlobalSubcategorySelect(parentCategoryId) {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId === parentCategoryId) {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    subcategorySelect.appendChild(option);
+                }
+            });
+
+            // サブカテゴリが選択された際に在庫を表示
+            subcategorySelect.addEventListener('change', () => {
+                const selectedSubcategoryId = Number(subcategorySelect.value);
+                if (selectedSubcategoryId) {
+                    displayGlobalInventory(selectedSubcategoryId); // サブカテゴリIDで商品データを取得
+                }
+            });
+        } else {
+            console.error('inventory-subcategory-select が見つかりません。');
+            showErrorModal('グローバルサブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * 親カテゴリセレクトボックスを更新する関数（在庫管理用）
+ */
+export function updateInventoryParentCategorySelect() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const parentCategorySelect = document.getElementById('inventory-parent-category-select');
+
+        if (parentCategorySelect) {
+            parentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId === null) { // 親カテゴリのみを対象
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    parentCategorySelect.appendChild(option);
+                }
+            });
+
+            // 親カテゴリ選択に応じてサブカテゴリを更新
+            parentCategorySelect.addEventListener('change', () => {
+                const selectedParentCategoryId = Number(parentCategorySelect.value);
+                updateGlobalSubcategorySelect(selectedParentCategoryId); // 選択された親カテゴリに基づいてサブカテゴリを更新
+            });
+        } else {
+            console.error('inventory-parent-category-select が見つかりません。');
+            showErrorModal('親カテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('親カテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('親カテゴリの取得中にエラーが発生しました。');
+    };
+}
+
+/**
+ * テスト用の在庫データを追加する関数
+ */
+export function addTestInventoryItems() {
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        return;
+    }
+
+    const testItems = [
+        { productId: 1, quantity: 100 },
+        { productId: 2, quantity: 50 },
+        { productId: 3, quantity: 200 }
+    ];
+
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+
+    testItems.forEach(item => {
+        const addRequest = store.add(item);
+
+        addRequest.onsuccess = () => {
+            console.log(`テストデータ (Product ID: ${item.productId}) が追加されました。`);
+        };
+
+        addRequest.onerror = (event) => {
+            console.error(`テストデータ (Product ID: ${item.productId}) の追加中にエラーが発生しました:`, event.target.error);
+        };
+    });
+}
+
+// テスト用のログ（正常に読み込まれているか確認）
+console.log('unitPriceCategoryManagement.js が正しく読み込まれました。');
