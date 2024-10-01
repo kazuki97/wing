@@ -166,27 +166,6 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
     };
 }
 
-            if (inventoryItems.length === 0) {
-                const row = document.createElement('tr');
-                const noDataCell = document.createElement('td');
-                noDataCell.colSpan = 8;
-                noDataCell.textContent = '在庫データがありません。';
-                row.appendChild(noDataCell);
-                globalInventoryTableBody.appendChild(row);
-            }
-        } else {
-            console.error('global-inventory-table の tbody が見つかりません。');
-            showErrorModal('在庫一覧の表示エリアが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('在庫アイテムの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('在庫アイテムの取得中にエラーが発生しました。');
-    };
-}
-
-
 /**
  * 在庫編集フォームを表示する関数
  * @param {Object} inventoryItem - 編集対象の在庫アイテム
