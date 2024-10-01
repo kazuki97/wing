@@ -110,7 +110,12 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
 
     request.onsuccess = async (event) => {
         const inventoryItems = event.target.result;
-        console.log('Retrieved inventory items:', inventoryItems);  // 取得した在庫アイテムを表示して確認
+        console.log('サブカテゴリIDに対応する在庫アイテム:', inventoryItems);  // 取得した在庫アイテムを表示
+
+        // もしデータが見つからなかった場合の警告ログを追加
+        if (inventoryItems.length === 0) {
+            console.warn('サブカテゴリIDに対応する在庫が見つかりません。');
+        }
 
         const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
 
