@@ -3,7 +3,6 @@ import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { 
-    updateGlobalSubcategorySelect, 
     updateUnitPriceSubcategorySelect 
 } from './unitPriceCategoryManagement.js';
 
@@ -47,7 +46,6 @@ export function updateCategorySelects() {
 
         // サブカテゴリセレクトの更新
         updateProductCategorySelects();
-        updateGlobalSubcategorySelect();
         updateUnitPriceSubcategorySelect();
         updateInventorySubcategorySelect(); // 追加
 
