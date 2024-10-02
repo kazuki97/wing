@@ -378,12 +378,6 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
     };
 }
 
-    request.onerror = (event) => {
-        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-    };
-}
-
 /**
  * 在庫管理セクションの初期化
  */
