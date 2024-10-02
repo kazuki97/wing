@@ -377,16 +377,17 @@ export function initializeInventorySection() {
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
     if (subcategorySelect) {
+        // 初期ロード時には何も選択されていない状態として処理
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
 
-            // サブカテゴリIDが正しく選択された場合のみ displayGlobalInventory を呼び出す
+            // サブカテゴリが選択されていない場合にはエラーメッセージを出さない
             if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
                 console.log('Calling displayGlobalInventory with Subcategory ID:', selectedSubcategoryId);
                 displayGlobalInventory(selectedSubcategoryId); 
             } else {
-                console.warn('無効なサブカテゴリID:', selectedSubcategoryId);
-                clearInventoryDisplay(); 
+                console.warn('無効なサブカテゴリIDです。まだサブカテゴリが選択されていません。');
+                clearInventoryDisplay(); // 無効な場合はクリア
             }
         });
     } else {
