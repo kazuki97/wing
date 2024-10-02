@@ -372,6 +372,7 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 /**
  * 在庫管理セクションの初期化
  */
+// 修正後のコード
 export function initializeInventorySection() {
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
@@ -385,7 +386,8 @@ export function initializeInventorySection() {
             // 初期ロード時は処理をスキップ
             if (isInitialLoad) {
                 isInitialLoad = false;
-                return;
+                console.log('初期ロード時は displayGlobalInventory を呼び出さない'); // 初期ロード時のデバッグログを追加
+                return; // 初期ロード時にはスキップ
             }
             
             // サブカテゴリIDが選択されているかを確認する
