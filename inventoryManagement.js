@@ -335,6 +335,11 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+
+            // デバッグ用ログ追加
+            console.log('Parent Category ID:', parentCategoryId);
+            console.log('Available Categories:', categories);
+
             categories.forEach(category => {
                 if (category.parentId === parentCategoryId) {
                     const option = document.createElement('option');
@@ -344,14 +349,18 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
                 }
             });
 
-            // サブカテゴリが選択されたときのイベント処理を修正
+            if (subcategorySelect.options.length === 1) {
+                console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
+            }
+
+            // サブカテゴリが選択されたときのイベント処理
             subcategorySelect.addEventListener('change', () => {
                 const selectedSubcategoryId = Number(subcategorySelect.value);
-                console.log('選択されたサブカテゴリID:', selectedSubcategoryId);  // ここでサブカテゴリIDが取得されているか確認
+                console.log('選択されたサブカテゴリID:', selectedSubcategoryId);  
 
                 // 修正点: IDのバリデーションを強化
                 if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {  
-                    displayGlobalInventory(selectedSubcategoryId);  // サブカテゴリ選択時に在庫を表示
+                    displayGlobalInventory(selectedSubcategoryId); 
                 } else {
                     console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
                 }
@@ -362,6 +371,12 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
             showErrorModal('サブカテゴリセレクトが見つかりません。');
         }
     };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
+}
 
     request.onerror = (event) => {
         console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
