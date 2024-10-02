@@ -57,35 +57,56 @@ export function saveProductToDB(product) {
     const store = transaction.objectStore('products');
     const addRequest = store.put(product);
 
-   addRequest.onsuccess = (event) => {
-    const savedProductId = event.target.result;  // 自動生成されたIDを取得
-    console.log(`Product "${product.name}" saved successfully with ID: ${savedProductId}.`);
-    
-    displayProducts(product.subcategoryId); // 保存後にUIを更新
+    addRequest.onsuccess = (event) => {
+        const savedProductId = event.target.result;  // 自動生成されたIDを取得
+        console.log(`Product "${product.name}" saved successfully with ID: ${savedProductId}.`);
+        
+        // globalInventory にも商品を登録する処理を追加
+        addProductToGlobalInventory({
+            productId: savedProductId,
+            subcategoryId: product.subcategoryId,
+            quantity: product.quantity
+        });
 
-    // **修正後**: 商品IDを取得してデータをチェック
-    const checkTransaction = db.transaction(['products'], 'readonly');
-    const checkStore = checkTransaction.objectStore('products');
+        displayProducts(product.subcategoryId); // 保存後にUIを更新
 
-    // 修正後: 生成されたID (savedProductId) でデータを取得
-    const getRequest = checkStore.get(savedProductId);
+        const checkTransaction = db.transaction(['products'], 'readonly');
+        const checkStore = checkTransaction.objectStore('products');
+        const getRequest = checkStore.get(savedProductId);
 
-    getRequest.onsuccess = (event) => {
-        if (event.target.result) {
-            console.log('DBに保存された商品:', event.target.result);  // DBに保存されたデータを確認
-        } else {
-            console.warn('商品IDが見つかりません。データベースに正しく保存されていません。');
-        }
+        getRequest.onsuccess = (event) => {
+            if (event.target.result) {
+                console.log('DBに保存された商品:', event.target.result);  // DBに保存されたデータを確認
+            } else {
+                console.warn('商品IDが見つかりません。データベースに正しく保存されていません。');
+            }
+        };
+
+        getRequest.onerror = (event) => {
+            console.error('商品データの取得中にエラーが発生しました:', event.target.error);
+        };
     };
-
-    getRequest.onerror = (event) => {
-        console.error('商品データの取得中にエラーが発生しました:', event.target.error);
-    };
-};
 
     addRequest.onerror = (event) => {
         console.error('Error saving product:', event.target.error);
         showErrorModal('商品の保存中にエラーが発生しました。');
+    };
+}
+
+// globalInventory に商品を追加する関数を追加
+function addProductToGlobalInventory(inventoryItem) {
+    const transaction = db.transaction(['globalInventory'], 'readwrite');
+    const store = transaction.objectStore('globalInventory');
+    
+    const addRequest = store.put(inventoryItem);
+
+    addRequest.onsuccess = () => {
+        console.log('globalInventory に商品が正常に追加されました。');
+    };
+
+    addRequest.onerror = (event) => {
+        console.error('globalInventory への商品追加中にエラーが発生しました:', event.target.error);
+        showErrorModal('在庫の保存中にエラーが発生しました。');
     };
 }
 
