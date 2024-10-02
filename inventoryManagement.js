@@ -376,28 +376,27 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 export function initializeInventorySection() {
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
-    // 初期ロード時には displayGlobalInventory を呼び出さないようにする
+    // 初期ロード時には displayGlobalInventory を呼び出さない
     let isInitialLoad = true;
 
     if (subcategorySelect) {
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
 
-            // サブカテゴリIDが無効な場合はエラーを出力して処理をスキップ
-            if (isNaN(selectedSubcategoryId) || selectedSubcategoryId === 0) {
-                console.warn('無効なサブカテゴリIDが選択されました:', selectedSubcategoryId);
-                clearInventoryDisplay();  // 在庫表示をクリア
+            // 初期ロード時は displayGlobalInventory を呼び出さない
+            if (isInitialLoad) {
+                isInitialLoad = false;
                 return;
             }
 
-            // 初期ロード時は処理をスキップ
-            if (isInitialLoad) {
-                isInitialLoad = false;
-                return;  // 初期ロード時には displayGlobalInventory を呼び出さない
+            // サブカテゴリIDが無効な場合は処理をスキップ
+            if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+                console.log('選択されたサブカテゴリID:', selectedSubcategoryId);
+                displayGlobalInventory(selectedSubcategoryId); // サブカテゴリが選択されたときのみ呼び出し
+            } else {
+                console.warn('無効なサブカテゴリID:', selectedSubcategoryId);
+                clearInventoryDisplay(); // 無効なIDの場合、在庫表示をクリア
             }
-
-            console.log('選択されたサブカテゴリID:', selectedSubcategoryId);
-            displayGlobalInventory(selectedSubcategoryId);  // サブカテゴリが選択されたときのみ呼び出し
         });
     } else {
         console.error('サブカテゴリセレクトボックスが見つかりません。');
@@ -408,6 +407,6 @@ export function initializeInventorySection() {
 function clearInventoryDisplay() {
     const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
     if (globalInventoryTableBody) {
-        globalInventoryTableBody.innerHTML = '';  // 在庫リストをクリア
+        globalInventoryTableBody.innerHTML = ''; // 在庫リストをクリア
     }
 }
