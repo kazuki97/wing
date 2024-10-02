@@ -75,7 +75,7 @@ export function initializeEventListeners() {
         });
     }
 
-    if (linkInventory) {
+   if (linkInventory) {
     linkInventory.addEventListener('click', (e) => {
         e.preventDefault();
         showSection('inventory');
@@ -89,6 +89,8 @@ export function initializeEventListeners() {
             displayGlobalInventory(selectedSubcategoryId); // 選択されたサブカテゴリIDで呼び出し
         } else {
             console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
+            // サブカテゴリ選択がされていない場合のメッセージを追加
+            alert('サブカテゴリを選択してください。');
         }
     });
 }
@@ -108,7 +110,7 @@ export function initializeEventListeners() {
         });
     }
 
-   if (linkGlobalInventory) {
+  if (linkGlobalInventory) {
     linkGlobalInventory.addEventListener('click', (e) => {
         e.preventDefault();
         showSection('global-inventory');
@@ -122,6 +124,8 @@ export function initializeEventListeners() {
             displayGlobalInventory(selectedSubcategoryId); // 選択されたサブカテゴリIDで呼び出し
         } else {
             console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
+            // サブカテゴリ選択がされていない場合のメッセージを追加
+            alert('サブカテゴリを選択してください。');
         }
     });
 }
