@@ -379,6 +379,9 @@ export function initializeInventorySection() {
     // 初期ロード時には displayGlobalInventory を呼び出さない
     let isInitialLoad = true;  // これで初期ロードかどうかを判定
 
+    // 新しいログを追加して、コードがロードされたことを確認する
+    console.log('ロードはできています。');  // このログが出れば正常に反映されている
+
     if (subcategorySelect) {
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
