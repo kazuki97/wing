@@ -377,19 +377,16 @@ export function initializeInventorySection() {
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
     // 初期ロード時には displayGlobalInventory を呼び出さない
-    let isInitialLoad = true;
+    let isInitialLoad = true;  // これで初期ロードかどうかを判定
 
     if (subcategorySelect) {
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
 
-            // デバッグ用ログ
-            console.log('initializeInventorySection: Subcategory selected:', selectedSubcategoryId, 'isInitialLoad:', isInitialLoad);
-
+            // 初期ロード時は displayGlobalInventory を呼び出さない
             if (isInitialLoad) {
-                // 初期ロードでdisplayGlobalInventoryが呼び出されないことを確認
-                console.log('Skipping initial call to displayGlobalInventory');
-                isInitialLoad = false;
+                console.log('Skipping initial call to displayGlobalInventory'); // 初期ロードをスキップしたことをログ
+                isInitialLoad = false;  // 初期ロードを完了させたらフラグをfalseにする
                 return;
             }
 
