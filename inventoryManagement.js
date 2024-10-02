@@ -373,21 +373,22 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
  * 在庫管理セクションの初期化
  */
 export function initializeInventorySection() {
-    updateInventoryParentCategorySelect(); // 在庫管理用の親カテゴリセレクトボックスを初期化
-
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
     if (subcategorySelect) {
-        // サブカテゴリが選択されたときのみ displayGlobalInventory を呼び出す
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
-
-            // サブカテゴリIDが有効な値かどうかを確認してから関数を実行
-            if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId > 0) {
-                displayGlobalInventory(selectedSubcategoryId);
+            
+            // サブカテゴリIDが選択されているかを確認する
+            if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+                console.log('選択されたサブカテゴリID:', selectedSubcategoryId);
+                displayGlobalInventory(selectedSubcategoryId); // サブカテゴリが選択されたときのみ呼び出し
             } else {
-                console.warn('有効なサブカテゴリIDが選択されていません。');
+                console.warn('無効なサブカテゴリID:', selectedSubcategoryId);
             }
         });
+    } else {
+        console.error('サブカテゴリセレクトボックスが見つかりません。');
     }
 }
+
