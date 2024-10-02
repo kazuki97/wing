@@ -59,7 +59,23 @@ export function saveProductToDB(product) {
 
     addRequest.onsuccess = () => {
         console.log(`Product "${product.name}" saved successfully.`);
-        displayProducts(product.subcategoryId);
+        displayProducts(product.subcategoryId); // 保存後にUIを更新
+
+        // **保存後にデータが本当にDBに保存されたか確認する**
+        const checkTransaction = db.transaction(['products'], 'readonly');
+        const checkStore = checkTransaction.objectStore('products');
+        const getRequest = checkStore.get(product.id);
+
+        getRequest.onsuccess = (event) => {
+            console.log('DBに保存された商品:', event.target.result);  // DBに保存されたデータを確認
+            if (!event.target.result) {
+                console.warn('データベースに商品が保存されていません。');
+            }
+        };
+
+        getRequest.onerror = (event) => {
+            console.error('商品データの取得中にエラーが発生しました:', event.target.error);
+        };
     };
 
     addRequest.onerror = (event) => {
