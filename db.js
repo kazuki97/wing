@@ -133,11 +133,11 @@ export async function verifyAndFixInventoryData() {
         const globalInventory = event.target.result;
 
         for (const item of globalInventory) {
-            if (typeof item.productId === 'undefined' || item.productId === null) {
-                console.warn('未定義の productId を持つ在庫アイテム:', item);
+            if (typeof item.productId === 'undefined' || item.productId === null || typeof item.subcategoryId === 'undefined') {
+                console.warn('未定義の productId または subcategoryId を持つ在庫アイテム:', item);
                 try {
                     await deleteInventoryItem(item.id);
-                    console.log(`未定義の productId を持つ在庫アイテム (ID: ${item.id}) を削除しました。`);
+                    console.log(`未定義のデータを持つ在庫アイテム (ID: ${item.id}) を削除しました。`);
                 } catch (error) {
                     console.error(`在庫アイテム (ID: ${item.id}) の削除中にエラーが発生しました:`, error);
                 }
