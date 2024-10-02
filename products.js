@@ -61,15 +61,18 @@ export function saveProductToDB(product) {
         console.log(`Product "${product.name}" saved successfully.`);
         displayProducts(product.subcategoryId); // 保存後にUIを更新
 
-        // **保存後にデータが本当にDBに保存されたか確認する**
+        // **修正後**: 商品IDを取得するために keyPath: 'id' が設定されているか確認
         const checkTransaction = db.transaction(['products'], 'readonly');
         const checkStore = checkTransaction.objectStore('products');
+
+        // 修正点: 商品の保存後に商品IDを再取得
         const getRequest = checkStore.get(product.id);
 
         getRequest.onsuccess = (event) => {
-            console.log('DBに保存された商品:', event.target.result);  // DBに保存されたデータを確認
-            if (!event.target.result) {
-                console.warn('データベースに商品が保存されていません。');
+            if (event.target.result) {
+                console.log('DBに保存された商品:', event.target.result);  // DBに保存されたデータを確認
+            } else {
+                console.warn('商品IDが見つかりません。データベースに正しく保存されていません。');
             }
         };
 
