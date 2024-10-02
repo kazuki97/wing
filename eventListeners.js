@@ -76,12 +76,22 @@ export function initializeEventListeners() {
     }
 
     if (linkInventory) {
-        linkInventory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('inventory');
-            displayGlobalInventory(); // 在庫データを表示
-        });
-    }
+    linkInventory.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('inventory');
+        
+        // サブカテゴリが選択されているか確認
+        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+        const selectedSubcategoryId = subcategorySelect ? Number(subcategorySelect.value) : null;
+
+        // サブカテゴリIDが有効であれば displayGlobalInventory を呼び出す
+        if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+            displayGlobalInventory(selectedSubcategoryId); // 選択されたサブカテゴリIDで呼び出し
+        } else {
+            console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
+        }
+    });
+}
 
     if (linkBarcode) {
         linkBarcode.addEventListener('click', (e) => {
@@ -98,13 +108,23 @@ export function initializeEventListeners() {
         });
     }
 
-    if (linkGlobalInventory) {
-        linkGlobalInventory.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('global-inventory');
-            displayGlobalInventory(); // 全体在庫データを表示
-        });
-    }
+   if (linkGlobalInventory) {
+    linkGlobalInventory.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('global-inventory');
+
+        // サブカテゴリが選択されているか確認
+        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+        const selectedSubcategoryId = subcategorySelect ? Number(subcategorySelect.value) : null;
+
+        // サブカテゴリIDが有効であれば displayGlobalInventory を呼び出す
+        if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+            displayGlobalInventory(selectedSubcategoryId); // 選択されたサブカテゴリIDで呼び出し
+        } else {
+            console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
+        }
+    });
+}
 
     if (linkUnitPrice) {
         linkUnitPrice.addEventListener('click', (e) => {
