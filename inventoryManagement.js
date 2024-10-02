@@ -383,15 +383,19 @@ export function initializeInventorySection() {
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
 
+            // デバッグ用のログを追加
+            console.log('initializeInventorySection: Subcategory selected:', selectedSubcategoryId, 'isInitialLoad:', isInitialLoad);
+
             // 初期ロード時は displayGlobalInventory を呼び出さない
             if (isInitialLoad) {
+                console.log('Skipping initial call to displayGlobalInventory');
                 isInitialLoad = false;
                 return;
             }
 
             // サブカテゴリIDが無効な場合は処理をスキップ
             if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
-                console.log('選択されたサブカテゴリID:', selectedSubcategoryId);
+                console.log('Calling displayGlobalInventory with Subcategory ID:', selectedSubcategoryId);
                 displayGlobalInventory(selectedSubcategoryId); // サブカテゴリが選択されたときのみ呼び出し
             } else {
                 console.warn('無効なサブカテゴリID:', selectedSubcategoryId);
@@ -401,6 +405,36 @@ export function initializeInventorySection() {
     } else {
         console.error('サブカテゴリセレクトボックスが見つかりません。');
     }
+}
+
+// displayGlobalInventory 関数内の呼び出し確認用にログを追加
+export async function displayGlobalInventory(selectedSubcategoryId) {
+    console.log('displayGlobalInventory: Called with subcategoryId:', selectedSubcategoryId);
+
+    if (!db) {
+        console.error('Databaseが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    const inventoryStore = db.transaction(['globalInventory'], 'readonly').objectStore('globalInventory');
+    const index = inventoryStore.index('subcategoryId');
+
+    if (selectedSubcategoryId == null || isNaN(selectedSubcategoryId)) {
+        console.error('選択されたサブカテゴリIDが無効です。');
+        return;
+    }
+
+    const request = index.getAll(selectedSubcategoryId);
+
+    request.onsuccess = async (event) => {
+        const inventoryItems = event.target.result;
+        console.log('displayGlobalInventory: Inventory items for subcategoryId:', selectedSubcategoryId, 'Items:', inventoryItems);
+    };
+
+    request.onerror = (event) => {
+        console.error('在庫アイテムの取得中にエラーが発生しました:', event.target.error);
+    };
 }
 
 // 在庫リストをクリアする関数
