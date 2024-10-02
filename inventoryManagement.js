@@ -106,15 +106,22 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
 
     const inventoryStore = db.transaction(['globalInventory'], 'readonly').objectStore('globalInventory');
     const index = inventoryStore.index('subcategoryId');
+    
+    // **修正点**: 取得したサブカテゴリIDが正しいかどうかチェック
+    if (selectedSubcategoryId == null || isNaN(selectedSubcategoryId)) {
+        console.error('選択されたサブカテゴリIDが無効です。');
+        return;
+    }
+
     const request = index.getAll(selectedSubcategoryId);
 
     request.onsuccess = async (event) => {
         const inventoryItems = event.target.result;
         console.log('サブカテゴリIDに対応する在庫アイテム:', inventoryItems);  // 取得した在庫アイテムを表示
 
-        // もしデータが見つからなかった場合の警告ログを追加
         if (inventoryItems.length === 0) {
             console.warn('サブカテゴリIDに対応する在庫が見つかりません。');
+            return;
         }
 
         const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
