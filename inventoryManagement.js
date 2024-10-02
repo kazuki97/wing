@@ -376,27 +376,17 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 export function initializeInventorySection() {
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
-    // 初期ロード時には displayGlobalInventory を呼び出さない
-    let isInitialLoad = true;
-
     if (subcategorySelect) {
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
 
-            // 初期ロード時は displayGlobalInventory を呼び出さない
-            if (isInitialLoad) {
-                console.log('Skipping initial call to displayGlobalInventory');
-                isInitialLoad = false;
-                return;
-            }
-
-            // サブカテゴリIDが無効な場合は処理をスキップ
+            // サブカテゴリIDが正しく選択された場合のみ displayGlobalInventory を呼び出す
             if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
                 console.log('Calling displayGlobalInventory with Subcategory ID:', selectedSubcategoryId);
-                displayGlobalInventory(selectedSubcategoryId); // サブカテゴリが選択されたときのみ呼び出し
+                displayGlobalInventory(selectedSubcategoryId); 
             } else {
                 console.warn('無効なサブカテゴリID:', selectedSubcategoryId);
-                clearInventoryDisplay(); // 無効なIDの場合、在庫表示をクリア
+                clearInventoryDisplay(); 
             }
         });
     } else {
