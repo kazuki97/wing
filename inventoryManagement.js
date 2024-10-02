@@ -376,20 +376,28 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 export function initializeInventorySection() {
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
+    // 初期ロード時には displayGlobalInventory を呼び出さない
+    let isInitialLoad = true;
+
     if (subcategorySelect) {
         subcategorySelect.addEventListener('change', () => {
             const selectedSubcategoryId = Number(subcategorySelect.value);
 
-            // サブカテゴリIDが無効な場合は displayGlobalInventory を呼び出さない
-            if (isNaN(selectedSubcategoryId) || selectedSubcategoryId === 0) {
-                console.warn('サブカテゴリが選択されていないため、在庫は表示されません。');
-                clearInventoryDisplay(); // 在庫表示をクリア
+            // 初期ロード時は displayGlobalInventory を呼び出さない
+            if (isInitialLoad) {
+                console.log('Skipping initial call to displayGlobalInventory');
+                isInitialLoad = false;
                 return;
             }
 
-            // サブカテゴリIDが有効であれば displayGlobalInventory を呼び出す
-            console.log('Calling displayGlobalInventory with Subcategory ID:', selectedSubcategoryId);
-            displayGlobalInventory(selectedSubcategoryId); 
+            // サブカテゴリIDが無効な場合は処理をスキップ
+            if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+                console.log('Calling displayGlobalInventory with Subcategory ID:', selectedSubcategoryId);
+                displayGlobalInventory(selectedSubcategoryId); // サブカテゴリが選択されたときのみ呼び出し
+            } else {
+                console.warn('無効なサブカテゴリID:', selectedSubcategoryId);
+                clearInventoryDisplay(); // 無効なIDの場合、在庫表示をクリア
+            }
         });
     } else {
         console.error('サブカテゴリセレクトボックスが見つかりません。');
