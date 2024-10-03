@@ -318,6 +318,10 @@ export function updateInventoryParentCategorySelect() {
  * サブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリID
  */
+/**
+ * サブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
+ */
 export function updateInventorySubcategorySelect(parentCategoryId) {
     if (!db) {
         console.error('データベースが初期化されていません。');
@@ -339,11 +343,11 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
             // デバッグ用ログを追加してカテゴリ情報を確認
             console.log('取得したカテゴリリスト:', categories);
             categories.forEach(category => {
-                console.log('カテゴリID:', category.id, 'カテゴリ名:', category.name, '親カテゴリID:', category.parentId);
+                console.log('カテゴリID:', category.id, 'カテゴリ名:', category.name, '親カテゴリID:', category.parentId, '親カテゴリIDの型:', typeof category.parentId);
             });
 
-            // 親カテゴリIDが一致するサブカテゴリをフィルタ
-            const filteredCategories = categories.filter(category => category.parentId === parentCategoryId);
+            // データ型を統一して比較
+            const filteredCategories = categories.filter(category => Number(category.parentId) === parentCategoryId);
 
             // フィルタ結果を確認
             console.log('Filtered Categories:', filteredCategories);
