@@ -6,7 +6,7 @@ import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
 import { saveUnitPriceToDB, displayUnitPrices } from './unitPriceCategoryManagement.js';  // 修正: unitPriceCategoryManagement.js からインポート
-import { displayGlobalInventory } from './inventoryManagement.js';  // 修正: inventoryManagement.js からインポート
+import { displayGlobalInventory, initializeGlobalInventorySection } from './inventoryManagement.js'; // 修正: initializeGlobalInventorySection をインポート
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
