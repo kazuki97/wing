@@ -113,6 +113,9 @@ export function initializeEventListeners() {
         e.preventDefault();
         showSection('global-inventory');
 
+ // **追加**: 全体在庫管理セクションを初期化
+            initializeGlobalInventorySection();
+
         // サブカテゴリが選択されているか確認
         const subcategorySelect = document.getElementById('inventory-subcategory-select');
         const selectedSubcategoryId = subcategorySelect ? Number(subcategorySelect.value) : null;
