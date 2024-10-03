@@ -96,7 +96,12 @@ export function deleteInventoryItem(id) {
  * @param {number} [selectedSubcategoryId] - 選択されたサブカテゴリID（オプション）
  */
 export async function displayGlobalInventory(selectedSubcategoryId) {
-    console.log('displayGlobalInventory called with subcategoryId:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
+    console.log('displayGlobalInventory called with selectedSubcategoryId:', selectedSubcategoryId, '型:', typeof selectedSubcategoryId);
+
+    if (selectedSubcategoryId == null || isNaN(selectedSubcategoryId) || selectedSubcategoryId === 0) {
+        console.error('選択されたサブカテゴリIDが無効です。');
+        return;
+    }
 
     if (!db) {
         console.error('Databaseが初期化されていません。');
@@ -385,7 +390,7 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
  */
 function handleSubcategoryChange(event) {
     const selectedSubcategoryId = Number(event.target.value);
-    console.log('選択されたサブカテゴリID:', selectedSubcategoryId);
+    console.log('選択されたサブカテゴリID:', selectedSubcategoryId, '型:', typeof selectedSubcategoryId);
 
     // サブカテゴリIDのバリデーション
     if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
