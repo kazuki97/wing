@@ -372,8 +372,11 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
                 console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
             }
 
-            subcategorySelect.removeEventListener('change', handleSubcategoryChange);
-            subcategorySelect.addEventListener('change', handleSubcategoryChange);
+           // イベントリスナーが重複して登録されないよう、追加する前にリスナーを削除
+if (subcategorySelect) {
+    subcategorySelect.removeEventListener('change', handleSubcategoryChange);  // 古いリスナーを削除
+    subcategorySelect.addEventListener('change', handleSubcategoryChange);  // 新しいリスナーを追加
+}
 
         } else {
             console.error('inventory-subcategory-select が見つかりません。');
