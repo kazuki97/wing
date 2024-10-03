@@ -318,10 +318,6 @@ export function updateInventoryParentCategorySelect() {
  * サブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリID
  */
-/**
- * サブカテゴリセレクトを更新する関数
- * @param {number} parentCategoryId - 選択された親カテゴリID
- */
 export function updateInventorySubcategorySelect(parentCategoryId) {
     if (!db) {
         console.error('データベースが初期化されていません。');
@@ -340,13 +336,17 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-            // デバッグ用ログを追加して確認
+            // デバッグ用ログを追加してカテゴリ情報を確認
             console.log('取得したカテゴリリスト:', categories);
             categories.forEach(category => {
                 console.log('カテゴリID:', category.id, 'カテゴリ名:', category.name, '親カテゴリID:', category.parentId);
             });
 
+            // 親カテゴリIDが一致するサブカテゴリをフィルタ
             const filteredCategories = categories.filter(category => category.parentId === parentCategoryId);
+
+            // フィルタ結果を確認
+            console.log('Filtered Categories:', filteredCategories);
 
             filteredCategories.forEach(category => {
                 const option = document.createElement('option');
@@ -359,6 +359,7 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
                 console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
             }
 
+            // 古いイベントリスナーを安全に削除し、新しいイベントリスナーを追加
             subcategorySelect.removeEventListener('change', handleSubcategoryChange);
             subcategorySelect.addEventListener('change', handleSubcategoryChange);
 
