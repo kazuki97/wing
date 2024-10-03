@@ -318,10 +318,6 @@ export function updateInventoryParentCategorySelect() {
  * サブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリID
  */
-/**
- * サブカテゴリセレクトを更新する関数
- * @param {number} parentCategoryId - 選択された親カテゴリID
- */
 export function updateInventorySubcategorySelect(parentCategoryId) {
     if (!db) {
         console.error('データベースが初期化されていません。');
@@ -343,7 +339,12 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
             // デバッグ用ログを追加してカテゴリ情報を確認
             console.log('取得したカテゴリリスト:', categories);
             categories.forEach(category => {
-                console.log('カテゴリID:', category.id, 'カテゴリ名:', category.name, '親カテゴリID:', category.parentId, '親カテゴリIDの型:', typeof category.parentId);
+                console.log(
+                    'カテゴリID:', category.id,
+                    'カテゴリ名:', category.name,
+                    '親カテゴリID:', category.parentId,
+                    '親カテゴリIDの型:', typeof category.parentId
+                );
             });
 
             // データ型を統一して比較
@@ -426,4 +427,36 @@ function clearInventoryDisplay() {
     if (globalInventoryTableBody) {
         globalInventoryTableBody.innerHTML = ''; // 在庫リストをクリア
     }
+}
+
+/**
+ * デバッグ用: 全てのカテゴリをコンソールに表示する関数
+ */
+function debugLogAllCategories() {
+    if (!db) {
+        console.error('データベースが初期化されていません。');
+        return;
+    }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        console.log('データベース内の全カテゴリ:', categories);
+
+        categories.forEach(category => {
+            console.log(
+                'カテゴリID:', category.id,
+                'カテゴリ名:', category.name,
+                '親カテゴリID:', category.parentId,
+                '親カテゴリIDの型:', typeof category.parentId
+            );
+        });
+    };
+
+    request.onerror = (event) => {
+        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
+    };
 }
