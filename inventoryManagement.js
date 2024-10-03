@@ -334,37 +334,31 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
         const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
         if (subcategorySelect) {
+            // サブカテゴリセレクトボックスをクリア
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-            // デバッグ用ログ追加
+            // デバッグ用ログ
             console.log('Parent Category ID:', parentCategoryId);
-            console.log('Available Categories:', categories);
+            console.log('取得したカテゴリリスト:', categories);
 
-            categories.forEach(category => {
-                if (category.parentId === parentCategoryId) {
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    subcategorySelect.appendChild(option);
-                }
+            // 対応するサブカテゴリを追加
+            const filteredCategories = categories.filter(category => category.parentId === parentCategoryId);
+            
+            filteredCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                subcategorySelect.appendChild(option);
             });
 
-            if (subcategorySelect.options.length === 1) {
+            // サブカテゴリが存在しない場合の警告
+            if (filteredCategories.length === 0) {
                 console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
             }
 
-            // サブカテゴリが選択されたときのイベント処理
-            subcategorySelect.addEventListener('change', () => {
-                const selectedSubcategoryId = Number(subcategorySelect.value);
-                console.log('選択されたサブカテゴリID:', selectedSubcategoryId);  
-
-                // 修正点: IDのバリデーションを強化
-                if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {  
-                    displayGlobalInventory(selectedSubcategoryId); 
-                } else {
-                    console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
-                }
-            });
+            // 既存のイベントリスナーを削除してから新たに追加
+            subcategorySelect.removeEventListener('change', handleSubcategoryChange);
+            subcategorySelect.addEventListener('change', handleSubcategoryChange);
 
         } else {
             console.error('inventory-subcategory-select が見つかりません。');
@@ -376,6 +370,21 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
         console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
         showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
     };
+}
+
+/**
+ * サブカテゴリ選択時に呼び出されるイベントハンドラー
+ */
+function handleSubcategoryChange(event) {
+    const selectedSubcategoryId = Number(event.target.value);
+    console.log('選択されたサブカテゴリID:', selectedSubcategoryId);
+
+    // サブカテゴリIDのバリデーション
+    if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+        displayGlobalInventory(selectedSubcategoryId);  // サブカテゴリ選択時に在庫を表示
+    } else {
+        console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
+    }
 }
 
 /**
