@@ -1,6 +1,9 @@
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
 
+// **追加**: 必要な関数をインポート
+import { updateGlobalInventorySubcategorySelect } from './categories.js';
+
 /**
  * 在庫アイテムを追加する関数
  * @param {Object} inventoryItem - 追加する在庫アイテム
@@ -433,3 +436,12 @@ function clearInventoryDisplay() {
         globalInventoryTableBody.innerHTML = ''; // 在庫リストをクリア
     }
 }
+
+export {
+    initializeGlobalInventorySection,
+    updateGlobalInventoryParentCategorySelect,
+    updateGlobalInventorySubcategorySelect
+};
+
+// テスト用のログ
+console.log('inventoryManagement.js が正しく読み込まれました。');
