@@ -439,11 +439,16 @@ function clearInventoryDisplay() {
 /**
  * 全体在庫管理セクションの初期化
  */
-export function initializeGlobalInventorySection() {
+function initializeGlobalInventorySection() {
     updateGlobalInventoryParentCategorySelect();
 }
 
+function updateGlobalInventoryParentCategorySelect() {
+    // 関数の実装をここに追加してください
+}
+
 export {
+    initializeGlobalInventorySection,
     updateGlobalInventoryParentCategorySelect
 };
 
