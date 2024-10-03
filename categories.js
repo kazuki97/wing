@@ -61,24 +61,63 @@ export function updateCategorySelects() {
 
 /**
  * 在庫管理用のサブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
  */
-export function updateInventorySubcategorySelect() {
-    const parentCategorySelect = document.getElementById('inventory-parent-category-select');
-    if (parentCategorySelect) {
-        parentCategorySelect.addEventListener('change', () => {
-            const selectedParentId = Number(parentCategorySelect.value);
-            console.log('Selected Inventory Parent Category ID:', selectedParentId); // 追加: 選択された親カテゴリIDをログ出力
-            if (selectedParentId) {
-                // サブカテゴリセレクトを更新
-                updateGlobalSubcategorySelectForInventory(selectedParentId);
-            } else {
-                const subcategorySelect = document.getElementById('inventory-subcategory-select');
-                if (subcategorySelect) {
-                    subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-                }
-            }
-        });
+export function updateInventorySubcategorySelect(parentCategoryId) {
+    if (!db) {
+        console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
+        return;
     }
+
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+        const subcategorySelect = document.getElementById('inventory-subcategory-select');
+
+        if (subcategorySelect) {
+            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+
+            // デバッグ用ログを追加して確認
+            console.log('取得したカテゴリリスト:', categories);
+            categories.forEach(category => {
+                console.log(
+                    'カテゴリID:', category.id,
+                    'カテゴリ名:', category.name,
+                    '親カテゴリID:', category.parentId,
+                    '親カテゴリIDの型:', typeof category.parentId
+                );
+            });
+
+            // データ型を統一して比較
+            const filteredCategories = categories.filter(category => Number(category.parentId) === parentCategoryId);
+
+            // フィルタ結果を確認
+            console.log('Filtered Categories:', filteredCategories);
+
+            filteredCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.text = category.name;
+                subcategorySelect.appendChild(option);
+            });
+
+            if (filteredCategories.length === 0) {
+                console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
+            }
+        } else {
+            console.error('inventory-subcategory-select が見つかりません。');
+            showErrorModal('サブカテゴリセレクトが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+    };
 }
 
 /**
