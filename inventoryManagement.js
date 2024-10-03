@@ -433,35 +433,3 @@ function clearInventoryDisplay() {
         globalInventoryTableBody.innerHTML = ''; // 在庫リストをクリア
     }
 }
-
-/**
- * デバッグ用: 全てのカテゴリをコンソールに表示する関数
- */
-function debugLogAllCategories() {
-    if (!db) {
-        console.error('データベースが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
-    const request = store.getAll();
-
-    request.onsuccess = (event) => {
-        const categories = event.target.result;
-        console.log('データベース内の全カテゴリ:', categories);
-
-        categories.forEach(category => {
-            console.log(
-                'カテゴリID:', category.id,
-                'カテゴリ名:', category.name,
-                '親カテゴリID:', category.parentId,
-                '親カテゴリIDの型:', typeof category.parentId
-            );
-        });
-    };
-
-    request.onerror = (event) => {
-        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
-    };
-}
