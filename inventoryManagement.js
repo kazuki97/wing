@@ -318,6 +318,10 @@ export function updateInventoryParentCategorySelect() {
  * サブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリID
  */
+/**
+ * サブカテゴリセレクトを更新する関数
+ * @param {number} parentCategoryId - 選択された親カテゴリID
+ */
 export function updateInventorySubcategorySelect(parentCategoryId) {
     if (!db) {
         console.error('データベースが初期化されていません。');
@@ -331,17 +335,15 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
+
+        // 追加されたデバッグログ: 取得したカテゴリリストの内容を表示
+        console.log('取得したカテゴリリスト:', categories);
+
         const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
         if (subcategorySelect) {
-            // サブカテゴリセレクトボックスをクリア
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-            // デバッグ用ログ
-            console.log('Parent Category ID:', parentCategoryId);
-            console.log('取得したカテゴリリスト:', categories);
-
-            // 対応するサブカテゴリを追加
             const filteredCategories = categories.filter(category => category.parentId === parentCategoryId);
             
             filteredCategories.forEach(category => {
@@ -351,12 +353,10 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
                 subcategorySelect.appendChild(option);
             });
 
-            // サブカテゴリが存在しない場合の警告
             if (filteredCategories.length === 0) {
                 console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
             }
 
-            // 既存のイベントリスナーを削除してから新たに追加
             subcategorySelect.removeEventListener('change', handleSubcategoryChange);
             subcategorySelect.addEventListener('change', handleSubcategoryChange);
 
