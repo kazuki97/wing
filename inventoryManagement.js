@@ -2,7 +2,7 @@ import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
 
 // **追加**: 必要な関数をインポート
-import { updateGlobalInventorySubcategorySelect } from './categories.js';
+import { updateGlobalSubcategorySelectForInventory } from './categories.js';
 
 /**
  * 在庫アイテムを追加する関数
