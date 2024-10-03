@@ -123,7 +123,7 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
 
     const request = index.getAll(selectedSubcategoryId);
 
-    request.onsuccess = async (event) => {
+request.onsuccess = async (event) => {
     const inventoryItems = event.target.result;
     console.log('取得した在庫アイテム:', inventoryItems);  // 取得した在庫アイテムを全て表示
 
@@ -147,7 +147,15 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
     if (globalInventoryTableBody) {
         globalInventoryTableBody.innerHTML = '';  // 商品リストをクリア
 
+        // すでに追加された productId を追跡するためのセット
+        const addedProductIds = new Set();
+
         for (const inventoryItem of inventoryItems) {
+            if (addedProductIds.has(inventoryItem.productId)) {
+                console.warn(`Product with ID ${inventoryItem.productId} is already added to the table.`);
+                continue; // 重複した商品をスキップ
+            }
+
             const productRequest = db.transaction(['products'], 'readonly')
                 .objectStore('products')
                 .get(inventoryItem.productId);
@@ -175,6 +183,9 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
                 deleteButton.textContent = '削除';
                 deleteButton.className = 'inventory-delete-button';
                 row.insertCell(7).appendChild(deleteButton);
+
+                // 商品IDをセットに追加して重複を防ぐ
+                addedProductIds.add(inventoryItem.productId);
             } else {
                 console.warn(`Product not found for productId: ${inventoryItem.productId}`);
             }
@@ -185,11 +196,10 @@ export async function displayGlobalInventory(selectedSubcategoryId) {
     }
 };
 
-    request.onerror = (event) => {
-        console.error('在庫アイテムの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('在庫アイテムの取得中にエラーが発生しました。');
-    };
-}
+request.onerror = (event) => {
+    console.error('在庫アイテムの取得中にエラーが発生しました:', event.target.error);
+    showErrorModal('在庫アイテムの取得中にエラーが発生しました。');
+};
 
 /**
  * 在庫編集フォームを表示する関数
@@ -349,7 +359,8 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
             });
 
             // データ型を統一して比較
-            const filteredCategories = categories.filter(category => Number(category.parentId) === parentCategoryId);
+            const filteredCategories = categories.filter(category => Number(category.parentId) === Number(parentCategoryId));
+
 
             // フィルタ結果を確認
             console.log('Filtered Categories:', filteredCategories);
@@ -367,8 +378,8 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 
            // イベントリスナーが重複して登録されないよう、追加する前にリスナーを削除
 if (subcategorySelect) {
-    subcategorySelect.removeEventListener('change', handleSubcategoryChange);  // 古いリスナーを削除
-    subcategorySelect.addEventListener('change', handleSubcategoryChange);  // 新しいリスナーを追加
+    subcategorySelect.removeEventListener('change', handleSubcategoryChange);
+    subcategorySelect.addEventListener('change', handleSubcategoryChange);
 }
 
         } else {
