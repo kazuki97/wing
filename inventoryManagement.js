@@ -445,8 +445,7 @@ export function initializeGlobalInventorySection() {
 
 export {
     initializeGlobalInventorySection,
-    updateGlobalInventoryParentCategorySelect,
-    updateInventorySubcategorySelect
+    updateGlobalInventoryParentCategorySelect
 };
 
 // テスト用のログ
