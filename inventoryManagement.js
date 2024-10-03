@@ -335,17 +335,19 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 
     request.onsuccess = (event) => {
         const categories = event.target.result;
-
-        // 追加されたデバッグログ: 取得したカテゴリリストの内容を表示
-        console.log('取得したカテゴリリスト:', categories);
-
         const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
+            // デバッグ用ログを追加して確認
+            console.log('取得したカテゴリリスト:', categories);
+            categories.forEach(category => {
+                console.log('カテゴリID:', category.id, 'カテゴリ名:', category.name, '親カテゴリID:', category.parentId);
+            });
+
             const filteredCategories = categories.filter(category => category.parentId === parentCategoryId);
-            
+
             filteredCategories.forEach(category => {
                 const option = document.createElement('option');
                 option.value = category.id;
