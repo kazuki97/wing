@@ -79,7 +79,7 @@ export function initializeEventListeners() {
     linkInventory.addEventListener('click', (e) => {
         e.preventDefault();
         showSection('inventory');
-        
+
         // サブカテゴリが選択されているか確認
         const subcategorySelect = document.getElementById('inventory-subcategory-select');
         const selectedSubcategoryId = subcategorySelect ? Number(subcategorySelect.value) : null;
