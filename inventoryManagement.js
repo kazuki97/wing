@@ -344,7 +344,7 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-            // デバッグ用ログを追加してカテゴリ情報を確認
+            // デバッグ用ログを追加して確認
             console.log('取得したカテゴリリスト:', categories);
             categories.forEach(category => {
                 console.log(
@@ -372,7 +372,6 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
                 console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
             }
 
-            // 古いイベントリスナーを安全に削除し、新しいイベントリスナーを追加
             subcategorySelect.removeEventListener('change', handleSubcategoryChange);
             subcategorySelect.addEventListener('change', handleSubcategoryChange);
 
