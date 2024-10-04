@@ -465,4 +465,3 @@ export {
 
 // テスト用のログ
 console.log('inventoryManagement.js が正しく読み込まれました。');
-
