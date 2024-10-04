@@ -35,12 +35,14 @@ function addInventoryItem(inventoryItem) {
             // サブカテゴリが正しく取得されているか確認するためのログを追加
             if (subcategorySelect) {
                 console.log('サブカテゴリセレクトボックスが見つかりました:', subcategorySelect);
+                console.log('subcategorySelect.value:', subcategorySelect.value);
             } else {
                 console.error('サブカテゴリセレクトボックスが見つかりません。IDが "inventory-subcategory-select" で正しいか確認してください。');
             }
 
             // サブカテゴリIDが正しく取得されているか確認する
             const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? parseInt(subcategorySelect.value, 10) : undefined;
+            console.log('取得した selectedSubcategoryId:', selectedSubcategoryId);
 
             if (selectedSubcategoryId !== undefined && selectedSubcategoryId !== null && !isNaN(selectedSubcategoryId) && selectedSubcategoryId > 0) {
                 console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
@@ -79,7 +81,8 @@ function deleteInventoryItem(id) {
         
         const subcategorySelect = document.getElementById('inventory-subcategory-select');
         const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? Number(subcategorySelect.value) : undefined;
-        
+        console.log('取得した selectedSubcategoryId:', selectedSubcategoryId);
+
         if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
             displayGlobalInventory(selectedSubcategoryId); // 正しいサブカテゴリIDで呼び出し
         } else {
