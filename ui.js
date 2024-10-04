@@ -1,3 +1,5 @@
+// ui.js
+
 import { initializeTransactionUI } from './transactions.js';
 import { updateCategorySelects, displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
@@ -8,20 +10,21 @@ import { showErrorModal } from './errorHandling.js';
 
 /**
  * UIの初期化を行う関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function initializeUI() {
+export function initializeUI(db) {
     showSection('home');
-    initializeTransactionUI();
+    initializeTransactionUI(db);
 
     // 初期ロード処理
-    updateCategorySelects();
-    displayCategories();
-    displaySales();
-    displayUnitPrices();
-    displayGlobalInventory();
+    updateCategorySelects(db);
+    displayCategories(db);
+    displaySales(db);
+    displayUnitPrices(db);
+    displayGlobalInventory(db);
 
     // イベントリスナーの初期化
-    initializeEventListeners();
+    initializeEventListeners(db);
 }
 
 /**
@@ -45,5 +48,5 @@ export function showSection(section) {
 
 // その他のUI関連関数があればここに追加
 
-// テスト用のログ（正常に読み込まれているか確認）
+// テスト用のログ（正常に読み込まれたことを確認）
 console.log('ui.js が正しく読み込まれました。');
