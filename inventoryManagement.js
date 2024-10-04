@@ -1,6 +1,6 @@
 // inventoryManagement.js
 import { showErrorModal } from './errorHandling.js';
-import { updateGlobalSubcategorySelectForInventory } from './categories.js';
+// import { updateGlobalSubcategorySelectForInventory } from './categories.js'; // この行を削除
 
 /**
  * 在庫アイテムを追加する関数
