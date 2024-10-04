@@ -1,5 +1,5 @@
 // transactions.js
-import { db } from './db.js';
+
 import { showErrorModal } from './errorHandling.js';
 
 /**
@@ -18,8 +18,9 @@ let currentTransactionListElement = null;
 
 /**
  * トランザクションUIを初期化する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function initializeTransactionUI() {
+export function initializeTransactionUI(db) {
     completeTransactionButtonElement = document.getElementById('complete-transaction');
     currentTransactionListElement = document.getElementById('current-transaction-list');
 
@@ -35,7 +36,7 @@ export function initializeTransactionUI() {
 
     // 完了ボタンにイベントリスナーを追加
     if (completeTransactionButtonElement) {
-        completeTransactionButtonElement.addEventListener('click', processTransaction);
+        completeTransactionButtonElement.addEventListener('click', () => processTransaction(db));
     }
 }
 
@@ -80,8 +81,9 @@ export function toggleCompleteButton() {
 
 /**
  * トランザクションを処理する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export async function processTransaction() {
+export async function processTransaction(db) {
     if (!db) {
         showErrorModal('データベースが初期化されていません。');
         throw new Error('データベースが初期化されていません。');
@@ -124,8 +126,9 @@ export async function processTransaction() {
 
 /**
  * 売上一覧を表示する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function displaySales() {
+export function displaySales(db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -160,6 +163,5 @@ export function displaySales() {
     };
 }
 
-// テスト用のログ（正常に読み込まれているか確認）
+// テスト用のログ（正常に読み込まれたことを確認）
 console.log('transactions.js が正しく読み込まれました。');
-
