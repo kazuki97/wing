@@ -1,90 +1,29 @@
-import { db } from './db.js';
+// products.js
+
 import { showErrorModal } from './errorHandling.js';
 
-export function updateProductCategorySelects() {
-    const productParentCategorySelect = document.getElementById('product-parent-category-select');
-    const productSubcategorySelect = document.getElementById('product-subcategory-select');
-
-    if (productParentCategorySelect) {
-        productParentCategorySelect.addEventListener('change', () => {
-            const parentCategoryId = productParentCategorySelect.value;
-            if (parentCategoryId) {
-                const transaction = db.transaction(['categories'], 'readonly');
-                const store = transaction.objectStore('categories');
-                const index = store.index('parentId');
-                const request = index.getAll(Number(parentCategoryId));
-
-                request.onsuccess = (event) => {
-                    const subcategories = event.target.result;
-                    if (productSubcategorySelect) {
-                        productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-
-                        subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.text = subcategory.name;
-                            productSubcategorySelect.appendChild(option);
-                        });
-                    }
-                };
-
-                request.onerror = (event) => {
-                    console.error('Error fetching subcategories for products:', event.target.error);
-                    showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-                };
-            } else {
-                if (productSubcategorySelect) {
-                    productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-                }
-            }
-        });
-    }
-
-    if (productSubcategorySelect) {
-        productSubcategorySelect.addEventListener('change', () => {
-            const subcategoryId = Number(productSubcategorySelect.value);
-            if (subcategoryId) {
-                displayProducts(subcategoryId);
-            } else {
-                console.error('No subcategory selected.');
-            }
-        });
-    }
-}
-
-export function saveProductToDB(product) {
+/**
+ * 商品をデータベースに保存する関数
+ * @param {Object} product - 保存する商品オブジェクト
+ * @param {IDBDatabase} db - データベースオブジェクト
+ */
+export function saveProductToDB(product, db) {
     const transaction = db.transaction(['products'], 'readwrite');
     const store = transaction.objectStore('products');
     const addRequest = store.put(product);
 
     addRequest.onsuccess = (event) => {
-        const savedProductId = event.target.result;  // 自動生成されたIDを取得
+        const savedProductId = event.target.result;
         console.log(`Product "${product.name}" saved successfully with ID: ${savedProductId}.`);
-        
+
         // globalInventory にも商品を登録する処理を追加
         addProductToGlobalInventory({
             productId: savedProductId,
             subcategoryId: product.subcategoryId,
             quantity: product.quantity
-        });
+        }, db);
 
-        displayProducts(product.subcategoryId); // 保存後にUIを更新
-
-        const checkTransaction = db.transaction(['products'], 'readonly');
-        const checkStore = checkTransaction.objectStore('products');
-        const getRequest = checkStore.get(savedProductId);
-
-        getRequest.onsuccess = (event) => {
-            if (event.target.result) {
-                console.log('DBに保存された商品:', event.target.result);  // DBに保存されたデータを確認
-            } else {
-                console.warn('商品IDが見つかりません。データベースに正しく保存されていません。');
-            }
-        };
-
-        getRequest.onerror = (event) => {
-            console.error('商品データの取得中にエラーが発生しました:', event.target.error);
-        };
+        displayProducts(product.subcategoryId, db);
     };
 
     addRequest.onerror = (event) => {
@@ -93,11 +32,15 @@ export function saveProductToDB(product) {
     };
 }
 
-// globalInventory に商品を追加する関数を追加
-function addProductToGlobalInventory(inventoryItem) {
+/**
+ * globalInventory に商品を追加する関数
+ * @param {Object} inventoryItem - 追加する在庫アイテム
+ * @param {IDBDatabase} db - データベースオブジェクト
+ */
+function addProductToGlobalInventory(inventoryItem, db) {
     const transaction = db.transaction(['globalInventory'], 'readwrite');
     const store = transaction.objectStore('globalInventory');
-    
+
     const addRequest = store.put(inventoryItem);
 
     addRequest.onsuccess = () => {
@@ -110,7 +53,12 @@ function addProductToGlobalInventory(inventoryItem) {
     };
 }
 
-export function displayProducts(subcategoryId) {
+/**
+ * 商品を表示する関数
+ * @param {number} subcategoryId - 表示する商品のサブカテゴリID
+ * @param {IDBDatabase} db - データベースオブジェクト
+ */
+export function displayProducts(subcategoryId, db) {
     if (!db) {
         console.error('Database is not initialized.');
         return;
@@ -140,7 +88,7 @@ export function displayProducts(subcategoryId) {
                 editButton.textContent = '編集';
                 editButton.className = 'product-button';
                 editButton.addEventListener('click', () => {
-                    showEditProductForm(product, subcategoryId);
+                    showEditProductForm(product, subcategoryId, db);
                 });
                 row.insertCell(6).appendChild(editButton);
 
@@ -155,7 +103,7 @@ export function displayProducts(subcategoryId) {
 
                         deleteTransaction.oncomplete = () => {
                             console.log(`Product "${product.name}" deleted successfully.`);
-                            displayProducts(subcategoryId);
+                            displayProducts(subcategoryId, db);
                         };
 
                         deleteTransaction.onerror = (event) => {
@@ -178,7 +126,13 @@ export function displayProducts(subcategoryId) {
     };
 }
 
-export function showEditProductForm(product, subcategoryId) {
+/**
+ * 商品編集フォームを表示する関数
+ * @param {Object} product - 編集対象の商品
+ * @param {number} subcategoryId - サブカテゴリID
+ * @param {IDBDatabase} db - データベースオブジェクト
+ */
+export function showEditProductForm(product, subcategoryId, db) {
     const editForm = document.createElement('div');
     editForm.className = 'edit-form';
 
@@ -239,7 +193,7 @@ export function showEditProductForm(product, subcategoryId) {
             updateRequest.onsuccess = () => {
                 console.log(`Product "${updatedProduct.name}" updated successfully.`);
                 document.body.removeChild(editForm);
-                displayProducts(subcategoryId);
+                displayProducts(subcategoryId, db);
             };
 
             updateRequest.onerror = (event) => {
