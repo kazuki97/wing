@@ -1,6 +1,7 @@
 // products.js
 
 import { showErrorModal } from './errorHandling.js';
+import { displayGlobalInventory } from './inventoryManagement.js'; // インベントリ管理関数のインポート
 
 /**
  * 商品をデータベースに保存する関数
