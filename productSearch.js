@@ -1,13 +1,14 @@
 // productSearch.js
-import { db } from './db.js';
+
 import { showErrorModal } from './errorHandling.js';
 
 /**
  * 商品名で商品を検索する関数
  * @param {string} name - 検索する商品名
+ * @param {IDBDatabase} db - データベースオブジェクト
  * @returns {Promise<Object|null>} - 検索結果の商品のオブジェクトまたはnull
  */
-export function findProductByName(name) {
+export function findProductByName(name, db) {
     return new Promise((resolve, reject) => {
         if (!db) {
             reject(new Error('データベースが初期化されていません。'));
@@ -37,9 +38,10 @@ export function findProductByName(name) {
 /**
  * バーコードで商品を検索する関数
  * @param {string} barcode - 検索するバーコード
+ * @param {IDBDatabase} db - データベースオブジェクト
  * @returns {Promise<Object|null>} - 検索結果の商品のオブジェクトまたはnull
  */
-export function findProductByBarcode(barcode) {
+export function findProductByBarcode(barcode, db) {
     return new Promise((resolve, reject) => {
         if (!db) {
             reject(new Error('データベースが初期化されていません。'));
