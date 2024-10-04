@@ -1,6 +1,10 @@
 // errorHandling.js
 let listenersAdded = false;
 
+/**
+ * エラーメッセージを表示するモーダルを表示する関数
+ * @param {string} message - 表示するエラーメッセージ
+ */
 export function showErrorModal(message) {
     const errorMessage = document.getElementById('errorMessage');
     const errorModal = document.getElementById('errorModal');
