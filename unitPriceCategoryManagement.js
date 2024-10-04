@@ -1,5 +1,4 @@
 // unitPriceCategoryManagement.js
-
 import { showErrorModal } from './errorHandling.js';
 
 /**
