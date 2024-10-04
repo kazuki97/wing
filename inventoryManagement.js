@@ -32,20 +32,12 @@ function addInventoryItem(inventoryItem, db) {
             // サブカテゴリセレクトボックスのID取得部分
             const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
-            // サブカテゴリが正しく取得されているか確認するためのログを追加
-            if (subcategorySelect) {
-                console.log('サブカテゴリセレクトボックスが見つかりました:', subcategorySelect);
-                console.log('subcategorySelect.value:', subcategorySelect.value);
-            } else {
-                console.error('サブカテゴリセレクトボックスが見つかりません。IDが "inventory-subcategory-select" で正しいか確認してください。');
-            }
-
             // サブカテゴリIDが正しく取得されているか確認する
             const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? parseInt(subcategorySelect.value, 10) : undefined;
             console.log('取得した selectedSubcategoryId:', selectedSubcategoryId);
 
             if (selectedSubcategoryId !== undefined && selectedSubcategoryId !== null && !isNaN(selectedSubcategoryId) && selectedSubcategoryId > 0) {
-                console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
+                console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);
                 displayGlobalInventory(selectedSubcategoryId, db);  // 正しいサブカテゴリIDで呼び出し
             } else {
                 console.warn('サブカテゴリが選択されていないか、IDが無効です。');
@@ -124,17 +116,7 @@ async function displayGlobalInventory(selectedSubcategoryId, db) {
 
     request.onsuccess = async (event) => {
         const inventoryItems = event.target.result;
-        console.log('取得した在庫アイテム:', inventoryItems);  // 取得した在庫アイテムを全て表示
-
-        // 重複チェックのためのIDリストを作成
-        const productIds = inventoryItems.map(item => item.productId);
-        console.log('取得した商品IDリスト:', productIds);
-
-        // 重複するIDがあるかを確認
-        const uniqueIds = [...new Set(productIds)];
-        if (uniqueIds.length !== productIds.length) {
-            console.warn('重複した商品が取得されています。');
-        }
+        console.log('取得した在庫アイテム:', inventoryItems);
 
         if (inventoryItems.length === 0) {
             console.warn('サブカテゴリIDに対応する在庫が見つかりません。');
