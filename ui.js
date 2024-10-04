@@ -1,5 +1,4 @@
 // ui.js
-
 import { initializeTransactionUI } from './transactions.js';
 import { updateCategorySelects, displayCategories } from './categories.js';
 import { displaySales } from './transactions.js';
