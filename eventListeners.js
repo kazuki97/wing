@@ -9,15 +9,15 @@ import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
 import { saveUnitPriceToDB, displayUnitPrices } from './unitPriceCategoryManagement.js';
 import { displayGlobalInventory, initializeGlobalInventorySection, initializeInventorySection } from './inventoryManagement.js';
-import { db } from './db.js';
 
-// テスト用のログ（正常に読み込まれているか確認）
+// テスト用のログ（正常に読み込まれたことを確認）
 console.log('eventListeners.js が正しく読み込まれました。');
 
 /**
  * イベントリスナーを初期化する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function initializeEventListeners() {
+export function initializeEventListeners(db) {
     // ナビゲーションリンク
     const linkHome = document.getElementById('link-home');
     const linkCategory = document.getElementById('link-category');
@@ -65,7 +65,7 @@ export function initializeEventListeners() {
         linkCategory.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('category');
-            displayCategories(db); // db を渡す
+            displayCategories(db);
         });
     }
 
@@ -73,7 +73,7 @@ export function initializeEventListeners() {
         linkProduct.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('product');
-            updateCategorySelects(db); // db を渡す
+            updateCategorySelects(db);
         });
     }
 
@@ -108,7 +108,7 @@ export function initializeEventListeners() {
         linkSales.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('sales');
-            displaySales(db); // db を渡す
+            displaySales(db);
         });
     }
 
@@ -125,7 +125,7 @@ export function initializeEventListeners() {
         linkUnitPrice.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('unit-price');
-            displayUnitPrices(db); // db を渡す
+            displayUnitPrices(db);
         });
     }
 
@@ -186,7 +186,7 @@ export function initializeEventListeners() {
                     name: categoryName,
                     parentId: null
                 };
-                saveCategoryToDB(category, db); // db を渡す
+                saveCategoryToDB(category, db);
                 document.getElementById('parent-category-name').value = '';
             } else {
                 alert('カテゴリ名を入力してください。');
@@ -203,7 +203,7 @@ export function initializeEventListeners() {
                     name: subcategoryName,
                     parentId: parentCategoryId
                 };
-                saveCategoryToDB(subcategory, db); // db を渡す
+                saveCategoryToDB(subcategory, db);
                 document.getElementById('subcategory-name').value = '';
             } else {
                 alert('サブカテゴリ名と親カテゴリを入力してください。');
