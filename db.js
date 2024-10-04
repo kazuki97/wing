@@ -204,6 +204,31 @@ function debugLogAllCategories() {
         return;
     }
 
+/**
+ * データベースを削除する関数
+ */
+export function deleteDatabase() {
+    const deleteRequest = indexedDB.deleteDatabase('inventoryDB');
+
+    deleteRequest.onsuccess = () => {
+        console.log('データベースが正常に削除されました。');
+        // データベースを再初期化
+        initializeDatabase().then(() => {
+            console.log('データベースが再初期化されました。');
+        }).catch(error => {
+            console.error('データベースの再初期化中にエラーが発生しました:', error);
+        });
+    };
+
+    deleteRequest.onerror = (event) => {
+        console.error('データベースの削除中にエラーが発生しました:', event.target.error);
+    };
+
+    deleteRequest.onblocked = () => {
+        console.warn('データベースの削除がブロックされました。');
+    };
+}
+
     const transaction = db.transaction(['categories'], 'readonly');
     const store = transaction.objectStore('categories');
     const request = store.getAll();
