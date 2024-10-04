@@ -109,7 +109,7 @@ export function initializeDatabase() {
 /**
  * データベースを削除する関数
  */
-export function deleteDatabase() {
+function deleteDatabase() {
     const deleteRequest = indexedDB.deleteDatabase('inventoryDB');
 
     deleteRequest.onsuccess = () => {
