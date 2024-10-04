@@ -1,17 +1,17 @@
-import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
+// db.js
 
-export let db;
+import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
 
 /**
  * データベースの初期化を行う関数
- * @returns {Promise<void>} データベースの初期化が完了したら解決される
+ * @returns {Promise<IDBDatabase>} データベースオブジェクトを返す
  */
 export function initializeDatabase() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('inventoryDB', 19); // **バージョン番号を19に更新**
 
         request.onupgradeneeded = function(event) {
-            db = event.target.result;
+            const db = event.target.result;
 
             // カテゴリストアの作成
             if (!db.objectStoreNames.contains('categories')) {
@@ -79,7 +79,7 @@ export function initializeDatabase() {
         };
 
         request.onsuccess = function(event) {
-            db = event.target.result;
+            const db = event.target.result;
             console.log('Database initialized successfully.');
 
             // globalInventory オブジェクトストアの存在確認
@@ -91,7 +91,7 @@ export function initializeDatabase() {
 
             // 必要に応じて他の初期化処理をここに記述
 
-            resolve(); // Promise を解決
+            resolve(db); // データベースオブジェクトを返す
         };
 
         request.onerror = function(event) {
@@ -103,34 +103,35 @@ export function initializeDatabase() {
 
 /**
  * データベースを削除する関数
+ * @returns {Promise<void>} データベースの削除が完了したら解決される
  */
 export function deleteDatabase() {
-    const deleteRequest = indexedDB.deleteDatabase('inventoryDB');
+    return new Promise((resolve, reject) => {
+        const deleteRequest = indexedDB.deleteDatabase('inventoryDB');
 
-    deleteRequest.onsuccess = () => {
-        console.log('データベースが正常に削除されました。');
-        initializeDatabase().then(() => {
-            console.log('データベースが再初期化されました。');
-        }).catch(error => {
-            console.error('データベースの再初期化中にエラーが発生しました:', error);
-        });
-    };
+        deleteRequest.onsuccess = () => {
+            console.log('データベースが正常に削除されました。');
+            resolve();
+        };
 
-    deleteRequest.onerror = (event) => {
-        console.error('データベースの削除中にエラーが発生しました:', event.target.error);
-    };
+        deleteRequest.onerror = (event) => {
+            console.error('データベースの削除中にエラーが発生しました:', event.target.error);
+            reject(event.target.error);
+        };
 
-    deleteRequest.onblocked = () => {
-        console.warn('データベースの削除がブロックされました。');
-    };
+        deleteRequest.onblocked = () => {
+            console.warn('データベースの削除がブロックされました。');
+        };
+    });
 }
 
 /**
  * 在庫データの整合性を確認し、必要に応じて修正する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export async function verifyAndFixInventoryData() {
+export async function verifyAndFixInventoryData(db) {
     if (!db) {
-        console.error('Databaseが初期化されていません。');
+        console.error('データベースが初期化されていません。');
         return;
     }
 
@@ -145,7 +146,7 @@ export async function verifyAndFixInventoryData() {
             if (typeof item.productId === 'undefined' || item.productId === null || typeof item.subcategoryId === 'undefined') {
                 console.warn('未定義の productId または subcategoryId を持つ在庫アイテム:', item);
                 try {
-                    await deleteInventoryItem(item.id);
+                    await deleteInventoryItem(item.id, db);
                     console.log(`未定義のデータを持つ在庫アイテム (ID: ${item.id}) を削除しました。`);
                 } catch (error) {
                     console.error(`在庫アイテム (ID: ${item.id}) の削除中にエラーが発生しました:`, error);
@@ -164,10 +165,11 @@ export async function verifyAndFixInventoryData() {
 /**
  * 在庫アイテムを削除する関数
  * @param {number} id - 削除する在庫アイテムのID
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function deleteInventoryItem(id) {
+export function deleteInventoryItem(id, db) {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('データベースが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
@@ -178,7 +180,7 @@ export function deleteInventoryItem(id) {
 
     deleteRequest.onsuccess = () => {
         console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
-        displayGlobalInventory();
+        // 必要に応じて在庫表示の更新関数を呼び出す
     };
 
     deleteRequest.onerror = (event) => {
@@ -187,13 +189,14 @@ export function deleteInventoryItem(id) {
     };
 }
 
-// テスト用のログ（正常に読み込まれているか確認）
+// テスト用のログ（正常に読み込まれたことを確認）
 console.log('db.js が正しく読み込まれました。');
 
 /**
  * デバッグ用: 全てのカテゴリをコンソールに表示する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-function debugLogAllCategories() {
+export function debugLogAllCategories(db) {
     if (!db) {
         console.error('データベースが初期化されていません。');
         return;
