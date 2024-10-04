@@ -1,5 +1,3 @@
-// 修正対象: inventoryManagement.js の 208 行目で発生する 'Unexpected token export' エラーに対処する
-
 import { db } from './db.js';
 import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
 
