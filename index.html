@@ -220,7 +220,9 @@
 
     <!-- JavaScriptファイルの読み込み -->
    <!-- 修正後の読み込み部分：必要なモジュールをすべてモジュールとして読み込む -->
-<script>
+<script type="module">
+    import { initializeInventorySection, initializeGlobalInventorySection } from './inventoryManagement.js';
+    
     document.addEventListener('DOMContentLoaded', () => {
         // 在庫管理セクションと全体在庫管理セクションの初期化を読み込み後に実行
         initializeInventorySection();
