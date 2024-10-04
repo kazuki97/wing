@@ -9,7 +9,7 @@ export let db;
  */
 export function initializeDatabase() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('inventoryDB', 18); // **バージョン番号を18に更新**
+        const request = indexedDB.open('inventoryDB', 19); // **バージョン番号を19に更新**
 
         request.onupgradeneeded = function(event) {
             db = event.target.result;
