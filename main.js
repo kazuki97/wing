@@ -1,7 +1,7 @@
 // main.js
 
 import { initializeUI } from './ui.js';
-import { initializeDatabase, deleteDatabase, db } from './db.js'; // db をインポート
+import { initializeDatabase, deleteDatabase } from './db.js'; // db はインポートしない
 import { showErrorModal } from './errorHandling.js';
 import { initializeCategories } from './categories.js';
 import { initializeInventorySection } from './inventoryManagement.js';
@@ -9,10 +9,10 @@ import { initializeInventorySection } from './inventoryManagement.js';
 // ページが読み込まれたときにデータベースを初期化
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        await initializeDatabase();
-        initializeUI();
-        initializeCategories(db); // db を渡す
-        initializeInventorySection(db); // db を渡す
+        const db = await initializeDatabase();
+        initializeUI(db);
+        initializeCategories(db);
+        initializeInventorySection(db);
     } catch (error) {
         console.error('Database initialization failed:', error);
         showErrorModal('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
