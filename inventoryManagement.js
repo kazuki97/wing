@@ -103,8 +103,9 @@ function deleteInventoryItem(id) {
 async function displayGlobalInventory(selectedSubcategoryId) {
     console.log('displayGlobalInventory called with selectedSubcategoryId:', selectedSubcategoryId, '型:', typeof selectedSubcategoryId);
 
-    if (selectedSubcategoryId == null || isNaN(selectedSubcategoryId) || selectedSubcategoryId <= 0) {
-        console.error('選択されたサブカテゴリIDが無効です。');
+    if (selectedSubcategoryId == null || selectedSubcategoryId === undefined || isNaN(selectedSubcategoryId) || selectedSubcategoryId <= 0) {
+        console.warn('選択されたサブカテゴリIDが無効です。初期表示のため在庫は表示されません。');
+        clearInventoryDisplay(); // 在庫表示をクリアする関数を呼び出し
         return;
     }
 
@@ -465,3 +466,8 @@ export {
 
 // テスト用のログ
 console.log('inventoryManagement.js が正しく読み込まれました。');
+
+// inventoryManagement.js の末尾に追加
+document.addEventListener('DOMContentLoaded', () => {
+    initializeInventorySection();
+});
