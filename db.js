@@ -79,10 +79,16 @@ export function initializeDatabase() {
             console.log('Database upgrade completed.');
         };
 
-        request.onsuccess = function(event) {
-            db = event.target.result;
-            console.log('Database initialized successfully.');
+       request.onsuccess = function(event) {
+    db = event.target.result;
+    console.log('Database initialized successfully.');
 
+    // globalInventory オブジェクトストアの存在確認
+    if (db.objectStoreNames.contains('globalInventory')) {
+        console.log('globalInventory オブジェクトストアは存在します。');
+    } else {
+        console.error('globalInventory オブジェクトストアが存在しません。');
+    }
             // **初期化処理を追加**
             initializeInventorySection();
             updateInventoryParentCategorySelect();
