@@ -1,4 +1,4 @@
-\// categories.js
+// categories.js
 
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
@@ -116,51 +116,6 @@ export function updateInventorySubcategorySelect(parentCategoryId, db) {
         } else {
             console.error('inventory-subcategory-select が見つかりません。');
             showErrorModal('サブカテゴリセレクトが見つかりません。');
-        }
-    };
-
-    request.onerror = (event) => {
-        console.error('サブカテゴリの取得中にエラーが発生しました:', event.target.error);
-        showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
-    };
-}
-
-/**
- * 在庫管理用のサブカテゴリセレクトを更新する関数
- * @param {number} parentCategoryId - 選択された親カテゴリのID
- * @param {IDBDatabase} db - データベースオブジェクト
- */
-export function updateGlobalSubcategorySelectForInventory(parentCategoryId, db) {
-    if (!db) {
-        console.error('Database is not initialized.');
-        showErrorModal('データベースが初期化されていません。');
-        return;
-    }
-
-    const transaction = db.transaction(['categories'], 'readonly');
-    const store = transaction.objectStore('categories');
-    const index = store.index('parentId');
-    const request = index.getAll(parentCategoryId);
-
-    request.onsuccess = (event) => {
-        const subcategories = event.target.result;
-        const subcategorySelect = document.getElementById('inventory-subcategory-select');
-
-        if (subcategorySelect) {
-            subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
-
-            subcategories.forEach(subcategory => {
-                const option = document.createElement('option');
-                option.value = subcategory.id;
-                option.text = subcategory.name;
-                subcategorySelect.appendChild(option);
-            });
-
-            // サブカテゴリセレクトボックスのイベントリスナーを設定
-            subcategorySelect.addEventListener('change', () => {
-                const selectedSubcategoryId = Number(subcategorySelect.value);
-                console.log('Selected Inventory Subcategory ID:', selectedSubcategoryId);
-            });
         }
     };
 
