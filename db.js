@@ -79,7 +79,7 @@ export function initializeDatabase() {
             console.log('Database upgrade completed.');
         };
 
-       request.onsuccess = function(event) {
+      request.onsuccess = function(event) {
     db = event.target.result;
     console.log('Database initialized successfully.');
 
@@ -89,15 +89,6 @@ export function initializeDatabase() {
     } else {
         console.error('globalInventory オブジェクトストアが存在しません。');
     }
-            // **初期化処理を追加**
-            initializeInventorySection();
-            updateInventoryParentCategorySelect();
-
-            // **デバッグ用関数を呼び出す**
-            debugLogAllCategories();
-
-            resolve(); 
-        };
 
         request.onerror = function(event) {
             console.error('Database error:', event.target.errorCode);
