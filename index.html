@@ -221,11 +221,11 @@
     <!-- JavaScriptファイルの読み込み -->
    <!-- 修正後の読み込み部分：必要なモジュールをすべてモジュールとして読み込む -->
 <script type="module">
-    import { initializeInventorySection, initializeGlobalInventorySection, updateInventorySubcategorySelect } from './inventoryManagement.js';
+    // 必要なモジュールをインポート（initializeInventorySection のインポートを削除）
+    import { initializeGlobalInventorySection, updateInventorySubcategorySelect } from './inventoryManagement.js';
     
     document.addEventListener('DOMContentLoaded', () => {
-        // 在庫管理セクションと全体在庫管理セクションの初期化を読み込み後に実行
-        initializeInventorySection();
+        // **initializeInventorySection() の呼び出しを削除**
         initializeGlobalInventorySection();
 
         // 初期化後にカテゴリを更新し、正しいデータがロードされているか確認
