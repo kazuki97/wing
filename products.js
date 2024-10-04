@@ -301,4 +301,3 @@ export function updateProductCategorySelects(db) {
         });
     }
 }
-
