@@ -1,10 +1,8 @@
-// categories.js
+\// categories.js
 
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
-import { 
-    updateUnitPriceSubcategorySelect 
-} from './unitPriceCategoryManagement.js';
+import { updateUnitPriceSubcategorySelect } from './unitPriceCategoryManagement.js';
 
 /**
  * カテゴリセレクトを更新する関数
@@ -29,7 +27,7 @@ export function updateCategorySelects(db) {
             document.getElementById('product-parent-category-select'),
             document.getElementById('global-parent-category-select'),
             document.getElementById('unit-price-parent-category-select'),
-            document.getElementById('inventory-parent-category-select') // 追加
+            document.getElementById('inventory-parent-category-select')
         ];
 
         parentCategorySelects.forEach(select => {
@@ -161,7 +159,7 @@ export function updateGlobalSubcategorySelectForInventory(parentCategoryId, db) 
             // サブカテゴリセレクトボックスのイベントリスナーを設定
             subcategorySelect.addEventListener('change', () => {
                 const selectedSubcategoryId = Number(subcategorySelect.value);
-                console.log('Selected Inventory Subcategory ID:', selectedSubcategoryId); // 追加: 選択されたサブカテゴリIDをログ出力
+                console.log('Selected Inventory Subcategory ID:', selectedSubcategoryId);
             });
         }
     };
@@ -345,7 +343,7 @@ function deleteCategoryAndSubcategories(categoryId, db) {
         subRequest.onsuccess = (event) => {
             const subcategories = event.target.result;
             subcategories.forEach(subcategory => {
-                store.delete(subcategory.id); // サブカテゴリも削除
+                store.delete(subcategory.id);
             });
 
             console.log(`Subcategories of parent category ID ${categoryId} deleted successfully.`);
@@ -437,7 +435,7 @@ export function logCategoryParentIds(db) {
 export function initializeCategories(db) {
     updateCategorySelects(db);
     displayCategories(db);
-    logCategoryParentIds(db); // 追加: parentId のログ出力
+    logCategoryParentIds(db);
 }
 
 // テスト用のログ（正常に読み込まれたことを確認）
