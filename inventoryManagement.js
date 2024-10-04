@@ -1,5 +1,4 @@
 // inventoryManagement.js
-
 import { showErrorModal } from './errorHandling.js';
 import { updateGlobalSubcategorySelectForInventory } from './categories.js';
 
