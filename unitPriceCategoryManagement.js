@@ -1,12 +1,14 @@
-import { db } from './db.js';
+// unitPriceCategoryManagement.js
+
 import { showErrorModal } from './errorHandling.js';
 
 /**
  * 単価をデータベースに保存する関数
  * @param {Object} unitPrice - 保存する単価情報
+ * @param {IDBDatabase} db - データベースオブジェクト
  * @returns {Promise<void>}
  */
-export function saveUnitPriceToDB(unitPrice) {
+export function saveUnitPriceToDB(unitPrice, db) {
     return new Promise((resolve, reject) => {
         if (!db) {
             reject(new Error('データベースが初期化されていません。'));
@@ -19,7 +21,7 @@ export function saveUnitPriceToDB(unitPrice) {
 
         addRequest.onsuccess = () => {
             console.log('単価が正常に保存されました。');
-            displayUnitPrices(); // 単価一覧を更新
+            displayUnitPrices(db); // 単価一覧を更新
             resolve();
         };
 
@@ -33,8 +35,9 @@ export function saveUnitPriceToDB(unitPrice) {
 
 /**
  * 単価の表示を行う関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function displayUnitPrices() {
+export function displayUnitPrices(db) {
     if (!db) {
         console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
@@ -54,7 +57,7 @@ export function displayUnitPrices() {
 
             // 各単価について、サブカテゴリIDからサブカテゴリ名を取得して表示
             for (const unitPrice of unitPrices) {
-                const subcategoryName = await getSubcategoryName(unitPrice.subcategoryId);
+                const subcategoryName = await getSubcategoryName(unitPrice.subcategoryId, db);
                 const unit = unitPrice.unit || '不明';  // 単位を取得
 
                 const row = unitPriceTableBody.insertRow();
@@ -68,7 +71,7 @@ export function displayUnitPrices() {
                 editButton.textContent = '編集';
                 editButton.className = 'unit-price-button';
                 editButton.addEventListener('click', () => {
-                    showEditUnitPriceForm(unitPrice);
+                    showEditUnitPriceForm(unitPrice, db);
                 });
                 row.insertCell(4).appendChild(editButton);
 
@@ -78,7 +81,7 @@ export function displayUnitPrices() {
                 deleteButton.className = 'unit-price-button';
                 deleteButton.addEventListener('click', () => {
                     if (confirm('この単価を削除しますか？')) {
-                        deleteUnitPrice(unitPrice.id);
+                        deleteUnitPrice(unitPrice.id, db);
                     }
                 });
                 row.insertCell(5).appendChild(deleteButton); // 削除ボタンは6列目
@@ -98,8 +101,9 @@ export function displayUnitPrices() {
 /**
  * 単価を削除する関数
  * @param {number} id - 削除する単価のID
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function deleteUnitPrice(id) {
+export function deleteUnitPrice(id, db) {
     if (!db) {
         console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
@@ -112,7 +116,7 @@ export function deleteUnitPrice(id) {
 
     deleteRequest.onsuccess = () => {
         console.log('単価が正常に削除されました。');
-        displayUnitPrices(); // 削除後、一覧を更新
+        displayUnitPrices(db); // 削除後、一覧を更新
     };
 
     deleteRequest.onerror = (event) => {
@@ -124,9 +128,10 @@ export function deleteUnitPrice(id) {
 /**
  * サブカテゴリIDからサブカテゴリ名を取得する関数
  * @param {number} subcategoryId - サブカテゴリのID
+ * @param {IDBDatabase} db - データベースオブジェクト
  * @returns {Promise<string>} サブカテゴリ名
  */
-function getSubcategoryName(subcategoryId) {
+function getSubcategoryName(subcategoryId, db) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['categories'], 'readonly');
         const store = transaction.objectStore('categories');
@@ -149,8 +154,9 @@ function getSubcategoryName(subcategoryId) {
 
 /**
  * 単価サブカテゴリセレクトを更新する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function updateUnitPriceSubcategorySelect() {
+export function updateUnitPriceSubcategorySelect(db) {
     if (!db) {
         console.error('Databaseが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
@@ -201,5 +207,15 @@ export function setupUnitSelect() {
     }
 }
 
-// テスト用のログ（正常に読み込まれているか確認）
+/**
+ * 単価編集フォームを表示する関数（必要に応じて実装）
+ * @param {Object} unitPrice - 編集対象の単価オブジェクト
+ * @param {IDBDatabase} db - データベースオブジェクト
+ */
+function showEditUnitPriceForm(unitPrice, db) {
+    // ここに編集フォームの実装を追加します
+    // 編集後、データベースを更新し、displayUnitPrices(db) を呼び出して一覧を更新します
+}
+
+// テスト用のログ（正常に読み込まれたことを確認）
 console.log('unitPriceCategoryManagement.js が正しく読み込まれました。');
