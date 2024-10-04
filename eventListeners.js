@@ -1,3 +1,5 @@
+// eventListeners.js
+
 import { showSection } from './ui.js';
 import { updateCategorySelects, saveCategoryToDB, displayCategories } from './categories.js';
 import { saveProductToDB, displayProducts } from './products.js';
@@ -5,12 +7,12 @@ import { processTransaction, currentTransaction, updateTransactionUI, toggleComp
 import { initializeQuagga } from './barcodeScanner.js';
 import { findProductByName } from './productSearch.js';
 import { showErrorModal } from './errorHandling.js';
-import { saveUnitPriceToDB, displayUnitPrices } from './unitPriceCategoryManagement.js';  // 修正: unitPriceCategoryManagement.js からインポート
-import { displayGlobalInventory, initializeGlobalInventorySection } from './inventoryManagement.js'; // 修正: initializeGlobalInventorySection をインポート
+import { saveUnitPriceToDB, displayUnitPrices } from './unitPriceCategoryManagement.js';
+import { displayGlobalInventory, initializeGlobalInventorySection, initializeInventorySection } from './inventoryManagement.js';
+import { db } from './db.js';
 
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('eventListeners.js が正しく読み込まれました。');
-console.log('saveUnitPriceToDB がインポートされました。', saveUnitPriceToDB);
 
 /**
  * イベントリスナーを初期化する関数
@@ -76,22 +78,24 @@ export function initializeEventListeners() {
     }
 
     if (linkInventory) {
-    linkInventory.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('inventory');
+        linkInventory.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('inventory');
 
-        // サブカテゴリが選択されているか確認
-        const subcategorySelect = document.getElementById('inventory-subcategory-select');
-        const selectedSubcategoryId = subcategorySelect ? Number(subcategorySelect.value) : null;
+            initializeInventorySection(db); // db を渡す
 
-        // サブカテゴリIDが有効であれば displayGlobalInventory を呼び出す
-        if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
-            displayGlobalInventory(selectedSubcategoryId); // 選択されたサブカテゴリIDで呼び出し
-        } else {
-            console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
-        }
-    });
-}
+            // サブカテゴリが選択されているか確認
+            const subcategorySelect = document.getElementById('inventory-subcategory-select');
+            const selectedSubcategoryId = subcategorySelect ? Number(subcategorySelect.value) : null;
+
+            // サブカテゴリIDが有効であれば displayGlobalInventory を呼び出す
+            if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+                displayGlobalInventory(selectedSubcategoryId, db); // db を渡す
+            } else {
+                console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
+            }
+        });
+    }
 
     if (linkBarcode) {
         linkBarcode.addEventListener('click', (e) => {
@@ -108,26 +112,14 @@ export function initializeEventListeners() {
         });
     }
 
-   if (linkGlobalInventory) {
-    linkGlobalInventory.addEventListener('click', (e) => {
-        e.preventDefault();
-        showSection('global-inventory');
+    if (linkGlobalInventory) {
+        linkGlobalInventory.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('global-inventory');
 
- // **追加**: 全体在庫管理セクションを初期化
-            initializeGlobalInventorySection();
-
-        // サブカテゴリが選択されているか確認
-        const subcategorySelect = document.getElementById('inventory-subcategory-select');
-        const selectedSubcategoryId = subcategorySelect ? Number(subcategorySelect.value) : null;
-
-        // サブカテゴリIDが有効であれば displayGlobalInventory を呼び出す
-        if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
-            displayGlobalInventory(selectedSubcategoryId); // 選択されたサブカテゴリIDで呼び出し
-        } else {
-            console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
-        }
-    });
-}
+            initializeGlobalInventorySection(db); // db を渡す
+        });
+    }
 
     if (linkUnitPrice) {
         linkUnitPrice.addEventListener('click', (e) => {
@@ -255,7 +247,7 @@ export function initializeEventListeners() {
         });
     }
 
-    // 単価の追加ボタンのイベントリスナー（修正箇所）
+    // 単価の追加ボタンのイベントリスナー
     if (addUnitPriceButton) {
         addUnitPriceButton.addEventListener('click', () => {
             const parentCategoryId = Number(document.getElementById('unit-price-parent-category-select').value);
@@ -264,17 +256,17 @@ export function initializeEventListeners() {
             const maxAmount = Number(document.getElementById('unit-price-max-amount').value.trim());
             const price = Number(document.getElementById('unit-price-price').value.trim());
             const unitSelect = document.getElementById('unit-price-unit-select');
-            
+
             if (unitSelect) {
                 const unit = unitSelect.value;
-                
+
                 if (!isNaN(parentCategoryId) && !isNaN(subcategoryId) && !isNaN(minAmount) && !isNaN(maxAmount) && !isNaN(price) && unit) {
                     const unitPrice = {
                         subcategoryId,
                         minAmount,
                         maxAmount,
                         price,
-                        unit // 単位を保存
+                        unit
                     };
 
                     saveUnitPriceToDB(unitPrice)
