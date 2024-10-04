@@ -49,7 +49,7 @@ export function initializeDatabase() {
                     keyPath: 'id',          // **修正点：keyPathを 'id' に設定**
                     autoIncrement: true     // **修正点：自動増分を有効にする**
                 });
-                globalInventoryStore.createIndex('productId', 'productId', { unique: false }); 
+                globalInventoryStore.createIndex('productId', 'productId', { unique: false });
                 globalInventoryStore.createIndex('subcategoryId', 'subcategoryId', { unique: false }); // **修正点：subcategoryIdのインデックスを追加**
                 globalInventoryStore.createIndex('name', 'name', { unique: false });
                 globalInventoryStore.createIndex('quantity', 'quantity', { unique: false });
@@ -79,20 +79,25 @@ export function initializeDatabase() {
             console.log('Database upgrade completed.');
         };
 
-      request.onsuccess = function(event) {
-    db = event.target.result;
-    console.log('Database initialized successfully.');
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            console.log('Database initialized successfully.');
 
-    // globalInventory オブジェクトストアの存在確認
-    if (db.objectStoreNames.contains('globalInventory')) {
-        console.log('globalInventory オブジェクトストアは存在します。');
-    } else {
-        console.error('globalInventory オブジェクトストアが存在しません。');
-    }
+            // globalInventory オブジェクトストアの存在確認
+            if (db.objectStoreNames.contains('globalInventory')) {
+                console.log('globalInventory オブジェクトストアは存在します。');
+            } else {
+                console.error('globalInventory オブジェクトストアが存在しません。');
+            }
+
+            // 必要に応じて他の初期化処理をここに記述
+
+            resolve(); // Promise を解決
+        };
 
         request.onerror = function(event) {
             console.error('Database error:', event.target.errorCode);
-            reject(event.target.error); 
+            reject(event.target.error);
         };
     });
 }
@@ -174,7 +179,7 @@ export function deleteInventoryItem(id) {
 
     deleteRequest.onsuccess = () => {
         console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
-        displayGlobalInventory(); 
+        displayGlobalInventory();
     };
 
     deleteRequest.onerror = (event) => {
@@ -183,7 +188,6 @@ export function deleteInventoryItem(id) {
     };
 }
 
-// テスト用のログ（正常に読み込まれているか確認）
 // テスト用のログ（正常に読み込まれているか確認）
 console.log('db.js が正しく読み込まれました。');
 
