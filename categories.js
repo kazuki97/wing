@@ -3,6 +3,8 @@
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { updateUnitPriceSubcategorySelect } from './unitPriceCategoryManagement.js';
+import { displayGlobalInventory } from './inventoryManagement.js'; // 在庫表示関数のインポート
+import { displayCategories } from './categories.js'; // 自身のモジュールからのインポートは不要なので削除
 
 /**
  * カテゴリセレクトを更新する関数
@@ -160,6 +162,7 @@ export function saveCategoryToDB(category, db) {
 export function displayCategories(db) {
     if (!db) {
         console.error('Database is not initialized.');
+        showErrorModal('データベースが初期化されていません。');
         return;
     }
 
@@ -360,7 +363,7 @@ function deleteCategory(categoryId, db) {
  */
 export function logCategoryParentIds(db) {
     if (!db) {
-        console.error('Database is not initialized.');
+        console.error('データベースが初期化されていません。');
         showErrorModal('データベースが初期化されていません。');
         return;
     }
