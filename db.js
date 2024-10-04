@@ -1,4 +1,3 @@
-import { displayGlobalInventory, initializeInventorySection, updateInventoryParentCategorySelect } from './inventoryManagement.js'; // 修正: 分割後のファイルからインポート
 import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
 
 export let db;
