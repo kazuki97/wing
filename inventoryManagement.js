@@ -40,9 +40,9 @@ function addInventoryItem(inventoryItem) {
             }
 
             // サブカテゴリIDが正しく取得されているか確認する
-            const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? Number(subcategorySelect.value) : undefined;
+            const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? parseInt(subcategorySelect.value, 10) : undefined;
 
-            if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
+            if (selectedSubcategoryId !== undefined && selectedSubcategoryId !== null && !isNaN(selectedSubcategoryId) && selectedSubcategoryId > 0) {
                 console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
                 displayGlobalInventory(selectedSubcategoryId);  // 正しいサブカテゴリIDで呼び出し
             } else {
@@ -100,7 +100,7 @@ function deleteInventoryItem(id) {
 async function displayGlobalInventory(selectedSubcategoryId) {
     console.log('displayGlobalInventory called with selectedSubcategoryId:', selectedSubcategoryId, '型:', typeof selectedSubcategoryId);
 
-    if (selectedSubcategoryId == null || isNaN(selectedSubcategoryId) || selectedSubcategoryId === 0) {
+    if (selectedSubcategoryId == null || isNaN(selectedSubcategoryId) || selectedSubcategoryId <= 0) {
         console.error('選択されたサブカテゴリIDが無効です。');
         return;
     }
