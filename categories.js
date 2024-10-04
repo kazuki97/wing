@@ -45,9 +45,14 @@ export function updateCategorySelects() {
         });
 
         // サブカテゴリセレクトの更新
-        updateProductCategorySelects();
-        updateUnitPriceSubcategorySelect();
-        updateInventorySubcategorySelect(); // 追加
+updateProductCategorySelects();
+updateUnitPriceSubcategorySelect();
+
+// inventory-parent-category-selectから選択された親カテゴリIDを取得
+const inventoryParentCategorySelect = document.getElementById('inventory-parent-category-select');
+const selectedParentCategoryId = inventoryParentCategorySelect ? Number(inventoryParentCategorySelect.value) : null;
+
+updateInventorySubcategorySelect(selectedParentCategoryId);
 
         // カテゴリ一覧の表示
         displayCategories();
