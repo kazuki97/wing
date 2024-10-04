@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await initializeDatabase();
         initializeUI();
-        initializeCategories();
+        initializeCategories(db); // db を渡す
         initializeInventorySection(db); // db を渡す
     } catch (error) {
         console.error('Database initialization failed:', error);
