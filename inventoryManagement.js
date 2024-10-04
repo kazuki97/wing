@@ -1,5 +1,6 @@
 // inventoryManagement.js
-import { showErrorModal } from './errorHandling.js'; // エラー表示のためのモーダルインポート
+
+import { showErrorModal } from './errorHandling.js';
 import { updateGlobalSubcategorySelectForInventory } from './categories.js';
 
 /**
@@ -9,7 +10,7 @@ import { updateGlobalSubcategorySelectForInventory } from './categories.js';
  * @returns {Promise<void>}
  */
 function addInventoryItem(inventoryItem, db) {
-    console.log('Adding inventory item:', inventoryItem); // デバッグログ
+    console.log('Adding inventory item:', inventoryItem);
 
     return new Promise((resolve, reject) => {
         if (!db) {
@@ -22,22 +23,19 @@ function addInventoryItem(inventoryItem, db) {
         const addRequest = store.add({
             productId: inventoryItem.productId,
             quantity: inventoryItem.quantity,
-            subcategoryId: inventoryItem.subcategoryId  // サブカテゴリIDを追加
+            subcategoryId: inventoryItem.subcategoryId
         });
 
         addRequest.onsuccess = () => {
             console.log('在庫アイテムが正常に追加されました。');
 
-            // サブカテゴリセレクトボックスのID取得部分
             const subcategorySelect = document.getElementById('inventory-subcategory-select');
-
-            // サブカテゴリIDが正しく取得されているか確認する
             const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? parseInt(subcategorySelect.value, 10) : undefined;
             console.log('取得した selectedSubcategoryId:', selectedSubcategoryId);
 
             if (selectedSubcategoryId !== undefined && selectedSubcategoryId !== null && !isNaN(selectedSubcategoryId) && selectedSubcategoryId > 0) {
                 console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);
-                displayGlobalInventory(selectedSubcategoryId, db);  // 正しいサブカテゴリIDで呼び出し
+                displayGlobalInventory(selectedSubcategoryId, db);
             } else {
                 console.warn('サブカテゴリが選択されていないか、IDが無効です。');
             }
@@ -76,7 +74,7 @@ function deleteInventoryItem(id, db) {
         console.log('取得した selectedSubcategoryId:', selectedSubcategoryId);
 
         if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
-            displayGlobalInventory(selectedSubcategoryId, db); // 正しいサブカテゴリIDで呼び出し
+            displayGlobalInventory(selectedSubcategoryId, db);
         } else {
             console.warn('サブカテゴリが選択されていません。');
         }
@@ -98,7 +96,7 @@ async function displayGlobalInventory(selectedSubcategoryId, db) {
 
     if (selectedSubcategoryId == null || selectedSubcategoryId === undefined || isNaN(selectedSubcategoryId) || selectedSubcategoryId <= 0) {
         console.warn('選択されたサブカテゴリIDが無効です。初期表示のため在庫は表示されません。');
-        clearInventoryDisplay(); // 在庫表示をクリアする関数を呼び出し
+        clearInventoryDisplay();
         return;
     }
 
@@ -119,22 +117,21 @@ async function displayGlobalInventory(selectedSubcategoryId, db) {
 
         if (inventoryItems.length === 0) {
             console.warn('サブカテゴリIDに対応する在庫が見つかりません。');
-            clearInventoryDisplay(); // 在庫表示をクリア
+            clearInventoryDisplay();
             return;
         }
 
         const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
 
         if (globalInventoryTableBody) {
-            globalInventoryTableBody.innerHTML = '';  // 商品リストをクリア
+            globalInventoryTableBody.innerHTML = '';
 
-            // すでに追加された productId を追跡するためのセット
             const addedProductIds = new Set();
 
             for (const inventoryItem of inventoryItems) {
                 if (addedProductIds.has(inventoryItem.productId)) {
                     console.warn(`Product with ID ${inventoryItem.productId} is already added to the table.`);
-                    continue; // 重複した商品をスキップ
+                    continue;
                 }
 
                 const productRequest = db.transaction(['products'], 'readonly')
@@ -177,7 +174,6 @@ async function displayGlobalInventory(selectedSubcategoryId, db) {
                         }
                     });
 
-                    // 商品IDをセットに追加して重複を阻止
                     addedProductIds.add(inventoryItem.productId);
                 } else {
                     console.warn(`Product not found for productId: ${inventoryItem.productId}`);
@@ -344,7 +340,6 @@ function updateInventorySubcategorySelect(parentCategoryId, db) {
         if (subcategorySelect) {
             subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
 
-            // データ型を統一して比較
             const filteredCategories = categories.filter(category => Number(category.parentId) === Number(parentCategoryId));
 
             filteredCategories.forEach(category => {
@@ -358,7 +353,6 @@ function updateInventorySubcategorySelect(parentCategoryId, db) {
                 console.warn('選択された親カテゴリに対応するサブカテゴリが存在しません。');
             }
 
-            // イベントリスナーが重複して登録されないよう、追加する前にリスナーを削除
             subcategorySelect.removeEventListener('change', handleSubcategoryChange);
             subcategorySelect.addEventListener('change', (event) => handleSubcategoryChange(event, db));
 
@@ -383,9 +377,8 @@ function handleSubcategoryChange(event, db) {
     const selectedSubcategoryId = Number(event.target.value);
     console.log('選択されたサブカテゴリID:', selectedSubcategoryId, '型:', typeof selectedSubcategoryId);
 
-    // サブカテゴリIDのバリデーション
     if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
-        displayGlobalInventory(selectedSubcategoryId, db);  // サブカテゴリ選択時に在庫を表示
+        displayGlobalInventory(selectedSubcategoryId, db);
     } else {
         console.warn('サブカテゴリが選択されていないか、無効なサブカテゴリIDです。');
     }
@@ -404,7 +397,6 @@ function initializeInventorySection(db) {
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
     if (subcategorySelect) {
-        // イベントリスナーが重複しないように、既存のリスナーを削除
         subcategorySelect.removeEventListener('change', handleSubcategoryChange);
         subcategorySelect.addEventListener('change', (event) => handleSubcategoryChange(event, db));
     } else {
@@ -412,7 +404,6 @@ function initializeInventorySection(db) {
         showErrorModal('サブカテゴリセレクトボックスが見つかりません。');
     }
 
-    // 親カテゴリセレクトボックスの更新
     updateInventoryParentCategorySelect(db);
 }
 
@@ -420,7 +411,7 @@ function initializeInventorySection(db) {
 function clearInventoryDisplay() {
     const globalInventoryTableBody = document.querySelector('#global-inventory-table tbody');
     if (globalInventoryTableBody) {
-        globalInventoryTableBody.innerHTML = ''; // 在庫リストをクリア
+        globalInventoryTableBody.innerHTML = '';
     }
 }
 
