@@ -109,7 +109,7 @@ export function initializeDatabase() {
 /**
  * データベースを削除する関数
  */
-function deleteDatabase() {
+export function deleteDatabase() {
     const deleteRequest = indexedDB.deleteDatabase('inventoryDB');
 
     deleteRequest.onsuccess = () => {
@@ -225,30 +225,5 @@ function debugLogAllCategories() {
 
     request.onerror = (event) => {
         console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
-    };
-}
-
-/**
- * データベースを削除する関数
- */
-export function deleteDatabase() {
-    const deleteRequest = indexedDB.deleteDatabase('inventoryDB');
-
-    deleteRequest.onsuccess = () => {
-        console.log('データベースが正常に削除されました。');
-        // データベースを再初期化
-        initializeDatabase().then(() => {
-            console.log('データベースが再初期化されました。');
-        }).catch(error => {
-            console.error('データベースの再初期化中にエラーが発生しました:', error);
-        });
-    };
-
-    deleteRequest.onerror = (event) => {
-        console.error('データベースの削除中にエラーが発生しました:', event.target.error);
-    };
-
-    deleteRequest.onblocked = () => {
-        console.warn('データベースの削除がブロックされました。');
     };
 }
