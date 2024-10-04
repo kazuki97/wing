@@ -114,12 +114,6 @@ async function displayGlobalInventory(selectedSubcategoryId) {
     const inventoryStore = db.transaction(['globalInventory'], 'readonly').objectStore('globalInventory');
     const index = inventoryStore.index('subcategoryId');
     
-    // **修正点**: 取得したサブカテゴリIDが正しいかどうかチェック
-    if (selectedSubcategoryId == null || isNaN(selectedSubcategoryId)) {
-        console.error('選択されたサブカテゴリIDが無効です。');
-        return;
-    }
-
     const request = index.getAll(selectedSubcategoryId);
 
     request.onsuccess = async (event) => {
@@ -183,7 +177,7 @@ async function displayGlobalInventory(selectedSubcategoryId) {
                     deleteButton.className = 'inventory-delete-button';
                     row.insertCell(7).appendChild(deleteButton);
 
-                    // 商品IDをセットに追加して重複を防ぐ
+                    // 商品IDをセットに追加して重複を阻止
                     addedProductIds.add(inventoryItem.productId);
                 } else {
                     console.warn(`Product not found for productId: ${inventoryItem.productId}`);
