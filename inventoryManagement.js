@@ -40,9 +40,9 @@ function addInventoryItem(inventoryItem) {
             }
 
             // サブカテゴリIDが正しく取得されているか確認する
-            const selectedSubcategoryId = subcategorySelect && subcategorySelect.value ? Number(subcategorySelect.value) : undefined;
+            const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? Number(subcategorySelect.value) : undefined;
 
-            if (selectedSubcategoryId && !isNaN(selectedSubcategoryId)) {
+            if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
                 console.log('サブカテゴリIDが取得されました:', selectedSubcategoryId);  // サブカテゴリIDを表示して確認
                 displayGlobalInventory(selectedSubcategoryId);  // 正しいサブカテゴリIDで呼び出し
             } else {
@@ -78,9 +78,9 @@ function deleteInventoryItem(id) {
         console.log(`在庫アイテム (ID: ${id}) が削除されました。`);
         
         const subcategorySelect = document.getElementById('inventory-subcategory-select');
-        const selectedSubcategoryId = Number(subcategorySelect.value);
+        const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? Number(subcategorySelect.value) : undefined;
         
-        if (selectedSubcategoryId) {
+        if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
             displayGlobalInventory(selectedSubcategoryId); // 正しいサブカテゴリIDで呼び出し
         } else {
             console.warn('サブカテゴリが選択されていません。');
@@ -246,9 +246,9 @@ function showEditInventoryForm(inventoryItem) {
                     document.body.removeChild(editForm);
                     
                     const subcategorySelect = document.getElementById('inventory-subcategory-select');
-                    const selectedSubcategoryId = Number(subcategorySelect.value);
+                    const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? Number(subcategorySelect.value) : undefined;
 
-                    if (selectedSubcategoryId) {
+                    if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
                         displayGlobalInventory(selectedSubcategoryId);
                     } else {
                         console.warn('サブカテゴリが選択されていません。');
@@ -412,10 +412,10 @@ function initializeInventorySection() {
     if (subcategorySelect) {
         // 初期ロード時には何も選択されていない状態として処理
         subcategorySelect.addEventListener('change', () => {
-            const selectedSubcategoryId = Number(subcategorySelect.value);
+            const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? Number(subcategorySelect.value) : undefined;
 
             // サブカテゴリが選択されていない場合にはエラーメッセージを出さない
-            if (!isNaN(selectedSubcategoryId) && selectedSubcategoryId !== 0) {
+            if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
                 console.log('Calling displayGlobalInventory with Subcategory ID:', selectedSubcategoryId);
                 displayGlobalInventory(selectedSubcategoryId);
             } else {
