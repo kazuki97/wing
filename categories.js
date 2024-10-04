@@ -1,5 +1,5 @@
 // categories.js
-import { db } from './db.js';
+
 import { showErrorModal } from './errorHandling.js';
 import { updateProductCategorySelects } from './products.js';
 import { 
@@ -8,8 +8,9 @@ import {
 
 /**
  * カテゴリセレクトを更新する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function updateCategorySelects() {
+export function updateCategorySelects(db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -45,17 +46,17 @@ export function updateCategorySelects() {
         });
 
         // サブカテゴリセレクトの更新
-updateProductCategorySelects();
-updateUnitPriceSubcategorySelect();
+        updateProductCategorySelects(db);
+        updateUnitPriceSubcategorySelect(db);
 
-// inventory-parent-category-selectから選択された親カテゴリIDを取得
-const inventoryParentCategorySelect = document.getElementById('inventory-parent-category-select');
-const selectedParentCategoryId = inventoryParentCategorySelect ? Number(inventoryParentCategorySelect.value) : null;
+        // inventory-parent-category-selectから選択された親カテゴリIDを取得
+        const inventoryParentCategorySelect = document.getElementById('inventory-parent-category-select');
+        const selectedParentCategoryId = inventoryParentCategorySelect ? Number(inventoryParentCategorySelect.value) : null;
 
-updateInventorySubcategorySelect(selectedParentCategoryId);
+        updateInventorySubcategorySelect(selectedParentCategoryId, db);
 
         // カテゴリ一覧の表示
-        displayCategories();
+        displayCategories(db);
     };
 
     request.onerror = (event) => {
@@ -67,8 +68,9 @@ updateInventorySubcategorySelect(selectedParentCategoryId);
 /**
  * 在庫管理用のサブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリID
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function updateInventorySubcategorySelect(parentCategoryId) {
+export function updateInventorySubcategorySelect(parentCategoryId, db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -98,7 +100,7 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
             });
 
             // データ型を統一して比較
-            const filteredCategories = categories.filter(category => Number(category.parentId) === parentCategoryId);
+            const filteredCategories = categories.filter(category => Number(category.parentId) === Number(parentCategoryId));
 
             // フィルタ結果を確認
             console.log('Filtered Categories:', filteredCategories);
@@ -128,8 +130,9 @@ export function updateInventorySubcategorySelect(parentCategoryId) {
 /**
  * 在庫管理用のサブカテゴリセレクトを更新する関数
  * @param {number} parentCategoryId - 選択された親カテゴリのID
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function updateGlobalSubcategorySelectForInventory(parentCategoryId) {
+export function updateGlobalSubcategorySelectForInventory(parentCategoryId, db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -172,8 +175,9 @@ export function updateGlobalSubcategorySelectForInventory(parentCategoryId) {
 /**
  * カテゴリをデータベースに保存する関数
  * @param {Object} category - 保存するカテゴリ情報
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function saveCategoryToDB(category) {
+export function saveCategoryToDB(category, db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -186,8 +190,8 @@ export function saveCategoryToDB(category) {
 
     addRequest.onsuccess = () => {
         console.log(`Category "${category.name}" saved successfully.`);
-        updateCategorySelects();
-        displayCategories();
+        updateCategorySelects(db);
+        displayCategories(db);
     };
 
     addRequest.onerror = (event) => {
@@ -198,8 +202,9 @@ export function saveCategoryToDB(category) {
 
 /**
  * カテゴリ一覧を表示する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function displayCategories() {
+export function displayCategories(db) {
     if (!db) {
         console.error('Database is not initialized.');
         return;
@@ -233,8 +238,8 @@ export function displayCategories() {
 
                         transaction.oncomplete = () => {
                             console.log(`Category "${newName}" updated successfully.`);
-                            displayCategories();
-                            updateCategorySelects();
+                            displayCategories(db);
+                            updateCategorySelects(db);
                         };
 
                         transaction.onerror = (event) => {
@@ -250,7 +255,7 @@ export function displayCategories() {
                 deleteParentButton.className = 'category-button';
                 deleteParentButton.addEventListener('click', () => {
                     if (confirm('このカテゴリとそのサブカテゴリを削除しますか？')) {
-                        deleteCategoryAndSubcategories(parentCategory.id);
+                        deleteCategoryAndSubcategories(parentCategory.id, db);
                     }
                 });
                 parentDiv.appendChild(deleteParentButton);
@@ -274,8 +279,8 @@ export function displayCategories() {
 
                             transaction.oncomplete = () => {
                                 console.log(`Subcategory "${newName}" updated successfully.`);
-                                displayCategories();
-                                updateCategorySelects();
+                                displayCategories(db);
+                                updateCategorySelects(db);
                             };
 
                             transaction.onerror = (event) => {
@@ -291,7 +296,7 @@ export function displayCategories() {
                     deleteSubButton.className = 'category-button';
                     deleteSubButton.addEventListener('click', () => {
                         if (confirm('このサブカテゴリを削除しますか？')) {
-                            deleteCategory(subcategory.id);
+                            deleteCategory(subcategory.id, db);
                         }
                     });
                     subDiv.appendChild(deleteSubButton);
@@ -316,8 +321,9 @@ export function displayCategories() {
 /**
  * カテゴリとそのサブカテゴリを削除する関数
  * @param {number} categoryId - 削除するカテゴリのID
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-function deleteCategoryAndSubcategories(categoryId) {
+function deleteCategoryAndSubcategories(categoryId, db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -357,8 +363,8 @@ function deleteCategoryAndSubcategories(categoryId) {
     };
 
     transaction.oncomplete = () => {
-        displayCategories();
-        updateCategorySelects();
+        displayCategories(db);
+        updateCategorySelects(db);
     };
 
     transaction.onerror = (event) => {
@@ -370,8 +376,9 @@ function deleteCategoryAndSubcategories(categoryId) {
 /**
  * サブカテゴリを削除する関数
  * @param {number} categoryId - 削除するサブカテゴリのID
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-function deleteCategory(categoryId) {
+function deleteCategory(categoryId, db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -384,8 +391,8 @@ function deleteCategory(categoryId) {
 
     deleteRequest.onsuccess = () => {
         console.log(`Category with ID ${categoryId} deleted successfully.`);
-        displayCategories();
-        updateCategorySelects();
+        displayCategories(db);
+        updateCategorySelects(db);
     };
 
     deleteRequest.onerror = (event) => {
@@ -396,8 +403,9 @@ function deleteCategory(categoryId) {
 
 /**
  * カテゴリとサブカテゴリの parentId をコンソールに出力する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function logCategoryParentIds() {
+export function logCategoryParentIds(db) {
     if (!db) {
         console.error('Database is not initialized.');
         showErrorModal('データベースが初期化されていません。');
@@ -424,12 +432,13 @@ export function logCategoryParentIds() {
 
 /**
  * 初期化時にログを出力する関数（オプション）
+ * @param {IDBDatabase} db - データベースオブジェクト
  */
-export function initializeCategories() {
-    updateCategorySelects();
-    displayCategories();
-    logCategoryParentIds(); // 追加: parentId のログ出力
+export function initializeCategories(db) {
+    updateCategorySelects(db);
+    displayCategories(db);
+    logCategoryParentIds(db); // 追加: parentId のログ出力
 }
 
-// テスト用のログ（正常に読み込まれているか確認）
+// テスト用のログ（正常に読み込まれたことを確認）
 console.log('categories.js が正しく読み込まれました。');
