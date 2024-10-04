@@ -24,6 +24,7 @@ export function saveProductToDB(product, db) {
         }, db);
 
         displayProducts(product.subcategoryId, db);
+        updateProductCategorySelects(db); // カテゴリセレクトボックスを更新
     };
 
     addRequest.onerror = (event) => {
@@ -104,6 +105,7 @@ export function displayProducts(subcategoryId, db) {
                         deleteTransaction.oncomplete = () => {
                             console.log(`Product "${product.name}" deleted successfully.`);
                             displayProducts(subcategoryId, db);
+                            updateProductCategorySelects(db); // カテゴリセレクトボックスを更新
                         };
 
                         deleteTransaction.onerror = (event) => {
@@ -194,6 +196,7 @@ export function showEditProductForm(product, subcategoryId, db) {
                 console.log(`Product "${updatedProduct.name}" updated successfully.`);
                 document.body.removeChild(editForm);
                 displayProducts(subcategoryId, db);
+                updateProductCategorySelects(db); // カテゴリセレクトボックスを更新
             };
 
             updateRequest.onerror = (event) => {
@@ -210,3 +213,92 @@ export function showEditProductForm(product, subcategoryId, db) {
         document.body.removeChild(editForm);
     });
 }
+
+/**
+ * 商品管理セクションのカテゴリセレクトボックスを更新する関数
+ * @param {IDBDatabase} db - データベースオブジェクト
+ */
+export function updateProductCategorySelects(db) {
+    const productParentCategorySelect = document.getElementById('product-parent-category-select');
+    const productSubcategorySelect = document.getElementById('product-subcategory-select');
+
+    if (!db) {
+        console.error('データベースが初期化されていません。');
+        showErrorModal('データベースが初期化されていません。');
+        return;
+    }
+
+    // 親カテゴリのセレクトボックスを更新
+    const transaction = db.transaction(['categories'], 'readonly');
+    const store = transaction.objectStore('categories');
+    const request = store.getAll();
+
+    request.onsuccess = (event) => {
+        const categories = event.target.result;
+
+        if (productParentCategorySelect) {
+            productParentCategorySelect.innerHTML = '<option value="">親カテゴリを選択</option>';
+            categories.forEach(category => {
+                if (category.parentId === null) {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    productParentCategorySelect.appendChild(option);
+                }
+            });
+        } else {
+            console.error('product-parent-category-select が見つかりません。');
+            showErrorModal('親カテゴリセレクトボックスが見つかりません。');
+        }
+
+        if (productSubcategorySelect) {
+            productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+        } else {
+            console.error('product-subcategory-select が見つかりません。');
+            showErrorModal('サブカテゴリセレクトボックスが見つかりません。');
+        }
+    };
+
+    request.onerror = (event) => {
+        console.error('カテゴリの取得中にエラーが発生しました:', event.target.error);
+        showErrorModal('カテゴリの取得中にエラーが発生しました。');
+    };
+
+    // 親カテゴリ選択時にサブカテゴリを更新
+    if (productParentCategorySelect) {
+        productParentCategorySelect.addEventListener('change', () => {
+            const parentCategoryId = Number(productParentCategorySelect.value);
+
+            if (!db) {
+                console.error('データベースが初期化されていません。');
+                showErrorModal('データベースが初期化されていません。');
+                return;
+            }
+
+            const transaction = db.transaction(['categories'], 'readonly');
+            const store = transaction.objectStore('categories');
+            const index = store.index('parentId');
+            const request = index.getAll(parentCategoryId);
+
+            request.onsuccess = (event) => {
+                const subcategories = event.target.result;
+                if (productSubcategorySelect) {
+                    productSubcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+
+                    subcategories.forEach(subcategory => {
+                        const option = document.createElement('option');
+                        option.value = subcategory.id;
+                        option.text = subcategory.name;
+                        productSubcategorySelect.appendChild(option);
+                    });
+                }
+            };
+
+            request.onerror = (event) => {
+                console.error('Error fetching subcategories for products:', event.target.error);
+                showErrorModal('サブカテゴリの取得中にエラーが発生しました。');
+            };
+        });
+    }
+}
+
