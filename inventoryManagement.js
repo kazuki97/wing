@@ -411,25 +411,24 @@ function handleSubcategoryChange(event) {
  * 在庫管理セクションの初期化
  */
 function initializeInventorySection() {
+    if (!db) {
+        console.error('データベースが初期化されていません。initializeInventorySection() を後で再度実行します。');
+        return;
+    }
+
     const subcategorySelect = document.getElementById('inventory-subcategory-select');
 
     if (subcategorySelect) {
-        // 初期ロード時には何も選択されていない状態として処理
-        subcategorySelect.addEventListener('change', () => {
-            const selectedSubcategoryId = subcategorySelect && subcategorySelect.value !== '' ? Number(subcategorySelect.value) : undefined;
-
-            // サブカテゴリが選択されていない場合にはエラーメッセージを出さない
-            if (selectedSubcategoryId !== undefined && !isNaN(selectedSubcategoryId)) {
-                console.log('Calling displayGlobalInventory with Subcategory ID:', selectedSubcategoryId);
-                displayGlobalInventory(selectedSubcategoryId);
-            } else {
-                console.warn('無効なサブカテゴリIDです。まだサブカテゴリが選択されていません。');
-                clearInventoryDisplay(); // 無効な場合はクリア
-            }
-        });
+        // イベントリスナーが重複しないように、既存のリスナーを削除
+        subcategorySelect.removeEventListener('change', handleSubcategoryChange);
+        subcategorySelect.addEventListener('change', handleSubcategoryChange);
     } else {
         console.error('サブカテゴリセレクトボックスが見つかりません。');
+        showErrorModal('サブカテゴリセレクトボックスが見つかりません。');
     }
+
+    // 親カテゴリセレクトボックスの更新
+    updateInventoryParentCategorySelect();
 }
 
 // 在庫リストをクリアする関数
@@ -466,8 +465,3 @@ export {
 
 // テスト用のログ
 console.log('inventoryManagement.js が正しく読み込まれました。');
-
-// inventoryManagement.js の末尾に追加
-document.addEventListener('DOMContentLoaded', () => {
-    initializeInventorySection();
-});
