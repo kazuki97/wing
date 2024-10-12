@@ -1,275 +1,175 @@
-/* 全体のリセット */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* styles.css */
 
-/* ボディスタイル */
+/* 共通スタイルは既存のコード */
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-    line-height: 1.6;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
 }
 
-/* ナビゲーションバー */
 nav {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 0;
+  background-color: #333;
 }
 
 nav ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
+  list-style: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
 }
 
 nav ul li {
-    margin: 0 15px;
+  flex: 1;
 }
 
 nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
+  color: #fff;
+  display: block;
+  padding: 15px;
+  text-align: center;
+  text-decoration: none;
 }
 
 nav ul li a:hover {
-    text-decoration: underline;
+  background-color: #444;
 }
 
-/* セクションスタイル */
-.section {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 20px auto;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+main {
+  padding: 20px;
 }
 
-/* 見出しスタイル */
-.section h1, .section h2 {
-    margin-bottom: 15px;
-    color: #444;
+.error-message {
+  background-color: #f44336;
+  color: #fff;
+  padding: 10px;
+  display: none;
 }
 
-/* フォーム要素 */
-input[type="text"],
-input[type="number"],
-select {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0 15px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+form {
+  margin-bottom: 20px;
 }
 
-/* ボタンスタイル */
+form input,
+form select {
+  margin-right: 10px;
+  padding: 5px;
+}
+
 button {
-    padding: 10px 15px;
-    background-color: #28a745;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.3s ease;
+  padding: 5px 10px;
+  margin-left: 5px;
 }
 
-button:hover {
-    background-color: #218838;
+ul {
+  list-style: none;
+  padding: 0;
 }
 
-button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
+ul li {
+  margin-bottom: 10px;
 }
 
-/* テーブルスタイル */
+ul li button {
+  margin-left: 5px;
+}
+
+/* コンテンツセクションのスタイル */
+.content-section {
+  display: none;
+}
+
+/* ホームセクションはデフォルトで表示 */
+#home {
+  display: block;
+}
+
+/* テーブルのスタイル */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
 }
 
 table th,
 table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+  border: 1px solid #ddd;
+  padding: 8px;
 }
 
 table th {
-    background-color: #f2f2f2;
-    color: #333;
+  background-color: #f2f2f2;
+  text-align: left;
 }
 
-table tr:nth-child(even) {
-    background-color: #f9f9f9;
+/* バーコードスキャンセクションのスタイル */
+#barcodeScanner {
+  margin-bottom: 20px;
 }
 
-table tr:hover {
-    background-color: #f1f1f1;
+#barcodeScanner input {
+  width: 300px;
+  padding: 5px;
 }
 
-/* 編集・削除ボタン */
-.product-button,
-.edit-unit-price-button,
-.delete-unit-price-button,
-.sale-button,
-.edit-button,
-.delete-button,
-.remove-item-button {
-    padding: 5px 10px;
-    margin-left: 5px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 0.9em;
+#barcodeScanner button {
+  padding: 5px 10px;
 }
 
-.product-button:hover,
-.edit-unit-price-button:hover,
-.delete-unit-price-button:hover,
-.sale-button:hover,
-.edit-button:hover,
-.delete-button:hover,
-.remove-item-button:hover {
-    background-color: #0056b3;
+/* 支払い方法選択のスタイル */
+#paymentMethodSelection {
+  margin-bottom: 20px;
 }
 
-/* 削除ボタンの色を変更 */
-.delete-unit-price-button,
-.delete-button,
-.remove-item-button {
-    background-color: #dc3545;
+#paymentMethodSelection select {
+  padding: 5px;
 }
 
-.delete-unit-price-button:hover,
-.delete-button:hover,
-.remove-item-button:hover {
-    background-color: #c82333;
+#paymentMethodSelection label {
+  margin-right: 10px;
 }
 
-/* モーダルスタイル */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+/* 合計金額のスタイル */
+#totalAmount {
+  font-size: 1.5em;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
-    max-width: 500px;
-    border-radius: 5px;
-    position: relative;
+/* 売上管理セクションのスタイル */
+#transactionDetails {
+  background-color: #fff;
+  padding: 20px;
+  border: 1px solid #ddd;
 }
 
-.close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    cursor: pointer;
+#transactionDetails h2 {
+  margin-top: 0;
 }
 
-.close-button:hover,
-.close-button:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
+#transactionDetails table {
+  margin-top: 10px;
 }
 
-/* トランザクションリスト */
-#transaction-list {
-    margin-top: 15px;
+#transactionDetails button {
+  margin-top: 10px;
 }
 
-.transaction-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-    margin-bottom: 5px;
+/* 支払い方法設定セクションのスタイル */
+#paymentMethodList {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
 }
 
-/* スキャナーコンテナ */
-#scanner-container {
-    width: 100%;
-    max-width: 600px;
-    margin: 20px auto;
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    overflow: hidden;
-    position: relative;
-    background-color: #000;
+#paymentMethodList th,
+#paymentMethodList td {
+  border: 1px solid #ddd;
+  padding: 8px;
 }
 
-/* スキャナ開始ボタン */
-#start-scan {
-    display: block;
-    width: 200px;
-    margin: 0 auto 20px auto;
-}
-
-/* レスポンシブデザイン */
-@media (max-width: 768px) {
-    nav ul {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    nav ul li {
-        margin: 10px 0;
-    }
-
-    .modal-content {
-        width: 90%;
-    }
-
-    table, thead, tbody, th, td, tr { 
-        display: block; 
-    }
-
-    table tr {
-        margin-bottom: 15px;
-    }
-
-    table td {
-        text-align: right;
-        padding-left: 50%;
-        position: relative;
-    }
-
-    table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0;
-        width: 50%;
-        padding-left: 15px;
-        font-weight: bold;
-        text-align: left;
-    }
+#paymentMethodList th {
+  background-color: #f2f2f2;
+  text-align: left;
 }
