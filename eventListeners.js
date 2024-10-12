@@ -65,15 +65,15 @@ function showError(message) {
   }, 5000);
 }
 
-// 親カテゴリ追加フォームのイベントリスナー（ポップアップ内）
-const addParentCategoryForm = document.getElementById('popupAddParentCategoryForm');
-if (addParentCategoryForm) {
-  addParentCategoryForm.addEventListener('submit', async (e) => {
+// 親カテゴリ追加フォームのイベントリスナー
+document
+  .getElementById('addParentCategoryForm')
+  .addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = document.getElementById('popupParentCategoryName').value;
+    const name = document.getElementById('parentCategoryName').value;
     try {
       await addParentCategory(name);
-      document.getElementById('popupParentCategoryName').value = '';
+      document.getElementById('parentCategoryName').value = '';
       await updateAllParentCategorySelects();
       await displayParentCategories();
       alert('親カテゴリが追加されました');
@@ -82,48 +82,25 @@ if (addParentCategoryForm) {
       showError('親カテゴリの追加に失敗しました');
     }
   });
-}
 
-// サブカテゴリ追加フォームのイベントリスナー（ポップアップ内）
-const addSubcategoryForm = document.getElementById('popupAddSubcategoryForm');
-if (addSubcategoryForm) {
-  addSubcategoryForm.addEventListener('submit', async (e) => {
+// サブカテゴリ追加フォームのイベントリスナー
+document
+  .getElementById('addSubcategoryForm')
+  .addEventListener('submit', async (e) => {
     e.preventDefault();
-    const parentCategoryId = document.getElementById('popupSubcategoryParentCategorySelect').value;
-    const name = document.getElementById('popupSubcategoryName').value;
+    const parentCategoryId = document.getElementById('subcategoryParentCategorySelect').value;
+    const name = document.getElementById('subcategoryName').value;
     try {
       await addSubcategory(name, parentCategoryId);
-      document.getElementById('popupSubcategoryName').value = '';
-      await updateAllParentCategorySelects();
+      document.getElementById('subcategoryName').value = '';
       await displayParentCategories();
+      await updateAllParentCategorySelects();
       alert('サブカテゴリが追加されました');
     } catch (error) {
       console.error(error);
       showError('サブカテゴリの追加に失敗しました');
     }
   });
-}
-
-// ポップアップの開閉処理
-const openPopupButton = document.getElementById('openCategorySettingsPopup');
-const popup = document.getElementById('categorySettingsPopup');
-const closePopupButton = document.getElementById('closePopup');
-
-if (openPopupButton && popup && closePopupButton) {
-  openPopupButton.addEventListener('click', () => {
-    popup.style.display = 'block';
-  });
-
-  closePopupButton.addEventListener('click', () => {
-    popup.style.display = 'none';
-  });
-
-  window.addEventListener('click', (event) => {
-    if (event.target === popup) {
-      popup.style.display = 'none';
-    }
-  });
-}
 
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
 async function updateAllParentCategorySelects() {
@@ -131,7 +108,7 @@ async function updateAllParentCategorySelects() {
     const parentCategories = await getParentCategories();
     // 親カテゴリセレクトボックスのID一覧
     const selectIds = [
-      'popupSubcategoryParentCategorySelect',
+      'subcategoryParentCategorySelect',
       'productParentCategorySelect',
       'filterParentCategorySelect',
       'inventoryParentCategorySelect',
@@ -349,33 +326,33 @@ async function displaySubcategories(parentCategoryId) {
   }
 }
 
- // 商品追加フォームのイベントリスナー
-  // 新しい商品を追加するフォームの送信を監視し、入力された情報を基に商品を追加します。
-  const addProductForm = document.getElementById('addProductForm');
-  if (addProductForm) {
-    addProductForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productData = {
-        name: document.getElementById('productName').value,
-        parentCategoryId: document.getElementById('productParentCategorySelect').value,
-        subcategoryId: document.getElementById('productSubcategorySelect').value,
-        price: parseFloat(document.getElementById('productPrice').value),
-        cost: parseFloat(document.getElementById('productCost').value),
-        barcode: document.getElementById('productBarcode').value,
-        quantity: parseFloat(document.getElementById('productQuantity').value),
-        size: parseFloat(document.getElementById('productSize').value),
-      };
-      try {
-        await addProduct(productData);
-        addProductForm.reset();
-        alert('商品が追加されました');
-        await displayProducts();
-      } catch (error) {
-        console.error(error);
-        showError('商品の追加に失敗しました');
-      }
-    });
-  }
+// 商品追加フォームのイベントリスナー
+document
+  .getElementById('addProductForm')
+  .addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // フォームから商品情報を取得
+    const productData = {
+      name: document.getElementById('productName').value,
+      parentCategoryId: document.getElementById('productParentCategorySelect').value,
+      subcategoryId: document.getElementById('productSubcategorySelect').value,
+      price: parseFloat(document.getElementById('productPrice').value),
+      cost: parseFloat(document.getElementById('productCost').value),
+      barcode: document.getElementById('productBarcode').value,
+      quantity: parseFloat(document.getElementById('productQuantity').value),
+      size: parseFloat(document.getElementById('productSize').value),
+    };
+    try {
+      await addProduct(productData);
+      // フォームをリセット
+      document.getElementById('addProductForm').reset();
+      alert('商品が追加されました');
+      await displayProducts();
+    } catch (error) {
+      console.error(error);
+      showError('商品の追加に失敗しました');
+    }
+  });
 
 // 商品一覧の表示
 async function displayProducts() {
@@ -526,23 +503,21 @@ async function updateOverallInventoryAfterSale(productId, quantitySold) {
 }
 
 // 全体在庫更新フォームのイベントリスナー
-  // 全体在庫の数量を更新するフォームの送信を監視し、選択されたサブカテゴリの在庫を更新します。
-  const updateOverallInventoryForm = document.getElementById('updateOverallInventoryForm');
-  if (updateOverallInventoryForm) {
-    updateOverallInventoryForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
-      const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
-      try {
-        await updateOverallInventory(subcategoryId, quantity);
-        alert('全体在庫が更新されました');
-        await displayOverallInventory();
-      } catch (error) {
-        console.error(error);
-        showError('全体在庫の更新に失敗しました');
-      }
-    });
-  }
+document
+  .getElementById('updateOverallInventoryForm')
+  .addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
+    const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
+    try {
+      await updateOverallInventory(subcategoryId, quantity);
+      alert('全体在庫が更新されました');
+      await displayOverallInventory();
+    } catch (error) {
+      console.error(error);
+      showError('全体在庫の更新に失敗しました');
+    }
+  });
 
 // 全体在庫の表示関数を修正して削除ボタンを追加
 // 修正しました: 全体在庫の表示関数に削除ボタンを追加
@@ -584,33 +559,31 @@ async function displayOverallInventory() {
   }
 }
 
- // 単価ルール追加フォームのイベントリスナー
-  // 単価ルールを追加するフォームの送信を監視し、指定された数量範囲と単価でルールを追加します。
-  const addPricingRuleForm = document.getElementById('addPricingRuleForm');
-  if (addPricingRuleForm) {
-    addPricingRuleForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const subcategoryId = document.getElementById('pricingSubcategorySelect').value;
-      const minQuantity = parseFloat(document.getElementById('minQuantity').value);
-      const maxQuantity = parseFloat(document.getElementById('maxQuantity').value);
-      const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+// 単価ルール追加フォームのイベントリスナー
+document
+  .getElementById('addPricingRuleForm')
+  .addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const subcategoryId = document.getElementById('pricingSubcategorySelect').value;
+    const minQuantity = parseFloat(document.getElementById('minQuantity').value);
+    const maxQuantity = parseFloat(document.getElementById('maxQuantity').value);
+    const unitPrice = parseFloat(document.getElementById('unitPrice').value);
 
-      if (minQuantity > maxQuantity) {
-        showError('最小数量は最大数量以下である必要があります');
-        return;
-      }
+    if (minQuantity > maxQuantity) {
+      showError('最小数量は最大数量以下である必要があります');
+      return;
+    }
 
-      try {
-        await addPricingRule(subcategoryId, minQuantity, maxQuantity, unitPrice);
-        alert('単価ルールが追加されました');
-        await displayPricingRules();
-        addPricingRuleForm.reset();
-      } catch (error) {
-        console.error(error);
-        showError('単価ルールの追加に失敗しました');
-      }
-    });
-  }
+    try {
+      await addPricingRule(subcategoryId, minQuantity, maxQuantity, unitPrice);
+      alert('単価ルールが追加されました');
+      await displayPricingRules();
+      document.getElementById('addPricingRuleForm').reset();
+    } catch (error) {
+      console.error(error);
+      showError('単価ルールの追加に失敗しました');
+    }
+  });
 
 // 単価ルールの表示
 async function displayPricingRules() {
@@ -662,7 +635,7 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
   await displayPricingRules();
 });
 
- // 初期化処理
+// 初期化処理
 window.addEventListener('DOMContentLoaded', async () => {
   await updateAllParentCategorySelects();
   await updatePricingParentCategorySelect(); // 修正：この関数を正しく呼び出す
