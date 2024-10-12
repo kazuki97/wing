@@ -644,8 +644,6 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
   await displayPricingRules();
 });
 
-// 初期化処理
-window.addEventListener('DOMContentLoaded', async () => {
   await updateAllParentCategorySelects();
   await updatePricingParentCategorySelect();
   await displayParentCategories();
