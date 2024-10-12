@@ -1,34 +1,22 @@
 // main.js
+import './eventListeners.js';
+import './salesEventListeners.js'; // 新たに追加
 
-import { initializeUI } from './ui.js';
-import { initializeDatabase, deleteDatabase } from './db.js'; // db はインポートしない
-import { showErrorModal } from './errorHandling.js';
-import { initializeCategories } from './categories.js';
-import { initializeInventorySection } from './inventoryManagement.js';
-
-// ページが読み込まれたときにデータベースを初期化
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const db = await initializeDatabase();
-        initializeUI(db);
-        initializeCategories(db);
-        initializeInventorySection(db);
-    } catch (error) {
-        console.error('Database initialization failed:', error);
-        showErrorModal('データベースの初期化に失敗しました。アプリケーションを再読み込みしてください。');
+// スムーズスクロールとセクションの表示制御
+document.querySelectorAll('.nav-link').forEach((link) => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const targetId = link.getAttribute('href');
+    const targetSection = document.querySelector(targetId);
+    if (targetSection) {
+      // 全てのセクションを非表示にする
+      document.querySelectorAll('.content-section').forEach((section) => {
+        section.style.display = 'none';
+      });
+      // 対象のセクションを表示する
+      targetSection.style.display = 'block';
+      // スクロールをトップに戻す
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-});
-
-// データベースリセットボタンの処理
-document.getElementById('reset-database').addEventListener('click', async () => {
-    if (confirm('本当にデータベースをリセットしますか？すべてのデータが削除されます。')) {
-        try {
-            await deleteDatabase();
-            console.log('データベースがリセットされました。');
-            alert('データベースが正常にリセットされました。ページを再読み込みしてください。');
-        } catch (error) {
-            console.error('データベースのリセット中にエラーが発生しました:', error);
-            showErrorModal('データベースのリセット中にエラーが発生しました。');
-        }
-    }
+  });
 });
