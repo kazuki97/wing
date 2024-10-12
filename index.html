@@ -1,246 +1,319 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>在庫管理システム</title>
-    <!-- 必要に応じてCSSファイルをリンク -->
-    <link rel="stylesheet" href="styles.css">
-    <!-- Quagga.js の読み込み -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>ビジネス管理システム</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <!-- ナビゲーションメニュー -->
-    <nav>
-        <ul>
-            <li><a href="#" id="link-home">ホーム</a></li>
-            <li><a href="#" id="link-category">カテゴリ管理</a></li>
-            <li><a href="#" id="link-product">商品管理</a></li>
-            <li><a href="#" id="link-inventory">在庫管理</a></li>
-            <li><a href="#" id="link-global-inventory">全体在庫管理</a></li>
-            <li><a href="#" id="link-barcode">バーコードスキャン</a></li>
-            <li><a href="#" id="link-sales">売上管理</a></li>
-            <li><a href="#" id="link-unit-price">単価管理</a></li>
-        </ul>
-    </nav>
+  <!-- エラーメッセージ表示エリア -->
+  <div id="error-message" class="error-message"></div>
 
-    <!-- ホーム画面の内容 -->
-    <div id="home-section" class="section active">
-        <h1>在庫管理システムへようこそ</h1>
-        <p>ここでは、カテゴリ管理、商品管理、在庫管理、売上管理などの機能を使用できます。</p>
-        <button id="reset-database">データベースリセット</button> <!-- データベースリセットボタン -->
-    </div>
+  <!-- ナビゲーションメニュー -->
+  <nav>
+    <ul>
+      <li><a href="#home" class="nav-link">ホーム</a></li>
+      <li><a href="#categories" class="nav-link">カテゴリ設定</a></li>
+      <li><a href="#products" class="nav-link">商品設定</a></li>
+      <li><a href="#inventory" class="nav-link">在庫管理</a></li>
+      <li><a href="#overall-inventory" class="nav-link">全体在庫</a></li>
+      <li><a href="#barcode" class="nav-link">バーコードスキャン</a></li>
+      <li><a href="#transactions" class="nav-link">売上管理</a></li>
+      <li><a href="#pricing" class="nav-link">単価設定</a></li>
+      <li><a href="#payment-methods" class="nav-link">支払い方法設定</a></li>
+    </ul>
+  </nav>
 
-    <!-- カテゴリ管理セクション -->
-    <div id="category-section" class="section" style="display: none;">
-        <h2>カテゴリ管理</h2>
-        <div>
-            <h3>親カテゴリの追加</h3>
-            <input type="text" id="parent-category-name" placeholder="親カテゴリ名">
-            <button id="add-parent-category">追加</button>
-        </div>
-        <div>
-            <h3>サブカテゴリの追加</h3>
-            <select id="parent-category-select">
-                <option value="">親カテゴリを選択</option>
-            </select>
-            <input type="text" id="subcategory-name" placeholder="サブカテゴリ名">
-            <button id="add-subcategory">追加</button>
-        </div>
-        <div id="category-list"></div>
-    </div>
+  <!-- 各セクションのコンテナ -->
+  <main>
+    <!-- ホーム -->
+    <section id="home" class="content-section">
+      <h1>ホーム</h1>
+    </section>
 
-    <!-- 商品管理セクション -->
-    <div id="product-section" class="section" style="display: none;">
-        <h2>商品管理</h2>
-        <div>
-            <h3>商品を追加</h3>
-            <select id="product-parent-category-select">
-                <option value="">親カテゴリを選択</option>
-            </select>
-            <select id="product-subcategory-select">
-                <option value="">サブカテゴリを選択</option>
-            </select>
-            <input type="text" id="product-name" placeholder="商品名">
-            <input type="number" id="product-quantity" placeholder="数量">
-            <input type="number" id="product-price" placeholder="価格">
-            <input type="number" id="product-cost" placeholder="原価">
-            <input type="text" id="product-barcode" placeholder="バーコード">
-            <input type="number" id="product-unit-amount" placeholder="サイズ（量）">
-            <button id="add-product">追加</button>
-        </div>
-        <table id="product-table" border="1">
-            <thead>
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>価格</th>
-                    <th>原価</th>
-                    <th>バーコード</th>
-                    <th>サイズ（量）</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+    <!-- カテゴリ設定 -->
+    <section id="categories" class="content-section" style="display: none;">
+      <h1>カテゴリ設定</h1>
+      <!-- 親カテゴリ追加フォーム -->
+      <form id="addParentCategoryForm">
+        <input type="text" id="parentCategoryName" placeholder="親カテゴリ名" required />
+        <button type="submit">追加</button>
+      </form>
+      <!-- サブカテゴリ追加フォーム -->
+      <form id="addSubcategoryForm">
+        <select id="subcategoryParentCategorySelect" required></select>
+        <input type="text" id="subcategoryName" placeholder="サブカテゴリ名" required />
+        <button type="submit">追加</button>
+      </form>
+      <!-- カテゴリ一覧表示エリア -->
+      <div id="categoryList">
+        <ul id="parentCategoryList"></ul>
+      </div>
+    </section>
 
-    <!-- 在庫管理セクション -->
-    <div id="inventory-section" class="section" style="display: none;">
-        <h2>在庫管理</h2>
-        
-        <!-- 親カテゴリとサブカテゴリの選択 -->
-        <select id="inventory-parent-category-select">
-            <option value="">親カテゴリを選択</option>
+    <!-- 商品設定 -->
+    <section id="products" class="content-section" style="display: none;">
+      <h1>商品設定</h1>
+      <!-- 商品追加フォーム -->
+      <form id="addProductForm">
+        <select id="productParentCategorySelect" required></select>
+        <select id="productSubcategorySelect" required></select>
+        <input type="text" id="productName" placeholder="商品名" required />
+        <input type="number" id="productPrice" placeholder="価格" required />
+        <input type="number" id="productCost" placeholder="原価" required />
+        <input type="text" id="productBarcode" placeholder="バーコード" />
+        <input type="number" id="productQuantity" placeholder="数量" required />
+        <input type="number" id="productSize" placeholder="サイズ" required />
+        <button type="submit">追加</button>
+      </form>
+      <!-- 商品フィルタリング -->
+      <div>
+        <select id="filterParentCategorySelect">
+          <option value="">すべての親カテゴリ</option>
         </select>
-        <select id="inventory-subcategory-select">
-            <option value="">サブカテゴリを選択</option>
+        <select id="filterSubcategorySelect">
+          <option value="">すべてのサブカテゴリ</option>
         </select>
+      </div>
+      <!-- 商品一覧表示エリア -->
+      <ul id="productList"></ul>
+    </section>
 
-        <!-- 在庫データを表示するためのテーブル -->
-        <table id="global-inventory-table" border="1">
-            <thead>
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>価格</th>
-                    <th>原価</th>
-                    <th>バーコード</th>
-                    <th>サイズ（量）</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
+    <!-- 在庫管理 -->
+    <section id="inventory" class="content-section" style="display: none;">
+      <h1>在庫管理</h1>
+      <!-- カテゴリフィルタリング -->
+      <div>
+        <select id="inventoryParentCategorySelect" required>
+          <option value="">親カテゴリを選択</option>
+        </select>
+        <select id="inventorySubcategorySelect" required>
+          <option value="">サブカテゴリを選択</option>
+        </select>
+      </div>
+      <!-- 商品一覧表示エリア -->
+      <table id="inventoryList">
+        <thead>
+          <tr>
+            <th>商品名</th>
+            <th>数量</th>
+            <th>価格</th>
+            <th>原価</th>
+            <th>バーコード</th>
+            <th>サイズ</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 商品情報がここに表示されます -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 全体在庫 -->
+    <section id="overall-inventory" class="content-section" style="display: none;">
+      <h1>全体在庫</h1>
+      <!-- 全体在庫更新フォーム -->
+      <form id="updateOverallInventoryForm">
+        <select id="overallInventoryParentCategorySelect" required>
+          <option value="">親カテゴリを選択</option>
+        </select>
+        <select id="overallInventorySubcategorySelect" required>
+          <option value="">サブカテゴリを選択</option>
+        </select>
+        <input type="number" id="overallInventoryQuantity" placeholder="在庫数" required />
+        <button type="submit">更新</button>
+      </form>
+      <!-- 全体在庫一覧表示エリア -->
+      <table id="overallInventoryList">
+        <thead>
+          <tr>
+            <th>サブカテゴリ名</th>
+            <th>在庫数</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 全体在庫情報がここに表示されます -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- バーコードスキャン -->
+    <section id="barcode" class="content-section" style="display: none;">
+      <h1>バーコードスキャン</h1>
+      <!-- バーコード入力フィールドと追加ボタン -->
+      <div id="barcodeScanner">
+        <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
+        <button id="addBarcodeButton">追加</button>
+      </div>
+      <!-- 支払い方法の選択 -->
+      <div id="paymentMethodSelection">
+        <label for="paymentMethodSelect">支払い方法:</label>
+        <select id="paymentMethodSelect" required>
+          <!-- 支払い方法がここに表示されます -->
+        </select>
+      </div>
+      <!-- 販売カート -->
+      <table id="salesCart">
+        <thead>
+          <tr>
+            <th>商品名</th>
+            <th>数量</th>
+            <th>単価</th>
+            <th>小計</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- カート内の商品がここに表示されます -->
+        </tbody>
+      </table>
+      <!-- 合計金額表示と販売完了ボタン -->
+      <div id="totalAmount">合計金額: ¥0</div>
+      <button id="completeSaleButton">販売完了</button>
+    </section>
+
+    <!-- 売上管理 -->
+    <section id="transactions" class="content-section" style="display: none;">
+      <h1>売上管理</h1>
+      <!-- フィルタリングフォーム -->
+      <form id="filterTransactionsForm">
+        <label for="filterYear">年:</label>
+        <input type="number" id="filterYear" min="2000" max="2100" />
+        <label for="filterMonth">月:</label>
+        <input type="number" id="filterMonth" min="1" max="12" />
+        <label for="filterOnlyReturned">返品のみ:</label>
+        <input type="checkbox" id="filterOnlyReturned" />
+        <button type="submit">フィルタ</button>
+      </form>
+      <!-- 手動で売上を追加するボタン -->
+      <button id="manualAddTransactionButton">手動で売上を追加</button>
+      <!-- 手動で売上を追加するフォーム（初期状態は非表示） -->
+      <div id="manualAddTransactionForm" style="display: none;">
+        <h2>売上の手動追加</h2>
+        <form id="addTransactionForm">
+          <label for="transactionTotalAmount">合計金額:</label>
+          <input type="number" id="transactionTotalAmount" required>
+          <label for="transactionPaymentMethod">支払い方法:</label>
+          <select id="transactionPaymentMethod" required>
+            <!-- 支払い方法がここに表示されます -->
+          </select>
+          <button type="submit">追加</button>
+          <button type="button" id="cancelAddTransaction">キャンセル</button>
+        </form>
+      </div>
+      <!-- 売上データの表示エリア -->
+      <table id="transactionList">
+        <thead>
+          <tr>
+            <th>取引ID</th>
+            <th>日時</th>
+            <th>支払い方法</th>
+            <th>商品名</th>
+            <th>個数</th>
+            <th>売上金額</th>
+            <th>原価</th>
+            <th>利益</th>
+            <th>詳細</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 売上データがここに表示されます -->
+        </tbody>
+      </table>
+      <!-- 取引の詳細表示エリア -->
+      <div id="transactionDetails" style="display: none;">
+        <h2>取引詳細</h2>
+        <p>取引ID: <span id="detailTransactionId"></span></p>
+        <p>日時: <span id="detailTimestamp"></span></p>
+        <p>支払い方法: <span id="detailPaymentMethod"></span></p>
+        <p>手数料: ¥<span id="detailFeeAmount"></span></p>
+        <p>純売上金額: ¥<span id="detailNetAmount"></span></p>
+        <p>総原価: ¥<span id="detailTotalCost"></span></p>
+        <p>総利益: ¥<span id="detailTotalProfit"></span></p>
+        <!-- 返品情報 -->
+        <p id="returnInfo"></p>
+        <table>
+          <thead>
+            <tr>
+              <th>商品名</th>
+              <th>数量</th>
+              <th>単価</th>
+              <th>売上金額</th>
+              <th>原価</th>
+              <th>利益</th>
+            </tr>
+          </thead>
+          <tbody id="detailProductList">
+            <!-- 商品詳細がここに表示されます -->
+          </tbody>
         </table>
-    </div>
+       <button id="returnTransactionButton">返品</button>
+  <button id="deleteTransactionButton">取引を削除する</button> <!-- 追加 -->
+  <button id="closeTransactionDetails">閉じる</button>
+      </div>
+    </section>
 
-    <!-- 全体在庫管理セクション -->
-    <div id="global-inventory-section" class="section" style="display: none;">
-        <h2>全体在庫管理</h2>
-        
-        <!-- 全体在庫を登録するためのフォーム -->
-        <div>
-            <h3>全体在庫の登録</h3>
-            <select id="global-parent-category-select">
-                <option value="">親カテゴリを選択</option>
-            </select>
-            <select id="global-subcategory-select">
-                <option value="">サブカテゴリを選択</option>
-            </select>
-            <input type="number" id="global-inventory-quantity" placeholder="全体在庫の数量">
-            <button id="add-global-inventory">追加</button>
-        </div>
-        
-        <!-- 全体在庫の一覧表示 -->
-        <h3>全体在庫の一覧</h3>
-        <table id="global-inventory-table" border="1">
-            <thead>
-                <tr>
-                    <th>サブカテゴリ名</th>
-                    <th>全体在庫数</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+    <!-- 単価設定 -->
+    <section id="pricing" class="content-section" style="display: none;">
+      <h1>単価設定</h1>
+      <!-- 単価ルール追加フォーム -->
+      <form id="addPricingRuleForm">
+        <select id="pricingParentCategorySelect" required>
+          <option value="">親カテゴリを選択</option>
+        </select>
+        <select id="pricingSubcategorySelect" required>
+          <option value="">サブカテゴリを選択</option>
+        </select>
+        <input type="number" id="minQuantity" placeholder="最小数量" required step="any" min="0" />
+        <input type="number" id="maxQuantity" placeholder="最大数量" required step="any" min="0" />
+        <input type="number" id="unitPrice" placeholder="単価" required step="any" min="0" />
+        <button type="submit">追加</button>
+      </form>
+      <!-- 単価ルール一覧表示エリア -->
+      <table id="pricingRulesList">
+        <thead>
+          <tr>
+            <th>サブカテゴリ名</th>
+            <th>最小数量</th>
+            <th>最大数量</th>
+            <th>単価</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 単価ルール情報がここに表示されます -->
+        </tbody>
+      </table>
+    </section>
 
-    <!-- バーコードスキャンセクション -->
-    <div id="barcode-section" class="section" style="display: none;">
-        <h2>バーコードスキャン</h2>
-        <button id="start-scan">スキャン開始</button>
-        <div id="barcode-scanner" style="width: 100%; height: 400px; position: relative; margin-top: 20px;"></div>
-    </div>
+    <!-- 支払い方法設定 -->
+    <section id="payment-methods" class="content-section" style="display: none;">
+      <h1>支払い方法設定</h1>
+      <!-- 支払い方法追加フォーム -->
+      <form id="addPaymentMethodForm">
+        <input type="text" id="paymentMethodName" placeholder="支払い方法名" required />
+        <input type="number" id="paymentMethodFee" placeholder="手数料率(%)" required step="0.01" min="0" />
+        <button type="submit">追加</button>
+      </form>
+      <!-- 支払い方法一覧表示エリア -->
+      <table id="paymentMethodList">
+        <thead>
+          <tr>
+            <th>支払い方法名</th>
+            <th>手数料率(%)</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 支払い方法情報がここに表示されます -->
+        </tbody>
+      </table>
+    </section>
 
-    <!-- 売上管理セクション -->
-    <div id="sales-section" class="section" style="display: none;">
-        <h2>売上管理</h2>
-        <ul id="current-transaction-list"></ul>
-        <button id="complete-transaction">トランザクション完了</button>
-        <button id="manualAddSalesButton">手動で売上を追加</button>
-        <table id="sales-table" border="1">
-            <thead>
-                <tr>
-                    <th>商品名</th>
-                    <th>数量</th>
-                    <th>日時</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+  </main>
 
-    <!-- 単価管理セクション -->
-    <div id="unit-price-section" class="section" style="display: none;">
-        <h2>単価管理</h2>
-        <div>
-            <h3>単価を追加</h3>
-            <select id="unit-price-parent-category-select">
-                <option value="">親カテゴリを選択</option>
-            </select>
-            <select id="unit-price-subcategory-select">
-                <option value="">サブカテゴリを選択</option>
-            </select>
-            <input type="number" id="unit-price-min-amount" placeholder="最小量">
-            <input type="number" id="unit-price-max-amount" placeholder="最大量">
-            <input type="number" id="unit-price-price" placeholder="価格">
-
-            <!-- 単位選択を追加 -->
-            <select id="unit-price-unit-select">
-                <option value="ml">ml</option>
-                <option value="g">g</option>
-                <option value="個">個</option>
-            </select>
-            <button id="add-unit-price">追加</button>
-        </div>
-        <table id="unit-price-table" border="1">
-            <thead>
-                <tr>
-                    <th>サブカテゴリ名</th>
-                    <th>範囲</th>
-                    <th>価格</th>
-                    <th>単位</th>
-                    <th>編集</th>
-                    <th>削除</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <!-- エラーモーダルの定義 -->
-    <div id="errorModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span id="closeErrorModal" class="close-button">&times;</span>
-            <p id="errorMessage"></p>
-        </div>
-    </div>
-
-    <!-- JavaScriptファイルの読み込み -->
-   <!-- 修正後の読み込み部分：必要なモジュールをすべてモジュールとして読み込む -->
-<script type="module">
-    // 必要なモジュールをインポート（initializeInventorySection のインポートを削除）
-    import { initializeGlobalInventorySection, updateInventorySubcategorySelect } from './inventoryManagement.js';
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        // **initializeInventorySection() の呼び出しを削除**
-        initializeGlobalInventorySection();
-
-        // 初期化後にカテゴリを更新し、正しいデータがロードされているか確認
-        const parentCategorySelect = document.getElementById('inventory-parent-category-select');
-        if (parentCategorySelect) {
-            parentCategorySelect.addEventListener('change', () => {
-                const selectedParentCategoryId = Number(parentCategorySelect.value);
-                console.log('選択された親カテゴリID:', selectedParentCategoryId);
-                updateInventorySubcategorySelect(selectedParentCategoryId);
-            });
-        } else {
-            console.error('親カテゴリセレクトボックスが見つかりません。IDが "inventory-parent-category-select" で正しいか確認してください。');
-        }
-    });
-</script>
-<script type="module" src="main.js"></script>
+  <!-- JavaScript ファイルの読み込み -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>
