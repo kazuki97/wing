@@ -107,41 +107,62 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-// 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
-async function updateAllParentCategorySelects() {
-  try {
-    const parentCategories = await getParentCategories();
-    // 親カテゴリセレクトボックスのID一覧
-    const selectIds = [
-      'subcategoryParentCategorySelect',
-      'productParentCategorySelect',
-      'filterParentCategorySelect',
-      'inventoryParentCategorySelect',
-      'overallInventoryParentCategorySelect',
-      'pricingParentCategorySelect',
-    ];
-    selectIds.forEach((id) => {
-      const select = document.getElementById(id);
-      const selectedValue = select.value;
-      select.innerHTML = '<option value="">親カテゴリを選択</option>';
-      parentCategories.forEach((category) => {
-        const option = document.createElement('option');
-        option.value = category.id;
-        option.textContent = category.name;
-        select.appendChild(option);
-      });
-      // 以前選択されていた値を再設定
-      if (selectedValue) {
-        select.value = selectedValue;
+ // ポップアップの開閉処理
+  const openPopupButton = document.getElementById('openCategorySettingsPopup');
+  const popup = document.getElementById('categorySettingsPopup');
+  const closePopupButton = document.getElementById('closePopup');
+
+  if (openPopupButton && popup && closePopupButton) {
+    openPopupButton.addEventListener('click', () => {
+      popup.style.display = 'block';
+    });
+
+    closePopupButton.addEventListener('click', () => {
+      popup.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+      if (event.target === popup) {
+        popup.style.display = 'none';
       }
     });
-    // サブカテゴリセレクトボックスの更新
-    await updateSubcategorySelects();
-  } catch (error) {
-    console.error(error);
-    showError('親カテゴリの取得に失敗しました');
   }
-}
+
+// 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
+  async function updateAllParentCategorySelects() {
+    try {
+      const parentCategories = await getParentCategories();
+      // 親カテゴリセレクトボックスのID一覧
+      const selectIds = [
+        'popupSubcategoryParentCategorySelect',
+        'productParentCategorySelect',
+        'filterParentCategorySelect',
+        'inventoryParentCategorySelect',
+        'overallInventoryParentCategorySelect',
+        'pricingParentCategorySelect',
+      ];
+      selectIds.forEach((id) => {
+        const select = document.getElementById(id);
+        const selectedValue = select.value;
+        select.innerHTML = '<option value="">親カテゴリを選択</option>';
+        parentCategories.forEach((category) => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          select.appendChild(option);
+        });
+        // 以前選択されていた値を再設定
+        if (selectedValue) {
+          select.value = selectedValue;
+        }
+      });
+      // サブカテゴリセレクトボックスの更新
+      await updateSubcategorySelects();
+    } catch (error) {
+      console.error(error);
+      showError('親カテゴリの取得に失敗しました');
+    }
+  }
 
 // サブカテゴリセレクトボックスの更新
 async function updateSubcategorySelects() {
