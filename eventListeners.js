@@ -27,7 +27,7 @@ import {
   updateOverallInventory,
   getOverallInventory,
   getAllOverallInventories,
-  deleteOverallInventory, // 追加: deleteOverallInventoryのインポート
+  deleteOverallInventory,
 } from './inventoryManagement.js';
 
 import {
@@ -638,7 +638,7 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
 // 初期化処理
 window.addEventListener('DOMContentLoaded', async () => {
   await updateAllParentCategorySelects();
-  await updatePricingParentCategorySelect(); // 修正：この関数を正しく呼び出す
+  await updatePricingParentCategorySelect();
   await displayParentCategories();
   await displayProducts();
   await displayOverallInventory();
