@@ -34,31 +34,22 @@
     <!-- カテゴリ設定 -->
     <section id="categories" class="content-section" style="display: none;">
       <h1>カテゴリ設定</h1>
-      <button id="openCategoryPopup">カテゴリ設定を追加/編集</button>
+      <!-- 親カテゴリ追加フォーム -->
+      <form id="addParentCategoryForm">
+        <input type="text" id="parentCategoryName" placeholder="親カテゴリ名" required />
+        <button type="submit">追加</button>
+      </form>
+      <!-- サブカテゴリ追加フォーム -->
+      <form id="addSubcategoryForm">
+        <select id="subcategoryParentCategorySelect" required></select>
+        <input type="text" id="subcategoryName" placeholder="サブカテゴリ名" required />
+        <button type="submit">追加</button>
+      </form>
       <!-- カテゴリ一覧表示エリア -->
       <div id="categoryList">
         <ul id="parentCategoryList"></ul>
       </div>
     </section>
-
-    <!-- カテゴリ設定ポップアップ -->
-    <div id="categoryPopup" class="popup" style="display: none;">
-      <div class="popup-content">
-        <span id="closeCategoryPopup" class="close">&times;</span>
-        <h2>カテゴリ設定</h2>
-        <!-- 親カテゴリ追加フォーム -->
-        <form id="popupAddParentCategoryForm">
-          <input type="text" id="popupParentCategoryName" placeholder="親カテゴリ名" required />
-          <button type="submit">追加</button>
-        </form>
-        <!-- サブカテゴリ追加フォーム -->
-        <form id="popupAddSubcategoryForm">
-          <select id="popupSubcategoryParentCategorySelect" required></select>
-          <input type="text" id="popupSubcategoryName" placeholder="サブカテゴリ名" required />
-          <button type="submit">追加</button>
-        </form>
-      </div>
-    </div>
 
     <!-- 商品設定 -->
     <section id="products" class="content-section" style="display: none;">
@@ -322,8 +313,7 @@
 
   </main>
 
- <!-- JavaScript ファイルの読み込み -->
-    <script type="module" src="main.js"></script>
-  </main>
+  <!-- JavaScript ファイルの読み込み -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>
