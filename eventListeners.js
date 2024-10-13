@@ -172,7 +172,7 @@ async function displayTransactions(filter = {}) {
   }
 }
 
-/ 売上管理セクションの取引詳細を表示する関数
+// 売上管理セクションの取引詳細を表示する関数
 async function displayTransactionDetails(transactionId) {
   try {
     // 取引の詳細を取得して表示する処理をここに実装します。
