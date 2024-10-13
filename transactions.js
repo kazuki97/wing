@@ -107,21 +107,6 @@ export async function deleteTransaction(transactionId) {
   }
 }
 
-async function displayTransactionDetails(transactionId) {
-  try {
-    // 取引の詳細を取得して表示する処理をここに実装します。
-    const transaction = await getTransactionById(transactionId);
-    if (transaction) {
-      // 取引の詳細を表示するコードをここに記述
-      // 例: モーダルを表示するなど
-      console.log('取引詳細:', transaction);
-    }
-  } catch (error) {
-    console.error('取引の詳細表示に失敗しました:', error);
-    showError('取引の詳細を表示できませんでした');
-  }
-}
-
 // 在庫と全体在庫の削除後の更新処理
 async function updateInventoryAfterTransactionDelete(product) {
   try {
