@@ -112,6 +112,64 @@ if (editTransactionForm) {
   });
 }
 
+// 売上管理セクションの取引データ表示関数
+async function displayTransactions(filter = {}) {
+  try {
+    let transactions = await getTransactions();
+
+    // フィルタの適用
+    if (filter.onlyReturned) {
+      transactions = transactions.filter((t) => t.isReturned);
+    }
+    if (filter.month || filter.year) {
+      transactions = transactions.filter((t) => {
+        const date = new Date(t.timestamp);
+        const monthMatch = filter.month ? date.getMonth() + 1 === filter.month : true;
+        const yearMatch = filter.year ? date.getFullYear() === filter.year : true;
+        return monthMatch && yearMatch;
+      });
+    }
+
+    const transactionList = document.getElementById('transactionList').querySelector('tbody');
+    transactionList.innerHTML = '';
+    for (const transaction of transactions) {
+      const row = document.createElement('tr');
+      // 返品済みの場合は赤文字にする
+      if (transaction.isReturned) {
+        row.style.color = 'red';
+      }
+      // 商品名の一覧をカンマ区切りで取得
+      const productNames = transaction.items.map((item) => item.productName).join(', ');
+      // 総数量を計算
+      const totalQuantity = transaction.items.reduce((sum, item) => sum + item.quantity, 0);
+
+      row.innerHTML = `
+        <td>${transaction.id}</td>
+        <td>${new Date(transaction.timestamp).toLocaleString()}</td>
+        <td>${transaction.paymentMethodName}</td>
+        <td>${productNames || '手動追加'}</td>
+        <td>${totalQuantity || '-'}</td>
+        <td>\u00a5${transaction.totalAmount}</td>
+        <td>\u00a5${transaction.cost || 0}</td>
+        <td>\u00a5${transaction.profit || 0}</td>
+        <td><button class="view-transaction-details" data-id="${transaction.id}">詳細</button></td>
+      `;
+      transactionList.appendChild(row);
+    }
+
+    // 詳細ボタンのイベントリスナー
+    document.querySelectorAll('.view-transaction-details').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const transactionId = e.target.dataset.id;
+        await displayTransactionDetails(transactionId);
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    showError('取引の表示に失敗しました');
+  }
+}
+
 // 親カテゴリ追加フォームのイベントリスナー
 document
   .getElementById('addParentCategoryForm')
