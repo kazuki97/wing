@@ -315,6 +315,20 @@
     <!-- 売上分析 -->
     <section id="sales-analysis" class="content-section" style="display: none;">
       <h1>売上分析</h1>
+      <!-- 集計対象選択フォーム -->
+      <form id="analysisPeriodForm">
+        <label for="analysisPeriod">集計対象:</label>
+        <select id="analysisPeriod">
+          <option value="day">日別</option>
+          <option value="month">月別</option>
+          <option value="year">年別</option>
+        </select>
+        <label for="analysisYear">年:</label>
+        <input type="number" id="analysisYear" min="2000" max="2100" />
+        <label for="analysisMonth">月:</label>
+        <input type="number" id="analysisMonth" min="1" max="12" />
+        <button type="submit">表示する</button>
+      </form>
       <!-- 売上分析グラフ表示エリア -->
       <canvas id="salesChart"></canvas>
       <!-- 売上データフィルタリング -->
