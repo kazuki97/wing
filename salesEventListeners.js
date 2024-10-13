@@ -656,4 +656,5 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
 window.addEventListener('DOMContentLoaded', async () => {
   await updatePaymentMethodSelect();
   await displayTransactions(); // 売上管理セクションの初期表示
+  await displayPaymentMethods(); // 支払い方法の初期表示
 });
