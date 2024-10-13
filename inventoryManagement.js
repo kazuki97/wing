@@ -6,17 +6,20 @@ import {
   getDoc,
   getDocs,
   updateDoc,
-  deleteDoc, // 追加
+  deleteDoc,
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 // 全体在庫の更新（サブカテゴリごと）
-export async function updateOverallInventory(subcategoryId, quantity) {
+export async function updateOverallInventory(subcategoryId, quantityChange) {
   try {
     const docRef = doc(db, 'overallInventory', subcategoryId);
+    const currentInventory = await getOverallInventory(subcategoryId);
+    const newQuantity = (currentInventory.quantity || 0) + quantityChange;
+
     await setDoc(
       docRef,
       {
-        quantity: quantity,
+        quantity: newQuantity,
         updatedAt: new Date(),
       },
       { merge: true }
@@ -54,7 +57,7 @@ export async function getAllOverallInventories() {
   }
 }
 
-// 全体在庫の削除（新規追加）
+// 全体在庫の削除
 export async function deleteOverallInventory(subcategoryId) {
   try {
     const docRef = doc(db, 'overallInventory', subcategoryId);
