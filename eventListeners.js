@@ -27,7 +27,7 @@ import {
   updateOverallInventory,
   getOverallInventory,
   getAllOverallInventories,
-  deleteOverallInventory, // 追加: deleteOverallInventoryのインポート
+  deleteOverallInventory,
 } from './inventoryManagement.js';
 
 import {
@@ -36,6 +36,11 @@ import {
   deletePricingRule,
   getUnitPrice,
 } from './pricing.js';
+
+import {
+  getTransactionById,
+  updateTransaction,
+} from './transactions.js';
 
 // 追加: updatePricingParentCategorySelectの定義
 async function updatePricingParentCategorySelect() {
@@ -63,6 +68,48 @@ function showError(message) {
   setTimeout(() => {
     errorDiv.style.display = 'none';
   }, 5000);
+}
+
+// 売上管理セクションの取引データ編集ボタンのイベントリスナー
+async function addTransactionEditListeners() {
+  const editButtons = document.querySelectorAll('.edit-transaction');
+  editButtons.forEach((button) => {
+    button.addEventListener('click', async (e) => {
+      const transactionId = e.target.dataset.id;
+      const transaction = await getTransactionById(transactionId);
+      if (transaction) {
+        // 編集フォームに現在の取引データをセット
+        document.getElementById('editTransactionId').value = transaction.id;
+        document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
+        document.getElementById('editTransactionPaymentMethod').value = transaction.paymentMethod;
+        // 編集フォームの表示
+        document.getElementById('editTransactionFormContainer').style.display = 'block';
+      }
+    });
+  });
+}
+
+// 売上管理セクションの取引データ編集フォームのイベントリスナー
+const editTransactionForm = document.getElementById('editTransactionForm');
+if (editTransactionForm) {
+  editTransactionForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const transactionId = document.getElementById('editTransactionId').value;
+    const updatedData = {
+      totalAmount: parseFloat(document.getElementById('editTransactionTotalAmount').value),
+      paymentMethod: document.getElementById('editTransactionPaymentMethod').value,
+    };
+    try {
+      await updateTransaction(transactionId, updatedData);
+      alert('取引が更新されました');
+      // 編集フォームを非表示にし、取引データを更新
+      document.getElementById('editTransactionFormContainer').style.display = 'none';
+      await displayTransactions();
+    } catch (error) {
+      console.error(error);
+      showError('取引の更新に失敗しました');
+    }
+  });
 }
 
 // 親カテゴリ追加フォームのイベントリスナー
@@ -635,12 +682,14 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
   await displayPricingRules();
 });
 
-// 初期化処理
+// 初期化処理に売上管理セクションの編集ボタンのリスナーを追加
 window.addEventListener('DOMContentLoaded', async () => {
   await updateAllParentCategorySelects();
-  await updatePricingParentCategorySelect(); // 修正：この関数を正しく呼び出す
+  await updatePricingParentCategorySelect();
   await displayParentCategories();
   await displayProducts();
   await displayOverallInventory();
   await displayInventoryProducts();
+  await displayTransactions(); // 売上管理セクションの取引データ表示
+  await addTransactionEditListeners(); // 売上管理セクションの編集ボタンにリスナーを追加
 });
