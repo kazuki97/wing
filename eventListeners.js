@@ -172,6 +172,22 @@ async function displayTransactions(filter = {}) {
   }
 }
 
+/ 売上管理セクションの取引詳細を表示する関数
+async function displayTransactionDetails(transactionId) {
+  try {
+    // 取引の詳細を取得して表示する処理をここに実装します。
+    const transaction = await getTransactionById(transactionId);
+    if (transaction) {
+      // 取引の詳細を表示するコードをここに記述
+      // 例: モーダルを表示するなど
+      console.log('取引詳細:', transaction);
+    }
+  } catch (error) {
+    console.error('取引の詳細表示に失敗しました:', error);
+    showError('取引の詳細を表示できませんでした');
+  }
+}
+
 // 親カテゴリ追加フォームのイベントリスナー
 document
   .getElementById('addParentCategoryForm')
