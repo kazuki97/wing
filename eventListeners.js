@@ -154,7 +154,10 @@ async function displayTransactions(filter = {}) {
         <td>\u00a5${transaction.totalAmount}</td>
         <td>\u00a5${transaction.cost || 0}</td>
         <td>\u00a5${transaction.profit || 0}</td>
-        <td><button class="view-transaction-details" data-id="${transaction.id}">詳細</button></td>
+        <td>
+          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+          <button class="edit-transaction" data-id="${transaction.id}">編集</button> <!-- 編集ボタンを追加 -->
+        </td>
       `;
       transactionList.appendChild(row);
     }
@@ -164,6 +167,22 @@ async function displayTransactions(filter = {}) {
       button.addEventListener('click', async (e) => {
         const transactionId = e.target.dataset.id;
         await displayTransactionDetails(transactionId);
+      });
+    });
+
+    // 編集ボタンのイベントリスナー
+    document.querySelectorAll('.edit-transaction').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const transactionId = e.target.dataset.id;
+        const transaction = await getTransactionById(transactionId);
+        if (transaction) {
+          // 編集フォームに現在の取引データをセット
+          document.getElementById('editTransactionId').value = transaction.id;
+          document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
+          document.getElementById('editTransactionPaymentMethod').value = transaction.paymentMethodName || '';
+          // 編集フォームの表示
+          document.getElementById('editTransactionFormContainer').style.display = 'block';
+        }
       });
     });
   } catch (error) {
