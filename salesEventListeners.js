@@ -12,7 +12,7 @@ import {
   getTransactions,
   getTransactionById,
   updateTransaction,
-  deleteTransaction, // 追加
+  deleteTransaction,
 } from './transactions.js';
 
 import {
@@ -22,9 +22,8 @@ import {
   deletePaymentMethod,
 } from './paymentMethods.js';
 
-import { getUnitPrice } from './pricing.js'; // 単価取得
-
-import { updateOverallInventory } from './inventoryManagement.js'; // 追加
+import { getUnitPrice } from './pricing.js';
+import { updateOverallInventory } from './inventoryManagement.js';
 
 // エラーメッセージ表示関数
 function showError(message) {
@@ -655,7 +654,6 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
 
 // 初期化処理
 window.addEventListener('DOMContentLoaded', async () => {
-  await displayTransactions(); // 売上管理セクションの初期表示
-  await displayPaymentMethods();
   await updatePaymentMethodSelect();
+  await displayTransactions(); // 売上管理セクションの初期表示
 });
