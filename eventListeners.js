@@ -38,8 +38,10 @@ import {
 } from './pricing.js';
 
 import {
+  getTransactions,
   getTransactionById,
   updateTransaction,
+  deleteTransaction,
 } from './transactions.js';
 
 // 追加: updatePricingParentCategorySelectの定義
