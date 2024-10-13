@@ -324,26 +324,46 @@
           <option value="year">年別</option>
         </select>
         <label for="analysisYear">年:</label>
-        <input type="number" id="analysisYear" min="2000" max="2100" />
+        <select id="analysisYear">
+          <!-- 年のオプションが自動的に追加されます -->
+        </select>
         <label for="analysisMonth">月:</label>
-        <input type="number" id="analysisMonth" min="1" max="12" />
+        <select id="analysisMonth">
+          <option value="">選択してください</option>
+          <option value="1">1月</option>
+          <option value="2">2月</option>
+          <option value="3">3月</option>
+          <option value="4">4月</option>
+          <option value="5">5月</option>
+          <option value="6">6月</option>
+          <option value="7">7月</option>
+          <option value="8">8月</option>
+          <option value="9">9月</option>
+          <option value="10">10月</option>
+          <option value="11">11月</option>
+          <option value="12">12月</option>
+        </select>
         <button type="submit">表示する</button>
       </form>
       <!-- 売上分析グラフ表示エリア -->
       <canvas id="salesChart"></canvas>
-      <!-- 売上データフィルタリング -->
-      <form id="filterSalesDataForm">
-        <label for="analysisYear">年:</label>
-        <input type="number" id="analysisYear" min="2000" max="2100" />
-        <label for="analysisMonth">月:</label>
-        <input type="number" id="analysisMonth" min="1" max="12" />
-        <button type="submit">フィルタ</button>
-      </form>
     </section>
 
   </main>
 
   <!-- JavaScript ファイルの読み込み -->
   <script type="module" src="main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const yearSelect = document.getElementById('analysisYear');
+      const currentYear = new Date().getFullYear();
+      for (let year = 2015; year <= currentYear; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year}年`;
+        yearSelect.appendChild(option);
+      }
+    });
+  </script>
 </body>
 </html>
