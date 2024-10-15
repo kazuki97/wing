@@ -67,6 +67,23 @@ async function updatePricingParentCategorySelect() {
   }
 }
 
+// 支払い方法セレクトボックスの更新関数
+async function updatePaymentMethodSelect() {
+  try {
+    const paymentMethods = await getPaymentMethods();
+    const paymentMethodSelect = document.getElementById('transactionPaymentMethod');
+    paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
+    paymentMethods.forEach((method) => {
+      const option = document.createElement('option');
+      option.value = method.id;
+      option.textContent = method.name;
+      paymentMethodSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('支払い方法の取得に失敗しました:', error);
+  }
+}
+
 // エラーメッセージ表示関数
 function showError(message) {
   const errorDiv = document.getElementById('error-message');
@@ -990,8 +1007,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
   if (manualAddTransactionButton) {
-    manualAddTransactionButton.addEventListener('click', () => {
+    manualAddTransactionButton.addEventListener('click', async () => {
       document.getElementById('manualAddTransactionForm').style.display = 'block';
+      await updatePaymentMethodSelect(); // 支払い方法のセレクトボックスを更新
     });
   }
 
