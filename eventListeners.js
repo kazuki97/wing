@@ -263,51 +263,76 @@ async function displayTransactions(filter = {}) {
 async function displayTransactionDetails(transactionId) {
   try {
     const transaction = await getTransactionById(transactionId);
-    if (transaction) {
-      // タイムスタンプのデバッグ出力
-      console.log('Transaction Timestamp:', transaction.timestamp);
-      
-      // 詳細情報を表示するための要素を取得
-      const transactionDetails = document.getElementById('transactionDetails');
-      document.getElementById('detailTransactionId').textContent = transaction.id;
+    if (!transaction) {
+      showError('取引が見つかりません');
+      return;
+    }
 
-      // タイムスタンプのパース
-      let timestampText = '日時情報なし';
-      if (transaction.timestamp && transaction.timestamp.seconds) {
-        const date = new Date(transaction.timestamp.seconds * 1000); // UNIX秒をミリ秒に変換
-        if (!isNaN(date)) {
-          timestampText = date.toLocaleString();
-        }
+    // 詳細情報を表示するための要素を取得
+    const transactionDetails = document.getElementById('transactionDetails');
+    document.getElementById('detailTransactionId').textContent = transaction.id;
+
+    // タイムスタンプのパース（シンプルな処理を採用）
+    let timestampText = '日時情報なし';
+    if (transaction.timestamp) {
+      const date = new Date(transaction.timestamp); // タイムスタンプを直接使用
+      if (!isNaN(date)) {
+        timestampText = date.toLocaleString();
       }
-      document.getElementById('detailTimestamp').textContent = timestampText;
+    }
+    document.getElementById('detailTimestamp').textContent = timestampText;
 
-      document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
-      document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
-      document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
-      document.getElementById('detailTotalCost').textContent = transaction.cost !== undefined ? `¥${transaction.cost}` : '¥0';
-      document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
-      
-      const productList = document.getElementById('detailProductList');
-      productList.innerHTML = '';
-      transaction.items.forEach((item) => {
+    document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
+    document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
+    document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
+    document.getElementById('detailTotalCost').textContent = transaction.cost !== undefined ? `¥${transaction.cost}` : '¥0';
+    document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
+    
+    const detailProductList = document.getElementById('detailProductList');
+    detailProductList.innerHTML = '';
+
+    if (transaction.items && transaction.items.length > 0) {
+      for (const item of transaction.items) {
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${item.productName}</td>
           <td>${item.quantity}</td>
           <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
-          <td>¥${item.totalAmount !== undefined ? item.totalAmount : '情報なし'}</td>
+          <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
           <td>¥${item.cost !== undefined ? item.cost : '情報なし'}</td>
           <td>¥${item.profit !== undefined ? item.profit : '情報なし'}</td>
         `;
-        productList.appendChild(row);
-      });
-
-      // 返品情報の表示
-      document.getElementById('returnInfo').textContent = transaction.isReturned ? '返品済み' : '';
-      
-      // 詳細表示エリアを表示
-      transactionDetails.style.display = 'block';
+        detailProductList.appendChild(row);
+      }
+    } else {
+      // 手動追加のため、商品明細が無い
+      const row = document.createElement('tr');
+      row.innerHTML = '<td colspan="6">商品情報はありません</td>';
+      detailProductList.appendChild(row);
     }
+
+    // 返品ボタンの表示（手動追加の場合は非表示にする）
+    const returnButton = document.getElementById('returnTransactionButton');
+    if (transaction.isReturned || transaction.manuallyAdded) {
+      returnButton.style.display = 'none';
+      if (transaction.isReturned) {
+        document.getElementById('returnInfo').textContent = `返品理由: ${transaction.returnReason}`;
+      } else {
+        document.getElementById('returnInfo').textContent = '';
+      }
+    } else {
+      returnButton.style.display = 'block';
+      document.getElementById('returnInfo').textContent = '';
+      returnButton.onclick = () => handleReturnTransaction(transaction);
+    }
+
+    // 取引削除ボタンの表示
+    const deleteButton = document.getElementById('deleteTransactionButton');
+    deleteButton.style.display = 'block';
+    deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
+
+    // 詳細表示エリアを表示
+    transactionDetails.style.display = 'block';
   } catch (error) {
     console.error('取引の詳細表示に失敗しました:', error);
     showError('取引の詳細を表示できませんでした');
@@ -327,6 +352,59 @@ if (closeTransactionDetailsButton) {
   closeTransactionDetailsButton.addEventListener('click', () => {
     document.getElementById('transactionDetails').style.display = 'none';
   });
+}
+
+async function handleReturnTransaction(transaction) {
+  const reason = prompt('返品理由を入力してください');
+  if (!reason) {
+    showError('返品理由を入力してください');
+    return;
+  }
+  try {
+    if (transaction.items && transaction.items.length > 0) {
+      // 在庫を元に戻す
+      for (const item of transaction.items) {
+        const productId = item.productId;
+        const quantity = item.quantity;
+        const size = item.size;
+        const requiredQuantity = quantity * size;
+
+        const product = await getProductById(productId);
+        const updatedQuantity = product.quantity + requiredQuantity;
+        await updateProduct(productId, { quantity: updatedQuantity });
+        // 全体在庫の更新
+        await updateOverallInventory(productId, requiredQuantity);
+      }
+    }
+    // 取引を返品済みに更新
+    await updateTransaction(transaction.id, {
+      isReturned: true,
+      returnReason: reason,
+      returnedAt: new Date(),
+    });
+    alert('返品が完了しました');
+    // 取引詳細を再表示
+    await displayTransactionDetails(transaction.id);
+    // 売上管理セクションを更新
+    await displayTransactions();
+  } catch (error) {
+    console.error(error);
+    showError('返品処理に失敗しました');
+  }
+}
+
+async function handleDeleteTransaction(transactionId) {
+  if (confirm('この取引を削除しますか？')) {
+    try {
+      await deleteTransaction(transactionId);
+      alert('取引が削除されました');
+      document.getElementById('transactionDetails').style.display = 'none';
+      await displayTransactions();
+    } catch (error) {
+      console.error(error);
+      showError('取引の削除に失敗しました');
+    }
+  }
 }
 
 // 親カテゴリ追加フォームのイベントリスナー
