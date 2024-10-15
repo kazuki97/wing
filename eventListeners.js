@@ -215,7 +215,7 @@ export async function displayTransactions(filter = {}) {
     }
     if (filter.month || filter.year) {
       transactions = transactions.filter((t) => {
-        const date = new Date(t.timestamp.seconds * 1000); // UNIXタイムスタンプをミリ秒に変換
+        const date = new Date(t.timestamp);
         const monthMatch = filter.month ? date.getMonth() + 1 === filter.month : true;
         const yearMatch = filter.year ? date.getFullYear() === filter.year : true;
         return monthMatch && yearMatch;
@@ -236,10 +236,10 @@ export async function displayTransactions(filter = {}) {
 
       // タイムスタンプを適切にフォーマット
       let formattedTimestamp = '日時情報なし';
-      if (transaction.timestamp && transaction.timestamp.seconds) {
-        const date = new Date(transaction.timestamp.seconds * 1000);
-        if (!isNaN(date)) {
-          formattedTimestamp = date.toLocaleString();
+      if (transaction.timestamp) {
+        const date = new Date(transaction.timestamp);
+        if (!isNaN(date.getTime())) {
+          formattedTimestamp = date.toLocaleString('ja-JP');
         }
       }
 
