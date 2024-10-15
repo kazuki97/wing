@@ -141,6 +141,11 @@ if (editTransactionForm) {
 async function displayTransactions(filter = {}) {
   try {
     let transactions = await getTransactions();
+    const paymentMethods = await getPaymentMethods(); // 支払い方法を取得
+    const paymentMethodMap = {};
+    paymentMethods.forEach((method) => {
+      paymentMethodMap[method.id] = method.name;
+    });
 
     // フィルタの適用
     if (filter.onlyReturned) {
@@ -159,19 +164,18 @@ async function displayTransactions(filter = {}) {
     transactionList.innerHTML = '';
     for (const transaction of transactions) {
       const row = document.createElement('tr');
-      // 返品済みの場合は赤文字にする
       if (transaction.isReturned) {
         row.style.color = 'red';
       }
-      // 商品名の一覧をカンマ区切りで取得
+
       const productNames = transaction.items.map((item) => item.productName).join(', ');
-      // 総数量を計算
       const totalQuantity = transaction.items.reduce((sum, item) => sum + item.quantity, 0);
+      const paymentMethodName = paymentMethodMap[transaction.paymentMethodId] || '不明な支払い方法';
 
       row.innerHTML = `
         <td>${transaction.id}</td>
         <td>${new Date(transaction.timestamp).toLocaleString()}</td>
-        <td>${transaction.paymentMethodName}</td>
+        <td>${paymentMethodName}</td>
         <td>${productNames || '手動追加'}</td>
         <td>${totalQuantity || '-'}</td>
         <td>¥${transaction.totalAmount}</td>
@@ -186,7 +190,7 @@ async function displayTransactions(filter = {}) {
     }
 
     // 詳細ボタンのイベントリスナー
-    document.querySelectorAll('.view-transaction-details').forEach((button) => {
+     document.querySelectorAll('.view-transaction-details').forEach((button) => {
       button.addEventListener('click', async (e) => {
         const transactionId = e.target.dataset.id;
         await displayTransactionDetails(transactionId);
@@ -194,7 +198,7 @@ async function displayTransactions(filter = {}) {
     });
 
     // 編集ボタンのイベントリスナー
-    await addTransactionEditListeners();
+   await addTransactionEditListeners();
   } catch (error) {
     console.error(error);
     showError('取引の表示に失敗しました');
