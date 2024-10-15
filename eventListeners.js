@@ -42,6 +42,7 @@ import {
   getTransactionById,
   updateTransaction,
   deleteTransaction,
+  addTransaction,  // これを追加してください
 } from './transactions.js';
 
 import {
