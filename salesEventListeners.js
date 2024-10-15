@@ -19,6 +19,8 @@ import {
   deletePaymentMethod,
 } from './paymentMethods.js';
 
+import { displayTransactions } from './eventListeners.js';
+
 import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
 
