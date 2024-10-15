@@ -119,20 +119,21 @@ if (editTransactionForm) {
       totalAmount: parseFloat(document.getElementById('editTransactionTotalAmount').value),
       paymentMethodId: document.getElementById('editTransactionPaymentMethod').value,
     };
-    try {
-      await updateTransaction(transactionId, updatedData);
-      alert('取引が更新されました');
-      
-      // 編集フォームを非表示にし、取引データを再表示
-      document.getElementById('editTransactionFormContainer').style.display = 'none';
-      editTransactionForm.reset();
+   try {
+  await updateTransaction(transactionId, updatedData);
+  console.log('取引が更新されました:', updatedData); // 更新されたデータを確認するためのログ
+  alert('取引が更新されました');
 
-      // 修正内容: displayTransactions() の呼び出しを非同期に待つ
-      await displayTransactions();
-    } catch (error) {
-      console.error(error);
-      showError('取引の更新に失敗しました');
-    }
+  // 編集フォームを非表示にし、取引データを再表示
+  document.getElementById('editTransactionFormContainer').style.display = 'none';
+  editTransactionForm.reset();
+
+  // 最新のデータでリストを再描画
+  await displayTransactions();
+} catch (error) {
+  console.error(error);
+  showError('取引の更新に失敗しました');
+}
   });
 }
 
