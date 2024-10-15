@@ -118,7 +118,7 @@ async function addTransactionEditListeners() {
         document.getElementById('editTransactionProductName').value = transaction.items[0].productName;
         document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
         document.getElementById('editTransactionUnitPrice').value = transaction.items[0].unitPrice;
-        document.getElementById('editTransactionCost').value = transaction.items[0].cost;
+        document.getElementById('editTransactionCost').value = transaction.items[0].cost * transaction.items[0].size; // サイズを掛けた原価
         document.getElementById('editTransactionSize').value = transaction.items[0].size; // サイズをセット
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
@@ -274,20 +274,21 @@ export async function displayTransactions(filter = {}) {
       }
 
       // 修正箇所: 原価と利益をリストに表示
-      row.innerHTML = `
-        <td>${transaction.id}</td>
-        <td>${formattedTimestamp}</td>
-        <td>${paymentMethodName}</td>
-        <td>${productNames || '手動追加'}</td>
-        <td>${totalQuantity || '-'}</td>
-        <td>¥${transaction.totalAmount}</td>
-        <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価を表示 -->
-        <td>¥${transaction.items[0].profit || 0}</td> <!-- 利益を表示 -->
-        <td>
-          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-        </td>
-      `;
+    row.innerHTML = `
+  <td>${transaction.id}</td>
+  <td>${formattedTimestamp}</td>
+  <td>${paymentMethodName}</td>
+  <td>${productNames || '手動追加'}</td>
+  <td>${totalQuantity || '-'}</td>
+  <td>¥${transaction.totalAmount}</td>
+  <td>¥${transaction.items[0].cost * transaction.items[0].size || 0}</td> <!-- サイズを考慮した原価を表示 -->
+  <td>¥${transaction.items[0].profit || 0}</td> <!-- 利益を表示 -->
+  <td>
+    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+  </td>
+`;
+
       transactionList.appendChild(row);
     }
 
