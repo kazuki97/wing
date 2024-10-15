@@ -213,12 +213,12 @@ async function displayTransactionDetails(transactionId) {
       // 詳細情報を表示するための要素を取得
       const transactionDetails = document.getElementById('transactionDetails');
       document.getElementById('detailTransactionId').textContent = transaction.id;
-      document.getElementById('detailTimestamp').textContent = new Date(transaction.timestamp).toLocaleString();
-      document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName;
-      document.getElementById('detailFeeAmount').textContent = transaction.feeAmount || 0;
-      document.getElementById('detailNetAmount').textContent = transaction.netAmount || 0;
-      document.getElementById('detailTotalCost').textContent = transaction.cost || 0;
-      document.getElementById('detailTotalProfit').textContent = transaction.profit || 0;
+      document.getElementById('detailTimestamp').textContent = transaction.timestamp ? new Date(transaction.timestamp).toLocaleString() : '日時情報なし';
+      document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
+      document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
+      document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
+      document.getElementById('detailTotalCost').textContent = transaction.cost !== undefined ? `¥${transaction.cost}` : '¥0';
+      document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
       
       const productList = document.getElementById('detailProductList');
       productList.innerHTML = '';
@@ -227,10 +227,10 @@ async function displayTransactionDetails(transactionId) {
         row.innerHTML = `
           <td>${item.productName}</td>
           <td>${item.quantity}</td>
-          <td>¥${item.unitPrice}</td>
-          <td>¥${item.totalAmount}</td>
-          <td>¥${item.cost}</td>
-          <td>¥${item.profit}</td>
+          <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
+          <td>¥${item.totalAmount !== undefined ? item.totalAmount : '情報なし'}</td>
+          <td>¥${item.cost !== undefined ? item.cost : '情報なし'}</td>
+          <td>¥${item.profit !== undefined ? item.profit : '情報なし'}</td>
         `;
         productList.appendChild(row);
       });
