@@ -101,7 +101,9 @@ async function addTransactionEditListeners() {
         // 編集フォームに現在の取引データをセット
         document.getElementById('editTransactionId').value = transaction.id;
         document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
-        paymentMethodSelect.value = transaction.paymentMethod || '';
+        // 支払方法のIDをドロップダウンに反映
+        paymentMethodSelect.value = transaction.paymentMethodId || '';
+        
         // 編集フォームの表示
         document.getElementById('editTransactionFormContainer').style.display = 'block';
       }
