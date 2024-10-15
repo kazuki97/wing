@@ -189,22 +189,27 @@
       </form>
       <!-- 手動で売上を追加するボタン -->
       <button id="manualAddTransactionButton">手動で売上を追加</button>
-     <!-- 手動で売上を追加するフォーム -->
+    <!-- 手動で売上を追加するフォーム -->
 <div id="manualAddTransactionForm" style="display: none;">
   <h2>売上の手動追加</h2>
   <form id="addTransactionForm">
     <label for="transactionProductName">商品名:</label>
-    <input type="text" id="transactionProductName" placeholder="商品名を入力" required>
+    <input type="text" id="transactionProductName" placeholder="商品名を入力" required />
+    
     <label for="transactionProductPrice">単価:</label>
-    <input type="number" id="transactionProductPrice" placeholder="単価" required>
+    <input type="number" id="transactionProductPrice" placeholder="単価" required />
+    
     <label for="transactionProductQuantity">数量:</label>
-    <input type="number" id="transactionProductQuantity" placeholder="数量" required>
-    <label for="transactionProductCost">原価:</label> <!-- 原価の入力欄を追加 -->
-    <input type="number" id="transactionProductCost" placeholder="原価" required>
+    <input type="number" id="transactionProductQuantity" placeholder="数量" required />
+    
+    <label for="transactionProductCost">原価:</label>
+    <input type="number" id="transactionProductCost" placeholder="原価" required />
+    
     <label for="transactionPaymentMethod">支払い方法:</label>
     <select id="transactionPaymentMethod" required>
       <!-- 支払い方法がここに表示されます -->
     </select>
+    
     <button type="submit">追加</button>
     <button type="button" id="cancelAddTransaction">キャンセル</button>
   </form>
