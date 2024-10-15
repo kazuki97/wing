@@ -153,7 +153,7 @@ async function displayTransactions(filter = {}) {
     }
     if (filter.month || filter.year) {
       transactions = transactions.filter((t) => {
-        const date = new Date(t.timestamp);
+        const date = new Date(t.timestamp.seconds * 1000); // UNIXタイムスタンプをミリ秒に変換
         const monthMatch = filter.month ? date.getMonth() + 1 === filter.month : true;
         const yearMatch = filter.year ? date.getFullYear() === filter.year : true;
         return monthMatch && yearMatch;
@@ -172,9 +172,18 @@ async function displayTransactions(filter = {}) {
       const totalQuantity = transaction.items.reduce((sum, item) => sum + item.quantity, 0);
       const paymentMethodName = paymentMethodMap[transaction.paymentMethodId] || '不明な支払い方法';
 
+      // タイムスタンプを適切にフォーマット
+      let formattedTimestamp = '日時情報なし';
+      if (transaction.timestamp && transaction.timestamp.seconds) {
+        const date = new Date(transaction.timestamp.seconds * 1000);
+        if (!isNaN(date)) {
+          formattedTimestamp = date.toLocaleString();
+        }
+      }
+
       row.innerHTML = `
         <td>${transaction.id}</td>
-        <td>${new Date(transaction.timestamp).toLocaleString()}</td>
+        <td>${formattedTimestamp}</td>
         <td>${paymentMethodName}</td>
         <td>${productNames || '手動追加'}</td>
         <td>${totalQuantity || '-'}</td>
@@ -190,7 +199,7 @@ async function displayTransactions(filter = {}) {
     }
 
     // 詳細ボタンのイベントリスナー
-     document.querySelectorAll('.view-transaction-details').forEach((button) => {
+    document.querySelectorAll('.view-transaction-details').forEach((button) => {
       button.addEventListener('click', async (e) => {
         const transactionId = e.target.dataset.id;
         await displayTransactionDetails(transactionId);
@@ -198,7 +207,7 @@ async function displayTransactions(filter = {}) {
     });
 
     // 編集ボタンのイベントリスナー
-   await addTransactionEditListeners();
+    await addTransactionEditListeners();
   } catch (error) {
     console.error(error);
     showError('取引の表示に失敗しました');
