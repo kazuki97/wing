@@ -211,7 +211,9 @@
     <label for="editTransactionTotalAmount">合計金額:</label>
     <input type="number" id="editTransactionTotalAmount" required>
     <label for="editTransactionPaymentMethod">支払い方法:</label>
-    <input type="text" id="editTransactionPaymentMethod" required>
+    <select id="editTransactionPaymentMethod" required> <!-- 修正 -->
+      <!-- 支払い方法の選択肢がここに追加されます -->
+    </select>
     <button type="submit">更新</button>
   </form>
 </div>
