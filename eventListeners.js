@@ -219,8 +219,8 @@ async function displayTransactionDetails(transactionId) {
 
       // タイムスタンプのパース
       let timestampText = '日時情報なし';
-      if (transaction.timestamp) {
-        const date = new Date(transaction.timestamp);
+      if (transaction.timestamp && transaction.timestamp.seconds) {
+        const date = new Date(transaction.timestamp.seconds * 1000); // UNIX秒をミリ秒に変換
         if (!isNaN(date)) {
           timestampText = date.toLocaleString();
         }
