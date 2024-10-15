@@ -14,6 +14,8 @@ import {
 // 売上データの追加
 export async function addTransaction(transactionData) {
   try {
+    // `timestamp` を Date オブジェクトとして保存
+    transactionData.timestamp = new Date();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
     return docRef.id;
   } catch (error) {
@@ -22,24 +24,34 @@ export async function addTransaction(transactionData) {
   }
 }
 
-// 取引データの取得
 export async function getTransactions() {
   try {
     const snapshot = await getDocs(collection(db, 'transactions'));
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      // `timestamp` フィールドを Date オブジェクトに変換
+      if (data.timestamp && data.timestamp.toDate) {
+        data.timestamp = data.timestamp.toDate();
+      }
+      return { id: doc.id, ...data };
+    });
   } catch (error) {
     console.error('取引の取得エラー:', error);
     throw error;
   }
 }
 
-// 取引データのIDでの取得
 export async function getTransactionById(transactionId) {
   try {
     const docRef = doc(db, 'transactions', transactionId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+      const data = docSnap.data();
+      // `timestamp` フィールドを Date オブジェクトに変換
+      if (data.timestamp && data.timestamp.toDate) {
+        data.timestamp = data.timestamp.toDate();
+      }
+      return { id: docSnap.id, ...data };
     } else {
       return null;
     }
@@ -48,7 +60,6 @@ export async function getTransactionById(transactionId) {
     throw error;
   }
 }
-
 // 取引データの更新（返品処理で使用）
 export async function updateTransaction(transactionId, updatedData) {
   try {
