@@ -267,6 +267,7 @@ export async function displayTransactions(filter = {}) {
         }
       }
 
+      // 修正箇所: 原価と利益をリストに表示
       row.innerHTML = `
         <td>${transaction.id}</td>
         <td>${formattedTimestamp}</td>
@@ -274,8 +275,8 @@ export async function displayTransactions(filter = {}) {
         <td>${productNames || '手動追加'}</td>
         <td>${totalQuantity || '-'}</td>
         <td>¥${transaction.totalAmount}</td>
-        <td>¥${transaction.cost || 0}</td>
-        <td>¥${transaction.profit || 0}</td>
+        <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価を表示 -->
+        <td>¥${transaction.items[0].profit || 0}</td> <!-- 利益を表示 -->
         <td>
           <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
           <button class="edit-transaction" data-id="${transaction.id}">編集</button>
@@ -284,15 +285,13 @@ export async function displayTransactions(filter = {}) {
       transactionList.appendChild(row);
     }
 
-    // 詳細ボタンのイベントリスナー
+    // 詳細ボタンと編集ボタンのイベントリスナーの追加
     document.querySelectorAll('.view-transaction-details').forEach((button) => {
       button.addEventListener('click', async (e) => {
         const transactionId = e.target.dataset.id;
         await displayTransactionDetails(transactionId);
       });
     });
-
-    // 編集ボタンのイベントリスナー
     await addTransactionEditListeners();
   } catch (error) {
     console.error(error);
