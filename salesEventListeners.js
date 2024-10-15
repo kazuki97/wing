@@ -275,6 +275,113 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
   }
 });
 
+// 支払い方法設定セクションのイベントリスナーと関数
+
+// 支払い方法追加フォームのイベントリスナー
+document.getElementById('addPaymentMethodForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('paymentMethodName').value.trim();
+  const feeRate = parseFloat(document.getElementById('paymentMethodFee').value);
+  if (!name || isNaN(feeRate)) {
+    showError('支払い方法名と手数料率を正しく入力してください');
+    return;
+  }
+  try {
+    await addPaymentMethod(name, feeRate);
+    alert('支払い方法が追加されました');
+    document.getElementById('addPaymentMethodForm').reset();
+    await displayPaymentMethods();
+    await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
+  } catch (error) {
+    console.error(error);
+    showError('支払い方法の追加に失敗しました');
+  }
+});
+
+// 支払い方法の表示
+async function displayPaymentMethods() {
+  try {
+    const paymentMethods = await getPaymentMethods();
+    const paymentMethodList = document.getElementById('paymentMethodList').querySelector('tbody');
+    paymentMethodList.innerHTML = '';
+    for (const method of paymentMethods) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${method.name}</td>
+        <td>${method.feeRate}%</td>
+        <td>
+          <button class="edit-payment-method" data-id="${method.id}">編集</button>
+          <button class="delete-payment-method" data-id="${method.id}">削除</button>
+        </td>
+      `;
+      paymentMethodList.appendChild(row);
+    }
+
+    // 編集ボタンのイベントリスナー
+    document.querySelectorAll('.edit-payment-method').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const methodId = e.target.dataset.id;
+        const method = paymentMethods.find((m) => m.id === methodId);
+        if (method) {
+          const newName = prompt('新しい支払い方法名を入力してください', method.name);
+          const newFeeRate = parseFloat(prompt('新しい手数料率(%)を入力してください', method.feeRate));
+          if (newName && !isNaN(newFeeRate)) {
+            try {
+              await updatePaymentMethod(methodId, newName, newFeeRate);
+              alert('支払い方法が更新されました');
+              await displayPaymentMethods();
+              await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
+            } catch (error) {
+              console.error(error);
+              showError('支払い方法の更新に失敗しました');
+            }
+          }
+        }
+      });
+    });
+
+    // 削除ボタンのイベントリスナー
+    document.querySelectorAll('.delete-payment-method').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const methodId = e.target.dataset.id;
+        if (confirm('本当に削除しますか？')) {
+          try {
+            await deletePaymentMethod(methodId);
+            alert('支払い方法が削除されました');
+            await displayPaymentMethods();
+            await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
+          } catch (error) {
+            console.error(error);
+            showError('支払い方法の削除に失敗しました');
+          }
+        }
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    showError('支払い方法の表示に失敗しました');
+  }
+}
+
+// 月次・年次フィルタの実装
+document.getElementById('filterTransactionsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const month = parseInt(document.getElementById('filterMonth').value, 10);
+  const year = parseInt(document.getElementById('filterYear').value, 10);
+  const onlyReturned = document.getElementById('filterOnlyReturned').checked;
+
+  const filter = {};
+  if (!isNaN(month)) {
+    filter.month = month;
+  }
+  if (!isNaN(year)) {
+    filter.year = year;
+  }
+  filter.onlyReturned = onlyReturned;
+
+  await displayTransactions(filter);
+});
+
 // 初期化処理
 window.addEventListener('DOMContentLoaded', async () => {
   await updatePaymentMethodSelect();
