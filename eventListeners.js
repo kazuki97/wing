@@ -210,7 +210,36 @@ async function displayTransactionDetails(transactionId) {
   try {
     const transaction = await getTransactionById(transactionId);
     if (transaction) {
-      console.log('取引詳細:', transaction);
+      // 詳細情報を表示するための要素を取得
+      const transactionDetails = document.getElementById('transactionDetails');
+      document.getElementById('detailTransactionId').textContent = transaction.id;
+      document.getElementById('detailTimestamp').textContent = new Date(transaction.timestamp).toLocaleString();
+      document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName;
+      document.getElementById('detailFeeAmount').textContent = transaction.feeAmount || 0;
+      document.getElementById('detailNetAmount').textContent = transaction.netAmount || 0;
+      document.getElementById('detailTotalCost').textContent = transaction.cost || 0;
+      document.getElementById('detailTotalProfit').textContent = transaction.profit || 0;
+      
+      const productList = document.getElementById('detailProductList');
+      productList.innerHTML = '';
+      transaction.items.forEach((item) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>¥${item.unitPrice}</td>
+          <td>¥${item.totalAmount}</td>
+          <td>¥${item.cost}</td>
+          <td>¥${item.profit}</td>
+        `;
+        productList.appendChild(row);
+      });
+
+      // 返品情報の表示
+      document.getElementById('returnInfo').textContent = transaction.isReturned ? '返品済み' : '';
+      
+      // 詳細表示エリアを表示
+      transactionDetails.style.display = 'block';
     }
   } catch (error) {
     console.error('取引の詳細表示に失敗しました:', error);
@@ -223,6 +252,13 @@ if (cancelEditTransactionButton) {
   cancelEditTransactionButton.addEventListener('click', () => {
     document.getElementById('editTransactionFormContainer').style.display = 'none';
     editTransactionForm.reset();
+  });
+}
+
+const closeTransactionDetailsButton = document.getElementById('closeTransactionDetails');
+if (closeTransactionDetailsButton) {
+  closeTransactionDetailsButton.addEventListener('click', () => {
+    document.getElementById('transactionDetails').style.display = 'none';
   });
 }
 
