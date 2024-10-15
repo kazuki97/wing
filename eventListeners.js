@@ -94,7 +94,6 @@ function showError(message) {
   }, 5000);
 }
 
-// 売上管理セクションの取引データ編集ボタンのイベントリスナー
 async function addTransactionEditListeners() {
   const editButtons = document.querySelectorAll('.edit-transaction');
   editButtons.forEach((button) => {
@@ -115,9 +114,11 @@ async function addTransactionEditListeners() {
 
         // 編集フォームに現在の取引データをセット
         document.getElementById('editTransactionId').value = transaction.id;
-        document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
-
-        // 支払い方法の選択肢から該当の支払い方法を選択するように修正
+        document.getElementById('editTransactionTimestamp').value = new Date(transaction.timestamp).toISOString().slice(0, 16);
+        document.getElementById('editTransactionProductName').value = transaction.items[0].productName;
+        document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
+        document.getElementById('editTransactionUnitPrice').value = transaction.items[0].unitPrice;
+        document.getElementById('editTransactionCost').value = transaction.items[0].cost;
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
         // 編集フォームの表示
@@ -132,26 +133,43 @@ const editTransactionForm = document.getElementById('editTransactionForm');
 if (editTransactionForm) {
   editTransactionForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // 取引IDを取得
     const transactionId = document.getElementById('editTransactionId').value;
+
+    // フォームからデータを取得
     const updatedData = {
-      totalAmount: parseFloat(document.getElementById('editTransactionTotalAmount').value),
-      paymentMethodId: document.getElementById('editTransactionPaymentMethod').value,
+      timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
+      items: [
+        {
+          productName: document.getElementById('editTransactionProductName').value, // 商品名
+          quantity: parseFloat(document.getElementById('editTransactionQuantity').value), // 数量
+          unitPrice: parseFloat(document.getElementById('editTransactionUnitPrice').value), // 販売単価
+          cost: parseFloat(document.getElementById('editTransactionCost').value), // 原価
+          subtotal: parseFloat(document.getElementById('editTransactionQuantity').value) * parseFloat(document.getElementById('editTransactionUnitPrice').value), // 小計計算
+          profit: parseFloat(document.getElementById('editTransactionQuantity').value) * (parseFloat(document.getElementById('editTransactionUnitPrice').value) - parseFloat(document.getElementById('editTransactionCost').value)), // 利益計算
+        }
+      ],
+      totalAmount: parseFloat(document.getElementById('editTransactionTotalAmount').value), // 合計金額
+      paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 支払い方法
     };
-   try {
-  await updateTransaction(transactionId, updatedData);
-  console.log('取引が更新されました:', updatedData); // 更新されたデータを確認するためのログ
-  alert('取引が更新されました');
 
-  // 編集フォームを非表示にし、取引データを再表示
-  document.getElementById('editTransactionFormContainer').style.display = 'none';
-  editTransactionForm.reset();
+    try {
+      // 取引データを更新
+      await updateTransaction(transactionId, updatedData);
+      console.log('取引が更新されました:', updatedData); // 更新されたデータを確認するためのログ
+      alert('取引が更新されました');
 
-  // 最新のデータでリストを再描画
-  await displayTransactions();
-} catch (error) {
-  console.error(error);
-  showError('取引の更新に失敗しました');
-}
+      // 編集フォームを非表示にし、フォームをリセット
+      document.getElementById('editTransactionFormContainer').style.display = 'none';
+      editTransactionForm.reset();
+
+      // 最新のデータでリストを再描画
+      await displayTransactions();
+    } catch (error) {
+      console.error(error);
+      showError('取引の更新に失敗しました');
+    }
   });
 }
 
