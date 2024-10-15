@@ -101,6 +101,9 @@ async function addTransactionEditListeners() {
       const transactionId = e.target.dataset.id;
       const transaction = await getTransactionById(transactionId);
       if (transaction) {
+        // 商品情報を取得
+        const product = await getProductById(transaction.items[0].productId);
+        
         // 支払い方法の選択肢を更新
         const paymentMethods = await getPaymentMethods();
         const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
@@ -112,14 +115,14 @@ async function addTransactionEditListeners() {
           paymentMethodSelect.appendChild(option);
         });
 
-        // 編集フォームに現在の取引データをセット
+        // 編集フォームに商品情報と現在の取引データをセット
         document.getElementById('editTransactionId').value = transaction.id;
         document.getElementById('editTransactionTimestamp').value = new Date(transaction.timestamp).toISOString().slice(0, 16);
-        document.getElementById('editTransactionProductName').value = transaction.items[0].productName;
+        document.getElementById('editTransactionProductName').value = product.name;
         document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
-        document.getElementById('editTransactionUnitPrice').value = transaction.items[0].unitPrice;
-        document.getElementById('editTransactionCost').value = transaction.items[0].cost; // サイズを掛けずに原価をそのままセット
-        document.getElementById('editTransactionSize').value = transaction.items[0].size; // サイズをセット
+        document.getElementById('editTransactionUnitPrice').value = product.price; // 商品の単価
+        document.getElementById('editTransactionCost').value = product.cost; // 商品の原価
+        document.getElementById('editTransactionSize').value = product.size; // 商品のサイズ
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
         // 編集フォームの表示
