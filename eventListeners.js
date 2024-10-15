@@ -96,9 +96,9 @@ if (editTransactionForm) {
 }
 
 // 売上管理セクションの取引データ編集フォームのイベントリスナー
-const editTransactionForm = document.getElementById('editTransactionForm');
-if (editTransactionForm) {
-  editTransactionForm.addEventListener('submit', async (e) => {
+const editTransactionFormElement = document.getElementById('editTransactionForm');
+if (editTransactionFormElement) {
+  editTransactionFormElement.addEventListener('submit', async (e) => {
     e.preventDefault();
     const transactionId = document.getElementById('editTransactionId').value;
     const updatedData = {
@@ -801,5 +801,4 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayOverallInventory();
   await displayInventoryProducts();
   await displayTransactions(); // 売上管理セクションの取引データ表示
-  await addTransactionEditListeners(); // 売上管理セクションの編集ボタンにリスナーを追加
 });
