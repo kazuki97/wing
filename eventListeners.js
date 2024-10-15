@@ -91,7 +91,7 @@ async function addTransactionEditListeners() {
         paymentMethods.forEach((method) => {
           const option = document.createElement('option');
           option.value = method.id;
-          option.textContent = method.name;  // 名前を表示するように変更
+          option.textContent = method.name;
           paymentMethodSelect.appendChild(option);
         });
 
@@ -100,7 +100,7 @@ async function addTransactionEditListeners() {
         document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
 
         // 支払い方法の選択肢から該当の支払い方法を選択するように修正
-        paymentMethodSelect.value = transaction.paymentMethodId || ''; // 修正: `transaction.paymentMethodId`を使用
+        paymentMethodSelect.value = transaction.paymentMethodId || '';
 
         // 編集フォームの表示
         document.getElementById('editTransactionFormContainer').style.display = 'block';
@@ -120,14 +120,15 @@ if (editTransactionForm) {
       paymentMethodId: document.getElementById('editTransactionPaymentMethod').value,
     };
     try {
-      await updateTransaction(transactionId, updatedData); // データを更新
+      await updateTransaction(transactionId, updatedData);
       alert('取引が更新されました');
       
       // 編集フォームを非表示にし、取引データを再表示
       document.getElementById('editTransactionFormContainer').style.display = 'none';
+      editTransactionForm.reset();
 
       // 修正内容: displayTransactions() の呼び出しを非同期に待つ
-      await displayTransactions(); // 更新されたリストを再表示
+      await displayTransactions();
     } catch (error) {
       console.error(error);
       showError('取引の更新に失敗しました');
@@ -177,7 +178,7 @@ async function displayTransactions(filter = {}) {
         <td>¥${transaction.profit || 0}</td>
         <td>
           <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-          <button class="edit-transaction" data-id="${transaction.id}">編集</button> <!-- 編集ボタンを追加 -->
+          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
         </td>
       `;
       transactionList.appendChild(row);
@@ -202,11 +203,8 @@ async function displayTransactions(filter = {}) {
 // 売上管理セクションの取引詳細を表示する関数
 async function displayTransactionDetails(transactionId) {
   try {
-    // 取引の詳細を取得して表示する処理をここに実装します。
     const transaction = await getTransactionById(transactionId);
     if (transaction) {
-      // 取引の詳細を表示するコードをここに記述
-      // 例: モーダルを表示するなど
       console.log('取引詳細:', transaction);
     }
   } catch (error) {
@@ -219,7 +217,7 @@ const cancelEditTransactionButton = document.getElementById('cancelEditTransacti
 if (cancelEditTransactionButton) {
   cancelEditTransactionButton.addEventListener('click', () => {
     document.getElementById('editTransactionFormContainer').style.display = 'none';
-    editTransactionForm.reset(); // フォームの内容をリセット
+    editTransactionForm.reset();
   });
 }
 
