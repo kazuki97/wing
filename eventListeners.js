@@ -183,6 +183,7 @@ if (editTransactionForm) {
 }
 
 // 売上の手動追加フォームのsubmitイベントリスナー
+// 売上の手動追加フォームのsubmitイベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -191,11 +192,12 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   const productPrice = parseFloat(document.getElementById('transactionProductPrice').value); // 販売単価を取得
   const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value); // 数量を取得
   const productCost = parseFloat(document.getElementById('transactionProductCost').value); // 原価を取得
+  const productSize = parseFloat(document.getElementById('transactionSize').value); // サイズを取得
   const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
 
   // 自動計算する項目
-  const totalAmount = productPrice * productQuantity; // 売上金額
-  const profit = totalAmount - (productCost * productQuantity); // 利益計算
+  const totalAmount = productPrice * productQuantity * productSize; // 売上金額
+  const profit = totalAmount - (productCost * productQuantity * productSize); // 利益計算
 
   // 売上データを生成
   const transactionData = {
@@ -204,6 +206,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         productName,
         unitPrice: productPrice,
         quantity: productQuantity,
+        size: productSize, // サイズを追加
         totalAmount,
         cost: productCost,
         profit,
@@ -214,16 +217,16 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     timestamp: new Date().toISOString(),
   };
 
- try {
+  try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
     document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
     e.target.reset(); // フォームをリセット
     await displayTransactions(); // 最新の売上リストを再表示
-} catch (error) {
+  } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
-}
+  }
 });
 
 // 売上管理セクションの取引データ表示関数
