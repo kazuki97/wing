@@ -119,6 +119,7 @@ async function addTransactionEditListeners() {
         document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
         document.getElementById('editTransactionUnitPrice').value = transaction.items[0].unitPrice;
         document.getElementById('editTransactionCost').value = transaction.items[0].cost;
+        document.getElementById('editTransactionSize').value = transaction.items[0].size; // サイズをセット
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
         // 編集フォームの表示
@@ -141,8 +142,9 @@ if (editTransactionForm) {
     const quantity = parseFloat(document.getElementById('editTransactionQuantity').value);
     const unitPrice = parseFloat(document.getElementById('editTransactionUnitPrice').value);
     const cost = parseFloat(document.getElementById('editTransactionCost').value);
-    const subtotal = quantity * unitPrice;
-    const profit = subtotal - (quantity * cost);
+    const size = parseFloat(document.getElementById('editTransactionSize').value); // サイズを取得
+    const subtotal = quantity * unitPrice * size; // 小計計算 (サイズを考慮)
+    const profit = subtotal - (quantity * cost * size); // 利益計算 (サイズを考慮)
 
     const updatedData = {
       timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
@@ -152,6 +154,7 @@ if (editTransactionForm) {
           quantity: quantity, // 数量
           unitPrice: unitPrice, // 販売単価
           cost: cost, // 原価
+          size: size, // サイズ
           subtotal: subtotal, // 小計
           profit: profit, // 利益
         }
