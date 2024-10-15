@@ -87,7 +87,7 @@ async function addTransactionEditListeners() {
         // 支払い方法の選択肢を更新
         const paymentMethods = await getPaymentMethods();
         const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
-        paymentMethodSelect.innerHTML = '';
+        paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
         paymentMethods.forEach((method) => {
           const option = document.createElement('option');
           option.value = method.id;
