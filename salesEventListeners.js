@@ -580,6 +580,59 @@ async function updateTransactionPaymentMethodSelect() {
   }
 }
 
+// 手動で売上を追加するフォームのイベントリスナー
+document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const totalAmount = parseFloat(document.getElementById('transactionTotalAmount').value);
+  const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
+  if (!paymentMethodId || isNaN(totalAmount) || totalAmount <= 0) {
+    showError('有効な合計金額と支払い方法を入力してください');
+    return;
+  }
+  try {
+    // 支払い方法情報の取得
+    const paymentMethods = await getPaymentMethods();
+    const paymentMethod = paymentMethods.find((method) => method.id === paymentMethodId);
+    if (!paymentMethod) {
+      showError('無効な支払い方法です');
+      return;
+    }
+    const feeRate = paymentMethod.feeRate;
+
+    // 手数料の計算
+    const feeAmount = Math.round((totalAmount * feeRate) / 100);
+    const netAmount = totalAmount - feeAmount;
+
+    // 販売データの作成（手動入力なので items は空）
+    const transactionData = {
+      timestamp: new Date(),
+      totalAmount: totalAmount,
+      feeAmount: feeAmount,
+      netAmount: netAmount,
+      paymentMethodId: paymentMethodId,
+      paymentMethodName: paymentMethod.name,
+      items: [], // 手動追加の場合、商品明細は無し
+      manuallyAdded: true, // 手動追加フラグ
+      cost: 0,
+      profit: netAmount,
+    };
+
+    // 取引の保存
+    await addTransaction(transactionData);
+
+    // フォームをクリアして非表示に
+    document.getElementById('addTransactionForm').reset();
+    document.getElementById('manualAddTransactionForm').style.display = 'none';
+
+    alert('売上が手動で追加されました');
+    // 売上管理セクションを更新
+    await displayTransactions();
+  } catch (error) {
+    console.error(error);
+    showError('売上の追加に失敗しました');
+  }
+});
+
 // 月次・年次フィルタの実装
 document.getElementById('filterTransactionsForm').addEventListener('submit', async (e) => {
   e.preventDefault();
