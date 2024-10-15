@@ -81,28 +81,30 @@ async function addTransactionEditListeners() {
   const editButtons = document.querySelectorAll('.edit-transaction');
   editButtons.forEach((button) => {
     button.addEventListener('click', async (e) => {
-      const transactionId = e.target.dataset.id;
-      const transaction = await getTransactionById(transactionId);
-      if (transaction) {
-        // 支払い方法の選択肢を更新
-        const paymentMethods = await getPaymentMethods();
-        const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
-        paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
-        paymentMethods.forEach((method) => {
-          const option = document.createElement('option');
-          option.value = method.id;
-          option.textContent = method.name;
-          paymentMethodSelect.appendChild(option);
-        });
-
-        // 編集フォームに現在の取引データをセット
-        document.getElementById('editTransactionId').value = transaction.id;
-        document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
-        paymentMethodSelect.value = transaction.paymentMethod || '';
-        // 編集フォームの表示
-        document.getElementById('editTransactionFormContainer').style.display = 'block';
-      }
+  const transactionId = e.target.dataset.id;
+  const transaction = await getTransactionById(transactionId);
+  if (transaction) {
+    // 支払い方法の選択肢を更新
+    const paymentMethods = await getPaymentMethods();
+    console.log('取得した支払い方法:', paymentMethods); // 取得した支払い方法を確認する
+    const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
+    paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
+    paymentMethods.forEach((method) => {
+      const option = document.createElement('option');
+      option.value = method.id;
+      option.textContent = method.name;
+      paymentMethodSelect.appendChild(option);
     });
+
+    // 編集フォームに現在の取引データをセット
+    console.log('取引の支払い方法:', transaction.paymentMethod); // 現在の取引の支払い方法を確認
+    document.getElementById('editTransactionId').value = transaction.id;
+    document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
+    paymentMethodSelect.value = transaction.paymentMethod || '';
+    // 編集フォームの表示
+    document.getElementById('editTransactionFormContainer').style.display = 'block';
+     }
+   });
   });
 }
 
