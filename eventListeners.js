@@ -138,19 +138,25 @@ if (editTransactionForm) {
     const transactionId = document.getElementById('editTransactionId').value;
 
     // フォームからデータを取得
+    const quantity = parseFloat(document.getElementById('editTransactionQuantity').value);
+    const unitPrice = parseFloat(document.getElementById('editTransactionUnitPrice').value);
+    const cost = parseFloat(document.getElementById('editTransactionCost').value);
+    const subtotal = quantity * unitPrice;
+    const profit = subtotal - (quantity * cost);
+
     const updatedData = {
       timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
       items: [
         {
           productName: document.getElementById('editTransactionProductName').value, // 商品名
-          quantity: parseFloat(document.getElementById('editTransactionQuantity').value), // 数量
-          unitPrice: parseFloat(document.getElementById('editTransactionUnitPrice').value), // 販売単価
-          cost: parseFloat(document.getElementById('editTransactionCost').value), // 原価
-          subtotal: parseFloat(document.getElementById('editTransactionQuantity').value) * parseFloat(document.getElementById('editTransactionUnitPrice').value), // 小計計算
-          profit: parseFloat(document.getElementById('editTransactionQuantity').value) * (parseFloat(document.getElementById('editTransactionUnitPrice').value) - parseFloat(document.getElementById('editTransactionCost').value)), // 利益計算
+          quantity: quantity, // 数量
+          unitPrice: unitPrice, // 販売単価
+          cost: cost, // 原価
+          subtotal: subtotal, // 小計
+          profit: profit, // 利益
         }
       ],
-      totalAmount: parseFloat(document.getElementById('editTransactionTotalAmount').value), // 合計金額
+      totalAmount: subtotal, // 合計金額
       paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 支払い方法
     };
 
