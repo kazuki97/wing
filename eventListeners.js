@@ -44,6 +44,10 @@ import {
   deleteTransaction,
 } from './transactions.js';
 
+import {
+  getPaymentMethods,
+} from './paymentMethods.js';
+
 // 追加: updatePricingParentCategorySelectの定義
 async function updatePricingParentCategorySelect() {
   try {
@@ -80,10 +84,21 @@ async function addTransactionEditListeners() {
       const transactionId = e.target.dataset.id;
       const transaction = await getTransactionById(transactionId);
       if (transaction) {
+        // 支払い方法の選択肢を更新
+        const paymentMethods = await getPaymentMethods();
+        const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
+        paymentMethodSelect.innerHTML = '';
+        paymentMethods.forEach((method) => {
+          const option = document.createElement('option');
+          option.value = method.id;
+          option.textContent = method.name;
+          paymentMethodSelect.appendChild(option);
+        });
+
         // 編集フォームに現在の取引データをセット
         document.getElementById('editTransactionId').value = transaction.id;
         document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
-        document.getElementById('editTransactionPaymentMethod').value = transaction.paymentMethod;
+        paymentMethodSelect.value = transaction.paymentMethod || '';
         // 編集フォームの表示
         document.getElementById('editTransactionFormContainer').style.display = 'block';
       }
@@ -151,9 +166,9 @@ async function displayTransactions(filter = {}) {
         <td>${transaction.paymentMethodName}</td>
         <td>${productNames || '手動追加'}</td>
         <td>${totalQuantity || '-'}</td>
-        <td>\u00a5${transaction.totalAmount}</td>
-        <td>\u00a5${transaction.cost || 0}</td>
-        <td>\u00a5${transaction.profit || 0}</td>
+        <td>¥${transaction.totalAmount}</td>
+        <td>¥${transaction.cost || 0}</td>
+        <td>¥${transaction.profit || 0}</td>
         <td>
           <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
           <button class="edit-transaction" data-id="${transaction.id}">編集</button> <!-- 編集ボタンを追加 -->
@@ -171,20 +186,7 @@ async function displayTransactions(filter = {}) {
     });
 
     // 編集ボタンのイベントリスナー
-    document.querySelectorAll('.edit-transaction').forEach((button) => {
-      button.addEventListener('click', async (e) => {
-        const transactionId = e.target.dataset.id;
-        const transaction = await getTransactionById(transactionId);
-        if (transaction) {
-          // 編集フォームに現在の取引データをセット
-          document.getElementById('editTransactionId').value = transaction.id;
-          document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
-          document.getElementById('editTransactionPaymentMethod').value = transaction.paymentMethodName || '';
-          // 編集フォームの表示
-          document.getElementById('editTransactionFormContainer').style.display = 'block';
-        }
-      });
-    });
+    await addTransactionEditListeners();
   } catch (error) {
     console.error(error);
     showError('取引の表示に失敗しました');
@@ -786,5 +788,4 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayOverallInventory();
   await displayInventoryProducts();
   await displayTransactions(); // 売上管理セクションの取引データ表示
-  await addTransactionEditListeners(); // 売上管理セクションの編集ボタンにリスナーを追加
 });
