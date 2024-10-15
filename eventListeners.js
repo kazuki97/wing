@@ -143,10 +143,14 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 
   // 手動追加商品の情報を取得
   const productName = document.getElementById('transactionProductName').value; // 商品名を取得
-  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value); // 単価を取得
+  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value); // 販売単価を取得
   const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value); // 数量を取得
-  const totalAmount = parseFloat(document.getElementById('transactionTotalAmount').value);
+  const productCost = parseFloat(document.getElementById('transactionProductCost').value); // 原価を取得
   const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
+
+  // 自動計算する項目
+  const totalAmount = productPrice * productQuantity; // 売上金額
+  const profit = totalAmount - (productCost * productQuantity); // 利益計算
 
   // 売上データを生成
   const transactionData = {
@@ -155,7 +159,9 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         productName,
         unitPrice: productPrice,
         quantity: productQuantity,
-        totalAmount: productPrice * productQuantity,
+        totalAmount,
+        cost: productCost,
+        profit,
       }
     ],
     totalAmount,
@@ -174,7 +180,6 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     showError('売上の追加に失敗しました');
   }
 });
-
 
 // 売上管理セクションの取引データ表示関数
 async function displayTransactions(filter = {}) {
