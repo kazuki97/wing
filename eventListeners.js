@@ -210,10 +210,23 @@ async function displayTransactionDetails(transactionId) {
   try {
     const transaction = await getTransactionById(transactionId);
     if (transaction) {
+      // タイムスタンプのデバッグ出力
+      console.log('Transaction Timestamp:', transaction.timestamp);
+      
       // 詳細情報を表示するための要素を取得
       const transactionDetails = document.getElementById('transactionDetails');
       document.getElementById('detailTransactionId').textContent = transaction.id;
-      document.getElementById('detailTimestamp').textContent = transaction.timestamp ? new Date(transaction.timestamp).toLocaleString() : '日時情報なし';
+
+      // タイムスタンプのパース
+      let timestampText = '日時情報なし';
+      if (transaction.timestamp) {
+        const date = new Date(transaction.timestamp);
+        if (!isNaN(date)) {
+          timestampText = date.toLocaleString();
+        }
+      }
+      document.getElementById('detailTimestamp').textContent = timestampText;
+
       document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
       document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
       document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
