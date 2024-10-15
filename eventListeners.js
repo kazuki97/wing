@@ -84,9 +84,6 @@ async function addTransactionEditListeners() {
       const transactionId = e.target.dataset.id;
       const transaction = await getTransactionById(transactionId);
       if (transaction) {
-        // デバッグ用に取得した取引データをログに出力
-        console.log('取得した取引データ:', transaction);
-
         // 支払い方法の選択肢を更新
         const paymentMethods = await getPaymentMethods();
         const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
@@ -94,16 +91,16 @@ async function addTransactionEditListeners() {
         paymentMethods.forEach((method) => {
           const option = document.createElement('option');
           option.value = method.id;
-          option.textContent = method.name;
+          option.textContent = method.name;  // 名前を表示するように変更
           paymentMethodSelect.appendChild(option);
         });
 
         // 編集フォームに現在の取引データをセット
         document.getElementById('editTransactionId').value = transaction.id;
         document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
-        // 支払方法のIDをドロップダウンに反映
+
+        // 支払い方法が正しく表示されるように修正
         paymentMethodSelect.value = transaction.paymentMethodId || '';
-        
         // 編集フォームの表示
         document.getElementById('editTransactionFormContainer').style.display = 'block';
       }
