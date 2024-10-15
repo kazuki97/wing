@@ -118,7 +118,7 @@ async function addTransactionEditListeners() {
         document.getElementById('editTransactionProductName').value = transaction.items[0].productName;
         document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
         document.getElementById('editTransactionUnitPrice').value = transaction.items[0].unitPrice;
-        document.getElementById('editTransactionCost').value = transaction.items[0].cost * transaction.items[0].size; // サイズを掛けた原価
+        document.getElementById('editTransactionCost').value = transaction.items[0].cost; // サイズを掛けずに原価をそのままセット
         document.getElementById('editTransactionSize').value = transaction.items[0].size; // サイズをセット
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
