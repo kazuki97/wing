@@ -99,8 +99,9 @@ async function addTransactionEditListeners() {
         document.getElementById('editTransactionId').value = transaction.id;
         document.getElementById('editTransactionTotalAmount').value = transaction.totalAmount;
 
-        // 支払い方法が正しく表示されるように修正
-        paymentMethodSelect.value = transaction.paymentMethod || '';
+        // 支払い方法の選択肢から該当の支払い方法を選択するように修正
+        paymentMethodSelect.value = transaction.paymentMethodId || ''; // 修正: `transaction.paymentMethodId`を使用
+
         // 編集フォームの表示
         document.getElementById('editTransactionFormContainer').style.display = 'block';
       }
