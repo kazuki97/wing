@@ -10,9 +10,6 @@ import {
 import {
   addTransaction,
   getTransactions,
-  getTransactionById,
-  updateTransaction,
-  deleteTransaction,
 } from './transactions.js';
 
 import {
