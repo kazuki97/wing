@@ -286,7 +286,7 @@ async function displayTransactions(filter = {}) {
     }
     if (filter.month || filter.year) {
       transactions = transactions.filter((t) => {
-        const date = t.timestamp.toDate();
+        const date = t.timestamp; // `toDate()` を削除
         const monthMatch = filter.month ? date.getMonth() + 1 === filter.month : true;
         const yearMatch = filter.year ? date.getFullYear() === filter.year : true;
         return monthMatch && yearMatch;
@@ -308,7 +308,7 @@ async function displayTransactions(filter = {}) {
 
       row.innerHTML = `
         <td>${transaction.id}</td>
-        <td>${transaction.timestamp.toDate().toLocaleString()}</td>
+        <td>${transaction.timestamp.toLocaleString()}</td> <!-- `toDate()` を削除 -->
         <td>${transaction.paymentMethodName}</td>
         <td>${productNames || '手動追加'}</td>
         <td>${totalQuantity || '-'}</td>
@@ -342,7 +342,7 @@ async function displayTransactionDetails(transactionId) {
       return;
     }
     document.getElementById('detailTransactionId').textContent = transaction.id;
-    document.getElementById('detailTimestamp').textContent = transaction.timestamp.toDate().toLocaleString();
+    document.getElementById('detailTimestamp').textContent = transaction.timestamp.toLocaleString(); // `toDate()` を削除
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName;
     document.getElementById('detailFeeAmount').textContent = transaction.feeAmount;
     document.getElementById('detailNetAmount').textContent = transaction.netAmount;
