@@ -117,14 +117,17 @@ if (editTransactionForm) {
     const transactionId = document.getElementById('editTransactionId').value;
     const updatedData = {
       totalAmount: parseFloat(document.getElementById('editTransactionTotalAmount').value),
-      paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 修正: キー名を正しく変更
+      paymentMethodId: document.getElementById('editTransactionPaymentMethod').value,
     };
     try {
-      await updateTransaction(transactionId, updatedData);
+      await updateTransaction(transactionId, updatedData); // データを更新
       alert('取引が更新されました');
-      // 編集フォームを非表示にし、取引データを更新
+      
+      // 編集フォームを非表示にし、取引データを再表示
       document.getElementById('editTransactionFormContainer').style.display = 'none';
-      await displayTransactions();
+
+      // 修正内容: displayTransactions() の呼び出しを非同期に待つ
+      await displayTransactions(); // 更新されたリストを再表示
     } catch (error) {
       console.error(error);
       showError('取引の更新に失敗しました');
@@ -212,11 +215,11 @@ async function displayTransactionDetails(transactionId) {
   }
 }
 
-// キャンセルボタンのイベントリスナーを追加
 const cancelEditTransactionButton = document.getElementById('cancelEditTransaction');
 if (cancelEditTransactionButton) {
   cancelEditTransactionButton.addEventListener('click', () => {
     document.getElementById('editTransactionFormContainer').style.display = 'none';
+    editTransactionForm.reset(); // フォームの内容をリセット
   });
 }
 
