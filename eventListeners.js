@@ -170,16 +170,16 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     timestamp: new Date().toISOString(),
   };
 
-  try {
+ try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
-    document.getElementById('manualAddTransactionForm').style.display = 'none';
-    e.target.reset();
+    document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
+    e.target.reset(); // フォームをリセット
     await displayTransactions(); // 最新の売上リストを再表示
-  } catch (error) {
+} catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
-  }
+}
 });
 
 // 売上管理セクションの取引データ表示関数
@@ -986,4 +986,20 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayOverallInventory();
   await displayInventoryProducts();
   await displayTransactions(); // 売上管理セクションの取引データ表示
+
+  // 手動で売上を追加するボタンのイベントリスナー
+  const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
+  if (manualAddTransactionButton) {
+    manualAddTransactionButton.addEventListener('click', () => {
+      document.getElementById('manualAddTransactionForm').style.display = 'block';
+    });
+  }
+
+  // 手動追加フォームのキャンセルボタンのイベントリスナー
+  const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
+  if (cancelAddTransactionButton) {
+    cancelAddTransactionButton.addEventListener('click', () => {
+      document.getElementById('manualAddTransactionForm').style.display = 'none';
+    });
+  }
 });
