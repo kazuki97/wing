@@ -284,7 +284,7 @@ export async function displayTransactions(filter = {}) {
   <td>${productNames || '手動追加'}</td>
   <td>${totalQuantity || '-'}</td>
   <td>¥${transaction.totalAmount}</td>
-  <td>¥${transaction.items[0].cost * transaction.items[0].size || 0}</td> <!-- サイズを考慮した原価を表示 -->
+ <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価をそのまま表示 -->
   <td>¥${transaction.items[0].profit || 0}</td> <!-- 利益を表示 -->
   <td>
     <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
