@@ -183,7 +183,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 });
 
 // 売上管理セクションの取引データ表示関数
-async function displayTransactions(filter = {}) {
+export async function displayTransactions(filter = {}) {
   try {
     let transactions = await getTransactions();
     const paymentMethods = await getPaymentMethods(); // 支払い方法を取得
