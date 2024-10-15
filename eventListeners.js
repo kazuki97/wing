@@ -117,7 +117,7 @@ if (editTransactionForm) {
     const transactionId = document.getElementById('editTransactionId').value;
     const updatedData = {
       totalAmount: parseFloat(document.getElementById('editTransactionTotalAmount').value),
-      paymentMethod: document.getElementById('editTransactionPaymentMethod').value,
+      paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 修正: キー名を正しく変更
     };
     try {
       await updateTransaction(transactionId, updatedData);
@@ -210,6 +210,14 @@ async function displayTransactionDetails(transactionId) {
     console.error('取引の詳細表示に失敗しました:', error);
     showError('取引の詳細を表示できませんでした');
   }
+}
+
+// キャンセルボタンのイベントリスナーを追加
+const cancelEditTransactionButton = document.getElementById('cancelEditTransaction');
+if (cancelEditTransactionButton) {
+  cancelEditTransactionButton.addEventListener('click', () => {
+    document.getElementById('editTransactionFormContainer').style.display = 'none';
+  });
 }
 
 // 親カテゴリ追加フォームのイベントリスナー
