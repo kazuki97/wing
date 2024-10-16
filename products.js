@@ -27,6 +27,7 @@ export async function addProduct(productData) {
   }
 }
 
+
 // 商品の取得
 export async function getProducts(parentCategoryId, subcategoryId) {
   try {
