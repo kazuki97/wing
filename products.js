@@ -27,6 +27,21 @@ export async function addProduct(productData) {
   }
 }
 
+// すべての商品情報を取得し、サブカテゴリIDを確認
+export async function checkAllProductSubcategoryIds() {
+  try {
+    const products = await getAllProducts();
+    products.forEach((product) => {
+      console.log(`商品名: ${product.name}, サブカテゴリID: ${product.subcategoryId}`);
+      if (!product.subcategoryId) {
+        console.warn(`サブカテゴリIDが設定されていない商品があります: 商品名 = ${product.name}`);
+      }
+    });
+  } catch (error) {
+    console.error('商品の確認エラー:', error);
+  }
+}
+
 // 商品名から商品情報を取得
 export async function getProductByName(name) {
   try {
