@@ -18,6 +18,10 @@ export async function updateOverallInventory(subcategoryId, quantityChange) {
     const currentInventory = await getOverallInventory(subcategoryId);
     const newQuantity = (currentInventory.quantity || 0) + quantityChange;
 
+    if (newQuantity < 0) {
+      throw new Error('在庫が不足しています。更新できません。');
+    }
+
     await setDoc(
       docRef,
       {
