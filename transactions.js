@@ -16,6 +16,10 @@ export async function addTransaction(transactionData) {
   try {
     // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
+    
+    // サブカテゴリIDを確認するデバッグログを追加
+    console.log("取引データのサブカテゴリID:", transactionData.items[0]?.subcategoryId || 'サブカテゴリIDがありません');
+    
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
     return docRef.id;
   } catch (error) {
