@@ -15,6 +15,10 @@ import {
 // 商品の追加
 export async function addProduct(productData) {
   try {
+    if (!productData.subcategoryId) {
+      console.error('サブカテゴリIDが設定されていません。');
+      throw new Error('サブカテゴリIDが必須です。');
+    }
     const docRef = await addDoc(collection(db, 'products'), productData);
     return docRef.id;
   } catch (error) {
