@@ -191,12 +191,12 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 
   // 手動追加商品の情報を取得
   const productName = document.getElementById('transactionProductName').value;
-  const product = await getProductByName(productName); // 商品名から商品情報を取得する関数を追加してください
+  const product = await getProductByName(productName); // 商品名から商品情報を取得
   const productPrice = parseFloat(document.getElementById('transactionProductPrice').value);
   const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value);
   const productCost = parseFloat(document.getElementById('transactionProductCost').value);
   const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
-  const productSize = parseFloat(document.getElementById('transactionProductSize').value); // サイズを取得
+  const productSize = parseFloat(document.getElementById('transactionProductSize').value);
 
   // 商品からサブカテゴリIDを取得
   const subcategoryId = product ? product.subcategoryId : null;
@@ -218,7 +218,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         productName,
         unitPrice: productPrice,
         quantity: productQuantity,
-        size: productSize, // サイズを追加
+        size: productSize,
         totalAmount,
         cost: productCost,
         profit,
@@ -233,9 +233,9 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
-    document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
-    e.target.reset(); // フォームをリセット
-    await displayTransactions(); // 最新の売上リストを再表示
+    document.getElementById('manualAddTransactionForm').style.display = 'none';
+    e.target.reset();
+    await displayTransactions();
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
