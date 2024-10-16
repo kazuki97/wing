@@ -12,6 +12,8 @@ import {
 // 全体在庫の更新（サブカテゴリごと）
 export async function updateOverallInventory(subcategoryId, quantityChange) {
   try {
+    console.log("更新対象のサブカテゴリID:", subcategoryId);  // デバッグログの追加
+
     const docRef = doc(db, 'overallInventory', subcategoryId);
     const currentInventory = await getOverallInventory(subcategoryId);
     const newQuantity = (currentInventory.quantity || 0) + quantityChange;
