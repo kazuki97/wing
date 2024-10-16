@@ -68,6 +68,8 @@ document.getElementById('addBarcodeButton').addEventListener('click', async () =
       showError('該当する商品が見つかりません');
       return;
     }
+    // ここにログを追加
+    console.log("取得した商品情報:", product);
     addToCart(product);
     barcodeInput.value = '';
   } catch (error) {
@@ -86,6 +88,7 @@ document.getElementById('barcodeInput').addEventListener('keydown', async (e) =>
 
 // カートに商品を追加する関数
 function addToCart(product) {
+  console.log("カートに追加する商品:", product);
   const existingItem = salesCart.find((item) => item.product.id === product.id);
   if (existingItem) {
     existingItem.quantity += 1;
