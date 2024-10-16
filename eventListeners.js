@@ -104,6 +104,11 @@ async function addTransactionEditListeners() {
         // 商品情報を取得
         const product = await getProductById(transaction.items[0].productId);
         
+        if (!product) {
+          console.error('商品情報が見つかりません');
+          return;
+        }
+
         // 支払い方法の選択肢を更新
         const paymentMethods = await getPaymentMethods();
         const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
@@ -120,9 +125,9 @@ async function addTransactionEditListeners() {
         document.getElementById('editTransactionTimestamp').value = new Date(transaction.timestamp).toISOString().slice(0, 16);
         document.getElementById('editTransactionProductName').value = product.name;
         document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
-        document.getElementById('editTransactionUnitPrice').value = product.price; // 商品の単価
-        document.getElementById('editTransactionCost').value = product.cost; // 商品の原価
-        document.getElementById('editTransactionSize').value = product.size; // 商品のサイズ
+        document.getElementById('editTransactionUnitPrice').value = product.price;
+        document.getElementById('editTransactionCost').value = product.cost;
+        document.getElementById('editTransactionSize').value = product.size;
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
         // 編集フォームの表示
