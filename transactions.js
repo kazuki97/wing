@@ -14,18 +14,11 @@ import {
 // 売上データの追加
 export async function addTransaction(transactionData) {
   try {
+    if (!transactionData.items || !transactionData.items[0].subcategoryId) {
+      console.error('取引のアイテムにサブカテゴリIDが設定されていません。');
+      throw new Error('サブカテゴリIDが必須です。');
+    }
     transactionData.timestamp = new Date();
-
-    // サブカテゴリIDがundefinedでないかチェック
-    transactionData.items = transactionData.items.map((item) => {
-      if (!item.subcategoryId) {
-        console.error("サブカテゴリIDが設定されていません:", item);
-        throw new Error("サブカテゴリIDが設定されていません");
-      }
-      return item;
-    });
-
-    // 取引データの追加
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
     return docRef.id;
   } catch (error) {
@@ -33,7 +26,6 @@ export async function addTransaction(transactionData) {
     throw error;
   }
 }
-
 
 export async function getTransactions() {
   try {
