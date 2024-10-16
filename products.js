@@ -27,7 +27,7 @@ export async function addProduct(productData) {
   }
 }
 
-// products.js
+// 商品名から商品情報を取得
 export async function getProductByName(name) {
   try {
     const q = query(collection(db, 'products'), where('name', '==', name));
@@ -116,6 +116,10 @@ export async function getAllProducts() {
 // 商品の更新
 export async function updateProduct(id, updatedData) {
   try {
+    if (updatedData.subcategoryId === undefined) {
+      console.error('サブカテゴリIDが設定されていません。');
+      throw new Error('サブカテゴリIDが必須です。');
+    }
     const docRef = doc(db, 'products', id);
     await updateDoc(docRef, updatedData);
   } catch (error) {
