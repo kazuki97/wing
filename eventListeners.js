@@ -240,18 +240,6 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
   }
-}
-
-  try {
-    await addTransaction(transactionData);
-    alert('売上が追加されました');
-    document.getElementById('manualAddTransactionForm').style.display = 'none';
-    e.target.reset();
-    await displayTransactions();
-  } catch (error) {
-    console.error('売上の追加に失敗しました:', error);
-    showError('売上の追加に失敗しました');
-  }
 });
 
 // 売上管理セクションの取引データ表示関数
