@@ -21,6 +21,7 @@ import {
   updateProduct,
   deleteProduct,
   getAllProducts,
+checkAllProductSubcategoryIds,
 } from './products.js';
 
 import {
@@ -1044,6 +1045,7 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
 
 // 初期化処理に売上管理セクションの編集ボタンのリスナーを追加
 window.addEventListener('DOMContentLoaded', async () => {
+  await checkAllProductSubcategoryIds();
   await updateAllParentCategorySelects();
   await updatePricingParentCategorySelect();
   await displayParentCategories();
