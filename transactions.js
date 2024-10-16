@@ -14,13 +14,24 @@ import {
 // 売上データの追加
 export async function addTransaction(transactionData) {
   try {
-    // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
+
+    // サブカテゴリIDが失われないように確認する例
+    const transformedData = {
+      ...transactionData,
+      items: transactionData.items.map((item) => ({
+        ...item,
+        subcategoryId: item.subcategoryId, // サブカテゴリIDを明示的にコピー
+      }))
+    };
+    console.log("変換後のサブカテゴリID:", transformedData.items[0].subcategoryId); // デバッグログ
+
+    // 変換後のデータで取引を追加
+    const docRef = await addDoc(collection(db, 'transactions'), transformedData);
     
-    // サブカテゴリIDを確認するデバッグログを追加
-    console.log("取引データのサブカテゴリID:", transactionData.items[0]?.subcategoryId || 'サブカテゴリIDがありません');
-    
-    const docRef = await addDoc(collection(db, 'transactions'), transactionData);
+    // 取引追加後に全体在庫を更新
+    await updateOverallInventory(transformedData.items[0].subcategoryId, -transformedData.items[0].quantity);
+
     return docRef.id;
   } catch (error) {
     console.error('取引の追加エラー:', error);
