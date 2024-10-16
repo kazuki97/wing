@@ -180,11 +180,16 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     showError('カートに商品がありません');
     return;
   }
+  console.log("販売完了時のカート情報:", salesCart);
   const paymentMethodId = document.getElementById('paymentMethodSelect').value;
   if (!paymentMethodId) {
     showError('支払い方法を選択してください');
     return;
   }
+  // ここに商品のサブカテゴリIDを確認するログを追加
+  salesCart.forEach(item => {
+    console.log("販売完了 - 商品ID:", item.product.id, "サブカテゴリID:", item.product.subcategoryId);
+  });
   try {
     // 支払い方法情報の取得
     const paymentMethods = await getPaymentMethods();
