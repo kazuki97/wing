@@ -282,6 +282,10 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     alert('販売が完了しました');
     // 売上管理セクションを更新
     await displayTransactions();
+
+    // 全体在庫更新イベントをディスパッチ
+    const event = new Event('overallInventoryUpdated');
+    window.dispatchEvent(event);
   } catch (error) {
     console.error(error);
     showError('販売処理に失敗しました');
@@ -409,4 +413,3 @@ window.addEventListener('DOMContentLoaded', async () => {
     await displayOverallInventory();
   });
 });
-
