@@ -240,7 +240,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
   }
-});
+}
 
   try {
     await addTransaction(transactionData);
