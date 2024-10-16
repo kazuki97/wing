@@ -16,12 +16,15 @@ export async function addTransaction(transactionData) {
   try {
     transactionData.timestamp = new Date();
 
+    // データを追加する前にデバッグログを確認
+    console.log("追加前の取引データ:", transactionData);
+
     // サブカテゴリIDが失われないように確認する例
     const transformedData = {
       ...transactionData,
       items: transactionData.items.map((item) => ({
         ...item,
-        subcategoryId: item.subcategoryId || null, // サブカテゴリIDを明示的にコピー、`undefined` の代わりに `null` を設定
+        subcategoryId: item.subcategoryId, // サブカテゴリIDを明示的にコピー
       }))
     };
     console.log("変換後のサブカテゴリID:", transformedData.items[0].subcategoryId); // デバッグログ
