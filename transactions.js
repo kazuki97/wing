@@ -21,7 +21,7 @@ export async function addTransaction(transactionData) {
       ...transactionData,
       items: transactionData.items.map((item) => ({
         ...item,
-        subcategoryId: item.subcategoryId, // サブカテゴリIDを明示的にコピー
+        subcategoryId: item.subcategoryId || null, // サブカテゴリIDを明示的にコピー、`undefined` の代わりに `null` を設定
       }))
     };
     console.log("変換後のサブカテゴリID:", transformedData.items[0].subcategoryId); // デバッグログ
@@ -30,7 +30,9 @@ export async function addTransaction(transactionData) {
     const docRef = await addDoc(collection(db, 'transactions'), transformedData);
     
     // 取引追加後に全体在庫を更新
-    await updateOverallInventory(transformedData.items[0].subcategoryId, -transformedData.items[0].quantity);
+    if (transformedData.items[0].subcategoryId) {
+      await updateOverallInventory(transformedData.items[0].subcategoryId, -transformedData.items[0].quantity);
+    }
 
     return docRef.id;
   } catch (error) {
