@@ -16,33 +16,24 @@ export async function addTransaction(transactionData) {
   try {
     transactionData.timestamp = new Date();
 
-    // データを追加する前にデバッグログを確認
-    console.log("追加前の取引データ:", transactionData);
+    // サブカテゴリIDがundefinedでないかチェック
+    transactionData.items = transactionData.items.map((item) => {
+      if (!item.subcategoryId) {
+        console.error("サブカテゴリIDが設定されていません:", item);
+        throw new Error("サブカテゴリIDが設定されていません");
+      }
+      return item;
+    });
 
-    // サブカテゴリIDが失われないように確認する例
-    const transformedData = {
-      ...transactionData,
-      items: transactionData.items.map((item) => ({
-        ...item,
-        subcategoryId: item.subcategoryId, // サブカテゴリIDを明示的にコピー
-      }))
-    };
-    console.log("変換後のサブカテゴリID:", transformedData.items[0].subcategoryId); // デバッグログ
-
-    // 変換後のデータで取引を追加
-    const docRef = await addDoc(collection(db, 'transactions'), transformedData);
-    
-    // 取引追加後に全体在庫を更新
-    if (transformedData.items[0].subcategoryId) {
-      await updateOverallInventory(transformedData.items[0].subcategoryId, -transformedData.items[0].quantity);
-    }
-
+    // 取引データの追加
+    const docRef = await addDoc(collection(db, 'transactions'), transactionData);
     return docRef.id;
   } catch (error) {
     console.error('取引の追加エラー:', error);
     throw error;
   }
 }
+
 
 export async function getTransactions() {
   try {
