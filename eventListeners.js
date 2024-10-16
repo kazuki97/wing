@@ -186,21 +186,29 @@ if (editTransactionForm) {
 }
 
 // 売上の手動追加フォームのsubmitイベントリスナー
-// 売上の手動追加フォームのsubmitイベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   // 手動追加商品の情報を取得
-  const productName = document.getElementById('transactionProductName').value; // 商品名を取得
-  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value); // 販売単価を取得
-  const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value); // 数量を取得
-  const productCost = parseFloat(document.getElementById('transactionProductCost').value); // 原価を取得
-  const productSize = parseFloat(document.getElementById('transactionSize').value); // サイズを取得
+  const productName = document.getElementById('transactionProductName').value;
+  const product = await getProductByName(productName); // 商品名から商品情報を取得する関数を追加してください
+  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value);
+  const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value);
+  const productCost = parseFloat(document.getElementById('transactionProductCost').value);
   const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
 
+  // 商品からサブカテゴリIDを取得
+  const subcategoryId = product ? product.subcategoryId : null;
+
+  if (!subcategoryId) {
+    console.error("サブカテゴリIDが設定されていません:", product);
+    showError('サブカテゴリIDが見つかりませんでした。');
+    return;
+  }
+
   // 自動計算する項目
-  const totalAmount = productPrice * productQuantity * productSize; // 売上金額
-  const profit = totalAmount - (productCost * productQuantity * productSize); // 利益計算
+  const totalAmount = productPrice * productQuantity;
+  const profit = totalAmount - (productCost * productQuantity);
 
   // 売上データを生成
   const transactionData = {
@@ -209,10 +217,10 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         productName,
         unitPrice: productPrice,
         quantity: productQuantity,
-        size: productSize, // サイズを追加
         totalAmount,
         cost: productCost,
         profit,
+        subcategoryId, // サブカテゴリIDを追加
       }
     ],
     totalAmount,
@@ -223,9 +231,9 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
-    document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
-    e.target.reset(); // フォームをリセット
-    await displayTransactions(); // 最新の売上リストを再表示
+    document.getElementById('manualAddTransactionForm').style.display = 'none';
+    e.target.reset();
+    await displayTransactions();
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
