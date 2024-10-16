@@ -400,4 +400,13 @@ window.addEventListener('DOMContentLoaded', async () => {
   await updatePaymentMethodSelect();
   await displayTransactions(); // 売上管理セクションの初期表示
   await displayPaymentMethods(); // 支払い方法の初期表示
+
+  // 全体在庫の初期表示
+  await displayOverallInventory();
+
+  // 全体在庫が更新されたイベントをリッスンして画面を更新
+  window.addEventListener('overallInventoryUpdated', async () => {
+    await displayOverallInventory();
+  });
 });
+
