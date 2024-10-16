@@ -242,6 +242,9 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
 
       totalCost += cost;
 
+      // サブカテゴリIDの確認ログを追加
+      console.log("商品ID:", product.id, "サブカテゴリID:", product.subcategoryId);
+
       transactionData.items.push({
         productId: product.id,
         productName: product.name,
@@ -251,6 +254,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
         subtotal: subtotal,
         cost: cost,
         profit: subtotal - cost,
+        subcategoryId: product.subcategoryId, // サブカテゴリID
       });
 
       // 在庫の更新
