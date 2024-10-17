@@ -172,10 +172,24 @@ async function displayConsumableUsage(year, month) {
     const usageTableBody = document.getElementById('consumableUsageList').querySelector('tbody');
     usageTableBody.innerHTML = '';
 
+    // 消耗品使用量を集約
+    const usageMap = {};
+
     consumableUsageList.forEach((usage) => {
-      // 消耗品IDから名前を取得
-      const consumable = consumables.find(c => c.id === usage.consumableId);
+      if (!usageMap[usage.consumableId]) {
+        usageMap[usage.consumableId] = {
+          quantityUsed: 0,
+          timestamp: usage.timestamp,
+        };
+      }
+      usageMap[usage.consumableId].quantityUsed += usage.quantityUsed;
+    });
+
+    // 集約した使用量を表示
+    Object.keys(usageMap).forEach((consumableId) => {
+      const consumable = consumables.find(c => c.id === consumableId);
       const consumableName = consumable ? consumable.name : '不明な消耗品';
+      const usage = usageMap[consumableId];
 
       const row = document.createElement('tr');
       row.innerHTML = `
