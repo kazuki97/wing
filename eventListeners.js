@@ -97,33 +97,6 @@ function showError(message) {
   }, 5000);
 }
 
-// 支払い方法セレクトボックスの更新関数
-async function updatePaymentMethodSelect() {
-  try {
-    const paymentMethods = await getPaymentMethods();
-    const paymentMethodSelect = document.getElementById('transactionPaymentMethod');
-    paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
-    paymentMethods.forEach((method) => {
-      const option = document.createElement('option');
-      option.value = method.id;
-      option.textContent = method.name;
-      paymentMethodSelect.appendChild(option);
-    });
-  } catch (error) {
-    console.error('支払い方法の取得に失敗しました:', error);
-  }
-}
-
-// エラーメッセージ表示関数
-function showError(message) {
-  const errorDiv = document.getElementById('error-message');
-  errorDiv.textContent = message;
-  errorDiv.style.display = 'block';
-  setTimeout(() => {
-    errorDiv.style.display = 'none';
-  }, 5000);
-}
-
 // 消耗品選択リストの更新関数
 async function updateConsumableCheckboxes() {
   try {
