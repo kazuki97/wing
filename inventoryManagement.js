@@ -12,8 +12,6 @@ import {
 // 全体在庫の更新（サブカテゴリごと）
 export async function updateOverallInventory(subcategoryId, quantityChange) {
   try {
-    console.log("更新対象のサブカテゴリID:", subcategoryId);  // デバッグログの追加
-
     const docRef = doc(db, 'overallInventory', subcategoryId);
     const currentInventory = await getOverallInventory(subcategoryId);
     const newQuantity = (currentInventory.quantity || 0) + quantityChange;
@@ -26,12 +24,6 @@ export async function updateOverallInventory(subcategoryId, quantityChange) {
       },
       { merge: true }
     );
-
-    // リアルタイム更新のため、全体在庫の最新情報を画面に反映
-    const overallInventoryEvent = new CustomEvent('overallInventoryUpdated', {
-      detail: { subcategoryId, newQuantity }
-    });
-    window.dispatchEvent(overallInventoryEvent);
   } catch (error) {
     console.error('全体在庫の更新エラー:', error);
     throw error;
