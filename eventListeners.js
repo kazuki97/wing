@@ -236,29 +236,34 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 
 // 消耗品リストを表示する関数
 async function displayConsumables() {
-  const consumablesList = await getConsumables();
-  const consumableTableBody = document.getElementById('consumableList').querySelector('tbody');
-  consumableTableBody.innerHTML = '';
+  try {
+    const consumablesList = await getConsumables();
+    const consumableTableBody = document.getElementById('consumableList').querySelector('tbody');
+    consumableTableBody.innerHTML = '';
 
-  for (const consumable of consumablesList) {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${consumable.name}</td>
-      <td>¥${Math.floor(consumable.cost)}</td>
-      <td><button class="delete-consumable" data-id="${consumable.id}">削除</button></td>
-    `;
-    consumableTableBody.appendChild(row);
-  }
-
-  // 削除ボタンのイベントリスナーを設定
-  document.querySelectorAll('.delete-consumable').forEach((button) => {
-    button.addEventListener('click', async (e) => {
-      const id = e.target.dataset.id;
-      await deleteConsumable(id);
-      alert('消耗品が削除されました');
-      await displayConsumables();
+    consumablesList.forEach((consumable) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${consumable.name}</td>
+        <td>¥${consumable.cost}</td>
+        <td><button class="delete-consumable" data-id="${consumable.id}">削除</button></td>
+      `;
+      consumableTableBody.appendChild(row);
     });
-  });
+
+    // 削除ボタンのイベントリスナーを設定
+    document.querySelectorAll('.delete-consumable').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const consumableId = e.target.dataset.id;
+        await deleteConsumable(consumableId);
+        alert('消耗品が削除されました');
+        await displayConsumables(); // 最新の消耗品リストを再表示
+      });
+    });
+  } catch (error) {
+    console.error('消耗品の表示に失敗しました:', error);
+    showError('消耗品の表示に失敗しました');
+  }
 }
 
 // 売上管理セクションの取引データ表示関数
