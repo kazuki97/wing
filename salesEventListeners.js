@@ -68,6 +68,8 @@ document.getElementById('addBarcodeButton').addEventListener('click', async () =
       showError('該当する商品が見つかりません');
       return;
     }
+    // ここにログを追加
+    console.log("取得した商品情報:", product);
     addToCart(product);
     barcodeInput.value = '';
   } catch (error) {
@@ -86,6 +88,7 @@ document.getElementById('barcodeInput').addEventListener('keydown', async (e) =>
 
 // カートに商品を追加する関数
 function addToCart(product) {
+  console.log("カートに追加する商品:", product);
   const existingItem = salesCart.find((item) => item.product.id === product.id);
   if (existingItem) {
     existingItem.quantity += 1;
@@ -177,11 +180,16 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     showError('カートに商品がありません');
     return;
   }
+  console.log("販売完了時のカート情報:", salesCart);
   const paymentMethodId = document.getElementById('paymentMethodSelect').value;
   if (!paymentMethodId) {
     showError('支払い方法を選択してください');
     return;
   }
+  // ここに商品のサブカテゴリIDを確認するログを追加
+  salesCart.forEach(item => {
+    console.log("販売完了 - 商品ID:", item.product.id, "サブカテゴリID:", item.product.subcategoryId);
+  });
   try {
     // 支払い方法情報の取得
     const paymentMethods = await getPaymentMethods();
@@ -239,6 +247,9 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
 
       totalCost += cost;
 
+      // サブカテゴリIDの確認ログを追加
+      console.log("商品ID:", product.id, "サブカテゴリID:", product.subcategoryId);
+
       transactionData.items.push({
         productId: product.id,
         productName: product.name,
@@ -248,12 +259,15 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
         subtotal: subtotal,
         cost: cost,
         profit: subtotal - cost,
+        subcategoryId: product.subcategoryId, // サブカテゴリID
       });
 
       // 在庫の更新
-      await updateProduct(product.id, { quantity: product.quantity - requiredQuantity });
+      console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - requiredQuantity, subcategoryId: product.subcategoryId });
+      await updateProduct(product.id, { quantity: product.quantity - requiredQuantity, subcategoryId: product.subcategoryId });
       // 全体在庫の更新
-      await updateOverallInventory(product.id, -requiredQuantity);
+      console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
+      await updateOverallInventory(product.subcategoryId, -requiredQuantity);
     }
 
     transactionData.cost = totalCost;
