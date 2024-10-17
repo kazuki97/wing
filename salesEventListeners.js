@@ -22,7 +22,7 @@ import {
 import { displayTransactions } from './eventListeners.js';
 
 import { getUnitPrice } from './pricing.js';
-import { updateOverallInventory } from './inventoryManagement.js';
+import { updateOverallInventory, getAllOverallInventories } from './inventoryManagement.js';
 
 // エラーメッセージ表示関数
 function showError(message) {
@@ -377,6 +377,27 @@ async function displayPaymentMethods() {
   } catch (error) {
     console.error(error);
     showError('支払い方法の表示に失敗しました');
+  }
+}
+
+// 全体在庫の表示
+async function displayOverallInventory() {
+  try {
+    const overallInventories = await getAllOverallInventories();
+    const overallInventoryTable = document.getElementById('overallInventory').querySelector('tbody');
+    overallInventoryTable.innerHTML = '';
+
+    overallInventories.forEach((inventory) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${inventory.subcategoryName}</td>
+        <td>${inventory.quantity}</td>
+      `;
+      overallInventoryTable.appendChild(row);
+    });
+  } catch (error) {
+    console.error('全体在庫の表示エラー:', error);
+    showError('全体在庫の表示に失敗しました');
   }
 }
 
