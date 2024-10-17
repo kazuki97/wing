@@ -111,37 +111,33 @@
       </table>
     </section>
 
-   <!-- 全体在庫 -->
-<section id="overall-inventory" class="content-section" style="display: none;">
-  <h1>全体在庫</h1>
-  <!-- 全体在庫更新フォーム -->
-  <form id="updateOverallInventoryForm">
-    <select id="overallInventoryParentCategorySelect" required>
-      <option value="">親カテゴリを選択</option>
-    </select>
-    <select id="overallInventorySubcategorySelect" required>
-      <option value="">サブカテゴリを選択</option>
-    </select>
-    <input type="number" id="overallInventoryQuantity" placeholder="在庫数" required />
-    <button type="submit">更新</button>
-  </form>
-
-  <!-- 全体在庫表示セクション -->
-  <div id="overall-inventory-section">
-    <h2>全体在庫</h2>
-   <table id="overallInventoryList">
-      <thead>
-        <tr>
-          <th>サブカテゴリ名</th>
-          <th>在庫数</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- 在庫情報はJavaScriptで追加されます -->
-      </tbody>
-    </table>
-  </div>
+    <!-- 全体在庫 -->
+    <section id="overall-inventory" class="content-section" style="display: none;">
+      <h1>全体在庫</h1>
+      <!-- 全体在庫更新フォーム -->
+      <form id="updateOverallInventoryForm">
+        <select id="overallInventoryParentCategorySelect" required>
+          <option value="">親カテゴリを選択</option>
+        </select>
+        <select id="overallInventorySubcategorySelect" required>
+          <option value="">サブカテゴリを選択</option>
+        </select>
+        <input type="number" id="overallInventoryQuantity" placeholder="在庫数" required />
+        <button type="submit">更新</button>
+      </form>
+      <!-- 全体在庫一覧表示エリア -->
+      <table id="overallInventoryList">
+        <thead>
+          <tr>
+            <th>サブカテゴリ名</th>
+            <th>在庫数</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 全体在庫情報がここに表示されます -->
+        </tbody>
+      </table>
+    </section>
 
     <!-- バーコードスキャン -->
     <section id="barcode" class="content-section" style="display: none;">
@@ -425,7 +421,7 @@
   </main>
 
   <!-- JavaScript ファイルの読み込み -->
-  <script type="module" src="main.js" defer></script>
+  <script type="module" src="main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const yearSelect = document.getElementById('analysisYear');
