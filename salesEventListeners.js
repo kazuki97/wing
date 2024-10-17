@@ -186,10 +186,12 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     showError('支払い方法を選択してください');
     return;
   }
-  // ここに商品のサブカテゴリIDを確認するログを追加
+  
+  // 商品のサブカテゴリIDを確認するログを追加
   salesCart.forEach(item => {
     console.log("販売完了 - 商品ID:", item.product.id, "サブカテゴリID:", item.product.subcategoryId);
   });
+
   try {
     // 支払い方法情報の取得
     const paymentMethods = await getPaymentMethods();
@@ -400,4 +402,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await updatePaymentMethodSelect();
   await displayTransactions(); // 売上管理セクションの初期表示
   await displayPaymentMethods(); // 支払い方法の初期表示
+  await displayOverallInventory(); // 全体在庫の初期表示
+  await displayInventoryProducts(); // 在庫管理セクションの初期表示
 });
+
