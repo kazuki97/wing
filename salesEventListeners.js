@@ -434,11 +434,14 @@ document.addEventListener('DOMContentLoaded', () => {
         section.style.display = 'none';
       });
 
-      // リンク先のセクションIDを取得して、そのセクションを表示
+      // リンク先のセクションIDを取得して、そのセクションを表示する
       const targetId = link.getAttribute('href').substring(1);
       const targetSection = document.getElementById(targetId);
       if (targetSection) {
+        console.log(`表示するセクションID: ${targetId}`); // デバッグ用ログを追加
         targetSection.style.display = 'block';
+      } else {
+        console.error(`セクションID「${targetId}」が見つかりませんでした`); // デバッグ用エラー表示
       }
     });
   });
