@@ -234,27 +234,32 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   }
 });
 
-// 消耗品追加フォームのsubmitイベントリスナー
-document.getElementById('addConsumableForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const name = document.getElementById('consumableName').value.trim();
-  const cost = parseInt(document.getElementById('consumableCost').value.trim(), 10); // 整数として取得
+// 消耗品リストを表示する関数
+async function displayConsumables() {
+  const consumablesList = await getConsumables();
+  const consumableTableBody = document.getElementById('consumableList').querySelector('tbody');
+  consumableTableBody.innerHTML = '';
 
-  if (!name || isNaN(cost) || cost <= 0) {
-    showError('消耗品名と正しい原価を入力してください');
-    return;
+  for (const consumable of consumablesList) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${consumable.name}</td>
+      <td>¥${Math.floor(consumable.cost)}</td> <!-- 小数点以下を切り捨てて表示 -->
+      <td><button class="delete-consumable" data-name="${consumable.name}">削除</button></td>
+    `;
+    consumableTableBody.appendChild(row);
   }
 
-  try {
-    await addConsumable(name, cost); // 消耗品を追加する処理
-    alert('消耗品が追加されました');
-    document.getElementById('addConsumableForm').reset(); // フォームをリセット
-    await displayConsumables(); // 消耗品リストを更新
-  } catch (error) {
-    console.error(error);
-    showError('消耗品の追加に失敗しました');
-  }
-});
+  // 削除ボタンのイベントリスナーを設定
+  document.querySelectorAll('.delete-consumable').forEach((button) => {
+    button.addEventListener('click', async (e) => {
+      const name = e.target.dataset.name;
+      await deleteConsumable(name);
+      alert('消耗品が削除されました');
+      await displayConsumables();
+    });
+  });
+}
 
 // 売上管理セクションの取引データ表示関数
 export async function displayTransactions(filter = {}) {
