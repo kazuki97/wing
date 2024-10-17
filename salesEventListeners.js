@@ -454,7 +454,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// セクションの切り替えのイベントリスナーを設定する
 window.addEventListener('DOMContentLoaded', () => {
   const navLinks = document.querySelectorAll('.nav-link');
   const sections = document.querySelectorAll('.content-section');
@@ -484,7 +483,12 @@ window.addEventListener('DOMContentLoaded', () => {
   sections.forEach((section) => {
     section.style.display = 'none';
   });
-  document.getElementById('home')?.style.display = 'block';
+  
+  // ホームセクションが存在するか確認してから表示
+  const homeSection = document.getElementById('home');
+  if (homeSection) {
+    homeSection.style.display = 'block';
+  }
 });
 
 // 初期化処理
