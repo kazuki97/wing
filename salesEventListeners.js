@@ -1,6 +1,5 @@
 // salesEventListeners.js
 
-// インポート
 import {
   getProductByBarcode,
   updateProduct,
@@ -19,7 +18,7 @@ import {
   deletePaymentMethod,
 } from './paymentMethods.js';
 
-import { displayTransactions } from './eventListeners.js';
+import { displayTransactions, displayOverallInventory } from './eventListeners.js'; // ここに displayOverallInventory を追加
 
 import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
