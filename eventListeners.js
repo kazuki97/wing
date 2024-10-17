@@ -42,14 +42,14 @@ import {
   getTransactionById,
   updateTransaction,
   deleteTransaction,
-  addTransaction,  // これを追加してください
+  addTransaction,
 } from './transactions.js';
 
 import {
   getPaymentMethods,
 } from './paymentMethods.js';
 
-import { getConsumables } from './consumables.js';
+import { getConsumables, getConsumableUsage } from './consumables.js'; // 消耗品使用量取得の関数もインポート
 import { deleteConsumable } from './consumables.js'; // 削除の関数もインポート
 
 // 追加: updatePricingParentCategorySelectの定義
@@ -68,6 +68,33 @@ async function updatePricingParentCategorySelect() {
     console.error(error);
     showError('親カテゴリの取得に失敗しました');
   }
+}
+
+// 支払い方法セレクトボックスの更新関数
+async function updatePaymentMethodSelect() {
+  try {
+    const paymentMethods = await getPaymentMethods();
+    const paymentMethodSelect = document.getElementById('transactionPaymentMethod');
+    paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
+    paymentMethods.forEach((method) => {
+      const option = document.createElement('option');
+      option.value = method.id;
+      option.textContent = method.name;
+      paymentMethodSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('支払い方法の取得に失敗しました:', error);
+  }
+}
+
+// エラーメッセージ表示関数
+function showError(message) {
+  const errorDiv = document.getElementById('error-message');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  setTimeout(() => {
+    errorDiv.style.display = 'none';
+  }, 5000);
 }
 
 // 支払い方法セレクトボックスの更新関数
@@ -124,6 +151,103 @@ async function updateConsumableCheckboxes() {
   } catch (error) {
     console.error('消耗品リストの取得に失敗しました:', error);
   }
+}
+
+// 消耗品使用量の初期化処理
+async function initializeConsumableUsage() {
+  try {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    // 年と月の選択肢をセット
+    const yearSelect = document.getElementById('usageYear');
+    const monthSelect = document.getElementById('usageMonth');
+
+    for (let year = currentYear; year >= currentYear - 5; year--) {
+      const option = document.createElement('option');
+      option.value = year;
+      option.textContent = year;
+      yearSelect.appendChild(option);
+    }
+    
+    for (let month = 1; month <= 12; month++) {
+      const option = document.createElement('option');
+      option.value = month;
+      option.textContent = month;
+      monthSelect.appendChild(option);
+    }
+
+    // フィルタボタンのイベントリスナーを設定
+    document.getElementById('filterUsage').addEventListener('click', async () => {
+      const year = parseInt(yearSelect.value);
+      const month = parseInt(monthSelect.value);
+      await displayConsumableUsage(year, month);
+    });
+
+    // 初期表示として現在の年と月のデータを表示
+    await displayConsumableUsage(currentYear, currentMonth);
+  } catch (error) {
+    console.error('消耗品使用量の初期化に失敗しました:', error);
+  }
+}
+
+// 消耗品使用量の表示
+async function displayConsumableUsage(year, month) {
+  try {
+    const consumableUsageList = await getConsumableUsage(year, month); // 消耗品使用量を取得
+    const usageTableBody = document.getElementById('consumableUsageList').querySelector('tbody');
+    usageTableBody.innerHTML = '';
+
+    consumableUsageList.forEach((usage) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${usage.consumableName}</td>
+        <td>${usage.quantityUsed}</td>
+        <td>${new Date(usage.timestamp).toLocaleDateString()}</td>
+      `;
+      usageTableBody.appendChild(row);
+    });
+  } catch (error) {
+    console.error('消耗品使用量の表示に失敗しました:', error);
+  }
+}
+
+async function addTransactionEditListeners() {
+  const editButtons = document.querySelectorAll('.edit-transaction');
+  editButtons.forEach((button) => {
+    button.addEventListener('click', async (e) => {
+      const transactionId = e.target.dataset.id;
+      const transaction = await getTransactionById(transactionId);
+      if (transaction) {
+        // 商品情報を取得
+        const product = await getProductById(transaction.items[0].productId);
+        
+        // 支払い方法の選択肢を更新
+        const paymentMethods = await getPaymentMethods();
+        const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
+        paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
+        paymentMethods.forEach((method) => {
+          const option = document.createElement('option');
+          option.value = method.id;
+          option.textContent = method.name;
+          paymentMethodSelect.appendChild(option);
+        });
+
+        // 編集フォームに商品情報と現在の取引データをセット
+        document.getElementById('editTransactionId').value = transaction.id;
+        document.getElementById('editTransactionTimestamp').value = new Date(transaction.timestamp).toISOString().slice(0, 16);
+        document.getElementById('editTransactionProductName').value = product.name;
+        document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
+        document.getElementById('editTransactionUnitPrice').value = product.price; // 商品の単価
+        document.getElementById('editTransactionCost').value = product.cost; // 商品の原価
+        document.getElementById('editTransactionSize').value = product.size; // 商品のサイズ
+        paymentMethodSelect.value = transaction.paymentMethodId || '';
+
+        // 編集フォームの表示
+        document.getElementById('editTransactionFormContainer').style.display = 'block';
+      }
+    });
+  });
 }
 
 async function addTransactionEditListeners() {
@@ -1207,6 +1331,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayTransactions(); // 売上管理セクションの取引データ表示
   await displayConsumables(); // 消耗品リストの初期表示
   await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
+  await displayConsumableUsage(); // 消耗品使用量の表示を追加
 
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
