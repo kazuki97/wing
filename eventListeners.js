@@ -948,7 +948,10 @@ async function displayProducts() {
 }
 
 // 商品の編集フォーム表示関数
-function editProduct(product) {
+async function editProduct(product) {
+  // 消耗品リストの取得
+  const consumables = await getConsumables();
+
   // 編集用のフォームを作成
   const editForm = document.createElement('form');
   editForm.innerHTML = `
@@ -958,9 +961,20 @@ function editProduct(product) {
     <input type="text" name="barcode" value="${product.barcode}" />
     <input type="number" name="quantity" value="${product.quantity}" required />
     <input type="number" name="size" value="${product.size}" required />
+    <div id="editConsumables">
+      <label>使用する消耗品:</label>
+      ${consumables.map(consumable => `
+        <div>
+          <input type="checkbox" name="consumable" value="${consumable.id}" id="edit-consumable-${consumable.id}" 
+          ${product.consumables.includes(consumable.id) ? 'checked' : ''} />
+          <label for="edit-consumable-${consumable.id}">${consumable.name}</label>
+        </div>
+      `).join('')}
+    </div>
     <button type="submit">更新</button>
     <button type="button" id="cancelEdit">キャンセル</button>
   `;
+
   // 編集フォームのイベントリスナー
   editForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -971,6 +985,7 @@ function editProduct(product) {
       barcode: editForm.barcode.value,
       quantity: parseFloat(editForm.quantity.value),
       size: parseFloat(editForm.size.value),
+      consumables: Array.from(editForm.querySelectorAll('input[name="consumable"]:checked')).map((checkbox) => checkbox.value),
     };
     try {
       await updateProduct(product.id, updatedData);
@@ -981,11 +996,13 @@ function editProduct(product) {
       showError('商品の更新に失敗しました');
     }
   });
+
   // キャンセルボタンのイベントリスナー
   editForm.querySelector('#cancelEdit').addEventListener('click', () => {
     editForm.remove();
     displayProducts();
   });
+
   // 既存の要素を編集フォームに置き換える
   const productList = document.getElementById('productList');
   productList.innerHTML = '';
