@@ -17,6 +17,30 @@ export async function getConsumables() {
   }
 }
 
+// 消耗品の使用量を取得する関数
+export async function getConsumableUsage(year, month) {
+  try {
+    const consumableUsageCollection = collection(db, 'consumableUsage');
+    const snapshot = await getDocs(consumableUsageCollection);
+
+    // 特定の年と月でフィルタリング
+    const filteredUsage = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .filter((usage) => {
+        const usageDate = new Date(usage.timestamp);
+        return usageDate.getFullYear() === year && usageDate.getMonth() + 1 === month;
+      });
+
+    return filteredUsage;
+  } catch (error) {
+    console.error('消耗品使用量の取得に失敗しました:', error);
+    throw error;
+  }
+}
+
 // 消耗品の追加フォームイベントリスナー
 const addConsumableForm = document.getElementById('addConsumableForm');
 addConsumableForm.addEventListener('submit', async (e) => {
