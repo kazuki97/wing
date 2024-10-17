@@ -192,10 +192,15 @@ async function displayConsumableUsage(year, month) {
       const usage = usageMap[consumableId];
 
       const row = document.createElement('tr');
+      const date = new Date(usage.timestamp);
+
+      // 年と月だけを表示するフォーマット
+      const formattedDate = `${date.getFullYear()}/${date.getMonth() + 1}`;
+
       row.innerHTML = `
         <td>${consumableName}</td>
         <td>${usage.quantityUsed}</td>
-        <td>${new Date(usage.timestamp).toLocaleDateString()}</td>
+        <td>${formattedDate}</td>
       `;
       usageTableBody.appendChild(row);
     });
