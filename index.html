@@ -22,6 +22,7 @@
       <li><a href="#pricing" class="nav-link">単価設定</a></li>
       <li><a href="#payment-methods" class="nav-link">支払い方法設定</a></li>
       <li><a href="#sales-analysis" class="nav-link">売上分析</a></li> <!-- 売上分析の追加 -->
+      <li><a href="#consumables" class="nav-link">消耗品管理</a></li> <!-- 消耗品管理の追加 -->
     </ul>
   </nav>
 
@@ -30,6 +31,30 @@
     <!-- ホーム -->
     <section id="home" class="content-section">
       <h1>ホーム</h1>
+    </section>
+
+ <!-- 消耗品管理 -->
+    <section id="consumables" class="content-section" style="display: none;">
+      <h1>消耗品管理</h1>
+      <!-- 消耗品追加フォーム -->
+      <form id="addConsumableForm">
+        <input type="text" id="consumableName" placeholder="消耗品名" required />
+        <input type="number" id="consumableQuantity" placeholder="数量" required />
+        <button type="submit">追加</button>
+      </form>
+      <!-- 消耗品一覧表示エリア -->
+      <table id="consumableList">
+        <thead>
+          <tr>
+            <th>消耗品名</th>
+            <th>数量</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 消耗品情報がここに表示されます -->
+        </tbody>
+      </table>
     </section>
 
     <!-- カテゴリ設定 -->
