@@ -15,47 +15,10 @@ import {
 // 商品の追加
 export async function addProduct(productData) {
   try {
-    if (!productData.subcategoryId) {
-      console.error('サブカテゴリIDが設定されていません。');
-      throw new Error('サブカテゴリIDが必須です。');
-    }
     const docRef = await addDoc(collection(db, 'products'), productData);
     return docRef.id;
   } catch (error) {
     console.error('商品の追加エラー:', error);
-    throw error;
-  }
-}
-
-// すべての商品情報を取得し、サブカテゴリIDを確認
-export async function checkAllProductSubcategoryIds() {
-  try {
-    const products = await getAllProducts();
-    products.forEach((product) => {
-      console.log(`商品名: ${product.name}, サブカテゴリID: ${product.subcategoryId}`);
-      if (!product.subcategoryId) {
-        console.warn(`サブカテゴリIDが設定されていない商品があります: 商品名 = ${product.name}`);
-      }
-    });
-  } catch (error) {
-    console.error('商品の確認エラー:', error);
-  }
-}
-
-// 商品名から商品情報を取得
-export async function getProductByName(name) {
-  try {
-    const q = query(collection(db, 'products'), where('name', '==', name));
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
-      const docSnap = snapshot.docs[0];
-      return { id: docSnap.id, ...docSnap.data() };
-    } else {
-      console.error('商品が見つかりません:', name);
-      return null;
-    }
-  } catch (error) {
-    console.error('商品の取得エラー:', error);
     throw error;
   }
 }
@@ -131,10 +94,6 @@ export async function getAllProducts() {
 // 商品の更新
 export async function updateProduct(id, updatedData) {
   try {
-    if (updatedData.subcategoryId === undefined) {
-      console.error('サブカテゴリIDが設定されていません。');
-      throw new Error('サブカテゴリIDが必須です。');
-    }
     const docRef = doc(db, 'products', id);
     await updateDoc(docRef, updatedData);
   } catch (error) {
