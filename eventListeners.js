@@ -446,23 +446,42 @@ async function handleReturnTransaction(transaction) {
 async function handleDeleteTransaction(transactionId) {
   if (confirm('この取引を削除しますか？')) {
     try {
-      // まず、取引を取得して、商品情報を使用します
+      // 取引を取得
       const transaction = await getTransactionById(transactionId);
+      console.log('削除する取引:', transaction); // デバッグ: 取引内容を確認
+
       if (transaction && transaction.items && transaction.items.length > 0) {
-        // 削除する取引に含まれる商品の在庫を元に戻します
         for (const item of transaction.items) {
           const productId = item.productId;
           const quantity = item.quantity;
           const size = item.size;
           const requiredQuantity = quantity * size;
 
-          // 商品の在庫を更新
+          // 商品の取得
           const product = await getProductById(productId);
+          if (!product) {
+            console.error(`商品ID ${productId} が見つかりませんでした`);
+            showError('商品が見つかりませんでした');
+            continue; // 見つからなかった商品はスキップします
+          }
+          console.log('取得した商品:', product); // デバッグ: 商品情報を確認
+
           const updatedQuantity = product.quantity + requiredQuantity;
           await updateProduct(productId, { quantity: updatedQuantity });
-          
-          // 全体在庫の更新
-          await updateOverallInventory(productId, requiredQuantity);
+          console.log(`商品ID ${productId} の在庫が更新されました: ${updatedQuantity}`); // デバッグ: 更新された在庫数量
+
+          // サブカテゴリIDの取得と全体在庫の更新
+          const subcategoryId = product.subcategoryId;
+          if (!subcategoryId) {
+            console.error(`商品 ${product.name} のサブカテゴリIDが見つかりません`);
+            showError('サブカテゴリが見つかりませんでした');
+            continue; // サブカテゴリが見つからなかった場合もスキップします
+          }
+          console.log(`サブカテゴリID: ${subcategoryId}`); // デバッグ: サブカテゴリIDの確認
+
+          // サブカテゴリの在庫を更新
+          await updateOverallInventory(subcategoryId, requiredQuantity);
+          console.log(`サブカテゴリID ${subcategoryId} の全体在庫が更新されました: +${requiredQuantity}`); // デバッグ: 全体在庫の更新を確認
         }
       }
 
