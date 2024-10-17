@@ -384,7 +384,7 @@ async function displayPaymentMethods() {
 async function displayOverallInventory() {
   try {
     const overallInventories = await getAllOverallInventories();
-    const overallInventoryTable = document.getElementById('overallInventory').querySelector('tbody');
+   const overallInventoryTable = document.getElementById('overallInventoryList').querySelector('tbody');
     overallInventoryTable.innerHTML = '';
 
     overallInventories.forEach((inventory) => {
