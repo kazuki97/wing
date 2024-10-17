@@ -8,8 +8,9 @@ import {
   getDoc,
   doc,
   updateDoc,
-  deleteDoc, // 追加
+  deleteDoc,
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+import { getProductById } from './products.js';
 
 // 売上データの追加
 export async function addTransaction(transactionData) {
@@ -17,8 +18,10 @@ export async function addTransaction(transactionData) {
     // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
-    // 消耗品使用量を記録
+
+    // 消耗品の使用量を記録
     await recordConsumableUsage(transactionData.items);
+
     return docRef.id;
   } catch (error) {
     console.error('取引の追加エラー:', error);
@@ -26,6 +29,7 @@ export async function addTransaction(transactionData) {
   }
 }
 
+// 取引データの取得
 export async function getTransactions() {
   try {
     const snapshot = await getDocs(collection(db, 'transactions'));
@@ -43,6 +47,7 @@ export async function getTransactions() {
   }
 }
 
+// 特定の取引データの取得
 export async function getTransactionById(transactionId) {
   try {
     const docRef = doc(db, 'transactions', transactionId);
@@ -83,7 +88,6 @@ export async function updateTransaction(transactionId, updatedData) {
 // 在庫と全体在庫の更新処理
 async function updateInventoryAfterTransactionUpdate(product) {
   try {
-    // 在庫情報の更新
     const inventoryDocRef = doc(db, 'inventory', product.subcategoryId);
     const inventorySnap = await getDoc(inventoryDocRef);
     if (inventorySnap.exists()) {
@@ -91,7 +95,6 @@ async function updateInventoryAfterTransactionUpdate(product) {
       await updateDoc(inventoryDocRef, { quantity: newQuantity });
     }
 
-    // 全体在庫の更新
     const overallInventoryDocRef = doc(db, 'overallInventory', product.subcategoryId);
     const overallInventorySnap = await getDoc(overallInventoryDocRef);
     if (overallInventorySnap.exists()) {
@@ -124,7 +127,6 @@ export async function deleteTransaction(transactionId) {
 // 在庫と全体在庫の削除後の更新処理
 async function updateInventoryAfterTransactionDelete(product) {
   try {
-    // 在庫情報の更新
     const inventoryDocRef = doc(db, 'inventory', product.subcategoryId);
     const inventorySnap = await getDoc(inventoryDocRef);
     if (inventorySnap.exists()) {
@@ -132,7 +134,6 @@ async function updateInventoryAfterTransactionDelete(product) {
       await updateDoc(inventoryDocRef, { quantity: newQuantity });
     }
 
-    // 全体在庫の更新
     const overallInventoryDocRef = doc(db, 'overallInventory', product.subcategoryId);
     const overallInventorySnap = await getDoc(overallInventoryDocRef);
     if (overallInventorySnap.exists()) {
