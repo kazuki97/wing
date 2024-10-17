@@ -454,53 +454,44 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  const navLinks = document.querySelectorAll('.nav-link');
-  const sections = document.querySelectorAll('.content-section');
-
-  navLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      // すべてのセクションを非表示にする
-      sections.forEach((section) => {
-        section.style.display = 'none';
-      });
-
-      // リンク先のセクションIDを取得して、そのセクションを表示する
-      const targetId = link.getAttribute('href').substring(1);
-      const targetSection = document.getElementById(targetId);
-      if (targetSection) {
-        console.log(`表示するセクションID: ${targetId}`); // デバッグ用ログを追加
-        targetSection.style.display = 'block';
-      } else {
-        console.error(`セクションID「${targetId}」が見つかりませんでした`); // デバッグ用エラー表示
-      }
-    });
-  });
-
+window.addEventListener('DOMContentLoaded', async () => {
   // 初期表示としてホームセクションのみ表示する
+  const sections = document.querySelectorAll('.content-section');
   sections.forEach((section) => {
     section.style.display = 'none';
   });
-  
-  // ホームセクションが存在するか確認してから表示
   const homeSection = document.getElementById('home');
   if (homeSection) {
     homeSection.style.display = 'block';
   }
-});
 
-// 初期化処理
-window.addEventListener('DOMContentLoaded', async () => {
+  // ナビゲーションのイベントリスナー設定
+  const navLinks = document.querySelectorAll('.nav-link');
+  navLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      sections.forEach((section) => {
+        section.style.display = 'none';
+      });
+
+      const targetId = link.getAttribute('href').substring(1);
+      const targetSection = document.getElementById(targetId);
+      if (targetSection) {
+        console.log(`表示するセクションID: ${targetId}`);
+        targetSection.style.display = 'block';
+      } else {
+        console.error(`セクションID「${targetId}」が見つかりませんでした`);
+      }
+    });
+  });
+
+  // 初期化処理
   await updatePaymentMethodSelect();
-  await displayTransactions(); // 売上管理セクションの初期表示
-  await displayPaymentMethods(); // 支払い方法の初期表示
-
-  // 全体在庫の初期表示
+  await displayTransactions();
+  await displayPaymentMethods();
   await displayOverallInventory();
 
-  // 全体在庫が更新されたイベントをリッスンして画面を更新
+  // 全体在庫が更新されたイベントをリッスン
   window.addEventListener('overallInventoryUpdated', async () => {
     await displayOverallInventory();
   });
