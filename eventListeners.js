@@ -490,6 +490,7 @@ async function handleDeleteTransaction(transactionId) {
       alert('取引が削除されました');
       document.getElementById('transactionDetails').style.display = 'none';
       await displayTransactions(); // 売上管理セクションを更新
+      await displayOverallInventory(); // 全体在庫リストを再描画
     } catch (error) {
       console.error(error);
       showError('取引の削除に失敗しました');
