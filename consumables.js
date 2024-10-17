@@ -1,10 +1,12 @@
-// consumables.js
+import { db } from './db.js'; // Firebase データベースのインポート
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
-let consumables = [];
+// Firestoreのコレクション参照
+const consumablesCollection = collection(db, 'consumables');
 
-// 消耗品の追加
+// 消耗品の追加フォームイベントリスナー
 const addConsumableForm = document.getElementById('addConsumableForm');
-addConsumableForm.addEventListener('submit', (e) => {
+addConsumableForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const consumableName = document.getElementById('consumableName').value.trim();
@@ -15,68 +17,62 @@ addConsumableForm.addEventListener('submit', (e) => {
     return;
   }
 
-  const newConsumable = {
-    id: generateUniqueId(),
-    name: consumableName,
-    cost: consumableCost,
-  };
-
-  consumables.push(newConsumable);
-  displayConsumables();
-  addConsumableForm.reset();
+  try {
+    // Firestoreに新しい消耗品を追加
+    await addDoc(consumablesCollection, {
+      name: consumableName,
+      cost: consumableCost,
+    });
+    console.log('消耗品が追加されました:', { consumableName, consumableCost });
+    addConsumableForm.reset();
+    await displayConsumables(); // 消耗品リストを再表示
+  } catch (error) {
+    console.error('消耗品の追加に失敗しました:', error);
+    showError('消耗品の追加に失敗しました');
+  }
 });
 
 // 消耗品一覧の表示
-function displayConsumables() {
-  const consumableList = document.getElementById('consumableList').querySelector('tbody');
-  consumableList.innerHTML = '';
+async function displayConsumables() {
+  try {
+    const consumablesSnapshot = await getDocs(consumablesCollection);
+    const consumableList = document.getElementById('consumableList').querySelector('tbody');
+    consumableList.innerHTML = '';
 
-  consumables.forEach((consumable) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${consumable.name}</td>
-      <td>¥${consumable.cost.toFixed(2)}</td>
-      <td><button class="delete-consumable" data-id="${consumable.id}">削除</button></td>
-    `;
-    consumableList.appendChild(row);
-  });
-
-  // 削除ボタンのイベントリスナーを追加
-  document.querySelectorAll('.delete-consumable').forEach((button) => {
-    button.addEventListener('click', (e) => {
-      const consumableId = e.target.dataset.id;
-      deleteConsumable(consumableId);
+    consumablesSnapshot.forEach((doc) => {
+      const consumable = { id: doc.id, ...doc.data() };
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${consumable.name}</td>
+        <td>¥${Math.floor(consumable.cost)}</td> <!-- 小数点以下を切り捨てて表示 -->
+        <td><button class="delete-consumable" data-id="${consumable.id}">削除</button></td>
+      `;
+      consumableList.appendChild(row);
     });
-  });
+
+    // 削除ボタンのイベントリスナーを設定
+    document.querySelectorAll('.delete-consumable').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const consumableId = e.target.dataset.id;
+        await deleteConsumable(consumableId);
+      });
+    });
+  } catch (error) {
+    console.error('消耗品の取得に失敗しました:', error);
+    showError('消耗品の取得に失敗しました');
+  }
 }
 
 // 消耗品を削除する関数
 export async function deleteConsumable(consumableId) {
-  consumables = consumables.filter((c) => c.id !== consumableId);
-  console.log('消耗品が削除されました:', consumableId);
-  displayConsumables();
-}
-
-// 消耗品を追加する関数
-export async function addConsumable(name, cost) {
-  const newConsumable = {
-    id: generateUniqueId(),
-    name,
-    cost,
-  };
-  consumables.push(newConsumable);
-  console.log('消耗品が追加されました:', { name, cost });
-  displayConsumables();
-}
-
-// 消耗品リストを取得する関数
-export async function getConsumables() {
-  return consumables;
-}
-
-// ユニークなIDを生成するヘルパー関数
-function generateUniqueId() {
-  return '_' + Math.random().toString(36).substr(2, 9);
+  try {
+    await deleteDoc(doc(db, 'consumables', consumableId));
+    console.log('消耗品が削除されました:', consumableId);
+    await displayConsumables(); // 消耗品リストを再表示
+  } catch (error) {
+    console.error('消耗品の削除に失敗しました:', error);
+    showError('消耗品の削除に失敗しました');
+  }
 }
 
 // エラーメッセージ表示関数
@@ -90,6 +86,6 @@ function showError(message) {
 }
 
 // 初期化処理
-window.addEventListener('DOMContentLoaded', () => {
-  displayConsumables();
+window.addEventListener('DOMContentLoaded', async () => {
+  await displayConsumables(); // ページロード時に消耗品リストを表示
 });
