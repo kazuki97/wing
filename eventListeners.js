@@ -466,7 +466,7 @@ async function handleDeleteTransaction(transactionId) {
           }
           console.log('取得した商品:', product); // デバッグ: 商品情報を確認
 
-          const updatedQuantity = product.quantity + requiredQuantity;
+          const updatedQuantity = product.quantity + quantity;
           await updateProduct(productId, { quantity: updatedQuantity });
           console.log(`商品ID ${productId} の在庫が更新されました: ${updatedQuantity}`); // デバッグ: 更新された在庫数量
 
