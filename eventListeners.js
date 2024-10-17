@@ -244,8 +244,8 @@ async function displayConsumables() {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${consumable.name}</td>
-      <td>¥${Math.floor(consumable.cost)}</td> <!-- 小数点以下を切り捨てて表示 -->
-      <td><button class="delete-consumable" data-name="${consumable.name}">削除</button></td>
+      <td>¥${Math.floor(consumable.cost)}</td>
+      <td><button class="delete-consumable" data-id="${consumable.id}">削除</button></td>
     `;
     consumableTableBody.appendChild(row);
   }
@@ -253,8 +253,8 @@ async function displayConsumables() {
   // 削除ボタンのイベントリスナーを設定
   document.querySelectorAll('.delete-consumable').forEach((button) => {
     button.addEventListener('click', async (e) => {
-      const name = e.target.dataset.name;
-      await deleteConsumable(name);
+      const id = e.target.dataset.id;
+      await deleteConsumable(id);
       alert('消耗品が削除されました');
       await displayConsumables();
     });
