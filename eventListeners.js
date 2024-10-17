@@ -341,6 +341,24 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
     e.target.reset(); // フォームをリセット
     await displayTransactions(); // 最新の売上リストを再表示
+
+    // 消耗品使用量の更新処理を追加
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+    await displayConsumableUsage(currentYear, currentMonth); // 消耗品使用量を更新
+
+  } catch (error) {
+    console.error('売上の追加に失敗しました:', error);
+    showError('売上の追加に失敗しました');
+  }
+});
+
+  try {
+    await addTransaction(transactionData);
+    alert('売上が追加されました');
+    document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
+    e.target.reset(); // フォームをリセット
+    await displayTransactions(); // 最新の売上リストを再表示
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
