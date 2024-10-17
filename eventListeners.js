@@ -168,13 +168,18 @@ async function initializeConsumableUsage() {
 async function displayConsumableUsage(year, month) {
   try {
     const consumableUsageList = await getConsumableUsage(year, month); // 消耗品使用量を取得
+    const consumables = await getConsumables(); // 全ての消耗品を取得
     const usageTableBody = document.getElementById('consumableUsageList').querySelector('tbody');
     usageTableBody.innerHTML = '';
 
     consumableUsageList.forEach((usage) => {
+      // 消耗品IDから名前を取得
+      const consumable = consumables.find(c => c.id === usage.consumableId);
+      const consumableName = consumable ? consumable.name : '不明な消耗品';
+
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${usage.consumableName}</td>
+        <td>${consumableName}</td>
         <td>${usage.quantityUsed}</td>
         <td>${new Date(usage.timestamp).toLocaleDateString()}</td>
       `;
@@ -184,8 +189,6 @@ async function displayConsumableUsage(year, month) {
     console.error('消耗品使用量の表示に失敗しました:', error);
   }
 }
-
-
 
 async function addTransactionEditListeners() {
   const editButtons = document.querySelectorAll('.edit-transaction');
