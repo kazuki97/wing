@@ -21,7 +21,6 @@ import {
   updateProduct,
   deleteProduct,
   getAllProducts,
-checkAllProductSubcategoryIds,
 } from './products.js';
 
 import {
@@ -105,11 +104,6 @@ async function addTransactionEditListeners() {
         // 商品情報を取得
         const product = await getProductById(transaction.items[0].productId);
         
-        if (!product) {
-          console.error('商品情報が見つかりません');
-          return;
-        }
-
         // 支払い方法の選択肢を更新
         const paymentMethods = await getPaymentMethods();
         const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
@@ -126,9 +120,9 @@ async function addTransactionEditListeners() {
         document.getElementById('editTransactionTimestamp').value = new Date(transaction.timestamp).toISOString().slice(0, 16);
         document.getElementById('editTransactionProductName').value = product.name;
         document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
-        document.getElementById('editTransactionUnitPrice').value = product.price;
-        document.getElementById('editTransactionCost').value = product.cost;
-        document.getElementById('editTransactionSize').value = product.size;
+        document.getElementById('editTransactionUnitPrice').value = product.price; // 商品の単価
+        document.getElementById('editTransactionCost').value = product.cost; // 商品の原価
+        document.getElementById('editTransactionSize').value = product.size; // 商品のサイズ
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
         // 編集フォームの表示
@@ -192,30 +186,21 @@ if (editTransactionForm) {
 }
 
 // 売上の手動追加フォームのsubmitイベントリスナー
+// 売上の手動追加フォームのsubmitイベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   // 手動追加商品の情報を取得
-  const productName = document.getElementById('transactionProductName').value;
-  const product = await getProductByName(productName); // 商品名から商品情報を取得
-  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value);
-  const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value);
-  const productCost = parseFloat(document.getElementById('transactionProductCost').value);
+  const productName = document.getElementById('transactionProductName').value; // 商品名を取得
+  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value); // 販売単価を取得
+  const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value); // 数量を取得
+  const productCost = parseFloat(document.getElementById('transactionProductCost').value); // 原価を取得
+  const productSize = parseFloat(document.getElementById('transactionSize').value); // サイズを取得
   const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
-  const productSize = parseFloat(document.getElementById('transactionProductSize').value);
-
-  // 商品からサブカテゴリIDを取得
-  const subcategoryId = product ? product.subcategoryId : null;
-
-  if (!subcategoryId) {
-    console.error("サブカテゴリIDが設定されていません:", product);
-    showError('サブカテゴリIDが見つかりませんでした。');
-    return;
-  }
 
   // 自動計算する項目
-  const totalAmount = productPrice * productQuantity * productSize;
-  const profit = totalAmount - (productCost * productQuantity * productSize);
+  const totalAmount = productPrice * productQuantity * productSize; // 売上金額
+  const profit = totalAmount - (productCost * productQuantity * productSize); // 利益計算
 
   // 売上データを生成
   const transactionData = {
@@ -224,11 +209,10 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         productName,
         unitPrice: productPrice,
         quantity: productQuantity,
-        size: productSize,
+        size: productSize, // サイズを追加
         totalAmount,
         cost: productCost,
         profit,
-        subcategoryId, // サブカテゴリIDを追加
       }
     ],
     totalAmount,
@@ -239,9 +223,9 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
-    document.getElementById('manualAddTransactionForm').style.display = 'none';
-    e.target.reset();
-    await displayTransactions();
+    document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
+    e.target.reset(); // フォームをリセット
+    await displayTransactions(); // 最新の売上リストを再表示
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
@@ -1045,7 +1029,6 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
 
 // 初期化処理に売上管理セクションの編集ボタンのリスナーを追加
 window.addEventListener('DOMContentLoaded', async () => {
-  await checkAllProductSubcategoryIds();
   await updateAllParentCategorySelects();
   await updatePricingParentCategorySelect();
   await displayParentCategories();
