@@ -94,7 +94,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 初期化処理
   await updatePaymentMethodSelect();
   await displayTransactions();
-  await displayPaymentMethods();
   await displayOverallInventory();
 
   // 全体在庫が更新されたイベントをリッスン
@@ -271,7 +270,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         await addPaymentMethod(name, feeRate);
         alert('支払い方法が追加されました');
         addPaymentMethodForm.reset();
-        await displayPaymentMethods();
         await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
       } catch (error) {
         console.error(error);
@@ -281,7 +279,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 支払い方法の表示
-  await displayPaymentMethods();
+  await updatePaymentMethodSelect();
 
   // 月次・年次フィルタの実装
   const filterTransactionsForm = document.getElementById('filterTransactionsForm');
