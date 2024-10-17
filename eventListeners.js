@@ -238,13 +238,10 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 document.getElementById('addConsumableForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('consumableName').value.trim();
-  let cost = document.getElementById('consumableCost').value.trim();
-  
-  // 修正：costのフォーマットを整えてから数値に変換
-  cost = parseFloat(parseFloat(cost).toFixed(2)); 
+  const cost = parseInt(document.getElementById('consumableCost').value.trim(), 10); // 整数として取得
 
   if (!name || isNaN(cost) || cost <= 0) {
-    showError('消耗品名と有効な原価を入力してください');
+    showError('消耗品名と正しい原価を入力してください');
     return;
   }
 
