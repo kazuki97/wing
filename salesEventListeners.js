@@ -387,4 +387,3 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayTransactions(); // 売上管理セクションの初期表示
   await displayPaymentMethods(); // 支払い方法の初期表示
 });
-
