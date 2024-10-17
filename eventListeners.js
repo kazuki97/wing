@@ -883,7 +883,7 @@ function editProduct(product) {
 }
 
 // 在庫管理セクションの商品一覧表示関数
-async function displayInventoryProducts() {
+export async function displayInventoryProducts() {
   try {
     const parentCategoryId = document.getElementById('inventoryParentCategorySelect').value;
     const subcategoryId = document.getElementById('inventorySubcategorySelect').value;
