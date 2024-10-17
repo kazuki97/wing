@@ -1,8 +1,21 @@
-import { db } from './db.js'; // Firebase データベースのインポート
-import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from './db.js'; // Firebaseの初期化をインポート
+import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore';
 
-// Firestoreのコレクション参照
 const consumablesCollection = collection(db, 'consumables');
+
+// 消耗品リストの取得
+export async function getConsumables() {
+  try {
+    const snapshot = await getDocs(consumablesCollection);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error('消耗品の取得に失敗しました:', error);
+    throw error;
+  }
+}
 
 // 消耗品の追加フォームイベントリスナー
 const addConsumableForm = document.getElementById('addConsumableForm');
