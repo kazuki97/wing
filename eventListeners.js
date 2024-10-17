@@ -277,20 +277,21 @@ export async function displayTransactions(filter = {}) {
       }
 
       // 修正箇所: 原価と利益をリストに表示
- row.innerHTML = `
-  <td>${transaction.id}</td>
-  <td>${formattedTimestamp}</td>
-  <td>${paymentMethodName}</td>
-  <td>${productNames || '手動追加'}</td>
-  <td>${totalQuantity || '-'}</td>
-  <td>¥${transaction.totalAmount}</td> <!-- 売上金額はそのまま -->
-  <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価を表示 -->
-  <td>¥${transaction.netAmount - transaction.items[0].cost || 0}</td> <!-- 利益を表示 -->
-  <td>
-    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-  </td>
-`;
+row.innerHTML = `
+        <td>${transaction.id}</td>
+        <td>${formattedTimestamp}</td>
+        <td>${paymentMethodName}</td>
+        <td>${productNames || '手動追加'}</td>
+        <td>${totalQuantity || '-'}</td>
+        <td>¥${transaction.totalAmount}</td> <!-- 売上金額はそのまま -->
+        <td>¥${transaction.feeAmount || 0}</td> <!-- 手数料を表示 -->
+        <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価を表示 -->
+        <td>¥${transaction.netAmount - transaction.items[0].cost || 0}</td> <!-- 利益を表示 -->
+        <td>
+          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+        </td>
+      `;
 
       transactionList.appendChild(row);
     }
