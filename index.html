@@ -360,30 +360,27 @@
       </table>
     </section>
 
- <!-- 消耗品管理 -->
-    <section id="consumables" class="content-section" style="display: none;">
-      <h1>消耗品管理</h1>
-      <!-- 消耗品追加フォーム -->
-      <form id="addConsumableForm">
-        <input type="text" id="consumableName" placeholder="消耗品名" required />
-        <input type="number" id="consumableCost" placeholder="原価" required />
-        <button type="submit">追加</button>
-      </form>
-      <!-- 消耗品一覧表示エリア -->
-      <table id="consumableList">
-        <thead>
-          <tr>
-            <th>消耗品名</th>
-            <th>原価</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 消耗品情報がここに表示されます -->
-        </tbody>
-      </table>
-    </section>
-  </main>
+<!-- 消耗品管理セクション -->
+<section id="consumables" class="content-section" style="display: none;">
+  <h1>消耗品管理</h1>
+  <form id="addConsumableForm">
+    <input type="text" id="consumableName" placeholder="消耗品名" required />
+    <input type="number" id="consumableCost" placeholder="原価" required step="0.01" min="0" />
+    <button type="submit">追加</button>
+  </form>
+  <table id="consumableList">
+    <thead>
+      <tr>
+        <th>消耗品名</th>
+        <th>原価</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 消耗品情報がここに表示されます -->
+    </tbody>
+  </table>
+</section>
 
     <!-- 売上分析 -->
     <section id="sales-analysis" class="content-section" style="display: none;">
