@@ -887,30 +887,40 @@ document
     }
   });
 
-// 商品一覧の表示
 async function displayProducts() {
   try {
     const parentCategoryId = document.getElementById('filterParentCategorySelect').value;
     const subcategoryId = document.getElementById('filterSubcategorySelect').value;
     const products = await getProducts(parentCategoryId, subcategoryId);
+    const consumablesList = await getConsumables(); // 消耗品リストを取得
     const productList = document.getElementById('productList');
     productList.innerHTML = '';
+
     products.forEach((product) => {
+      // 商品に関連付けられた消耗品の名前を取得
+      const consumableNames = product.consumables
+        ? product.consumables.map(consumableId => {
+            const consumable = consumablesList.find(c => c.id === consumableId);
+            return consumable ? consumable.name : '不明な消耗品';
+          }).join(', ')
+        : 'なし';
+
+      // 商品情報と消耗品情報を表示
       const listItem = document.createElement('li');
-      listItem.textContent = `
-        商品名: ${product.name},
-        数量: ${product.quantity || 0},
-        価格: ${product.price},
-        原価: ${product.cost},
-        バーコード: ${product.barcode},
-        サイズ: ${product.size}
+      listItem.innerHTML = `
+        <strong>商品名:</strong> ${product.name}, <strong>数量:</strong> ${product.quantity || 0}, 
+        <strong>価格:</strong> ${product.price}, <strong>原価:</strong> ${product.cost}, 
+        <strong>バーコード:</strong> ${product.barcode}, <strong>サイズ:</strong> ${product.size}, 
+        <strong>使用する消耗品:</strong> ${consumableNames}
       `;
+
       // 編集ボタン
       const editButton = document.createElement('button');
       editButton.textContent = '編集';
       editButton.addEventListener('click', () => {
         editProduct(product);
       });
+
       // 削除ボタン
       const deleteButton = document.createElement('button');
       deleteButton.textContent = '削除';
@@ -926,6 +936,7 @@ async function displayProducts() {
           }
         }
       });
+
       listItem.appendChild(editButton);
       listItem.appendChild(deleteButton);
       productList.appendChild(listItem);
