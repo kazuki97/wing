@@ -955,7 +955,7 @@ document
 
 // 全体在庫の表示関数を修正して削除ボタンを追加
 // 修正しました: 全体在庫の表示関数に削除ボタンを追加
-async function displayOverallInventory() {
+export async function displayOverallInventory() {
   try {
     const overallInventories = await getAllOverallInventories();
     const overallInventoryList = document.getElementById('overallInventoryList').querySelector('tbody');
