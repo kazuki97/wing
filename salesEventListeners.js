@@ -18,7 +18,8 @@ import {
   deletePaymentMethod,
 } from './paymentMethods.js';
 
-import { displayTransactions, displayOverallInventory } from './eventListeners.js'; // ここに displayOverallInventory を追加
+import { displayTransactions, displayOverallInventory, displayInventoryProducts } from './eventListeners.js'; 
+
 
 import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
