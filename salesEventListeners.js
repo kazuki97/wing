@@ -59,7 +59,50 @@ async function updatePaymentMethodSelect() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// DOMContentLoaded リスナーの統一
+window.addEventListener('DOMContentLoaded', async () => {
+  // 初期表示としてホームセクションのみ表示する
+  const sections = document.querySelectorAll('.content-section');
+  sections.forEach((section) => {
+    section.style.display = 'none';
+  });
+  const homeSection = document.getElementById('home');
+  if (homeSection) {
+    homeSection.style.display = 'block';
+  }
+
+  // ナビゲーションのイベントリスナー設定
+  const navLinks = document.querySelectorAll('.nav-link');
+  navLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      sections.forEach((section) => {
+        section.style.display = 'none';
+      });
+
+      const targetId = link.getAttribute('href').substring(1);
+      const targetSection = document.getElementById(targetId);
+      if (targetSection) {
+        console.log(`表示するセクションID: ${targetId}`);
+        targetSection.style.display = 'block';
+      } else {
+        console.error(`セクションID「${targetId}」が見つかりませんでした`);
+      }
+    });
+  });
+
+  // 初期化処理
+  await updatePaymentMethodSelect();
+  await displayTransactions();
+  await displayPaymentMethods();
+  await displayOverallInventory();
+
+  // 全体在庫が更新されたイベントをリッスン
+  window.addEventListener('overallInventoryUpdated', async () => {
+    await displayOverallInventory();
+  });
+
+  // バーコードスキャンのイベントリスナー設定
   const addBarcodeButton = document.getElementById('addBarcodeButton');
   const barcodeInput = document.getElementById('barcodeInput');
   if (addBarcodeButton && barcodeInput) {
@@ -91,102 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
 
-// カートに商品を追加する関数
-function addToCart(product) {
-  console.log("カートに追加する商品:", product);
-  const existingItem = salesCart.find((item) => item.product.id === product.id);
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    salesCart.push({ product, quantity: 1 });
-  }
-  displaySalesCart();
-}
-
-// カートの表示
-async function displaySalesCart() {
-  const salesCartTable = document.getElementById('salesCart')?.querySelector('tbody');
-  if (!salesCartTable) {
-    showError('カートの表示エリアが見つかりません');
-    return;
-  }
-  salesCartTable.innerHTML = '';
-  let totalAmount = 0;
-
-  // サブカテゴリごとの合計数量を計算
-  const subcategoryQuantities = {};
-  salesCart.forEach((item) => {
-    const subcategoryId = item.product.subcategoryId;
-    if (!subcategoryQuantities[subcategoryId]) {
-      subcategoryQuantities[subcategoryId] = 0;
-    }
-    subcategoryQuantities[subcategoryId] += item.product.size * item.quantity;
-  });
-
-  for (const item of salesCart) {
-    const { product, quantity } = item;
-    const subcategoryId = product.subcategoryId;
-    const totalQuantity = subcategoryQuantities[subcategoryId];
-
-    // 単価を取得
-    const unitPrice = await getUnitPrice(subcategoryId, totalQuantity);
-    const subtotal = unitPrice * product.size * quantity;
-    totalAmount += subtotal;
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${product.name}</td>
-      <td><input type="number" value="${quantity}" min="1" data-product-id="${product.id}" class="cart-quantity" /></td>
-      <td>${unitPrice}</td>
-      <td>${subtotal}</td>
-      <td><button class="remove-from-cart" data-product-id="${product.id}">削除</button></td>
-    `;
-    salesCartTable.appendChild(row);
-  }
-
-  document.getElementById('totalAmount').textContent = `合計金額: ¥${totalAmount}`;
-
-  // 数量変更のイベントリスナー
-  document.querySelectorAll('.cart-quantity').forEach((input) => {
-    input.addEventListener('change', async (e) => {
-      const productId = e.target.dataset.productId;
-      const newQuantity = parseInt(e.target.value, 10);
-      if (newQuantity <= 0) {
-        removeFromCart(productId);
-      } else {
-        updateCartQuantity(productId, newQuantity);
-      }
-    });
-  });
-
-  // 削除ボタンのイベントリスナー
-  document.querySelectorAll('.remove-from-cart').forEach((button) => {
-    button.addEventListener('click', (e) => {
-      const productId = e.target.dataset.productId;
-      removeFromCart(productId);
-    });
-  });
-}
-
-// カート内の商品の数量を更新
-function updateCartQuantity(productId, newQuantity) {
-  const item = salesCart.find((item) => item.product.id === productId);
-  if (item) {
-    item.quantity = newQuantity;
-    displaySalesCart();
-  }
-}
-
-// カートから商品を削除
-function removeFromCart(productId) {
-  salesCart = salesCart.filter((item) => item.product.id !== productId);
-  displaySalesCart();
-}
-
-// 販売完了ボタンのイベントリスナー
-window.addEventListener('DOMContentLoaded', () => {
+  // 販売完了ボタンのイベントリスナー設定
   const completeSaleButton = document.getElementById('completeSaleButton');
   if (completeSaleButton) {
     completeSaleButton.addEventListener('click', async () => {
@@ -306,12 +255,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
 
-// 支払い方法設定セクションのイベントリスナーと関数
-
-// 支払い方法追加フォームのイベントリスナー
-window.addEventListener('DOMContentLoaded', () => {
+  // 支払い方法追加フォームのイベントリスナー設定
   const addPaymentMethodForm = document.getElementById('addPaymentMethodForm');
   if (addPaymentMethodForm) {
     addPaymentMethodForm.addEventListener('submit', async (e) => {
@@ -334,104 +279,11 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
 
-// 支払い方法の表示
-async function displayPaymentMethods() {
-  try {
-    const paymentMethods = await getPaymentMethods();
-    const paymentMethodList = document.getElementById('paymentMethodList')?.querySelector('tbody');
-    if (!paymentMethodList) {
-      showError('支払い方法のリスト表示エリアが見つかりません');
-      return;
-    }
-    paymentMethodList.innerHTML = '';
-    for (const method of paymentMethods) {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${method.name}</td>
-        <td>${method.feeRate}%</td>
-        <td>
-          <button class="edit-payment-method" data-id="${method.id}">編集</button>
-          <button class="delete-payment-method" data-id="${method.id}">削除</button>
-        </td>
-      `;
-      paymentMethodList.appendChild(row);
-    }
+  // 支払い方法の表示
+  await displayPaymentMethods();
 
-    // 編集ボタンのイベントリスナー
-    document.querySelectorAll('.edit-payment-method').forEach((button) => {
-      button.addEventListener('click', async (e) => {
-        const methodId = e.target.dataset.id;
-        const method = paymentMethods.find((m) => m.id === methodId);
-        if (method) {
-          const newName = prompt('新しい支払い方法名を入力してください', method.name);
-          const newFeeRate = parseFloat(prompt('新しい手数料率(%)を入力してください', method.feeRate));
-          if (newName && !isNaN(newFeeRate)) {
-            try {
-              await updatePaymentMethod(methodId, newName, newFeeRate);
-              alert('支払い方法が更新されました');
-              await displayPaymentMethods();
-              await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
-            } catch (error) {
-              console.error(error);
-              showError('支払い方法の更新に失敗しました');
-            }
-          }
-        }
-      });
-    });
-
-    // 削除ボタンのイベントリスナー
-    document.querySelectorAll('.delete-payment-method').forEach((button) => {
-      button.addEventListener('click', async (e) => {
-        const methodId = e.target.dataset.id;
-        if (confirm('本当に削除しますか？')) {
-          try {
-            await deletePaymentMethod(methodId);
-            alert('支払い方法が削除されました');
-            await displayPaymentMethods();
-            await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
-          } catch (error) {
-            console.error(error);
-            showError('支払い方法の削除に失敗しました');
-          }
-        }
-      });
-    });
-  } catch (error) {
-    console.error(error);
-    showError('支払い方法の表示に失敗しました');
-  }
-}
-
-// 全体在庫の表示
-async function displayOverallInventory() {
-  try {
-    const overallInventories = await getAllOverallInventories();
-    const overallInventoryTable = document.getElementById('overallInventoryList')?.querySelector('tbody');
-    if (!overallInventoryTable) {
-      showError('全体在庫のリスト表示エリアが見つかりません');
-      return;
-    }
-    overallInventoryTable.innerHTML = '';
-
-    overallInventories.forEach((inventory) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${inventory.subcategoryName}</td>
-        <td>${inventory.quantity}</td>
-      `;
-      overallInventoryTable.appendChild(row);
-    });
-  } catch (error) {
-    console.error('全体在庫の表示エラー:', error);
-    showError('全体在庫の表示に失敗しました');
-  }
-}
-
-// 月次・年次フィルタの実装
-window.addEventListener('DOMContentLoaded', () => {
+  // 月次・年次フィルタの実装
   const filterTransactionsForm = document.getElementById('filterTransactionsForm');
   if (filterTransactionsForm) {
     filterTransactionsForm.addEventListener('submit', async (e) => {
@@ -452,47 +304,4 @@ window.addEventListener('DOMContentLoaded', () => {
       await displayTransactions(filter);
     });
   }
-});
-
-window.addEventListener('DOMContentLoaded', async () => {
-  // 初期表示としてホームセクションのみ表示する
-  const sections = document.querySelectorAll('.content-section');
-  sections.forEach((section) => {
-    section.style.display = 'none';
-  });
-  const homeSection = document.getElementById('home');
-  if (homeSection) {
-    homeSection.style.display = 'block';
-  }
-
-  // ナビゲーションのイベントリスナー設定
-  const navLinks = document.querySelectorAll('.nav-link');
-  navLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      sections.forEach((section) => {
-        section.style.display = 'none';
-      });
-
-      const targetId = link.getAttribute('href').substring(1);
-      const targetSection = document.getElementById(targetId);
-      if (targetSection) {
-        console.log(`表示するセクションID: ${targetId}`);
-        targetSection.style.display = 'block';
-      } else {
-        console.error(`セクションID「${targetId}」が見つかりませんでした`);
-      }
-    });
-  });
-
-  // 初期化処理
-  await updatePaymentMethodSelect();
-  await displayTransactions();
-  await displayPaymentMethods();
-  await displayOverallInventory();
-
-  // 全体在庫が更新されたイベントをリッスン
-  window.addEventListener('overallInventoryUpdated', async () => {
-    await displayOverallInventory();
-  });
 });
