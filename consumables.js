@@ -45,10 +45,33 @@ function displayConsumables() {
   document.querySelectorAll('.delete-consumable').forEach((button) => {
     button.addEventListener('click', (e) => {
       const consumableId = e.target.dataset.id;
-      consumables = consumables.filter((c) => c.id !== consumableId);
-      displayConsumables();
+      deleteConsumable(consumableId);
     });
   });
+}
+
+// 消耗品を削除する関数
+export async function deleteConsumable(consumableId) {
+  consumables = consumables.filter((c) => c.id !== consumableId);
+  console.log('消耗品が削除されました:', consumableId);
+  displayConsumables();
+}
+
+// 消耗品を追加する関数
+export async function addConsumable(name, cost) {
+  const newConsumable = {
+    id: generateUniqueId(),
+    name,
+    cost,
+  };
+  consumables.push(newConsumable);
+  console.log('消耗品が追加されました:', { name, cost });
+  displayConsumables();
+}
+
+// 消耗品リストを取得する関数
+export async function getConsumables() {
+  return consumables;
 }
 
 // ユニークなIDを生成するヘルパー関数
