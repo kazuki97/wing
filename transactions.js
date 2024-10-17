@@ -17,6 +17,8 @@ export async function addTransaction(transactionData) {
     // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
+    // 消耗品使用量を記録
+    await recordConsumableUsage(transactionData.items);
     return docRef.id;
   } catch (error) {
     console.error('取引の追加エラー:', error);
@@ -60,6 +62,7 @@ export async function getTransactionById(transactionId) {
     throw error;
   }
 }
+
 // 取引データの更新（返品処理で使用）
 export async function updateTransaction(transactionId, updatedData) {
   try {
@@ -138,6 +141,38 @@ async function updateInventoryAfterTransactionDelete(product) {
     }
   } catch (error) {
     console.error('在庫または全体在庫の削除後の更新エラー:', error);
+    throw error;
+  }
+}
+
+// 消耗品の使用量を記録する関数
+async function recordConsumableUsage(transactionItems) {
+  try {
+    for (const item of transactionItems) {
+      const product = await getProductById(item.productId); // 商品情報を取得
+      if (product.consumables && product.consumables.length > 0) {
+        for (const consumableId of product.consumables) {
+          await addConsumableUsage(consumableId, item.quantity * item.size); // サイズを考慮して消耗量を計算
+        }
+      }
+    }
+  } catch (error) {
+    console.error('消耗品使用量の記録に失敗しました:', error);
+    throw error;
+  }
+}
+
+// 消耗品使用量をデータベースに追加する関数
+async function addConsumableUsage(consumableId, quantityUsed) {
+  const timestamp = new Date().toISOString();
+  try {
+    await addDoc(collection(db, 'consumableUsage'), {
+      consumableId,
+      quantityUsed,
+      timestamp,
+    });
+  } catch (error) {
+    console.error('消耗品使用量の追加に失敗しました:', error);
     throw error;
   }
 }
