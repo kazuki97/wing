@@ -1,5 +1,5 @@
 import { db } from './db.js'; // Firebaseの初期化をインポート
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, addDoc } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 const consumablesCollection = collection(db, 'consumables');
 
@@ -48,11 +48,11 @@ addConsumableForm.addEventListener('submit', async (e) => {
 // 消耗品一覧の表示
 async function displayConsumables() {
   try {
-    const consumablesSnapshot = await getDocs(consumablesCollection);
+    const snapshot = await getDocs(consumablesCollection);
     const consumableList = document.getElementById('consumableList').querySelector('tbody');
     consumableList.innerHTML = '';
 
-    consumablesSnapshot.forEach((doc) => {
+    snapshot.forEach((doc) => {
       const consumable = { id: doc.id, ...doc.data() };
       const row = document.createElement('tr');
       row.innerHTML = `
