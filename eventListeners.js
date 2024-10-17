@@ -239,10 +239,13 @@ document.getElementById('addConsumableForm').addEventListener('submit', async (e
   e.preventDefault();
   const name = document.getElementById('consumableName').value.trim();
   const cost = parseFloat(document.getElementById('consumableCost').value);
-  if (!name || isNaN(cost)) {
-    showError('消耗品名と原価を正しく入力してください');
+  
+  // 修正：バリデーションの改善
+  if (!name || name === "" || isNaN(cost) || cost <= 0) {
+    showError('消耗品名と有効な原価を入力してください');
     return;
   }
+
   try {
     await addConsumable(name, cost); // 消耗品を追加する処理
     alert('消耗品が追加されました');
