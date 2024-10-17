@@ -347,9 +347,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     await updateConsumablesAfterSale(transactionData.items);
 
     // 消耗品使用量の表示を更新
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-    await displayConsumableUsage(currentYear, currentMonth); // 消耗品使用量を更新
+    await displayConsumables(); // 消耗品リストの再表示
 
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
@@ -366,10 +364,15 @@ async function updateConsumablesAfterSale(items) {
         for (const consumableId of product.consumables) {
           // 消耗品情報を取得
           const consumable = await getConsumableById(consumableId);
-          const updatedQuantity = consumable.quantity - (item.quantity * item.size);
-
-          // 消耗品の在庫を更新
-          await updateConsumable(consumableId, { quantity: updatedQuantity });
+          if (consumable) {
+            const updatedQuantity = consumable.quantity - (item.quantity * item.size);
+            if (updatedQuantity >= 0) {
+              // 消耗品の在庫を更新
+              await updateConsumable(consumableId, { quantity: updatedQuantity });
+            } else {
+              console.warn(`消耗品 ${consumable.name} の在庫が不足しています`);
+            }
+          }
         }
       }
     }
@@ -378,6 +381,7 @@ async function updateConsumablesAfterSale(items) {
     console.error('消耗品の在庫の更新に失敗しました:', error);
   }
 }
+
 
 // 商品追加フォームのイベントリスナー
 document.getElementById('addProductForm').addEventListener('submit', async (e) => {
