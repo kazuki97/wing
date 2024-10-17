@@ -1268,7 +1268,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayTransactions(); // 売上管理セクションの取引データ表示
   await displayConsumables(); // 消耗品リストの初期表示
   await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
-  await displayConsumableUsage(); // 消耗品使用量の表示を追加
+  await initializeConsumableUsage(); // 消耗品使用量の初期化
 
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
