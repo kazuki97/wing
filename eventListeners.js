@@ -97,16 +97,6 @@ function showError(message) {
   }, 5000);
 }
 
-// エラーメッセージ表示関数
-function showError(message) {
-  const errorDiv = document.getElementById('error-message');
-  errorDiv.textContent = message;
-  errorDiv.style.display = 'block';
-  setTimeout(() => {
-    errorDiv.style.display = 'none';
-  }, 5000);
-}
-
 // 消耗品選択リストの更新関数
 async function updateConsumableCheckboxes() {
   try {
