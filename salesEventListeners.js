@@ -20,7 +20,6 @@ import {
 
 import { displayTransactions, displayOverallInventory, displayInventoryProducts } from './eventListeners.js'; 
 
-
 import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
 
@@ -287,6 +286,10 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     alert('販売が完了しました');
     // 売上管理セクションを更新
     await displayTransactions();
+    
+    // 在庫管理セクションと全体在庫の再描画
+    await displayOverallInventory(); // 全体在庫の再描画
+    await displayInventoryProducts(); // 在庫管理セクションの再描画
   } catch (error) {
     console.error(error);
     showError('販売処理に失敗しました');
@@ -408,4 +411,3 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayOverallInventory(); // 全体在庫の初期表示
   await displayInventoryProducts(); // 在庫管理セクションの初期表示
 });
-
