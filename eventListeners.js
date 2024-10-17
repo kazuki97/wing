@@ -97,6 +97,45 @@ function showError(message) {
   }, 5000);
 }
 
+// エラーメッセージ表示関数
+function showError(message) {
+  const errorDiv = document.getElementById('error-message');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  setTimeout(() => {
+    errorDiv.style.display = 'none';
+  }, 5000);
+}
+
+// 消耗品選択リストの更新関数
+async function updateConsumableCheckboxes() {
+  try {
+    const consumables = await getConsumables();
+    const consumableCheckboxesDiv = document.getElementById('consumableCheckboxes');
+    consumableCheckboxesDiv.innerHTML = '';
+
+    consumables.forEach((consumable) => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = `consumable-${consumable.id}`;
+      checkbox.value = consumable.id;
+      checkbox.name = 'consumable';
+
+      const label = document.createElement('label');
+      label.htmlFor = `consumable-${consumable.id}`;
+      label.textContent = consumable.name;
+
+      const checkboxContainer = document.createElement('div');
+      checkboxContainer.appendChild(checkbox);
+      checkboxContainer.appendChild(label);
+
+      consumableCheckboxesDiv.appendChild(checkboxContainer);
+    });
+  } catch (error) {
+    console.error('消耗品リストの取得に失敗しました:', error);
+  }
+}
+
 async function addTransactionEditListeners() {
   const editButtons = document.querySelectorAll('.edit-transaction');
   editButtons.forEach((button) => {
@@ -134,6 +173,7 @@ async function addTransactionEditListeners() {
     });
   });
 }
+
 
 // 売上管理セクションの取引データ編集フォームのイベントリスナー
 const editTransactionForm = document.getElementById('editTransactionForm');
@@ -231,6 +271,39 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
+  }
+});
+
+// 商品追加フォームのイベントリスナー
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  // 商品の情報を取得
+  const productData = {
+    name: document.getElementById('productName').value,
+    parentCategoryId: document.getElementById('productParentCategorySelect').value,
+    subcategoryId: document.getElementById('productSubcategorySelect').value,
+    price: parseFloat(document.getElementById('productPrice').value),
+    cost: parseFloat(document.getElementById('productCost').value),
+    barcode: document.getElementById('productBarcode').value,
+    quantity: parseFloat(document.getElementById('productQuantity').value),
+    size: parseFloat(document.getElementById('productSize').value),
+  };
+
+  // 消耗品の選択を取得
+  const selectedConsumables = Array.from(document.querySelectorAll('input[name="consumable"]:checked')).map(
+    (checkbox) => checkbox.value
+  );
+  productData.consumables = selectedConsumables; // 商品に関連付ける消耗品のIDリスト
+
+  try {
+    await addProduct(productData);
+    alert('商品が追加されました');
+    document.getElementById('addProductForm').reset(); // フォームをリセット
+    await displayProducts(); // 商品一覧を再表示
+  } catch (error) {
+    console.error('商品の追加に失敗しました:', error);
+    showError('商品の追加に失敗しました');
   }
 });
 
@@ -1115,6 +1188,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayInventoryProducts();
   await displayTransactions(); // 売上管理セクションの取引データ表示
   await displayConsumables(); // 消耗品リストの初期表示
+  await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
 
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
