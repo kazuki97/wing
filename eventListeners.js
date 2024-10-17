@@ -718,6 +718,35 @@ document
     }
   });
 
+// 消耗品の追加フォームイベントリスナー
+document
+  .getElementById('addConsumableForm')
+  .addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const consumableName = document.getElementById('consumableName').value.trim();
+    const consumableCost = parseFloat(document.getElementById('consumableCost').value);
+
+    if (!consumableName || isNaN(consumableCost) || consumableCost < 0) {
+      showError('消耗品名と有効な原価を入力してください');
+      return;
+    }
+
+    try {
+      // Firebaseに新しい消耗品を追加する
+      await addDoc(consumablesCollection, {
+        name: consumableName,
+        cost: consumableCost,
+      });
+      console.log('消耗品が追加されました:', { consumableName, consumableCost });
+      document.getElementById('addConsumableForm').reset();
+      await displayConsumables(); // 消耗品リストを再表示
+    } catch (error) {
+      console.error('消耗品の追加に失敗しました:', error);
+      showError('消耗品の追加に失敗しました');
+    }
+  });
+
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
 async function updateAllParentCategorySelects() {
   try {
