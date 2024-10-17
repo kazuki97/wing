@@ -264,7 +264,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
 
       // 在庫の更新
       console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - requiredQuantity, subcategoryId: product.subcategoryId });
-      await updateProduct(product.id, { quantity: product.quantity - requiredQuantity, subcategoryId: product.subcategoryId });
+     await updateProduct(product.id, { quantity: product.quantity - quantity, subcategoryId: product.subcategoryId });
       // 全体在庫の更新
       console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
       await updateOverallInventory(product.subcategoryId, -requiredQuantity);
