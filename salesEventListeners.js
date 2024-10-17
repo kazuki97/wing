@@ -420,6 +420,36 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
   await displayTransactions(filter);
 });
 
+// セクションの切り替えのイベントリスナーを設定する
+document.addEventListener('DOMContentLoaded', () => {
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('.content-section');
+
+  navLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      // すべてのセクションを非表示にする
+      sections.forEach((section) => {
+        section.style.display = 'none';
+      });
+
+      // リンク先のセクションIDを取得して、そのセクションを表示
+      const targetId = link.getAttribute('href').substring(1);
+      const targetSection = document.getElementById(targetId);
+      if (targetSection) {
+        targetSection.style.display = 'block';
+      }
+    });
+  });
+
+  // 初期表示としてホームセクションのみ表示する
+  sections.forEach((section) => {
+    section.style.display = 'none';
+  });
+  document.getElementById('home').style.display = 'block';
+});
+
 // 初期化処理
 window.addEventListener('DOMContentLoaded', async () => {
   await updatePaymentMethodSelect();
