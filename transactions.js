@@ -14,10 +14,7 @@ import {
 // 売上データの追加
 export async function addTransaction(transactionData) {
   try {
-    if (!transactionData.items || !transactionData.items[0].subcategoryId) {
-      console.error('取引のアイテムにサブカテゴリIDが設定されていません。');
-      throw new Error('サブカテゴリIDが必須です。');
-    }
+    // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
     return docRef.id;
