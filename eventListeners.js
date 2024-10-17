@@ -446,10 +446,31 @@ async function handleReturnTransaction(transaction) {
 async function handleDeleteTransaction(transactionId) {
   if (confirm('この取引を削除しますか？')) {
     try {
+      // まず、取引を取得して、商品情報を使用します
+      const transaction = await getTransactionById(transactionId);
+      if (transaction && transaction.items && transaction.items.length > 0) {
+        // 削除する取引に含まれる商品の在庫を元に戻します
+        for (const item of transaction.items) {
+          const productId = item.productId;
+          const quantity = item.quantity;
+          const size = item.size;
+          const requiredQuantity = quantity * size;
+
+          // 商品の在庫を更新
+          const product = await getProductById(productId);
+          const updatedQuantity = product.quantity + requiredQuantity;
+          await updateProduct(productId, { quantity: updatedQuantity });
+          
+          // 全体在庫の更新
+          await updateOverallInventory(productId, requiredQuantity);
+        }
+      }
+
+      // 取引を削除
       await deleteTransaction(transactionId);
       alert('取引が削除されました');
       document.getElementById('transactionDetails').style.display = 'none';
-      await displayTransactions();
+      await displayTransactions(); // 売上管理セクションを更新
     } catch (error) {
       console.error(error);
       showError('取引の削除に失敗しました');
