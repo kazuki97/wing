@@ -277,14 +277,14 @@ export async function displayTransactions(filter = {}) {
       }
 
       // 修正箇所: 原価と利益をリストに表示
-    row.innerHTML = `
+  row.innerHTML = `
   <td>${transaction.id}</td>
   <td>${formattedTimestamp}</td>
   <td>${paymentMethodName}</td>
   <td>${productNames || '手動追加'}</td>
   <td>${totalQuantity || '-'}</td>
-  <td>¥${transaction.totalAmount}</td>
- <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価をそのまま表示 -->
+  <td>¥${transaction.netAmount}</td> <!-- 修正箇所: netAmountを使用 -->
+  <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価をそのまま表示 -->
   <td>¥${transaction.items[0].profit || 0}</td> <!-- 利益を表示 -->
   <td>
     <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
