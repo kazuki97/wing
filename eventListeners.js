@@ -966,7 +966,7 @@ async function editProduct(product) {
       ${consumables.map(consumable => `
         <div>
           <input type="checkbox" name="consumable" value="${consumable.id}" id="edit-consumable-${consumable.id}" 
-          ${product.consumables.includes(consumable.id) ? 'checked' : ''} />
+          ${product.consumables && product.consumables.includes(consumable.id) ? 'checked' : ''} />
           <label for="edit-consumable-${consumable.id}">${consumable.name}</label>
         </div>
       `).join('')}
