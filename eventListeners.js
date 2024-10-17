@@ -232,6 +232,26 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   }
 });
 
+// 消耗品追加フォームのsubmitイベントリスナー
+document.getElementById('addConsumableForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('consumableName').value.trim();
+  const cost = parseFloat(document.getElementById('consumableCost').value);
+  if (!name || isNaN(cost)) {
+    showError('消耗品名と原価を正しく入力してください');
+    return;
+  }
+  try {
+    await addConsumable(name, cost); // 消耗品を追加する処理
+    alert('消耗品が追加されました');
+    document.getElementById('addConsumableForm').reset(); // フォームをリセット
+    await displayConsumables(); // 消耗品リストを更新
+  } catch (error) {
+    console.error(error);
+    showError('消耗品の追加に失敗しました');
+  }
+});
+
 // 売上管理セクションの取引データ表示関数
 export async function displayTransactions(filter = {}) {
   try {
