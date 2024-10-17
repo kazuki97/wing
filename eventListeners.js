@@ -49,6 +49,9 @@ import {
   getPaymentMethods,
 } from './paymentMethods.js';
 
+import { getConsumables } from './consumables.js';
+import { deleteConsumable } from './consumables.js'; // 削除の関数もインポート
+
 // 追加: updatePricingParentCategorySelectの定義
 async function updatePricingParentCategorySelect() {
   try {
@@ -185,7 +188,6 @@ if (editTransactionForm) {
   });
 }
 
-// 売上の手動追加フォームのsubmitイベントリスナー
 // 売上の手動追加フォームのsubmitイベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -328,6 +330,33 @@ row.innerHTML = `
     console.error(error);
     showError('取引の表示に失敗しました');
   }
+}
+
+// 消耗品リストを表示する関数を追加
+async function displayConsumables() {
+  const consumablesList = await getConsumables();
+  const consumableTableBody = document.getElementById('consumableList').querySelector('tbody');
+  consumableTableBody.innerHTML = '';
+
+  for (const consumable of consumablesList) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${consumable.name}</td>
+      <td>¥${consumable.cost}</td>
+      <td><button class="delete-consumable" data-name="${consumable.name}">削除</button></td>
+    `;
+    consumableTableBody.appendChild(row);
+  }
+
+  // 削除ボタンのイベントリスナーを設定
+  document.querySelectorAll('.delete-consumable').forEach((button) => {
+    button.addEventListener('click', async (e) => {
+      const name = e.target.dataset.name;
+      await deleteConsumable(name);
+      alert('消耗品が削除されました');
+      await displayConsumables();
+    });
+  });
 }
 
 // 売上管理セクションの取引詳細を表示する関数
@@ -1099,6 +1128,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayOverallInventory();
   await displayInventoryProducts();
   await displayTransactions(); // 売上管理セクションの取引データ表示
+  await displayConsumables(); // 消耗品リストの初期表示
 
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
