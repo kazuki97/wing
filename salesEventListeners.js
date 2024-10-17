@@ -72,6 +72,9 @@ document.getElementById('addBarcodeButton').addEventListener('click', async () =
     console.log("取得した商品情報:", product);
     addToCart(product);
     barcodeInput.value = '';
+    
+    // 在庫管理セクションの表示を更新
+    await displayInventoryProducts(); // 在庫管理セクションを再描画
   } catch (error) {
     console.error(error);
     showError('商品の取得に失敗しました');
