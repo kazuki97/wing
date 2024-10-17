@@ -238,10 +238,12 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 document.getElementById('addConsumableForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('consumableName').value.trim();
-  const cost = parseFloat(document.getElementById('consumableCost').value);
+  let cost = document.getElementById('consumableCost').value.trim();
   
-  // 修正：バリデーションの改善
-  if (!name || name === "" || isNaN(cost) || cost <= 0) {
+  // 修正：costのフォーマットを整えてから数値に変換
+  cost = parseFloat(parseFloat(cost).toFixed(2)); 
+
+  if (!name || isNaN(cost) || cost <= 0) {
     showError('消耗品名と有効な原価を入力してください');
     return;
   }
