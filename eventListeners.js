@@ -1315,8 +1315,43 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
   await displayPricingRules();
 });
 
+// 商品編集ボタンのイベントリスナー関数
+async function addProductEditListeners() {
+  const editButtons = document.querySelectorAll('.editProductButton');
+  editButtons.forEach((button) => {
+    button.addEventListener('click', async (e) => {
+      const productId = e.target.dataset.id; // 編集対象の商品IDを取得
+      const product = await getProductById(productId); // 商品データを取得
+
+      if (product) {
+        // 編集フォームに商品情報をセット
+        document.getElementById('editProductName').value = product.name;
+        document.getElementById('editProductPrice').value = product.price;
+        document.getElementById('editProductCost').value = product.cost;
+        document.getElementById('editProductBarcode').value = product.barcode;
+        document.getElementById('editProductQuantity').value = product.quantity;
+        document.getElementById('editProductSize').value = product.size;
+
+        // 消耗品のチェックボックスを更新
+        const consumablesCheckboxes = document.querySelectorAll('#editConsumableCheckboxes input[type="checkbox"]');
+        consumablesCheckboxes.forEach((checkbox) => {
+          checkbox.checked = product.consumables.includes(checkbox.value);
+        });
+
+        // 編集フォームを表示
+        document.getElementById('editProductFormContainer').style.display = 'block';
+      } else {
+        showError('商品のデータを取得できませんでした');
+      }
+    });
+  });
+}
+
+
 // 初期化処理に売上管理セクションの編集ボタンのリスナーを追加
 window.addEventListener('DOMContentLoaded', async () => {
+  await addProductEditListeners(); // 商品編集ボタンのイベントリスナーを追加
+
   await updateAllParentCategorySelects();
   await updatePricingParentCategorySelect();
   await displayParentCategories();
