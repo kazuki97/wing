@@ -78,29 +78,40 @@
     <button type="submit">追加</button>
   </form>
 
-  <!-- 商品編集フォーム（追加部分） -->
-  <div id="editProductFormContainer" style="display: none;">
-    <h2>商品編集</h2>
-    <form id="editProductForm">
-      <input type="text" id="editProductName" placeholder="商品名" required />
-      <input type="number" id="editProductPrice" placeholder="価格" required />
-      <input type="number" id="editProductCost" placeholder="原価" required />
-      <input type="text" id="editProductBarcode" placeholder="バーコード" />
-      <input type="number" id="editProductQuantity" placeholder="数量" required />
-      <input type="number" id="editProductSize" placeholder="サイズ" required />
+ <!-- 商品編集フォーム（追加部分） -->
+<div id="editProductFormContainer" style="display: none;">
+  <h2>商品編集</h2>
+  <form id="editProductForm">
+    <label for="editProductName">商品名:</label>
+    <input type="text" id="editProductName" placeholder="商品名" required />
 
-      <!-- 消耗品選択リストを追加（編集用） -->
-      <div id="editConsumablesSelection">
-        <label>使用する消耗品:</label>
-        <div id="editConsumableCheckboxes">
-          <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
-        </div>
+    <label for="editProductPrice">価格:</label>
+    <input type="number" id="editProductPrice" placeholder="価格" required />
+
+    <label for="editProductCost">原価:</label>
+    <input type="number" id="editProductCost" placeholder="原価" required />
+
+    <label for="editProductBarcode">バーコード:</label>
+    <input type="text" id="editProductBarcode" placeholder="バーコード" />
+
+    <label for="editProductQuantity">数量:</label>
+    <input type="number" id="editProductQuantity" placeholder="数量" required />
+
+    <label for="editProductSize">サイズ (cm):</label>
+    <input type="number" id="editProductSize" placeholder="サイズ" required />
+
+    <!-- 消耗品選択リストを追加（編集用） -->
+    <div id="editConsumablesSelection">
+      <label>使用する消耗品:</label>
+      <div id="editConsumableCheckboxes">
+        <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
       </div>
+    </div>
 
-      <button type="submit">更新</button>
-      <button type="button" id="cancelEditProduct">キャンセル</button>
-    </form>
-  </div>
+    <button type="submit">更新</button>
+    <button type="button" id="cancelEditProduct">キャンセル</button>
+  </form>
+</div>
 
   <!-- 商品フィルタリング -->
   <div>
