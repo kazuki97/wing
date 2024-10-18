@@ -78,47 +78,46 @@
     <button type="submit">追加</button>
   </form>
 
-<!-- 商品編集フォーム（ラベルを追加） -->
-<div id="editProductFormContainer" style="display: none;">
+<!-- 商品編集フォーム（ラベルを追加して明確化） -->
+<div id="editProductFormContainer">
   <h2>商品編集</h2>
   <form id="editProductForm">
-
-    <!-- 親カテゴリとサブカテゴリの選択 -->
-    <label for="productParentCategorySelect">親カテゴリを選択:</label>
-    <select id="productParentCategorySelect" required></select>
     
-    <label for="productSubcategorySelect">サブカテゴリを選択:</label>
-    <select id="productSubcategorySelect" required></select>
+    <div class="form-group">
+      <label for="editProductName">商品名:</label>
+      <input type="text" id="editProductName" placeholder="商品名" required />
+    </div>
 
-    <!-- 商品名 -->
-    <label for="editProductName">商品名:</label>
-    <input type="text" id="editProductName" placeholder="商品名" required />
+    <div class="form-group">
+      <label for="editProductPrice">価格 (¥):</label>
+      <input type="number" id="editProductPrice" placeholder="価格" required />
+    </div>
 
-    <!-- 価格 -->
-    <label for="editProductPrice">価格 (¥):</label>
-    <input type="number" id="editProductPrice" placeholder="価格" required />
+    <div class="form-group">
+      <label for="editProductCost">原価 (¥):</label>
+      <input type="number" id="editProductCost" placeholder="原価" required />
+    </div>
 
-    <!-- 原価 -->
-    <label for="editProductCost">原価 (¥):</label>
-    <input type="number" id="editProductCost" placeholder="原価" required />
+    <div class="form-group">
+      <label for="editProductBarcode">バーコード:</label>
+      <input type="text" id="editProductBarcode" placeholder="バーコード" />
+    </div>
 
-    <!-- バーコード -->
-    <label for="editProductBarcode">バーコード:</label>
-    <input type="text" id="editProductBarcode" placeholder="バーコード" />
+    <div class="form-group">
+      <label for="editProductQuantity">数量:</label>
+      <input type="number" id="editProductQuantity" placeholder="数量" required />
+    </div>
 
-    <!-- 数量 -->
-    <label for="editProductQuantity">数量:</label>
-    <input type="number" id="editProductQuantity" placeholder="数量" required />
-
-    <!-- サイズ -->
-    <label for="editProductSize">サイズ (cm):</label>
-    <input type="number" id="editProductSize" placeholder="サイズ" required />
+    <div class="form-group">
+      <label for="editProductSize">サイズ (cm):</label>
+      <input type="number" id="editProductSize" placeholder="サイズ" required />
+    </div>
 
     <!-- 消耗品選択リスト -->
-    <div id="editConsumablesSelection">
+    <div class="form-group">
       <label>使用する消耗品:</label>
       <div id="editConsumableCheckboxes">
-        <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
+        <!-- JavaScriptで動的にチェックボックスを追加 -->
       </div>
     </div>
 
