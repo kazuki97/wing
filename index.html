@@ -79,52 +79,38 @@
   </form>
 
   <!-- 商品編集フォーム（追加部分） -->
-      <div id="editProductFormContainer" style="display: none;">
-        <h2>商品編集</h2>
-        <form id="editProductForm">
-          <table>
-            <tr>
-              <td><label for="editProductName">商品名:</label></td>
-              <td><input type="text" id="editProductName" placeholder="商品名" required /></td>
-            </tr>
-            <tr>
-              <td><label for="editProductPrice">価格:</label></td>
-              <td><input type="number" id="editProductPrice" placeholder="価格" required /></td>
-            </tr>
-            <tr>
-              <td><label for="editProductCost">原価:</label></td>
-              <td><input type="number" id="editProductCost" placeholder="原価" required /></td>
-            </tr>
-            <tr>
-              <td><label for="editProductBarcode">バーコード:</label></td>
-              <td><input type="text" id="editProductBarcode" placeholder="バーコード" /></td>
-            </tr>
-            <tr>
-              <td><label for="editProductQuantity">数量:</label></td>
-              <td><input type="number" id="editProductQuantity" placeholder="数量" required /></td>
-            </tr>
-            <tr>
-              <td><label for="editProductSize">サイズ:</label></td>
-              <td><input type="number" id="editProductSize" placeholder="サイズ" required /></td>
-            </tr>
-            <!-- 消耗品選択リストを追加（編集用） -->
-            <tr>
-              <td><label>使用する消耗品:</label></td>
-              <td>
-                <div id="editConsumablesSelection">
-                  <div id="editConsumableCheckboxes">
-                    <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </table>
-          <button type="submit">更新</button>
-          <button type="button" id="cancelEditProduct">キャンセル</button>
-        </form>
+  <div id="editProductFormContainer" style="display: none;">
+    <h2>商品編集</h2>
+    <form id="editProductForm">
+      <input type="text" id="editProductName" placeholder="商品名" required />
+      <input type="number" id="editProductPrice" placeholder="価格" required />
+      <input type="number" id="editProductCost" placeholder="原価" required />
+      <input type="text" id="editProductBarcode" placeholder="バーコード" />
+      <input type="number" id="editProductQuantity" placeholder="数量" required />
+      <input type="number" id="editProductSize" placeholder="サイズ" required />
+
+      <!-- 消耗品選択リストを追加（編集用） -->
+      <div id="editConsumablesSelection">
+        <label>使用する消耗品:</label>
+        <div id="editConsumableCheckboxes">
+          <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
+        </div>
       </div>
-    </section>
-  </main>
+
+      <button type="submit">更新</button>
+      <button type="button" id="cancelEditProduct">キャンセル</button>
+    </form>
+  </div>
+
+  <!-- 商品フィルタリング -->
+  <div>
+    <select id="filterParentCategorySelect">
+      <option value="">すべての親カテゴリ</option>
+    </select>
+    <select id="filterSubcategorySelect">
+      <option value="">すべてのサブカテゴリ</option>
+    </select>
+  </div>
 
   <!-- 商品一覧表示エリア -->
   <ul id="productList"></ul>
