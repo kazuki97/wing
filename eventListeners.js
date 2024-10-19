@@ -336,52 +336,16 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   };
 
   try {
-    // 売上データを登録
     await addTransaction(transactionData);
     alert('売上が追加されました');
     document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
     e.target.reset(); // フォームをリセット
     await displayTransactions(); // 最新の売上リストを再表示
-
-    // 消耗品の在庫を減らす処理を追加
-    await updateConsumablesAfterSale(transactionData.items);
-
-    // 消耗品使用量の表示を更新
-    await displayConsumables(); // 消耗品リストの再表示
-
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
   }
 });
-
-// 消耗品使用量を更新する関数
-async function updateConsumablesAfterSale(items) {
-  try {
-    for (const item of items) {
-      const product = await getProductByBarcode(item.productName); // 商品情報を取得（商品名やバーコードを使用）
-      if (product.consumables) {
-        for (const consumableId of product.consumables) {
-          // 消耗品情報を取得
-          const consumable = await getConsumableById(consumableId);
-          if (consumable) {
-            const updatedQuantity = consumable.quantity - (item.quantity * item.size);
-            if (updatedQuantity >= 0) {
-              // 消耗品の在庫を更新
-              await updateConsumable(consumableId, { quantity: updatedQuantity });
-            } else {
-              console.warn(`消耗品 ${consumable.name} の在庫が不足しています`);
-            }
-          }
-        }
-      }
-    }
-    console.log('消耗品の在庫が更新されました');
-  } catch (error) {
-    console.error('消耗品の在庫の更新に失敗しました:', error);
-  }
-}
-
 
 // 商品追加フォームのイベントリスナー
 document.getElementById('addProductForm').addEventListener('submit', async (e) => {
