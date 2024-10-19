@@ -1366,7 +1366,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
   // イベントリスナーの重複登録を防止
-  if (!addParentCategoryButton.hasAttribute('listener-added')) {
+  const addParentCategoryButton = document.getElementById('addParentCategoryButton');
+  if (addParentCategoryButton && !addParentCategoryButton.hasAttribute('listener-added')) {
     addParentCategoryButton.addEventListener('click', openParentCategoryModal);
     addParentCategoryButton.setAttribute('listener-added', 'true');
   }
