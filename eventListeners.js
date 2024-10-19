@@ -1324,7 +1324,6 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
 window.addEventListener('DOMContentLoaded', async () => {
   console.log("あいうえお"); // コンソールに「あいうえお」を出力
 
-  // 初期表示時にセレクトボックスを更新
   await updateAllParentCategorySelectOptions();
   await updatePricingParentCategorySelect();
   await displayParentCategories();
@@ -1338,42 +1337,57 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
-  if (manualAddTransactionButton && !manualAddTransactionButton.hasAttribute('data-listener-added')) {
+  if (manualAddTransactionButton) {
     manualAddTransactionButton.addEventListener('click', async () => {
       document.getElementById('manualAddTransactionForm').style.display = 'block';
       await updatePaymentMethodSelect(); // 支払い方法のセレクトボックスを更新
     });
-    manualAddTransactionButton.setAttribute('data-listener-added', 'true');
   }
 
   // 手動追加フォームのキャンセルボタンのイベントリスナー
   const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
-  if (cancelAddTransactionButton && !cancelAddTransactionButton.hasAttribute('data-listener-added')) {
+  if (cancelAddTransactionButton) {
     cancelAddTransactionButton.addEventListener('click', () => {
       document.getElementById('manualAddTransactionForm').style.display = 'none';
     });
-    cancelAddTransactionButton.setAttribute('data-listener-added', 'true');
+  }
+
+  // 親カテゴリ追加ボタンのクリックでモーダルを開く
+  const addParentCategoryButton = document.getElementById('addParentCategoryButton');
+  if (addParentCategoryButton) {
+    addParentCategoryButton.addEventListener('click', () => {
+      const parentCategoryModal = document.getElementById('parentCategoryModal');
+      parentCategoryModal.style.display = 'block';
+    });
+  } else {
+    console.error('addParentCategoryButton が見つかりません');
+  }
+
+  // サブカテゴリ追加ボタンのクリックでモーダルを開く
+  const addSubcategoryButton = document.getElementById('addSubcategoryButton');
+  if (addSubcategoryButton) {
+    addSubcategoryButton.addEventListener('click', () => {
+      const subcategoryModal = document.getElementById('subcategoryModal');
+      subcategoryModal.style.display = 'block';
+      updateAllParentCategorySelectOptions(); // ポップアップが開かれたときに親カテゴリのセレクトボックスを更新
+    });
+  } else {
+    console.error('addSubcategoryButton が見つかりません');
   }
 
   // 親カテゴリ追加フォームの送信処理
   const addParentCategoryForm = document.getElementById('addParentCategoryForm');
-  if (addParentCategoryForm && !addParentCategoryForm.hasAttribute('data-listener-added')) {
+  if (addParentCategoryForm) {
     addParentCategoryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const parentCategoryName = document.getElementById('parentCategoryName').value.trim();
       if (parentCategoryName) {
         try {
-          const newCategory = await addParentCategory(parentCategoryName);
+          await addParentCategory(parentCategoryName);
           document.getElementById('parentCategoryName').value = '';
           document.getElementById('parentCategoryModal').style.display = 'none';
-
-          // 新規追加カテゴリのみリストに追加
-          const parentCategoryList = document.getElementById('parentCategoryList');
-          const newListItem = createParentCategoryListItem(newCategory);
-          parentCategoryList.appendChild(newListItem);
-
-          // 各セレクトボックスを更新
           await updateAllParentCategorySelectOptions();
+          await displayParentCategories();
           alert('親カテゴリが追加されました');
         } catch (error) {
           console.error('親カテゴリの追加に失敗しました', error);
@@ -1382,12 +1396,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.error('親カテゴリ名が空です');
       }
     });
-    addParentCategoryForm.setAttribute('data-listener-added', 'true');
+  } else {
+    console.error('addParentCategoryForm が見つかりません');
   }
 
   // サブカテゴリ追加フォームの送信処理
   const addSubcategoryForm = document.getElementById('addSubcategoryForm');
-  if (addSubcategoryForm && !addSubcategoryForm.hasAttribute('data-listener-added')) {
+  if (addSubcategoryForm) {
     addSubcategoryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const subcategoryName = document.getElementById('subcategoryInput').value.trim();
@@ -1397,18 +1412,7 @@ window.addEventListener('DOMContentLoaded', async () => {
           await addSubcategory(subcategoryName, parentCategoryId);
           document.getElementById('subcategoryInput').value = '';
           document.getElementById('subcategoryModal').style.display = 'none';
-
-          // サブカテゴリも同様に新規追加のみリストに追加
-          const parentCategoryList = document.getElementById('parentCategoryList');
-          const parentItem = [...parentCategoryList.children].find(
-            (item) => item.dataset.id === parentCategoryId
-          );
-          if (parentItem) {
-            const subcategoryList = await displaySubcategories(parentCategoryId);
-            parentItem.appendChild(subcategoryList);
-          }
-
-          // 各セレクトボックスを更新
+          await displayParentCategories();
           await updateAllParentCategorySelectOptions();
           alert('サブカテゴリが追加されました');
         } catch (error) {
@@ -1418,24 +1422,23 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.error('サブカテゴリ名または親カテゴリが選択されていません');
       }
     });
-    addSubcategoryForm.setAttribute('data-listener-added', 'true');
+  } else {
+    console.error('addSubcategoryForm が見つかりません');
   }
 
   // モーダルの閉じるボタンの設定
   const closeParentCategoryModal = document.getElementById('closeParentCategoryModal');
-  if (closeParentCategoryModal && !closeParentCategoryModal.hasAttribute('data-listener-added')) {
+  if (closeParentCategoryModal) {
     closeParentCategoryModal.addEventListener('click', () => {
       document.getElementById('parentCategoryModal').style.display = 'none';
     });
-    closeParentCategoryModal.setAttribute('data-listener-added', 'true');
   }
 
   const closeSubcategoryModal = document.getElementById('closeSubcategoryModal');
-  if (closeSubcategoryModal && !closeSubcategoryModal.hasAttribute('data-listener-added')) {
+  if (closeSubcategoryModal) {
     closeSubcategoryModal.addEventListener('click', () => {
       document.getElementById('subcategoryModal').style.display = 'none';
     });
-    closeSubcategoryModal.setAttribute('data-listener-added', 'true');
   }
 
   // モーダル外のクリックで閉じる処理
@@ -1446,4 +1449,58 @@ window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('subcategoryModal').style.display = 'none';
     }
   });
+});
+
+// すべての親カテゴリのセレクトボックスを更新する関数
+async function updateAllParentCategorySelectOptions() {
+  try {
+    const parentCategories = await getParentCategories();
+    const selectIds = [
+      'subcategoryParentSelect',
+      'productParentCategorySelect',
+      'filterParentCategorySelect',
+      'inventoryParentCategorySelect',
+      'overallInventoryParentCategorySelect',
+      'pricingParentCategorySelect'
+    ];
+    selectIds.forEach((id) => {
+      const select = document.getElementById(id);
+      if (select) { // nullチェックを追加
+        select.innerHTML = '<option value="">親カテゴリを選択</option>';
+        parentCategories.forEach((category) => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          select.appendChild(option);
+        });
+      }
+    });
+  } catch (error) {
+    console.error('親カテゴリの取得に失敗しました', error);
+  }
+}
+
+// 親カテゴリ追加ボタンのクリックでモーダルを開く
+const addParentCategoryButton = document.getElementById('addParentCategoryButton');
+if (addParentCategoryButton) {
+  addParentCategoryButton.addEventListener('click', () => {
+    const parentCategoryModal = document.getElementById('parentCategoryModal');
+    parentCategoryModal.style.display = 'block';
+  });
+}
+
+// モーダルの閉じるボタンの設定
+const closeParentCategoryModal = document.getElementById('closeParentCategoryModal');
+if (closeParentCategoryModal) {
+  closeParentCategoryModal.addEventListener('click', () => {
+    document.getElementById('parentCategoryModal').style.display = 'none';
+  });
+}
+
+// モーダル外のクリックで閉じる処理
+window.addEventListener('click', (event) => {
+  const parentCategoryModal = document.getElementById('parentCategoryModal');
+  if (event.target === parentCategoryModal) {
+    parentCategoryModal.style.display = 'none';
+  }
 });
