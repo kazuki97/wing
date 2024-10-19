@@ -1408,19 +1408,22 @@ function openSubcategoryModal() {
   }
 }
 
-// 親カテゴリ追加フォームの送信処理関数
 async function handleAddParentCategoryFormSubmit(e) {
   e.preventDefault();
-  const parentCategoryName = document.getElementById('parentCategoryName').value.trim();
+  let parentCategoryName = document.getElementById('parentCategoryName').value.trim();
 
   if (parentCategoryName) {
     try {
+      // カテゴリ名を小文字に変換
+      parentCategoryName = parentCategoryName.toLowerCase();
+
       // 既存の親カテゴリを取得し、重複がないか確認
       const parentCategories = await getParentCategories();
-      console.log('取得した親カテゴリ:', parentCategories.map(category => category.name)); // 各カテゴリ名をリスト表示
-      
-      const isCategoryExists = parentCategories.some(category => category.name === parentCategoryName);
-      
+
+      const isCategoryExists = parentCategories.some(
+        category => category.name.trim().toLowerCase() === parentCategoryName
+      );
+
       if (isCategoryExists) {
         alert('同じ名前の親カテゴリが既に存在するため、追加できません');
         return;
@@ -1451,7 +1454,7 @@ async function handleAddSubcategoryFormSubmit(e) {
       const subcategories = await getSubcategories(parentCategoryId);
 
       // 重複チェック: 同じ名前が存在するなら追加を防ぐ
-      const isDuplicate = subcategories.some(subcategory => subcategory.name === subcategoryName);
+     const isCategoryExists = parentCategories.some(category => category.name.trim().toLowerCase() === parentCategoryName.toLowerCase());
       if (isDuplicate) {
         alert('同じ名前のサブカテゴリが既に存在するため、追加できません');
         return;
