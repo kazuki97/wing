@@ -52,7 +52,7 @@
   <div class="modal-content">
     <span class="close" id="closeParentCategoryModal">&times;</span>
     <h2 id="parentCategoryModalTitle">親カテゴリ追加</h2>
-    <form id="parentCategoryForm">
+    <form id="addParentCategoryForm"> <!-- 修正: IDをaddParentCategoryFormに変更 -->
       <input type="text" id="parentCategoryInput" placeholder="親カテゴリ名" required />
       <button type="submit" id="saveParentCategoryButton">保存</button>
     </form>
@@ -64,7 +64,7 @@
   <div class="modal-content">
     <span class="close" id="closeSubcategoryModal">&times;</span>
     <h2 id="subcategoryModalTitle">サブカテゴリ追加</h2>
-    <form id="subcategoryForm">
+    <form id="addSubcategoryForm"> <!-- 修正: IDをaddSubcategoryFormに変更 -->
       <select id="subcategoryParentSelect" required></select>
       <input type="text" id="subcategoryInput" placeholder="サブカテゴリ名" required />
       <button type="submit" id="saveSubcategoryButton">保存</button>
