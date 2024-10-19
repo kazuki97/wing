@@ -33,20 +33,14 @@
       <h1>ホーム</h1>
     </section>
 
-   <!-- カテゴリ設定 -->
+  <!-- カテゴリ設定 -->
 <section id="categories" class="content-section" style="display: none;">
   <h1>カテゴリ設定</h1>
-  <!-- 親カテゴリ追加フォーム -->
-  <form id="addParentCategoryForm">
-    <input type="text" id="parentCategoryName" placeholder="親カテゴリ名" required />
-    <button type="submit">追加</button>
-  </form>
-  <!-- サブカテゴリ追加フォーム -->
-  <form id="addSubcategoryForm">
-    <select id="subcategoryParentCategorySelect" required></select>
-    <input type="text" id="subcategoryName" placeholder="サブカテゴリ名" required />
-    <button type="submit">追加</button>
-  </form>
+  <!-- 親カテゴリ追加ボタン -->
+  <button id="addParentCategoryButton">親カテゴリ追加</button>
+  <!-- サブカテゴリ追加ボタン -->
+  <button id="addSubcategoryButton">サブカテゴリ追加</button>
+
   <!-- カテゴリ一覧表示エリア -->
   <div id="categoryList">
     <ul id="parentCategoryList"></ul>
