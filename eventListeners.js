@@ -842,7 +842,7 @@ async function displayParentCategories() {
   try {
     const parentCategories = await getParentCategories();
     const parentCategoryList = document.getElementById('parentCategoryList');
-    parentCategoryList.innerHTML = '';
+    parentCategoryList.innerHTML = ''; // リストをクリアする
     for (const category of parentCategories) {
       const listItem = document.createElement('li');
       listItem.textContent = category.name;
@@ -864,6 +864,14 @@ async function displayParentCategories() {
             });
         }
       });
+      listItem.appendChild(editButton);
+      parentCategoryList.appendChild(listItem);
+    }
+  } catch (error) {
+    console.error('親カテゴリの表示に失敗しました', error);
+    showError('親カテゴリの取得に失敗しました');
+  }
+}
       // 削除ボタン
       const deleteButton = document.createElement('button');
       deleteButton.textContent = '削除';
