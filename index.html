@@ -33,26 +33,44 @@
       <h1>ホーム</h1>
     </section>
 
-    <!-- カテゴリ設定 -->
-    <section id="categories" class="content-section" style="display: none;">
-      <h1>カテゴリ設定</h1>
-      <!-- 親カテゴリ追加フォーム -->
-      <form id="addParentCategoryForm">
-        <input type="text" id="parentCategoryName" placeholder="親カテゴリ名" required />
-        <button type="submit">追加</button>
-      </form>
-      <!-- サブカテゴリ追加フォーム -->
-      <form id="addSubcategoryForm">
-        <select id="subcategoryParentCategorySelect" required></select>
-        <input type="text" id="subcategoryName" placeholder="サブカテゴリ名" required />
-        <button type="submit">追加</button>
-      </form>
-      <!-- カテゴリ一覧表示エリア -->
-      <div id="categoryList">
-        <ul id="parentCategoryList"></ul>
-      </div>
-    </section>
+   <!-- カテゴリ設定 -->
+<section id="categories" class="content-section" style="display: none;">
+  <h1>カテゴリ設定</h1>
+  <!-- 親カテゴリ追加ボタン -->
+  <button id="addParentCategoryButton">親カテゴリ追加</button>
+  <!-- サブカテゴリ追加ボタン -->
+  <button id="addSubcategoryButton">サブカテゴリ追加</button>
 
+  <!-- カテゴリ一覧表示エリア -->
+  <div id="categoryList">
+    <ul id="parentCategoryList"></ul>
+  </div>
+</section>
+
+<!-- 親カテゴリ追加/編集モーダル -->
+<div id="parentCategoryModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" id="closeParentCategoryModal">&times;</span>
+    <h2 id="parentCategoryModalTitle">親カテゴリ追加</h2>
+    <form id="addParentCategoryForm">
+      <input type="text" id="parentCategoryName" placeholder="親カテゴリ名" required />
+      <button type="submit" id="saveParentCategoryButton">保存</button>
+    </form>
+  </div>
+</div>
+
+<!-- サブカテゴリ追加/編集モーダル -->
+<div id="subcategoryModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" id="closeSubcategoryModal">&times;</span>
+    <h2 id="subcategoryModalTitle">サブカテゴリ追加</h2>
+    <form id="addSubcategoryForm">
+      <select id="subcategoryParentSelect" required></select>
+      <input type="text" id="subcategoryInput" placeholder="サブカテゴリ名" required />
+      <button type="submit" id="saveSubcategoryButton">保存</button>
+    </form>
+  </div>
+</div>
   <!-- 商品設定 -->
 <section id="products" class="content-section" style="display: none;">
   <h1>商品設定</h1>
