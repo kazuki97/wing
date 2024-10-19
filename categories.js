@@ -79,7 +79,7 @@ window.addEventListener('click', (event) => {
 });
 
 // 親カテゴリフォーム送信で親カテゴリを追加
-document.getElementById('parentCategoryForm').addEventListener('submit', async (e) => {
+document.getElementById('addparentCategoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const parentCategoryName = document.getElementById('parentCategoryInput').value.trim();
   if (parentCategoryName) {
