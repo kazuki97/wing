@@ -731,25 +731,34 @@ async function updateAllParentCategorySelects() {
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
     ];
+
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
-      const selectedValue = select.value;
+      if (!select) {
+        console.error(`セレクトボックスが見つかりません: ${id}`);
+        return; // 要素が見つからない場合はスキップ
+      }
+
+      const selectedValue = select.value || ''; // nullチェックをしてからvalueを取得
       select.innerHTML = '<option value="">親カテゴリを選択</option>';
+
       parentCategories.forEach((category) => {
         const option = document.createElement('option');
         option.value = category.id;
         option.textContent = category.name;
         select.appendChild(option);
       });
+
       // 以前選択されていた値を再設定
       if (selectedValue) {
         select.value = selectedValue;
       }
     });
+
     // サブカテゴリセレクトボックスの更新
     await updateSubcategorySelects();
   } catch (error) {
-    console.error(error);
+    console.error('親カテゴリの取得に失敗しました', error);
     showError('親カテゴリの取得に失敗しました');
   }
 }
