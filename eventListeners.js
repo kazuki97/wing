@@ -1299,7 +1299,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
   // 親カテゴリ追加フォームのイベントリスナー
-  const addParentCategoryForm = document.getElementById('parentCategoryName'); // 修正: フォームIDをparentCategoryNameに変更
+  const addParentCategoryForm = document.getElementById('addParentCategoryForm'); // 修正: フォームIDをaddParentCategoryFormに戻す
   if (addParentCategoryForm) {
     addParentCategoryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
