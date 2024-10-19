@@ -843,9 +843,11 @@ async function displayParentCategories() {
     const parentCategories = await getParentCategories();
     const parentCategoryList = document.getElementById('parentCategoryList');
     parentCategoryList.innerHTML = ''; // リストをクリアする
+
     for (const category of parentCategories) {
       const listItem = document.createElement('li');
       listItem.textContent = category.name;
+
       // 編集ボタン
       const editButton = document.createElement('button');
       editButton.textContent = '編集';
@@ -864,19 +866,12 @@ async function displayParentCategories() {
             });
         }
       });
-      listItem.appendChild(editButton);
-      parentCategoryList.appendChild(listItem);
-    }
-  } catch (error) {
-    console.error('親カテゴリの表示に失敗しました', error);
-    showError('親カテゴリの取得に失敗しました');
-  }
-}
+
       // 削除ボタン
       const deleteButton = document.createElement('button');
       deleteButton.textContent = '削除';
       deleteButton.addEventListener('click', () => {
-        if (confirm('本当に削除しますか？ この親カテゴリに属するサブカテゴリも削除されます。')) {
+        if (confirm('本当に削除しますか？この親カテゴリに属するサブカテゴリも削除されます。')) {
           deleteParentCategory(category.id)
             .then(async () => {
               alert('親カテゴリが削除されました');
@@ -889,6 +884,7 @@ async function displayParentCategories() {
             });
         }
       });
+
       listItem.appendChild(editButton);
       listItem.appendChild(deleteButton);
 
@@ -897,12 +893,14 @@ async function displayParentCategories() {
       listItem.appendChild(subcategoryList);
 
       parentCategoryList.appendChild(listItem);
-    }
+    } // ← この位置でループを閉じる
+
   } catch (error) {
     console.error(error);
     showError('親カテゴリの表示に失敗しました');
   }
 }
+
 
 // サブカテゴリの表示
 async function displaySubcategories(parentCategoryId) {
