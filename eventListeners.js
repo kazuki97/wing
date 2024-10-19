@@ -1419,6 +1419,7 @@ async function handleAddParentCategoryFormSubmit(e) {
   try {
     // 既に存在するカテゴリか確認する
     const parentCategories = await getParentCategories();
+    console.log("取得した親カテゴリ:", parentCategories); // コンソールに取得したカテゴリを出力
     const isDuplicate = parentCategories.some(category => category.name === parentCategoryName);
     if (isDuplicate) {
       alert('同じ名前の親カテゴリが既に存在するため、追加できません');
