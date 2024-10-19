@@ -36,6 +36,48 @@ export async function getParentCategories() {
   }
 }
 
+// モーダル要素の取得
+const parentCategoryModal = document.getElementById('parentCategoryModal');
+const subcategoryModal = document.getElementById('subcategoryModal');
+const closeParentCategoryModal = document.getElementById('closeParentCategoryModal');
+const closeSubcategoryModal = document.getElementById('closeSubcategoryModal');
+
+// モーダルの開閉関数
+function openModal(modal) {
+  modal.style.display = 'block';
+}
+
+function closeModal(modal) {
+  modal.style.display = 'none';
+}
+
+// 親カテゴリ追加ボタンのクリックでモーダルを開く
+document.getElementById('addParentCategoryButton').addEventListener('click', () => {
+  document.getElementById('parentCategoryModalTitle').textContent = '親カテゴリ追加';
+  document.getElementById('parentCategoryInput').value = '';
+  openModal(parentCategoryModal);
+});
+
+// サブカテゴリ追加ボタンのクリックでモーダルを開く
+document.getElementById('addSubcategoryButton').addEventListener('click', () => {
+  document.getElementById('subcategoryModalTitle').textContent = 'サブカテゴリ追加';
+  document.getElementById('subcategoryInput').value = '';
+  openModal(subcategoryModal);
+});
+
+// モーダルを閉じる
+closeParentCategoryModal.addEventListener('click', () => closeModal(parentCategoryModal));
+closeSubcategoryModal.addEventListener('click', () => closeModal(subcategoryModal));
+
+// モーダル外のクリックで閉じる
+window.addEventListener('click', (event) => {
+  if (event.target === parentCategoryModal) {
+    closeModal(parentCategoryModal);
+  } else if (event.target === subcategoryModal) {
+    closeModal(subcategoryModal);
+  }
+});
+
 // 親カテゴリの編集
 export async function updateParentCategory(id, newName) {
   try {
