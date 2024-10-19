@@ -860,7 +860,7 @@ async function displayParentCategories() {
             .then(async () => {
               alert('親カテゴリが更新されました');
               await displayParentCategories();
-              await updateAllParentCategorySelects();
+              await updateAllParentCategorySelectOptions();
             })
             .catch((error) => {
               console.error(error);
@@ -878,7 +878,7 @@ async function displayParentCategories() {
             .then(async () => {
               alert('親カテゴリが削除されました');
               await displayParentCategories();
-              await updateAllParentCategorySelects();
+              await updateAllParentCategorySelectOptions();
             })
             .catch((error) => {
               console.error(error);
