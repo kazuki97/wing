@@ -78,6 +78,39 @@ window.addEventListener('click', (event) => {
   }
 });
 
+// 親カテゴリフォーム送信で親カテゴリを追加
+document.getElementById('parentCategoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const parentCategoryName = document.getElementById('parentCategoryInput').value.trim();
+  if (parentCategoryName) {
+    try {
+      await addParentCategory(parentCategoryName);
+      closeModal(parentCategoryModal);
+      // 必要に応じてカテゴリリストを更新する関数を呼び出す
+      console.log('親カテゴリが追加されました');
+    } catch (error) {
+      console.error('親カテゴリの追加に失敗しました');
+    }
+  }
+});
+
+// サブカテゴリフォーム送信でサブカテゴリを追加
+document.getElementById('subcategoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const subcategoryName = document.getElementById('subcategoryInput').value.trim();
+  const parentCategoryId = document.getElementById('subcategoryParentSelect').value;
+  if (subcategoryName && parentCategoryId) {
+    try {
+      await addSubcategory(subcategoryName, parentCategoryId);
+      closeModal(subcategoryModal);
+      // 必要に応じてサブカテゴリリストを更新する関数を呼び出す
+      console.log('サブカテゴリが追加されました');
+    } catch (error) {
+      console.error('サブカテゴリの追加に失敗しました');
+    }
+  }
+});
+
 // 親カテゴリの編集
 export async function updateParentCategory(id, newName) {
   try {
