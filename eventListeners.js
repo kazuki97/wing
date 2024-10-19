@@ -1284,7 +1284,10 @@ async function displayPricingRules() {
 document.getElementById('pricingSubcategorySelect').addEventListener('change', async () => {
   await displayPricingRules();
 });
+
 window.addEventListener('DOMContentLoaded', async () => {
+  console.log('DOMContentLoaded イベントが発火しました');
+  
   try {
     await updateAllParentCategorySelects();
     await updatePricingParentCategorySelect();
@@ -1297,68 +1300,51 @@ window.addEventListener('DOMContentLoaded', async () => {
     await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
     await initializeConsumableUsage(); // 消耗品使用量の初期化
   } catch (error) {
-    console.error('初期化処理でエラーが発生しました: ', error);
+    console.error('初期化処理でエラーが発生しました:', error);
   }
 
-  try {
-    // 親カテゴリ追加ボタンのイベントリスナー
-    const addParentCategoryButton = document.getElementById('addParentCategoryButton');
-    if (addParentCategoryButton) {
-      addParentCategoryButton.addEventListener('click', () => {
-        const parentCategoryModal = document.getElementById('parentCategoryModal');
-        parentCategoryModal.style.display = 'block';
-      });
-    } else {
-      console.error('addParentCategoryButton が見つかりません');
-    }
-
-    // 親カテゴリ追加フォームのイベントリスナー
-    const addParentCategoryForm = document.getElementById('addParentCategoryForm');
-    if (addParentCategoryForm) {
-      addParentCategoryForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('parentCategoryName').value.trim();
-        if (name) {
-          try {
-            await addParentCategory(name);
-            document.getElementById('parentCategoryName').value = '';
-            document.getElementById('parentCategoryModal').style.display = 'none';
-            await updateAllParentCategorySelects();
-            await displayParentCategories();
-            alert('親カテゴリが追加されました');
-          } catch (error) {
-            console.error(error);
-            showError('親カテゴリの追加に失敗しました');
+  // 親カテゴリ追加ボタンのイベントリスナー
+  const addParentCategoryButton = document.getElementById('addParentCategoryButton');
+  console.log('addParentCategoryButton:', addParentCategoryButton);
+  
+  if (addParentCategoryButton) {
+    addParentCategoryButton.addEventListener('click', () => {
+      console.log('親カテゴリ追加ボタンがクリックされました');
+      const parentCategoryModal = document.getElementById('parentCategoryModal');
+      parentCategoryModal.style.display = 'block';
+      
+      // モーダルが表示された時点でフォームのイベントリスナーを登録する
+      const addParentCategoryForm = document.getElementById('addParentCategoryForm');
+      console.log('addParentCategoryForm:', addParentCategoryForm);
+      
+      if (addParentCategoryForm) {
+        addParentCategoryForm.addEventListener('submit', async (e) => {
+          console.log('親カテゴリ追加フォームの submit イベントが発火しました');
+          e.preventDefault();
+          const name = document.getElementById('parentCategoryName').value.trim();
+          if (name) {
+            try {
+              console.log('親カテゴリ追加を実行します:', name);
+              await addParentCategory(name);
+              document.getElementById('parentCategoryName').value = '';
+              parentCategoryModal.style.display = 'none';
+              await updateAllParentCategorySelects();
+              await displayParentCategories();
+              console.log('親カテゴリが正常に追加されました');
+            } catch (error) {
+              console.error('親カテゴリ追加に失敗しました:', error);
+              showError('親カテゴリの追加に失敗しました');
+            }
+          } else {
+            showError('親カテゴリ名を入力してください');
           }
-        } else {
-          showError('親カテゴリ名を入力してください');
-        }
-      });
-    } else {
-      console.error('addParentCategoryForm が見つかりません');
-    }
-  } catch (error) {
-    console.error('イベントリスナー設定でエラーが発生しました: ', error);
-  }
-
-  // 手動で売上を追加するボタンのイベントリスナー
-  try {
-    const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
-    if (manualAddTransactionButton) {
-      manualAddTransactionButton.addEventListener('click', async () => {
-        document.getElementById('manualAddTransactionForm').style.display = 'block';
-        await updatePaymentMethodSelect(); // 支払い方法のセレクトボックスを更新
-      });
-    }
-
-    // 手動追加フォームのキャンセルボタンのイベントリスナー
-    const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
-    if (cancelAddTransactionButton) {
-      cancelAddTransactionButton.addEventListener('click', () => {
-        document.getElementById('manualAddTransactionForm').style.display = 'none';
-      });
-    }
-  } catch (error) {
-    console.error('売上追加ボタンの処理でエラーが発生しました: ', error);
+        });
+      } else {
+        console.error('addParentCategoryForm が見つかりません');
+      }
+    });
+  } else {
+    console.error('addParentCategoryButton が見つかりません');
   }
 });
+
