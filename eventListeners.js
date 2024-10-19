@@ -1350,6 +1350,36 @@ async function updateAllParentCategorySelectOptions() {
   }
 }
 
+// すべての親カテゴリのセレクトボックスを更新する関数
+async function updateAllParentCategorySelectOptions() {
+  try {
+    const parentCategories = await getParentCategories();
+    const selectIds = [
+      'subcategoryParentSelect',
+      'productParentCategorySelect',
+      'filterParentCategorySelect',
+      'inventoryParentCategorySelect',
+      'overallInventoryParentCategorySelect',
+      'pricingParentCategorySelect'
+    ];
+    
+    selectIds.forEach((id) => {
+      const select = document.getElementById(id);
+      if (select) { // nullチェックを追加
+        select.innerHTML = '<option value="">親カテゴリを選択</option>';
+        parentCategories.forEach((category) => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          select.appendChild(option);
+        });
+      }
+    });
+  } catch (error) {
+    console.error('親カテゴリの取得に失敗しました', error);
+  }
+}
+
 // 初期化処理にイベントリスナーの重複登録を避けるための対策を追加
 window.addEventListener('DOMContentLoaded', async () => {
   console.log("初期化処理開始");
@@ -1365,32 +1395,28 @@ window.addEventListener('DOMContentLoaded', async () => {
   await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
-  // 親カテゴリ追加ボタンのクリックでモーダルを開く
-  const addParentCategoryButton = document.getElementById('addParentCategoryButton');
-  if (addParentCategoryButton) {
-    addParentCategoryButton.removeEventListener('click', openParentCategoryModal); // 重複防止のためリスナーを削除
+  // イベントリスナーの重複登録を防止
+  if (!addParentCategoryButton.hasAttribute('listener-added')) {
     addParentCategoryButton.addEventListener('click', openParentCategoryModal);
+    addParentCategoryButton.setAttribute('listener-added', 'true');
   }
 
-  // サブカテゴリ追加ボタンのクリックでモーダルを開く
   const addSubcategoryButton = document.getElementById('addSubcategoryButton');
-  if (addSubcategoryButton) {
-    addSubcategoryButton.removeEventListener('click', openSubcategoryModal); // 重複防止のためリスナーを削除
+  if (addSubcategoryButton && !addSubcategoryButton.hasAttribute('listener-added')) {
     addSubcategoryButton.addEventListener('click', openSubcategoryModal);
+    addSubcategoryButton.setAttribute('listener-added', 'true');
   }
 
-  // 親カテゴリ追加フォームの送信処理
   const addParentCategoryForm = document.getElementById('addParentCategoryForm');
-  if (addParentCategoryForm) {
-    addParentCategoryForm.removeEventListener('submit', handleAddParentCategoryFormSubmit); // 重複防止のためリスナーを削除
+  if (addParentCategoryForm && !addParentCategoryForm.hasAttribute('listener-added')) {
     addParentCategoryForm.addEventListener('submit', handleAddParentCategoryFormSubmit);
+    addParentCategoryForm.setAttribute('listener-added', 'true');
   }
 
-  // サブカテゴリ追加フォームの送信処理
   const addSubcategoryForm = document.getElementById('addSubcategoryForm');
-  if (addSubcategoryForm) {
-    addSubcategoryForm.removeEventListener('submit', handleAddSubcategoryFormSubmit); // 重複防止のためリスナーを削除
+  if (addSubcategoryForm && !addSubcategoryForm.hasAttribute('listener-added')) {
     addSubcategoryForm.addEventListener('submit', handleAddSubcategoryFormSubmit);
+    addSubcategoryForm.setAttribute('listener-added', 'true');
   }
 });
 
