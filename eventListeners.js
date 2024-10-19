@@ -1375,30 +1375,28 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.error('addSubcategoryButton が見つかりません');
   }
 
-  // 親カテゴリ追加フォームの送信処理
-  const addParentCategoryForm = document.getElementById('addParentCategoryForm');
-  if (addParentCategoryForm) {
-    addParentCategoryForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const parentCategoryName = document.getElementById('parentCategoryName').value.trim();
-      if (parentCategoryName) {
-        try {
-          await addParentCategory(parentCategoryName);
-          document.getElementById('parentCategoryName').value = '';
-          document.getElementById('parentCategoryModal').style.display = 'none';
-          await updateAllParentCategorySelectOptions();
-          await displayParentCategories();
-          alert('親カテゴリが追加されました');
-        } catch (error) {
-          console.error('親カテゴリの追加に失敗しました', error);
-        }
-      } else {
-        console.error('親カテゴリ名が空です');
+ // 親カテゴリ追加フォームの送信処理
+const addParentCategoryForm = document.getElementById('addParentCategoryForm');
+if (addParentCategoryForm) {
+  addParentCategoryForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const parentCategoryName = document.getElementById('parentCategoryName').value.trim();
+    if (parentCategoryName) {
+      try {
+        await addParentCategory(parentCategoryName);
+        document.getElementById('parentCategoryName').value = '';
+        document.getElementById('parentCategoryModal').style.display = 'none';
+        await updateAllParentCategorySelectOptions();  // 非同期処理の待機
+        await displayParentCategories();  // 非同期処理の待機
+        alert('親カテゴリが追加されました');
+      } catch (error) {
+        console.error('親カテゴリの追加に失敗しました', error);
       }
-    });
-  } else {
-    console.error('addParentCategoryForm が見つかりません');
-  }
+    } else {
+      console.error('親カテゴリ名が空です');
+    }
+  });
+}
 
   // サブカテゴリ追加フォームの送信処理
   const addSubcategoryForm = document.getElementById('addSubcategoryForm');
