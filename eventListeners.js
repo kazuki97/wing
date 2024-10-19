@@ -682,9 +682,9 @@ async function handleDeleteTransaction(transactionId) {
 }
 
 // 親カテゴリ追加フォームのイベントリスナー
-document
-  .getElementById('addParentCategoryForm')
-  .addEventListener('submit', async (e) => {
+const addParentCategoryForm = document.getElementById('addParentCategoryForm');
+if (addParentCategoryForm) {
+  addParentCategoryForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('parentCategoryName').value;
     try {
@@ -698,11 +698,14 @@ document
       showError('親カテゴリの追加に失敗しました');
     }
   });
+} else {
+  console.error('addParentCategoryForm が見つかりません');
+}
 
 // サブカテゴリ追加フォームのイベントリスナー
-document
-  .getElementById('addSubcategoryForm')
-  .addEventListener('submit', async (e) => {
+const addSubcategoryForm = document.getElementById('addSubcategoryForm');
+if (addSubcategoryForm) {
+  addSubcategoryForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const parentCategoryId = document.getElementById('subcategoryParentCategorySelect').value;
     const name = document.getElementById('subcategoryName').value;
@@ -717,6 +720,9 @@ document
       showError('サブカテゴリの追加に失敗しました');
     }
   });
+} else {
+  console.error('addSubcategoryForm が見つかりません');
+}
 
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
 async function updateAllParentCategorySelects() {
