@@ -1298,6 +1298,27 @@ window.addEventListener('DOMContentLoaded', async () => {
   await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
+  // 親カテゴリ追加フォームのイベントリスナー
+  const addParentCategoryForm = document.getElementById('addParentCategoryForm');
+  if (addParentCategoryForm) {
+    addParentCategoryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('parentCategoryName').value; // ここでフォームの値を取得
+      try {
+        await addParentCategory(name);
+        document.getElementById('parentCategoryName').value = '';
+        await updateAllParentCategorySelects();
+        await displayParentCategories();
+        alert('親カテゴリが追加されました');
+      } catch (error) {
+        console.error(error);
+        showError('親カテゴリの追加に失敗しました');
+      }
+    });
+  } else {
+    console.error('addParentCategoryForm が見つかりません');
+  }
+
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
   if (manualAddTransactionButton) {
