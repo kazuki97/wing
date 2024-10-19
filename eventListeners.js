@@ -1350,36 +1350,6 @@ async function updateAllParentCategorySelectOptions() {
   }
 }
 
-// すべての親カテゴリのセレクトボックスを更新する関数
-async function updateAllParentCategorySelectOptions() {
-  try {
-    const parentCategories = await getParentCategories();
-    const selectIds = [
-      'subcategoryParentSelect',
-      'productParentCategorySelect',
-      'filterParentCategorySelect',
-      'inventoryParentCategorySelect',
-      'overallInventoryParentCategorySelect',
-      'pricingParentCategorySelect'
-    ];
-    
-    selectIds.forEach((id) => {
-      const select = document.getElementById(id);
-      if (select) { // nullチェックを追加
-        select.innerHTML = '<option value="">親カテゴリを選択</option>';
-        parentCategories.forEach((category) => {
-          const option = document.createElement('option');
-          option.value = category.id;
-          option.textContent = category.name;
-          select.appendChild(option);
-        });
-      }
-    });
-  } catch (error) {
-    console.error('親カテゴリの取得に失敗しました', error);
-  }
-}
-
 // 初期化処理にイベントリスナーの重複登録を避けるための対策を追加
 window.addEventListener('DOMContentLoaded', async () => {
   console.log("初期化処理開始");
