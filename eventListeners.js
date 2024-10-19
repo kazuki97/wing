@@ -1424,7 +1424,7 @@ async function updateAllParentCategorySelectOptions() {
     ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
-      if (select) {
+      if (select) { // nullチェックを追加
         select.innerHTML = '<option value="">親カテゴリを選択</option>';
         parentCategories.forEach((category) => {
           const option = document.createElement('option');
@@ -1438,4 +1438,3 @@ async function updateAllParentCategorySelectOptions() {
     console.error('親カテゴリの取得に失敗しました', error);
   }
 }
-
