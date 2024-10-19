@@ -1413,6 +1413,15 @@ async function handleAddParentCategoryFormSubmit(e) {
   const parentCategoryName = document.getElementById('parentCategoryName').value.trim();
   if (parentCategoryName) {
     try {
+      const parentCategories = await getParentCategories();
+
+      // 重複チェック
+      const isDuplicate = parentCategories.some(category => category.name === parentCategoryName);
+      if (isDuplicate) {
+        alert('同じ名前の親カテゴリが既に存在します');
+        return;
+      }
+
       await addParentCategory(parentCategoryName);
       document.getElementById('parentCategoryName').value = '';
       document.getElementById('parentCategoryModal').style.display = 'none';
@@ -1434,6 +1443,15 @@ async function handleAddSubcategoryFormSubmit(e) {
   const parentCategoryId = document.getElementById('subcategoryParentSelect').value;
   if (subcategoryName && parentCategoryId) {
     try {
+      const subcategories = await getSubcategories(parentCategoryId);
+
+      // 重複チェック
+      const isDuplicate = subcategories.some(subcategory => subcategory.name === subcategoryName);
+      if (isDuplicate) {
+        alert('同じ名前のサブカテゴリが既に存在します');
+        return;
+      }
+
       await addSubcategory(subcategoryName, parentCategoryId);
       document.getElementById('subcategoryInput').value = '';
       document.getElementById('subcategoryModal').style.display = 'none';
