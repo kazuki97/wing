@@ -1281,31 +1281,131 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
 
 // 初期化処理に売上管理セクションの編集ボタンのリスナーを追加
 window.addEventListener('DOMContentLoaded', async () => {
-  await updateAllParentCategorySelects();
-  await updatePricingParentCategorySelect();
-  await displayParentCategories();
-  await displayProducts();
-  await displayOverallInventory();
-  await displayInventoryProducts();
-  await displayTransactions(); // 売上管理セクションの取引データ表示
-  await displayConsumables(); // 消耗品リストの初期表示
-  await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
-  await initializeConsumableUsage(); // 消耗品使用量の初期化
+console.log("あいうえお"); // コンソールに「あいうえお」を出力
 
-  // 手動で売上を追加するボタンのイベントリスナー
-  const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
-  if (manualAddTransactionButton) {
-    manualAddTransactionButton.addEventListener('click', async () => {
-      document.getElementById('manualAddTransactionForm').style.display = 'block';
-      await updatePaymentMethodSelect(); // 支払い方法のセレクトボックスを更新
-    });
-  }
+await updateAllParentCategorySelects();
+await updatePricingParentCategorySelect();
+await displayParentCategories();
+await displayProducts();
+await displayOverallInventory();
+await displayInventoryProducts();
+await displayTransactions(); // 売上管理セクションの取引データ表示
+await displayConsumables(); // 消耗品リストの初期表示
+await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
+await initializeConsumableUsage(); // 消耗品使用量の初期化
 
-  // 手動追加フォームのキャンセルボタンのイベントリスナー
-  const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
-  if (cancelAddTransactionButton) {
-    cancelAddTransactionButton.addEventListener('click', () => {
-      document.getElementById('manualAddTransactionForm').style.display = 'none';
-    });
-  }
+// 手動で売上を追加するボタンのイベントリスナー
+const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
+if (manualAddTransactionButton) {
+manualAddTransactionButton.addEventListener('click', async () => {
+document.getElementById('manualAddTransactionForm').style.display = 'block';
+await updatePaymentMethodSelect(); // 支払い方法のセレクトボックスを更新
 });
+}
+
+// 手動追加フォームのキャンセルボタンのイベントリスナー
+const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
+if (cancelAddTransactionButton) {
+cancelAddTransactionButton.addEventListener('click', () => {
+document.getElementById('manualAddTransactionForm').style.display = 'none';
+});
+}
+
+// 親カテゴリ追加ボタンのクリックでモーダルを開く
+const addParentCategoryButton = document.getElementById('addParentCategoryButton');
+if (addParentCategoryButton) {
+addParentCategoryButton.addEventListener('click', () => {
+const parentCategoryModal = document.getElementById('parentCategoryModal');
+parentCategoryModal.style.display = 'block';
+});
+} else {
+console.error('addParentCategoryButton が見つかりません');
+}
+
+// サブカテゴリ追加ボタンのクリックでモーダルを開く
+const addSubcategoryButton = document.getElementById('addSubcategoryButton');
+if (addSubcategoryButton) {
+addSubcategoryButton.addEventListener('click', () => {
+const subcategoryModal = document.getElementById('subcategoryModal');
+subcategoryModal.style.display = 'block';
+});
+} else {
+console.error('addSubcategoryButton が見つかりません');
+}
+
+// 親カテゴリ追加フォームの送信処理
+const addParentCategoryForm = document.getElementById('addParentCategoryForm');
+if (addParentCategoryForm) {
+addParentCategoryForm.addEventListener('submit', async (e) => {
+e.preventDefault();
+const parentCategoryName = document.getElementById('parentCategoryName').value.trim();
+if (parentCategoryName) {
+try {
+await addParentCategory(parentCategoryName);
+document.getElementById('parentCategoryName').value = '';
+document.getElementById('parentCategoryModal').style.display = 'none';
+await updateAllParentCategorySelects();
+await displayParentCategories();
+alert('親カテゴリが追加されました');
+} catch (error) {
+console.error('親カテゴリの追加に失敗しました', error);
+}
+} else {
+console.error('親カテゴリ名が空です');
+}
+});
+} else {
+console.error('addParentCategoryForm が見つかりません');
+}
+
+// サブカテゴリ追加フォームの送信処理
+const addSubcategoryForm = document.getElementById('addSubcategoryForm');
+if (addSubcategoryForm) {
+addSubcategoryForm.addEventListener('submit', async (e) => {
+e.preventDefault();
+const subcategoryName = document.getElementById('subcategoryInput').value.trim();
+const parentCategoryId = document.getElementById('subcategoryParentSelect').value;
+if (subcategoryName && parentCategoryId) {
+try {
+await addSubcategory(subcategoryName, parentCategoryId);
+document.getElementById('subcategoryInput').value = '';
+document.getElementById('subcategoryModal').style.display = 'none';
+await displayParentCategories();
+await updateAllParentCategorySelects();
+alert('サブカテゴリが追加されました');
+} catch (error) {
+console.error('サブカテゴリの追加に失敗しました', error);
+}
+} else {
+console.error('サブカテゴリ名または親カテゴリが選択されていません');
+}
+});
+} else {
+console.error('addSubcategoryForm が見つかりません');
+}
+
+// モーダルの閉じるボタンの設定
+const closeParentCategoryModal = document.getElementById('closeParentCategoryModal');
+if (closeParentCategoryModal) {
+closeParentCategoryModal.addEventListener('click', () => {
+document.getElementById('parentCategoryModal').style.display = 'none';
+});
+}
+
+const closeSubcategoryModal = document.getElementById('closeSubcategoryModal');
+if (closeSubcategoryModal) {
+closeSubcategoryModal.addEventListener('click', () => {
+document.getElementById('subcategoryModal').style.display = 'none';
+});
+}
+
+// モーダル外のクリックで閉じる処理
+window.addEventListener('click', (event) => {
+if (event.target === document.getElementById('parentCategoryModal')) {
+document.getElementById('parentCategoryModal').style.display = 'none';
+} else if (event.target === document.getElementById('subcategoryModal')) {
+document.getElementById('subcategoryModal').style.display = 'none';
+}
+});
+});
+
