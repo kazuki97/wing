@@ -847,53 +847,7 @@ async function displayParentCategories() {
     parentCategoryList.innerHTML = '';
 
     for (const category of parentCategories) {
-      const listItem = document.createElement('li');
-      listItem.textContent = category.name;
-
-      // 編集ボタン
-      const editButton = document.createElement('button');
-      editButton.textContent = '編集';
-      editButton.addEventListener('click', () => {
-        const newName = prompt('新しいカテゴリ名を入力してください', category.name);
-        if (newName) {
-          updateParentCategory(category.id, newName)
-            .then(async () => {
-              alert('親カテゴリが更新されました');
-              await displayParentCategories();
-              await updateAllParentCategorySelectOptions();
-            })
-            .catch((error) => {
-              console.error(error);
-              showError('親カテゴリの更新に失敗しました');
-            });
-        }
-      });
-
-      // 削除ボタン
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = '削除';
-      deleteButton.addEventListener('click', () => {
-        if (confirm('本当に削除しますか？この親カテゴリに属するサブカテゴリも削除されます。')) {
-          deleteParentCategory(category.id)
-            .then(async () => {
-              alert('親カテゴリが削除されました');
-              await displayParentCategories();
-              await updateAllParentCategorySelectOptions();
-            })
-            .catch((error) => {
-              console.error(error);
-              showError('親カテゴリの削除に失敗しました');
-            });
-        }
-      });
-
-      listItem.appendChild(editButton);
-      listItem.appendChild(deleteButton);
-
-      // サブカテゴリの表示
-      const subcategoryList = await displaySubcategories(category.id);
-      listItem.appendChild(subcategoryList);
-
+      const listItem = createParentCategoryListItem(category);
       parentCategoryList.appendChild(listItem);
     }
 
@@ -901,6 +855,77 @@ async function displayParentCategories() {
     console.error(error);
     showError('親カテゴリの表示に失敗しました');
   }
+}
+
+// 新規親カテゴリの追加処理
+async function addNewParentCategory(categoryName) {
+  try {
+    const newCategory = await addParentCategory(categoryName);
+    const parentCategoryList = document.getElementById('parentCategoryList');
+    const listItem = createParentCategoryListItem(newCategory);
+    parentCategoryList.appendChild(listItem);
+    alert('親カテゴリが追加されました');
+  } catch (error) {
+    console.error('親カテゴリの追加に失敗しました', error);
+    showError('親カテゴリの追加に失敗しました');
+  }
+}
+
+// 親カテゴリのリストアイテムを作成する関数
+function createParentCategoryListItem(category) {
+  const listItem = document.createElement('li');
+  listItem.textContent = category.name;
+
+  // 編集ボタン
+  const editButton = document.createElement('button');
+  editButton.textContent = '編集';
+  editButton.addEventListener('click', () => {
+    const newName = prompt('新しいカテゴリ名を入力してください', category.name);
+    if (newName) {
+      updateParentCategory(category.id, newName)
+        .then(async () => {
+          alert('親カテゴリが更新されました');
+          listItem.textContent = newName;
+          listItem.appendChild(editButton);
+          listItem.appendChild(deleteButton);
+          const subcategoryList = await displaySubcategories(category.id);
+          listItem.appendChild(subcategoryList);
+          await updateAllParentCategorySelects();
+        })
+        .catch((error) => {
+          console.error(error);
+          showError('親カテゴリの更新に失敗しました');
+        });
+    }
+  });
+
+  // 削除ボタン
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = '削除';
+  deleteButton.addEventListener('click', () => {
+    if (confirm('本当に削除しますか？この親カテゴリに属するサブカテゴリも削除されます。')) {
+      deleteParentCategory(category.id)
+        .then(() => {
+          alert('親カテゴリが削除されました');
+          listItem.remove();
+          updateAllParentCategorySelects();
+        })
+        .catch((error) => {
+          console.error(error);
+          showError('親カテゴリの削除に失敗しました');
+        });
+    }
+  });
+
+  listItem.appendChild(editButton);
+  listItem.appendChild(deleteButton);
+
+  // サブカテゴリの表示
+  displaySubcategories(category.id).then((subcategoryList) => {
+    listItem.appendChild(subcategoryList);
+  });
+
+  return listItem;
 }
 
 // サブカテゴリの表示
