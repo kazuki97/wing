@@ -1299,7 +1299,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
   // 親カテゴリ追加フォームのイベントリスナー
-  const addParentCategoryForm = document.getElementById('addParentCategoryForm');
+  const addParentCategoryForm = document.getElementById('parentCategoryName'); // 修正: フォームIDをparentCategoryNameに変更
   if (addParentCategoryForm) {
     addParentCategoryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1318,6 +1318,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   } else {
     console.error('addParentCategoryForm が見つかりません');
   }
+
 
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
