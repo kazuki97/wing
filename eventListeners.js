@@ -1411,20 +1411,28 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 // すべての親カテゴリのセレクトボックスを更新する関数
-async function updateAllParentCategorySelects() {
+async function updateAllParentCategorySelectOptions() {
   try {
     const parentCategories = await getParentCategories();
-    const selectIds = ['subcategoryParentSelect'];
-
+    const selectIds = [
+      'subcategoryParentSelect',
+      'productParentCategorySelect',
+      'filterParentCategorySelect',
+      'inventoryParentCategorySelect',
+      'overallInventoryParentCategorySelect',
+      'pricingParentCategorySelect'
+    ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
-      select.innerHTML = '<option value="">親カテゴリを選択</option>';
-      parentCategories.forEach((category) => {
-        const option = document.createElement('option');
-        option.value = category.id;
-        option.textContent = category.name;
-        select.appendChild(option);
-      });
+      if (select) {
+        select.innerHTML = '<option value="">親カテゴリを選択</option>';
+        parentCategories.forEach((category) => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          select.appendChild(option);
+        });
+      }
     });
   } catch (error) {
     console.error('親カテゴリの取得に失敗しました', error);
