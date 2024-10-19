@@ -1411,28 +1411,30 @@ function openSubcategoryModal() {
 async function handleAddParentCategoryFormSubmit(e) {
   e.preventDefault();
   const parentCategoryName = document.getElementById('parentCategoryName').value.trim();
-  if (parentCategoryName) {
-    try {
-      const parentCategories = await getParentCategories();
+  if (!parentCategoryName) {
+    alert('カテゴリ名を入力してください');
+    return;
+  }
 
-      // 重複チェック: 同じ名前が存在するなら追加を防ぐ
-      const isDuplicate = parentCategories.some(category => category.name === parentCategoryName);
-      if (isDuplicate) {
-        alert('同じ名前の親カテゴリが既に存在するため、追加できません');
-        return;
-      }
-
-      await addParentCategory(parentCategoryName);
-      document.getElementById('parentCategoryName').value = '';
-      document.getElementById('parentCategoryModal').style.display = 'none';
-      await updateAllParentCategorySelectOptions();
-      await displayParentCategories();
-      alert('親カテゴリが追加されました');
-    } catch (error) {
-      console.error('親カテゴリの追加に失敗しました', error);
+  try {
+    // 既に存在するカテゴリか確認する
+    const parentCategories = await getParentCategories();
+    const isDuplicate = parentCategories.some(category => category.name === parentCategoryName);
+    if (isDuplicate) {
+      alert('同じ名前の親カテゴリが既に存在するため、追加できません');
+      return;
     }
-  } else {
-    console.error('親カテゴリ名が空です');
+
+    // カテゴリが重複していない場合のみ追加
+    await addParentCategory(parentCategoryName);
+    document.getElementById('parentCategoryName').value = '';
+    document.getElementById('parentCategoryModal').style.display = 'none';
+    await updateAllParentCategorySelectOptions();
+    await displayParentCategories();
+    alert('親カテゴリが追加されました');
+  } catch (error) {
+    console.error('親カテゴリの追加に失敗しました', error);
+    alert('親カテゴリの追加に失敗しました。もう一度お試しください。');
   }
 }
 
