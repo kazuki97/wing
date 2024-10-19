@@ -842,7 +842,9 @@ async function displayParentCategories() {
   try {
     const parentCategories = await getParentCategories();
     const parentCategoryList = document.getElementById('parentCategoryList');
-    parentCategoryList.innerHTML = ''; // リストをクリアする
+
+    // リストをクリアする
+    parentCategoryList.innerHTML = '';
 
     for (const category of parentCategories) {
       const listItem = document.createElement('li');
@@ -893,14 +895,13 @@ async function displayParentCategories() {
       listItem.appendChild(subcategoryList);
 
       parentCategoryList.appendChild(listItem);
-    } // ← この位置でループを閉じる
+    }
 
   } catch (error) {
     console.error(error);
     showError('親カテゴリの表示に失敗しました');
   }
 }
-
 
 // サブカテゴリの表示
 async function displaySubcategories(parentCategoryId) {
