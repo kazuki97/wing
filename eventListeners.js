@@ -1406,10 +1406,10 @@ async function updateAllParentCategorySelectOptions() {
   }
 }
 
-// 初期化処理にイベントリスナーの重複登録を避けるための対策を追加
 window.addEventListener('DOMContentLoaded', async () => {
   console.log("初期化処理開始");
 
+  // 初期化処理
   await updateAllParentCategorySelectOptions();
   await updatePricingParentCategorySelect();
   await displayParentCategories();
@@ -1421,7 +1421,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
- const navLinks = document.querySelectorAll('.nav-link');
+  // ナビゲーションリンクのイベントリスナーを追加
+  const navLinks = document.querySelectorAll('.nav-link');
 
   navLinks.forEach((link) => {
     link.addEventListener('click', (e) => {
@@ -1434,7 +1435,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // 初期表示のセクションを設定（例：ホームセクションを表示）
   showSection('home');
-});
+
+  // **ここからイベントリスナーの設定を追加します**
 
   // イベントリスナーの重複登録を防止
   const addParentCategoryButton = document.getElementById('addParentCategoryButton');
@@ -1449,7 +1451,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     addSubcategoryButton.setAttribute('listener-added', 'true');
   }
 
-// 親カテゴリモーダルの×ボタン
+  // 親カテゴリモーダルの×ボタン
   const closeParentModalButton = document.getElementById('closeParentCategoryModal');
   if (closeParentModalButton && !closeParentModalButton.hasAttribute('listener-added')) {
     closeParentModalButton.addEventListener('click', closeParentCategoryModal);
@@ -1463,7 +1465,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     closeSubcategoryModalButton.setAttribute('listener-added', 'true');
   }
 
-  // **ここに正しいイベントリスナーを追加します**
+  // その他のイベントリスナーの設定
   const addParentCategoryForm = document.getElementById('addParentCategoryForm');
   if (addParentCategoryForm && !addParentCategoryForm.hasAttribute('listener-added')) {
     addParentCategoryForm.addEventListener('submit', handleAddParentCategoryFormSubmit);
