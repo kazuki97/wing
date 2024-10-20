@@ -1442,9 +1442,10 @@ async function handleAddSubcategoryFormSubmit(e) {
 }
 
 
-// 即時実行関数で初期化処理を実行
-(async () => {
+// DOMContentLoaded イベントで初期化処理を実行
+document.addEventListener('DOMContentLoaded', async () => {
   console.log("初期化処理開始");
+
 
   // 初期化処理
   await updateAllParentCategorySelectOptions();
