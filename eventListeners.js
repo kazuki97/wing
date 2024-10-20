@@ -1593,4 +1593,4 @@ async function handleAddSubcategoryFormSubmit(e) {
     addSubcategoryForm.addEventListener('submit', handleAddSubcategoryFormSubmit);
     addSubcategoryForm.setAttribute('listener-added', 'true');
   }
- });
+})();
