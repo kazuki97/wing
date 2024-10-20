@@ -1346,7 +1346,7 @@ async function updateAllParentCategorySelectOptions() {
   try {
     const parentCategories = await getParentCategories();
     const selectIds = [
-      'subcategoryParentSelect',
+      'subcategoryParentCategorySelect', // 修正：HTMLのIDと一致させる
       'productParentCategorySelect',
       'filterParentCategorySelect',
       'inventoryParentCategorySelect',
@@ -1399,6 +1399,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     addSubcategoryButton.setAttribute('listener-added', 'true');
   }
 
+// 親カテゴリモーダルの×ボタン
+  const closeParentModalButton = document.getElementById('closeParentCategoryModal');
+  if (closeParentModalButton && !closeParentModalButton.hasAttribute('listener-added')) {
+    closeParentModalButton.addEventListener('click', closeParentCategoryModal);
+    closeParentModalButton.setAttribute('listener-added', 'true');
+  }
+
+  // サブカテゴリモーダルの×ボタン
+  const closeSubcategoryModalButton = document.getElementById('closeSubcategoryModal');
+  if (closeSubcategoryModalButton && !closeSubcategoryModalButton.hasAttribute('listener-added')) {
+    closeSubcategoryModalButton.addEventListener('click', closeSubcategoryModal);
+    closeSubcategoryModalButton.setAttribute('listener-added', 'true');
+  }
+
   // **ここに正しいイベントリスナーを追加します**
   const addParentCategoryForm = document.getElementById('addParentCategoryForm');
   if (addParentCategoryForm && !addParentCategoryForm.hasAttribute('listener-added')) {
@@ -1418,6 +1432,21 @@ function openParentCategoryModal() {
   const parentCategoryModal = document.getElementById('parentCategoryModal');
   if (parentCategoryModal) {
     parentCategoryModal.style.display = 'block';
+  }
+}
+
+// 閉じる関数をここに追加
+function closeParentCategoryModal() {
+  const parentCategoryModal = document.getElementById('parentCategoryModal');
+  if (parentCategoryModal) {
+    parentCategoryModal.style.display = 'none';
+  }
+}
+
+function closeSubcategoryModal() {
+  const subcategoryModal = document.getElementById('subcategoryModal');
+  if (subcategoryModal) {
+    subcategoryModal.style.display = 'none';
   }
 }
 
