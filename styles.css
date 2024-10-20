@@ -193,3 +193,8 @@ table th {
   width: 50%; /* モーダルの幅 */
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* シャドウ効果を追加 */
 }
+
+/* すべてのセクションを初期状態で非表示にする */
+.content-section {
+  display: none;
+}
