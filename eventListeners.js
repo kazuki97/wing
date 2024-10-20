@@ -80,6 +80,8 @@ function showSection(sectionId) {
       section.style.display = 'none';
     }
   });
+  // スクロールをトップに戻す
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // 支払い方法セレクトボックスの更新関数
