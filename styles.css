@@ -193,3 +193,23 @@ table th {
   width: 50%; /* モーダルの幅 */
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* シャドウ効果を追加 */
 }
+
+/* 親カテゴリのスタイル */
+#parentCategoryList > li > strong {
+  font-weight: bold; /* 親カテゴリを太字に */
+}
+
+/* サブカテゴリのインデントとスタイル */
+#parentCategoryList ul {
+  margin-left: 20px; /* 親カテゴリに対してインデント */
+  list-style-type: disc; /* サブカテゴリのリストマーカーをディスクに */
+}
+
+#parentCategoryList li {
+  margin-bottom: 10px; /* 各カテゴリ間に余白を追加 */
+}
+
+/* サブカテゴリリストアイテムのスタイル */
+#parentCategoryList ul li {
+  margin-bottom: 5px; /* サブカテゴリ間の余白を追加 */
+}
