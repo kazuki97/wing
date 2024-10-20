@@ -681,24 +681,6 @@ async function handleDeleteTransaction(transactionId) {
   }
 }
 
-// 親カテゴリ追加フォームのイベントリスナー
-document
-  .getElementById('addParentCategoryForm')
-  .addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('parentCategoryName').value;
-    try {
-      await addParentCategory(name);
-      document.getElementById('parentCategoryName').value = '';
-      await updateAllParentCategorySelects();
-      await displayParentCategories();
-      alert('親カテゴリが追加されました');
-    } catch (error) {
-      console.error(error);
-      showError('親カテゴリの追加に失敗しました');
-    }
-  });
-
 // サブカテゴリ追加フォームのイベントリスナー
 document
   .getElementById('addSubcategoryForm')
@@ -731,6 +713,45 @@ async function updateAllParentCategorySelects() {
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
     ];
+
+// 他の関数の定義がある場所に追加します。
+async function handleAddParentCategoryFormSubmit(e) {
+  e.preventDefault();
+  let parentCategoryName = document.getElementById('parentCategoryName').value.trim();
+
+  if (parentCategoryName) {
+    try {
+      // カテゴリ名を小文字化
+      parentCategoryName = parentCategoryName.toLowerCase();
+
+      // 既存の親カテゴリを取得し、重複がないか確認
+      const parentCategories = await getParentCategories();
+
+      const isCategoryExists = parentCategories.some(
+        category => category.name.trim().toLowerCase() === parentCategoryName
+      );
+
+      if (isCategoryExists) {
+        alert('同じ名前の親カテゴリが既に存在するため、追加できません');
+        return;
+      }
+
+      // 新しいカテゴリを追加
+      await addParentCategory(parentCategoryName);
+      document.getElementById('parentCategoryName').value = '';
+      document.getElementById('parentCategoryModal').style.display = 'none';
+      await updateAllParentCategorySelectOptions();
+      await displayParentCategories();
+      alert('親カテゴリが追加されました');
+    } catch (error) {
+      console.error('親カテゴリの追加に失敗しました', error);
+      showError('親カテゴリの追加に失敗しました');
+    }
+  } else {
+    console.error('親カテゴリ名が空です');
+    showError('親カテゴリ名を入力してください');
+  }
+}
 
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
@@ -1378,6 +1399,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     addSubcategoryButton.setAttribute('listener-added', 'true');
   }
 
+  // **ここに正しいイベントリスナーを追加します**
   const addParentCategoryForm = document.getElementById('addParentCategoryForm');
   if (addParentCategoryForm && !addParentCategoryForm.hasAttribute('listener-added')) {
     addParentCategoryForm.addEventListener('submit', handleAddParentCategoryFormSubmit);
