@@ -70,6 +70,18 @@ async function updatePricingParentCategorySelect() {
   }
 }
 
+// showSection 関数をここに追加
+function showSection(sectionId) {
+  const sections = document.querySelectorAll('.content-section');
+  sections.forEach((section) => {
+    if (section.id === sectionId) {
+      section.style.display = 'block';
+    } else {
+      section.style.display = 'none';
+    }
+  });
+}
+
 // 支払い方法セレクトボックスの更新関数
 async function updatePaymentMethodSelect() {
   try {
@@ -1408,6 +1420,21 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayConsumables(); // 消耗品リストの初期表示
   await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
   await initializeConsumableUsage(); // 消耗品使用量の初期化
+
+ const navLinks = document.querySelectorAll('.nav-link');
+
+  navLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault(); // デフォルトのアンカーリンクの動作を防止
+
+      const targetId = link.getAttribute('href').substring(1); // href属性からターゲットIDを取得
+      showSection(targetId);
+    });
+  });
+
+  // 初期表示のセクションを設定（例：ホームセクションを表示）
+  showSection('home');
+});
 
   // イベントリスナーの重複登録を防止
   const addParentCategoryButton = document.getElementById('addParentCategoryButton');
