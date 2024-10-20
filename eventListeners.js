@@ -1589,3 +1589,4 @@ async function handleAddSubcategoryFormSubmit(e) {
     showError('サブカテゴリ名を入力してください');
   }
 }
+}
