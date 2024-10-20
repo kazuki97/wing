@@ -1515,4 +1515,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     addSubcategoryForm.addEventListener('submit', handleAddSubcategoryFormSubmit);
     addSubcategoryForm.setAttribute('listener-added', 'true');
   }
-})();
+})
