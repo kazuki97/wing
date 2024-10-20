@@ -41,11 +41,26 @@
   <!-- サブカテゴリ追加ボタン -->
   <button id="addSubcategoryButton">サブカテゴリ追加</button>
 
-  <!-- カテゴリ一覧表示エリア -->
   <div id="categoryList">
-    <ul id="parentCategoryList"></ul>
-  </div>
-</section>
+  <ul id="parentCategoryList">
+    <!-- 親カテゴリ -->
+    <li>
+      <strong>親カテゴリ名1</strong>
+      <ul>
+        <!-- サブカテゴリ -->
+        <li>サブカテゴリ1-1</li>
+        <li>サブカテゴリ1-2</li>
+      </ul>
+    </li>
+    <li>
+      <strong>親カテゴリ名2</strong>
+      <ul>
+        <li>サブカテゴリ2-1</li>
+        <li>サブカテゴリ2-2</li>
+      </ul>
+    </li>
+  </ul>
+</div>
 
 <!-- 親カテゴリ追加/編集モーダル -->
 <div id="parentCategoryModal" class="modal" style="display: none;">
