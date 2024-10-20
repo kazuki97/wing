@@ -1521,7 +1521,8 @@ async function handleAddSubcategoryFormSubmit(e) {
 }
 
 
-window.addEventListener('DOMContentLoaded', async () => {
+// 即時実行関数で初期化処理を実行
+(async () => {
   console.log("初期化処理開始");
 
   // 初期化処理
