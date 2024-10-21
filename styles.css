@@ -75,12 +75,17 @@ ul li button {
   margin-left: 5px;
 }
 
+/* コンテンツセクションのスタイル */
 .content-section {
-  display: none; 
+  display: none; /* 初期は非表示 */
+  border: 2px solid red; /* セクションの境界線を追加 */
+  background-color: #ffffff; /* セクションの背景色を設定 */
+  min-height: 100px; /* 最小高さを設定して内容が見えるようにする */
 }
 
+/* ホームセクションはデフォルトで表示 */
 #home {
-  display: block; 
+  display: block; /* デフォルトで表示 */
 }
 
 /* テーブルのスタイル */
@@ -190,12 +195,4 @@ table th {
   border: 1px solid #888;
   width: 50%; /* モーダルの幅 */
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* シャドウ効果を追加 */
-}
-
-/* セクションの可視性を確認するための一時的なスタイル */
-.content-section {
-  display: none; /* 既存のスタイルを保持 */
-  border: 2px solid red; /* セクションの境界線を追加 */
-  background-color: #ffffff; /* セクションの背景色を設定 */
-  min-height: 100px; /* 最小高さを設定して内容が見えるようにする */
 }
