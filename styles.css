@@ -83,6 +83,12 @@ ul li button {
   min-height: 100px; /* 最小高さを設定して内容が見えるようにする */
 }
 
+/* styles.css */
+.content-section {
+  display: none; /* 初期は非表示 */
+  /* その他のスタイル */
+}
+
 #home {
   display: block; /* ホームセクションを初期表示 */
 }
