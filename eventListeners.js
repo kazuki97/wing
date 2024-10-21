@@ -88,15 +88,20 @@ function showError(message) {
 function showSection(sectionId) {
   console.log('showSection が呼び出されました:', sectionId);
   const sections = document.querySelectorAll('.content-section');
+  let foundSection = false;
   sections.forEach((section) => {
     if (section.id === sectionId) {
       section.style.display = 'block';
-      console.log(`表示するセクション: ${section.id}, display: ${getComputedStyle(section).display}`);
+      console.log(`表示するセクション: ${section.id}, display: ${section.style.display}`);
+      foundSection = true;
     } else {
       section.style.display = 'none';
-      console.log(`非表示にするセクション: ${section.id}, display: ${getComputedStyle(section).display}`);
+      console.log(`非表示にするセクション: ${section.id}, display: ${section.style.display}`);
     }
   });
+  if (!foundSection) {
+    console.error(`セクションが見つかりませんでした: ${sectionId}`);
+  }
   // スクロールをトップに戻す
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
