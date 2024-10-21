@@ -470,7 +470,7 @@ async function displayConsumables() {
 }
 
 // 売上管理セクションの取引データ表示関数
-async function displayTransactions(filter = {}) {
+export async function  displayTransactions(filter = {}) {
   try {
     console.log('displayTransactions 開始');
     let transactions = await getTransactions();
