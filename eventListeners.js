@@ -91,10 +91,10 @@ function showSection(sectionId) {
   sections.forEach((section) => {
     if (section.id === sectionId) {
       section.style.display = 'block';
-      console.log(`表示するセクション: ${section.id}, display: ${section.style.display}`);
+      console.log(`表示するセクション: ${section.id}, display: ${getComputedStyle(section).display}`);
     } else {
       section.style.display = 'none';
-      console.log(`非表示にするセクション: ${section.id}, display: ${section.style.display}`);
+      console.log(`非表示にするセクション: ${section.id}, display: ${getComputedStyle(section).display}`);
     }
   });
   // スクロールをトップに戻す
