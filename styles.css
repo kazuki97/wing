@@ -83,8 +83,7 @@ ul li button {
   min-height: 100px; /* 最小高さを設定して内容が見えるようにする */
 }
 
-/* ホームセクションはデフォルトで表示 */
-#home {
+#products {
   display: block; /* デフォルトで表示 */
 }
 
