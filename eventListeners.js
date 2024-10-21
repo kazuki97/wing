@@ -1172,7 +1172,7 @@ async function editProduct(product) {
 }
 
 // 在庫管理セクションの商品一覧表示関数
-async function displayInventoryProducts() {
+export async function displayInventoryProducts() {
   try {
     console.log('displayInventoryProducts 開始');
     const parentCategoryId = document.getElementById('inventoryParentCategorySelect').value;
