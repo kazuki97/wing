@@ -1561,9 +1561,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-  // 初期表示のセクションを設定（例：ホームセクションを表示）
-  showSection('home');
-
   // **ここからイベントリスナーの設定を追加します**
 
   // イベントリスナーの重複登録を防止
