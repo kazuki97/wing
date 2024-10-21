@@ -86,6 +86,7 @@ function showError(message) {
 
 // showSection 関数をここに追加
 function showSection(sectionId) {
+  console.log('showSection が呼び出されました:', sectionId);
   const sections = document.querySelectorAll('.content-section');
   sections.forEach((section) => {
     if (section.id === sectionId) {
@@ -1535,14 +1536,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ナビゲーションリンクのイベントリスナーを追加
   const navLinks = document.querySelectorAll('.nav-link');
 
-  navLinks.forEach((link) => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault(); // デフォルトのアンカーリンクの動作を防止
+ navLinks.forEach((link) => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault(); // デフォルトのアンカーリンクの動作を防止
+    console.log('ナビゲーションリンクがクリックされました:', link);
 
-      const targetId = link.getAttribute('href').substring(1); // href属性からターゲットIDを取得
-      showSection(targetId);
-    });
+    const targetId = link.getAttribute('href').substring(1); // href属性からターゲットIDを取得
+    console.log('ターゲットID:', targetId);
+    showSection(targetId);
   });
+});
 
   // 初期表示のセクションを設定（例：ホームセクションを表示）
   showSection('home');
