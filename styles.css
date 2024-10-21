@@ -75,14 +75,12 @@ ul li button {
   margin-left: 5px;
 }
 
-/* コンテンツセクションのスタイル */
 .content-section {
-  display: none;
+  display: none !important; /* display: none を強制的に適用 */
 }
 
-/* ホームセクションはデフォルトで表示 */
 #home {
-  display: block;
+  display: block !important; /* 初期表示のため強制適用 */
 }
 
 /* テーブルのスタイル */
