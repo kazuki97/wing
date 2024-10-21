@@ -76,11 +76,11 @@ ul li button {
 }
 
 .content-section {
-  display: none !important; /* display: none を強制的に適用 */
+  display: none; 
 }
 
 #home {
-  display: block !important; /* 初期表示のため強制適用 */
+  display: block; 
 }
 
 /* テーブルのスタイル */
