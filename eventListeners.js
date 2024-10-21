@@ -89,19 +89,23 @@ function showSection(sectionId) {
   console.log('showSection が呼び出されました:', sectionId);
   const sections = document.querySelectorAll('.content-section');
   let foundSection = false;
+
   sections.forEach((section) => {
     if (section.id === sectionId) {
-      section.style.display = 'block';
+      // セクションを表示する部分に `setProperty` を追加
+      section.style.setProperty('display', 'block', 'important');
       console.log(`表示するセクション: ${section.id}, display: ${section.style.display}`);
       foundSection = true;
     } else {
-      section.style.display = 'none';
+      section.style.setProperty('display', 'none', 'important'); // 他のセクションは非表示
       console.log(`非表示にするセクション: ${section.id}, display: ${section.style.display}`);
     }
   });
+
   if (!foundSection) {
     console.error(`セクションが見つかりませんでした: ${sectionId}`);
   }
+
   // スクロールをトップに戻す
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1526,6 +1530,9 @@ async function handleAddSubcategoryFormSubmit(e) {
 // DOMContentLoaded イベントで初期化処理を実行
 document.addEventListener('DOMContentLoaded', async () => {
   console.log("初期化処理開始");
+
+  // 初期表示のセクションを設定（例：ホームセクションを表示）
+  await showSection('home'); // ホームをデフォルトで表示
 
  try {
   // 初期化処理
