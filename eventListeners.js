@@ -49,7 +49,7 @@ import {
   getPaymentMethods,
 } from './paymentMethods.js';
 
-mport { getConsumables, getConsumableUsage, deleteConsumable } from './consumables.js'; // 消耗品関連の関数をインポート
+import { getConsumables, getConsumableUsage, deleteConsumable } from './consumables.js'; // 消耗品関連の関数をインポート
 
 async function updatePricingParentCategorySelect() {
   try {
