@@ -92,12 +92,11 @@ function showSection(sectionId) {
 
   sections.forEach((section) => {
     if (section.id === sectionId) {
-      // セクションを表示する部分に `setProperty` を追加
-      section.style.setProperty('display', 'block', 'important');
+      section.style.display = 'block';
       console.log(`表示するセクション: ${section.id}, display: ${section.style.display}`);
       foundSection = true;
     } else {
-      section.style.setProperty('display', 'none', 'important'); // 他のセクションは非表示
+      section.style.display = 'none';
       console.log(`非表示にするセクション: ${section.id}, display: ${section.style.display}`);
     }
   });
