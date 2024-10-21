@@ -194,4 +194,10 @@ table th {
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* シャドウ効果を追加 */
 }
 
-
+/* セクションの可視性を確認するための一時的なスタイル */
+.content-section {
+  display: none; /* 既存のスタイルを保持 */
+  border: 2px solid red; /* セクションの境界線を追加 */
+  background-color: #ffffff; /* セクションの背景色を設定 */
+  min-height: 100px; /* 最小高さを設定して内容が見えるようにする */
+}
