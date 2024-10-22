@@ -33,25 +33,44 @@
       <h1>ホーム</h1>
     </section>
 
-    <!-- カテゴリ設定 -->
-    <section id="categories" class="content-section" style="display: none;">
-      <h1>カテゴリ設定</h1>
-      <!-- 親カテゴリ追加フォーム -->
-      <form id="addParentCategoryForm">
-        <input type="text" id="parentCategoryName" placeholder="親カテゴリ名" required />
-        <button type="submit">追加</button>
-      </form>
-      <!-- サブカテゴリ追加フォーム -->
-      <form id="addSubcategoryForm">
-        <select id="subcategoryParentCategorySelect" required></select>
-        <input type="text" id="subcategoryName" placeholder="サブカテゴリ名" required />
-        <button type="submit">追加</button>
-      </form>
-      <!-- カテゴリ一覧表示エリア -->
-      <div id="categoryList">
-        <ul id="parentCategoryList"></ul>
-      </div>
-    </section>
+   <!-- カテゴリ設定セクション -->
+<section id="categories" class="content-section" style="display: none;">
+  <h1>カテゴリ設定</h1>
+
+  <!-- モーダルを開くためのボタン -->
+  <button id="openAddParentCategoryModal">親カテゴリを追加</button>
+  <button id="openAddSubcategoryModal">サブカテゴリを追加</button>
+
+  <!-- カテゴリ一覧表示エリア -->
+  <div id="categoryList">
+    <ul id="parentCategoryList"></ul>
+  </div>
+</section>
+
+<!-- 親カテゴリ追加用モーダル -->
+<div id="addParentCategoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeParentCategoryModal">&times;</span>
+    <h2>親カテゴリの追加</h2>
+    <form id="modalAddParentCategoryForm">
+      <input type="text" id="modalParentCategoryName" placeholder="親カテゴリ名" required />
+      <button type="submit">追加</button>
+    </form>
+  </div>
+</div>
+
+<!-- サブカテゴリ追加用モーダル -->
+<div id="addSubcategoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeSubcategoryModal">&times;</span>
+    <h2>サブカテゴリの追加</h2>
+    <form id="modalAddSubcategoryForm">
+      <select id="modalSubcategoryParentCategorySelect" required></select>
+      <input type="text" id="modalSubcategoryName" placeholder="サブカテゴリ名" required />
+      <button type="submit">追加</button>
+    </form>
+  </div>
+</div>
 
   <!-- 商品設定 -->
 <section id="products" class="content-section" style="display: none;">
