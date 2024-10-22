@@ -190,7 +190,7 @@ table th {
 /* モーダルコンテンツ */
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto; /* 上下の中央に配置 */
+  margin: 5% auto; /* 上下の中央に配置 */
   padding: 20px;
   border: 1px solid #888;
   width: 80%; /* 幅を調整 */
@@ -233,3 +233,4 @@ table th {
 #parentCategoryList li button {
   margin-left: 5px;
 }
+
