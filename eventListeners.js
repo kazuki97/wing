@@ -758,6 +758,37 @@ document.getElementById('modalAddSubcategoryForm').addEventListener('submit', as
   }
 });
 
+// 商品追加モーダル要素の取得
+const addProductModal = document.getElementById('addProductModal');
+
+// モーダルを開くボタンの取得
+const openAddProductModalBtn = document.getElementById('openAddProductModal');
+
+// モーダルを閉じるボタンの取得
+const closeAddProductModalBtn = document.getElementById('closeAddProductModal');
+
+// モーダルを開くイベントリスナー
+openAddProductModalBtn.addEventListener('click', async () => {
+  addProductModal.style.display = 'block';
+  await updateAllParentCategorySelects(); // カテゴリセレクトボックスを更新
+  await updateConsumableCheckboxes(); // 消耗品チェックボックスを更新
+});
+
+// モーダルを閉じるイベントリスナー
+closeAddProductModalBtn.addEventListener('click', () => {
+  addProductModal.style.display = 'none';
+  document.getElementById('addProductForm').reset();
+});
+
+// モーダル外をクリックしたときにモーダルを閉じる
+window.addEventListener('click', (event) => {
+  if (event.target === addProductModal) {
+    addProductModal.style.display = 'none';
+    document.getElementById('addProductForm').reset();
+  }
+});
+
+
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
 async function updateAllParentCategorySelects() {
   try {
