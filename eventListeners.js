@@ -696,11 +696,12 @@ const closeSubcategoryModalBtn = document.getElementById('closeSubcategoryModal'
 // モーダルを開くイベントリスナー
 openAddParentCategoryModalBtn.addEventListener('click', () => {
   addParentCategoryModal.style.display = 'block';
+  updateAllParentCategorySelects();
 });
 
 openAddSubcategoryModalBtn.addEventListener('click', () => {
   addSubcategoryModal.style.display = 'block';
-  updateModalParentCategorySelect();
+  updateAllParentCategorySelects();
 });
 
 // モーダルを閉じるイベントリスナー
@@ -721,24 +722,6 @@ window.addEventListener('click', (event) => {
     addSubcategoryModal.style.display = 'none';
   }
 });
-
-// モーダル内の親カテゴリセレクトボックスを更新する関数
-async function updateModalParentCategorySelect() {
-  try {
-    const parentCategories = await getParentCategories();
-    const select = document.getElementById('modalSubcategoryParentCategorySelect');
-    select.innerHTML = '<option value="">親カテゴリを選択</option>';
-    parentCategories.forEach((category) => {
-      const option = document.createElement('option');
-      option.value = category.id;
-      option.textContent = category.name;
-      select.appendChild(option);
-    });
-  } catch (error) {
-    console.error('親カテゴリの取得に失敗しました:', error);
-    showError('親カテゴリの取得に失敗しました');
-  }
-}
 
 // モーダル内の親カテゴリ追加フォームの送信イベントリスナー
 document.getElementById('modalAddParentCategoryForm').addEventListener('submit', async (e) => {
@@ -775,36 +758,36 @@ document.getElementById('modalAddSubcategoryForm').addEventListener('submit', as
   }
 });
 
-
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
 async function updateAllParentCategorySelects() {
   try {
     const parentCategories = await getParentCategories();
-    // 親カテゴリセレクトボックスのID一覧
-     const selectIds = [
+    const selectIds = [
       'productParentCategorySelect',
       'filterParentCategorySelect',
       'inventoryParentCategorySelect',
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
-      'modalSubcategoryParentCategorySelect', // モーダル内のセレクトボックスを追加
+      'modalSubcategoryParentCategorySelect',
     ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
-      const selectedValue = select.value;
-      select.innerHTML = '<option value="">親カテゴリを選択</option>';
-      parentCategories.forEach((category) => {
-        const option = document.createElement('option');
-        option.value = category.id;
-        option.textContent = category.name;
-        select.appendChild(option);
-      });
-      // 以前選択されていた値を再設定
-      if (selectedValue) {
-        select.value = selectedValue;
+      if (select) {
+        const selectedValue = select.value;
+        select.innerHTML = '<option value="">親カテゴリを選択</option>';
+        parentCategories.forEach((category) => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          select.appendChild(option);
+        });
+        if (selectedValue) {
+          select.value = selectedValue;
+        }
+      } else {
+        console.warn(`IDが '${id}' のセレクトボックスが見つかりません`);
       }
     });
-    // サブカテゴリセレクトボックスの更新
     await updateSubcategorySelects();
   } catch (error) {
     console.error(error);
@@ -815,15 +798,15 @@ async function updateAllParentCategorySelects() {
 // サブカテゴリセレクトボックスの更新
 async function updateSubcategorySelects() {
   const parentCategorySelectIds = {
-     productParentCategorySelect: 'productSubcategorySelect',
+    productParentCategorySelect: 'productSubcategorySelect',
     filterParentCategorySelect: 'filterSubcategorySelect',
     inventoryParentCategorySelect: 'inventorySubcategorySelect',
     overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
     pricingParentCategorySelect: 'pricingSubcategorySelect',
-    modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // モーダル内のセレクトボックスを追加
+    modalSubcategoryParentCategorySelect: 'modalSubcategorySelect',
   };
 
-for (const parentSelectId in parentCategorySelectIds) {
+  for (const parentSelectId in parentCategorySelectIds) {
     const parentCategorySelect = document.getElementById(parentSelectId);
     if (parentCategorySelect) {
       const parentCategoryId = parentCategorySelect.value;
@@ -837,22 +820,27 @@ for (const parentSelectId in parentCategorySelectIds) {
 async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
   try {
     const select = document.getElementById(subcategorySelectId);
-    select.innerHTML = '<option value="">サブカテゴリを選択</option>';
-    if (!parentCategoryId) {
-      return;
+    if (select) {
+      select.innerHTML = '<option value="">サブカテゴリを選択</option>';
+      if (!parentCategoryId) {
+        return;
+      }
+      const subcategories = await getSubcategories(parentCategoryId);
+      subcategories.forEach((subcategory) => {
+        const option = document.createElement('option');
+        option.value = subcategory.id;
+        option.textContent = subcategory.name;
+        select.appendChild(option);
+      });
+    } else {
+      console.warn(`IDが '${subcategorySelectId}' のサブカテゴリセレクトボックスが見つかりません`);
     }
-    const subcategories = await getSubcategories(parentCategoryId);
-    subcategories.forEach((subcategory) => {
-      const option = document.createElement('option');
-      option.value = subcategory.id;
-      option.textContent = subcategory.name;
-      select.appendChild(option);
-    });
   } catch (error) {
     console.error(error);
     showError('サブカテゴリの取得に失敗しました');
   }
 }
+
 
 // 各親カテゴリセレクトボックスのイベントリスナー
 ['productParentCategorySelect', 'filterParentCategorySelect', 'inventoryParentCategorySelect', 'overallInventoryParentCategorySelect', 'pricingParentCategorySelect'].forEach((id) => {
