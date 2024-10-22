@@ -768,7 +768,7 @@ async function updateAllParentCategorySelects() {
       'inventoryParentCategorySelect',
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
-      'modalSubcategoryParentCategorySelect',
+        // modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // この行を削除
     ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
@@ -803,7 +803,7 @@ async function updateSubcategorySelects() {
     inventoryParentCategorySelect: 'inventorySubcategorySelect',
     overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
     pricingParentCategorySelect: 'pricingSubcategorySelect',
-    modalSubcategoryParentCategorySelect: 'modalSubcategorySelect',
+    // modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // この行を削除
   };
 
   for (const parentSelectId in parentCategorySelectIds) {
