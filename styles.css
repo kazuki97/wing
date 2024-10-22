@@ -210,3 +210,26 @@ table th {
   text-decoration: none;
   cursor: pointer;
 }
+
+/* カテゴリ一覧のスタイル */
+#parentCategoryList,
+#parentCategoryList ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#parentCategoryList > li {
+  margin-bottom: 10px;
+}
+
+#parentCategoryList li strong {
+  font-size: 1.1em;
+}
+
+#parentCategoryList ul {
+  margin-left: 20px; /* サブカテゴリのインデント */
+}
+
+#parentCategoryList li button {
+  margin-left: 5px;
+}
