@@ -401,33 +401,7 @@ document.getElementById('modalAddProductForm').addEventListener('submit', async 
   }
 });
 
-  // 商品の情報を取得
-  const productData = {
-    name: document.getElementById('productName').value,
-    parentCategoryId: document.getElementById('productParentCategorySelect').value,
-    subcategoryId: document.getElementById('productSubcategorySelect').value,
-    price: parseFloat(document.getElementById('productPrice').value),
-    cost: parseFloat(document.getElementById('productCost').value),
-    barcode: document.getElementById('productBarcode').value,
-    quantity: parseFloat(document.getElementById('productQuantity').value),
-    size: parseFloat(document.getElementById('productSize').value),
-  };
 
-  // 消耗品の選択を取得
-  const selectedConsumables = Array.from(document.querySelectorAll('input[name="consumable"]:checked')).map(
-    (checkbox) => checkbox.value
-  );
-  productData.consumables = selectedConsumables; // 商品に関連付ける消耗品のIDリスト
-
-  try {
-    await addProduct(productData);
-    alert('商品が追加されました');
-    document.getElementById('addProductForm').reset(); // フォームをリセット
-    await displayProducts(); // 商品一覧を再表示
-  } catch (error) {
-    console.error('商品の追加に失敗しました:', error);
-    showError('商品の追加に失敗しました');
-  }
 
 // 消耗品リストを表示する関数
 async function displayConsumables() {
@@ -1061,33 +1035,6 @@ async function displaySubcategories(parentCategoryId) {
   }
 }
 
-// 商品追加フォームのイベントリスナー
-document
-  .getElementById('addProductForm')
-  .addEventListener('submit', async (e) => {
-    e.preventDefault();
-    // フォームから商品情報を取得
-    const productData = {
-      name: document.getElementById('productName').value,
-      parentCategoryId: document.getElementById('productParentCategorySelect').value,
-      subcategoryId: document.getElementById('productSubcategorySelect').value,
-      price: parseFloat(document.getElementById('productPrice').value),
-      cost: parseFloat(document.getElementById('productCost').value),
-      barcode: document.getElementById('productBarcode').value,
-      quantity: parseFloat(document.getElementById('productQuantity').value),
-      size: parseFloat(document.getElementById('productSize').value),
-    };
-    try {
-      await addProduct(productData);
-      // フォームをリセット
-      document.getElementById('addProductForm').reset();
-      alert('商品が追加されました');
-      await displayProducts();
-    } catch (error) {
-      console.error(error);
-      showError('商品の追加に失敗しました');
-    }
-  });
 
 async function displayProducts() {
   try {
