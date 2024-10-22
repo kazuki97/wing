@@ -781,13 +781,13 @@ async function updateAllParentCategorySelects() {
   try {
     const parentCategories = await getParentCategories();
     // 親カテゴリセレクトボックスのID一覧
-    const selectIds = [
-      'subcategoryParentCategorySelect',
+     const selectIds = [
       'productParentCategorySelect',
       'filterParentCategorySelect',
       'inventoryParentCategorySelect',
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
+      'modalSubcategoryParentCategorySelect', // モーダル内のセレクトボックスを追加
     ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
@@ -815,17 +815,21 @@ async function updateAllParentCategorySelects() {
 // サブカテゴリセレクトボックスの更新
 async function updateSubcategorySelects() {
   const parentCategorySelectIds = {
-    productParentCategorySelect: 'productSubcategorySelect',
+     productParentCategorySelect: 'productSubcategorySelect',
     filterParentCategorySelect: 'filterSubcategorySelect',
     inventoryParentCategorySelect: 'inventorySubcategorySelect',
     overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
     pricingParentCategorySelect: 'pricingSubcategorySelect',
+    modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // モーダル内のセレクトボックスを追加
   };
 
-  for (const parentSelectId in parentCategorySelectIds) {
-    const parentCategoryId = document.getElementById(parentSelectId).value;
-    const subcategorySelectId = parentCategorySelectIds[parentSelectId];
-    await updateSubcategorySelect(parentCategoryId, subcategorySelectId);
+for (const parentSelectId in parentCategorySelectIds) {
+    const parentCategorySelect = document.getElementById(parentSelectId);
+    if (parentCategorySelect) {
+      const parentCategoryId = parentCategorySelect.value;
+      const subcategorySelectId = parentCategorySelectIds[parentSelectId];
+      await updateSubcategorySelect(parentCategoryId, subcategorySelectId);
+    }
   }
 }
 
