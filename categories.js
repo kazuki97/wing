@@ -15,10 +15,6 @@ import {
 // 親カテゴリの追加
 export async function addParentCategory(name) {
   try {
-    // カテゴリ名を正規化（トリムと小文字化）
-    name = name.trim();
-    name = name.toLowerCase();
-
     const docRef = await addDoc(collection(db, 'parentCategories'), {
       name,
     });
@@ -43,10 +39,6 @@ export async function getParentCategories() {
 // 親カテゴリの編集
 export async function updateParentCategory(id, newName) {
   try {
-    // カテゴリ名を正規化（トリムと小文字化）
-    newName = newName.trim();
-    newName = newName.toLowerCase();
-
     const docRef = doc(db, 'parentCategories', id);
     await updateDoc(docRef, { name: newName });
   } catch (error) {
@@ -74,10 +66,6 @@ export async function deleteParentCategory(id) {
 // サブカテゴリの追加
 export async function addSubcategory(name, parentCategoryId) {
   try {
-    // カテゴリ名を正規化（トリムと小文字化）
-    name = name.trim();
-    name = name.toLowerCase();
-
     const docRef = await addDoc(collection(db, 'subcategories'), {
       name,
       parentCategoryId,
@@ -124,10 +112,6 @@ export async function getSubcategoryById(subcategoryId) {
 // サブカテゴリの編集
 export async function updateSubcategory(id, newName) {
   try {
-    // カテゴリ名を正規化（トリムと小文字化）
-    newName = newName.trim();
-    newName = newName.toLowerCase();
-
     const docRef = doc(db, 'subcategories', id);
     await updateDoc(docRef, { name: newName });
   } catch (error) {
