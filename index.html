@@ -72,54 +72,83 @@
   </div>
 </div>
 
-  <!-- 商品設定 -->
+ <!-- 商品設定 -->
 <section id="products" class="content-section" style="display: none;">
   <h1>商品設定</h1>
-  <!-- 商品追加フォーム -->
-  <form id="addProductForm">
-    <select id="productParentCategorySelect" required></select>
-    <select id="productSubcategorySelect" required></select>
-    <input type="text" id="productName" placeholder="商品名" required />
-    <input type="number" id="productPrice" placeholder="価格" required />
-    <input type="number" id="productCost" placeholder="原価" required />
-    <input type="text" id="productBarcode" placeholder="バーコード" />
-    <input type="number" id="productQuantity" placeholder="数量" required />
-    <input type="number" id="productSize" placeholder="サイズ" required />
 
-    <!-- 消耗品選択リストを追加 -->
-    <div id="consumablesSelection">
-      <label>使用する消耗品:</label>
-      <div id="consumableCheckboxes">
-        <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
-      </div>
-    </div>
+  <!-- 商品追加ボタン -->
+  <button id="openAddProductModal">商品を追加</button>
 
-    <button type="submit">追加</button>
-  </form>
+  <!-- 商品フィルタリング -->
+  <div>
+    <select id="filterParentCategorySelect">
+      <option value="">すべての親カテゴリ</option>
+    </select>
+    <select id="filterSubcategorySelect">
+      <option value="">すべてのサブカテゴリ</option>
+    </select>
+  </div>
 
-  <!-- 商品編集フォーム（追加部分） -->
-  <div id="editProductFormContainer" style="display: none;">
-    <h2>商品編集</h2>
-    <form id="editProductForm">
-      <input type="text" id="editProductName" placeholder="商品名" required />
-      <input type="number" id="editProductPrice" placeholder="価格" required />
-      <input type="number" id="editProductCost" placeholder="原価" required />
-      <input type="text" id="editProductBarcode" placeholder="バーコード" />
-      <input type="number" id="editProductQuantity" placeholder="数量" required />
-      <input type="number" id="editProductSize" placeholder="サイズ" required />
+  <!-- 商品一覧表示エリア -->
+  <ul id="productList"></ul>
+</section>
 
-      <!-- 消耗品選択リストを追加（編集用） -->
-      <div id="editConsumablesSelection">
+<!-- 商品追加用モーダル -->
+<div id="addProductModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeAddProductModal">&times;</span>
+    <h2>商品追加</h2>
+    <form id="modalAddProductForm">
+      <select id="modalProductParentCategorySelect" required></select>
+      <select id="modalProductSubcategorySelect" required></select>
+      <input type="text" id="modalProductName" placeholder="商品名" required />
+      <input type="number" id="modalProductPrice" placeholder="価格" required />
+      <input type="number" id="modalProductCost" placeholder="原価" required />
+      <input type="text" id="modalProductBarcode" placeholder="バーコード" />
+      <input type="number" id="modalProductQuantity" placeholder="数量" required />
+      <input type="number" id="modalProductSize" placeholder="サイズ" required />
+
+      <!-- 消耗品選択リスト -->
+      <div id="modalConsumablesSelection">
         <label>使用する消耗品:</label>
-        <div id="editConsumableCheckboxes">
+        <div id="modalConsumableCheckboxes">
+          <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
+        </div>
+      </div>
+
+      <button type="submit">追加</button>
+    </form>
+  </div>
+</div>
+
+<!-- 商品編集用モーダル -->
+<div id="editProductModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeEditProductModal">&times;</span>
+    <h2>商品編集</h2>
+    <form id="modalEditProductForm">
+      <input type="hidden" id="editProductId" />
+      <select id="modalEditProductParentCategorySelect" required></select>
+      <select id="modalEditProductSubcategorySelect" required></select>
+      <input type="text" id="modalEditProductName" placeholder="商品名" required />
+      <input type="number" id="modalEditProductPrice" placeholder="価格" required />
+      <input type="number" id="modalEditProductCost" placeholder="原価" required />
+      <input type="text" id="modalEditProductBarcode" placeholder="バーコード" />
+      <input type="number" id="modalEditProductQuantity" placeholder="数量" required />
+      <input type="number" id="modalEditProductSize" placeholder="サイズ" required />
+
+      <!-- 消耗品選択リスト -->
+      <div id="modalEditConsumablesSelection">
+        <label>使用する消耗品:</label>
+        <div id="modalEditConsumableCheckboxes">
           <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
         </div>
       </div>
 
       <button type="submit">更新</button>
-      <button type="button" id="cancelEditProduct">キャンセル</button>
     </form>
   </div>
+</div>
 
   <!-- 商品フィルタリング -->
   <div>
