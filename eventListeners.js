@@ -98,25 +98,21 @@ function showError(message) {
 }
 
 // 消耗品選択リストの更新関数
-async function updateConsumableCheckboxes(elementId) {
+async function updateConsumableCheckboxes() {
   try {
     const consumables = await getConsumables();
-    const consumableCheckboxesDiv = document.getElementById(elementId);
-    if (!consumableCheckboxesDiv) {
-      console.error(`IDが '${elementId}' の要素が見つかりません`);
-      return;
-    }
+    const consumableCheckboxesDiv = document.getElementById('consumableCheckboxes');
     consumableCheckboxesDiv.innerHTML = '';
 
     consumables.forEach((consumable) => {
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
-      checkbox.id = `${elementId}-${consumable.id}`;
+      checkbox.id = `consumable-${consumable.id}`;
       checkbox.value = consumable.id;
       checkbox.name = 'consumable';
 
       const label = document.createElement('label');
-      label.htmlFor = `${elementId}-${consumable.id}`;
+      label.htmlFor = `consumable-${consumable.id}`;
       label.textContent = consumable.name;
 
       const checkboxContainer = document.createElement('div');
@@ -351,61 +347,38 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   }
 });
 
-// 商品追加モーダルの要素を取得
-const addProductModal = document.getElementById('addProductModal');
-const openAddProductModalBtn = document.getElementById('openAddProductModal');
-const closeAddProductModalBtn = document.getElementById('closeAddProductModal');
-
-// 「商品を追加」ボタンのクリックイベント
-openAddProductModalBtn.addEventListener('click', async () => {
-  addProductModal.style.display = 'block';
-  await updateAllParentCategorySelects(); // 親カテゴリのセレクトボックスを更新
-  await updateConsumableCheckboxesInModal(); // 消耗品のチェックボックスを更新
-});
-
-// モーダルの閉じるボタンのクリックイベント
-closeAddProductModalBtn.addEventListener('click', () => {
-  addProductModal.style.display = 'none';
-});
-
-// モーダル外をクリックしたときにモーダルを閉じる
-window.addEventListener('click', (event) => {
-  if (event.target === addProductModal) {
-    addProductModal.style.display = 'none';
-  }
-});
-
-// モーダル内の商品の追加フォームの送信イベントリスナー
-document.getElementById('modalAddProductForm').addEventListener('submit', async (e) => {
+// 商品追加フォームのイベントリスナー
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  // フォームから商品情報を取得
+
+  // 商品の情報を取得
   const productData = {
-    name: document.getElementById('modalProductName').value,
-    parentCategoryId: document.getElementById('modalProductParentCategorySelect').value,
-    subcategoryId: document.getElementById('modalProductSubcategorySelect').value,
-    price: parseFloat(document.getElementById('modalProductPrice').value),
-    cost: parseFloat(document.getElementById('modalProductCost').value),
-    barcode: document.getElementById('modalProductBarcode').value,
-    quantity: parseFloat(document.getElementById('modalProductQuantity').value),
-    size: parseFloat(document.getElementById('modalProductSize').value),
-    consumables: Array.from(document.querySelectorAll('#modalConsumableCheckboxes input[name="consumable"]:checked')).map(
-      (checkbox) => checkbox.value
-    ),
+    name: document.getElementById('productName').value,
+    parentCategoryId: document.getElementById('productParentCategorySelect').value,
+    subcategoryId: document.getElementById('productSubcategorySelect').value,
+    price: parseFloat(document.getElementById('productPrice').value),
+    cost: parseFloat(document.getElementById('productCost').value),
+    barcode: document.getElementById('productBarcode').value,
+    quantity: parseFloat(document.getElementById('productQuantity').value),
+    size: parseFloat(document.getElementById('productSize').value),
   };
+
+  // 消耗品の選択を取得
+  const selectedConsumables = Array.from(document.querySelectorAll('input[name="consumable"]:checked')).map(
+    (checkbox) => checkbox.value
+  );
+  productData.consumables = selectedConsumables; // 商品に関連付ける消耗品のIDリスト
+
   try {
     await addProduct(productData);
-    // フォームをリセット
-    document.getElementById('modalAddProductForm').reset();
     alert('商品が追加されました');
-    addProductModal.style.display = 'none';
-    await displayProducts();
+    document.getElementById('addProductForm').reset(); // フォームをリセット
+    await displayProducts(); // 商品一覧を再表示
   } catch (error) {
-    console.error(error);
+    console.error('商品の追加に失敗しました:', error);
     showError('商品の追加に失敗しました');
   }
 });
-
-
 
 // 消耗品リストを表示する関数
 async function displayConsumables() {
@@ -796,8 +769,6 @@ async function updateAllParentCategorySelects() {
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
       'modalSubcategoryParentCategorySelect',
-      'modalProductParentCategorySelect', // 追加
-      'modalEditProductParentCategorySelect', // 追加
     ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
@@ -832,8 +803,7 @@ async function updateSubcategorySelects() {
     inventoryParentCategorySelect: 'inventorySubcategorySelect',
     overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
     pricingParentCategorySelect: 'pricingSubcategorySelect',
-    modalProductParentCategorySelect: 'modalProductSubcategorySelect', // 追加
-    modalEditProductParentCategorySelect: 'modalEditProductSubcategorySelect', // 追加
+    // modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // この行を削除
   };
 
   for (const parentSelectId in parentCategorySelectIds) {
@@ -1039,6 +1009,33 @@ async function displaySubcategories(parentCategoryId) {
   }
 }
 
+// 商品追加フォームのイベントリスナー
+document
+  .getElementById('addProductForm')
+  .addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // フォームから商品情報を取得
+    const productData = {
+      name: document.getElementById('productName').value,
+      parentCategoryId: document.getElementById('productParentCategorySelect').value,
+      subcategoryId: document.getElementById('productSubcategorySelect').value,
+      price: parseFloat(document.getElementById('productPrice').value),
+      cost: parseFloat(document.getElementById('productCost').value),
+      barcode: document.getElementById('productBarcode').value,
+      quantity: parseFloat(document.getElementById('productQuantity').value),
+      size: parseFloat(document.getElementById('productSize').value),
+    };
+    try {
+      await addProduct(productData);
+      // フォームをリセット
+      document.getElementById('addProductForm').reset();
+      alert('商品が追加されました');
+      await displayProducts();
+    } catch (error) {
+      console.error(error);
+      showError('商品の追加に失敗しました');
+    }
+  });
 
 async function displayProducts() {
   try {
@@ -1105,94 +1102,62 @@ async function editProduct(product) {
   // 消耗品リストの取得
   const consumables = await getConsumables();
 
-  // 編集用モーダル内のフォームに値をセット
-  document.getElementById('editProductId').value = product.id;
-  document.getElementById('modalEditProductName').value = product.name;
-  document.getElementById('modalEditProductPrice').value = product.price;
-  document.getElementById('modalEditProductCost').value = product.cost;
-  document.getElementById('modalEditProductBarcode').value = product.barcode;
-  document.getElementById('modalEditProductQuantity').value = product.quantity;
-  document.getElementById('modalEditProductSize').value = product.size;
+  // 編集用のフォームを作成
+  const editForm = document.createElement('form');
+  editForm.innerHTML = `
+    <input type="text" name="name" value="${product.name}" required />
+    <input type="number" name="price" value="${product.price}" required />
+    <input type="number" name="cost" value="${product.cost}" required />
+    <input type="text" name="barcode" value="${product.barcode}" />
+    <input type="number" name="quantity" value="${product.quantity}" required />
+    <input type="number" name="size" value="${product.size}" required />
+    <div id="editConsumables">
+      <label>使用する消耗品:</label>
+      ${consumables.map(consumable => `
+        <div>
+          <input type="checkbox" name="consumable" value="${consumable.id}" id="edit-consumable-${consumable.id}" 
+          ${product.consumables && product.consumables.includes(consumable.id) ? 'checked' : ''} />
+          <label for="edit-consumable-${consumable.id}">${consumable.name}</label>
+        </div>
+      `).join('')}
+    </div>
+    <button type="submit">更新</button>
+    <button type="button" id="cancelEdit">キャンセル</button>
+  `;
 
-  // カテゴリのセレクトボックスを更新
-  await updateAllParentCategorySelects();
-  document.getElementById('modalEditProductParentCategorySelect').value = product.parentCategoryId;
-  await updateSubcategorySelect(product.parentCategoryId, 'modalEditProductSubcategorySelect');
-  document.getElementById('modalEditProductSubcategorySelect').value = product.subcategoryId;
-
-  // 消耗品チェックボックスを更新
-  const consumableCheckboxesDiv = document.getElementById('modalEditConsumableCheckboxes');
-  consumableCheckboxesDiv.innerHTML = '';
-  consumables.forEach((consumable) => {
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = `edit-consumable-${consumable.id}`;
-    checkbox.value = consumable.id;
-    checkbox.name = 'consumable';
-    if (product.consumables && product.consumables.includes(consumable.id)) {
-      checkbox.checked = true;
+  // 編集フォームのイベントリスナー
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const updatedData = {
+      name: editForm.name.value,
+      price: parseFloat(editForm.price.value),
+      cost: parseFloat(editForm.cost.value),
+      barcode: editForm.barcode.value,
+      quantity: parseFloat(editForm.quantity.value),
+      size: parseFloat(editForm.size.value),
+      consumables: Array.from(editForm.querySelectorAll('input[name="consumable"]:checked')).map((checkbox) => checkbox.value),
+    };
+    try {
+      await updateProduct(product.id, updatedData);
+      alert('商品が更新されました');
+      await displayProducts();
+    } catch (error) {
+      console.error(error);
+      showError('商品の更新に失敗しました');
     }
-
-    const label = document.createElement('label');
-    label.htmlFor = `edit-consumable-${consumable.id}`;
-    label.textContent = consumable.name;
-
-    const checkboxContainer = document.createElement('div');
-    checkboxContainer.appendChild(checkbox);
-    checkboxContainer.appendChild(label);
-
-    consumableCheckboxesDiv.appendChild(checkboxContainer);
   });
 
-  // 編集用モーダルを表示
-  editProductModal.style.display = 'block';
+  // キャンセルボタンのイベントリスナー
+  editForm.querySelector('#cancelEdit').addEventListener('click', () => {
+    editForm.remove();
+    displayProducts();
+  });
+
+  // 既存の要素を編集フォームに置き換える
+  const productList = document.getElementById('productList');
+  productList.innerHTML = '';
+  productList.appendChild(editForm);
 }
-
-// 商品編集モーダルの要素を取得
-const editProductModal = document.getElementById('editProductModal');
-const closeEditProductModalBtn = document.getElementById('closeEditProductModal');
-
-// モーダルの閉じるボタンのクリックイベント
-closeEditProductModalBtn.addEventListener('click', () => {
-  editProductModal.style.display = 'none';
-});
-
-// モーダル外をクリックしたときにモーダルを閉じる
-window.addEventListener('click', (event) => {
-  if (event.target === editProductModal) {
-    editProductModal.style.display = 'none';
-  }
-});
-
-// 編集フォームの送信イベントリスナー
-document.getElementById('modalEditProductForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const productId = document.getElementById('editProductId').value;
-
-  const updatedData = {
-    name: document.getElementById('modalEditProductName').value,
-    parentCategoryId: document.getElementById('modalEditProductParentCategorySelect').value,
-    subcategoryId: document.getElementById('modalEditProductSubcategorySelect').value,
-    price: parseFloat(document.getElementById('modalEditProductPrice').value),
-    cost: parseFloat(document.getElementById('modalEditProductCost').value),
-    barcode: document.getElementById('modalEditProductBarcode').value,
-    quantity: parseFloat(document.getElementById('modalEditProductQuantity').value),
-    size: parseFloat(document.getElementById('modalEditProductSize').value),
-    consumables: Array.from(document.querySelectorAll('#modalEditConsumableCheckboxes input[name="consumable"]:checked')).map(
-      (checkbox) => checkbox.value
-    ),
-  };
-  try {
-    await updateProduct(productId, updatedData);
-    alert('商品が更新されました');
-    editProductModal.style.display = 'none';
-    await displayProducts();
-  } catch (error) {
-    console.error(error);
-    showError('商品の更新に失敗しました');
-  }
-});
-
 
 // 在庫管理セクションの商品一覧表示関数
 export async function displayInventoryProducts() {
@@ -1391,7 +1356,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayInventoryProducts();
   await displayTransactions(); // 売上管理セクションの取引データ表示
   await displayConsumables(); // 消耗品リストの初期表示
-  await updateConsumableCheckboxes('consumableCheckboxes');
+  await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
   // 手動で売上を追加するボタンのイベントリスナー
