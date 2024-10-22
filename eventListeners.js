@@ -886,7 +886,12 @@ async function displayParentCategories() {
     parentCategoryList.innerHTML = '';
     for (const category of parentCategories) {
       const listItem = document.createElement('li');
-      listItem.textContent = category.name;
+
+      // 親カテゴリ名を太字にして表示
+      const categoryName = document.createElement('strong');
+      categoryName.textContent = category.name;
+      listItem.appendChild(categoryName);
+
       // 編集ボタン
       const editButton = document.createElement('button');
       editButton.textContent = '編集';
@@ -905,6 +910,8 @@ async function displayParentCategories() {
             });
         }
       });
+      listItem.appendChild(editButton);
+
       // 削除ボタン
       const deleteButton = document.createElement('button');
       deleteButton.textContent = '削除';
@@ -922,12 +929,13 @@ async function displayParentCategories() {
             });
         }
       });
-      listItem.appendChild(editButton);
       listItem.appendChild(deleteButton);
 
       // サブカテゴリの表示
       const subcategoryList = await displaySubcategories(category.id);
-      listItem.appendChild(subcategoryList);
+      if (subcategoryList) {
+        listItem.appendChild(subcategoryList);
+      }
 
       parentCategoryList.appendChild(listItem);
     }
@@ -941,10 +949,17 @@ async function displayParentCategories() {
 async function displaySubcategories(parentCategoryId) {
   try {
     const subcategories = await getSubcategories(parentCategoryId);
+    if (subcategories.length === 0) {
+      return null; // サブカテゴリがない場合は何も返さない
+    }
+
     const subcategoryList = document.createElement('ul');
     for (const subcategory of subcategories) {
       const listItem = document.createElement('li');
+
+      // サブカテゴリ名を表示
       listItem.textContent = subcategory.name;
+
       // 編集ボタン
       const editButton = document.createElement('button');
       editButton.textContent = '編集';
@@ -963,6 +978,8 @@ async function displaySubcategories(parentCategoryId) {
             });
         }
       });
+      listItem.appendChild(editButton);
+
       // 削除ボタン
       const deleteButton = document.createElement('button');
       deleteButton.textContent = '削除';
@@ -980,15 +997,15 @@ async function displaySubcategories(parentCategoryId) {
             });
         }
       });
-      listItem.appendChild(editButton);
       listItem.appendChild(deleteButton);
+
       subcategoryList.appendChild(listItem);
     }
     return subcategoryList;
   } catch (error) {
     console.error(error);
     showError('サブカテゴリの表示に失敗しました');
-    return document.createElement('ul');
+    return null;
   }
 }
 
