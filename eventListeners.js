@@ -98,21 +98,25 @@ function showError(message) {
 }
 
 // 消耗品選択リストの更新関数
-async function updateConsumableCheckboxes() {
+async function updateConsumableCheckboxes(elementId) {
   try {
     const consumables = await getConsumables();
-    const consumableCheckboxesDiv = document.getElementById('consumableCheckboxes');
+    const consumableCheckboxesDiv = document.getElementById(elementId);
+    if (!consumableCheckboxesDiv) {
+      console.error(`IDが '${elementId}' の要素が見つかりません`);
+      return;
+    }
     consumableCheckboxesDiv.innerHTML = '';
 
     consumables.forEach((consumable) => {
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
-      checkbox.id = `consumable-${consumable.id}`;
+      checkbox.id = `${elementId}-${consumable.id}`;
       checkbox.value = consumable.id;
       checkbox.name = 'consumable';
 
       const label = document.createElement('label');
-      label.htmlFor = `consumable-${consumable.id}`;
+      label.htmlFor = `${elementId}-${consumable.id}`;
       label.textContent = consumable.name;
 
       const checkboxContainer = document.createElement('div');
@@ -1189,35 +1193,6 @@ document.getElementById('modalEditProductForm').addEventListener('submit', async
   }
 });
 
-// 商品追加用モーダルの消耗品チェックボックスを更新
-async function updateConsumableCheckboxesInModal() {
-  try {
-    const consumables = await getConsumables();
-    const consumableCheckboxesDiv = document.getElementById('modalConsumableCheckboxes');
-    consumableCheckboxesDiv.innerHTML = '';
-
-    consumables.forEach((consumable) => {
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = `modal-consumable-${consumable.id}`;
-      checkbox.value = consumable.id;
-      checkbox.name = 'consumable';
-
-      const label = document.createElement('label');
-      label.htmlFor = `modal-consumable-${consumable.id}`;
-      label.textContent = consumable.name;
-
-      const checkboxContainer = document.createElement('div');
-      checkboxContainer.appendChild(checkbox);
-      checkboxContainer.appendChild(label);
-
-      consumableCheckboxesDiv.appendChild(checkboxContainer);
-    });
-  } catch (error) {
-    console.error(error);
-    showError('消耗品の取得に失敗しました');
-  }
-}
 
 // 在庫管理セクションの商品一覧表示関数
 export async function displayInventoryProducts() {
@@ -1416,7 +1391,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayInventoryProducts();
   await displayTransactions(); // 売上管理セクションの取引データ表示
   await displayConsumables(); // 消耗品リストの初期表示
-  await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
+  await updateConsumableCheckboxes('consumableCheckboxes');
   await initializeConsumableUsage(); // 消耗品使用量の初期化
 
   // 手動で売上を追加するボタンのイベントリスナー
