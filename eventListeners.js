@@ -768,7 +768,7 @@ async function updateAllParentCategorySelects() {
       'inventoryParentCategorySelect',
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
-        // modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // この行を削除
+      'modalSubcategoryParentCategorySelect',
     ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
