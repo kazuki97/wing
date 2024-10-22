@@ -1189,17 +1189,6 @@ document.getElementById('modalEditProductForm').addEventListener('submit', async
   }
 });
 
-  // キャンセルボタンのイベントリスナー
-  editForm.querySelector('#cancelEdit').addEventListener('click', () => {
-    editForm.remove();
-    displayProducts();
-  });
-
-  // 既存の要素を編集フォームに置き換える
-  const productList = document.getElementById('productList');
-  productList.innerHTML = '';
-  productList.appendChild(editForm);
-
 // 商品追加用モーダルの消耗品チェックボックスを更新
 async function updateConsumableCheckboxesInModal() {
   try {
