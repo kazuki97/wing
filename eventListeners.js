@@ -347,9 +347,59 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   }
 });
 
-// 商品追加フォームのイベントリスナー
-document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+// 商品追加モーダルの要素を取得
+const addProductModal = document.getElementById('addProductModal');
+const openAddProductModalBtn = document.getElementById('openAddProductModal');
+const closeAddProductModalBtn = document.getElementById('closeAddProductModal');
+
+// 「商品を追加」ボタンのクリックイベント
+openAddProductModalBtn.addEventListener('click', async () => {
+  addProductModal.style.display = 'block';
+  await updateAllParentCategorySelects(); // 親カテゴリのセレクトボックスを更新
+  await updateConsumableCheckboxesInModal(); // 消耗品のチェックボックスを更新
+});
+
+// モーダルの閉じるボタンのクリックイベント
+closeAddProductModalBtn.addEventListener('click', () => {
+  addProductModal.style.display = 'none';
+});
+
+// モーダル外をクリックしたときにモーダルを閉じる
+window.addEventListener('click', (event) => {
+  if (event.target === addProductModal) {
+    addProductModal.style.display = 'none';
+  }
+});
+
+// モーダル内の商品の追加フォームの送信イベントリスナー
+document.getElementById('modalAddProductForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  // フォームから商品情報を取得
+  const productData = {
+    name: document.getElementById('modalProductName').value,
+    parentCategoryId: document.getElementById('modalProductParentCategorySelect').value,
+    subcategoryId: document.getElementById('modalProductSubcategorySelect').value,
+    price: parseFloat(document.getElementById('modalProductPrice').value),
+    cost: parseFloat(document.getElementById('modalProductCost').value),
+    barcode: document.getElementById('modalProductBarcode').value,
+    quantity: parseFloat(document.getElementById('modalProductQuantity').value),
+    size: parseFloat(document.getElementById('modalProductSize').value),
+    consumables: Array.from(document.querySelectorAll('#modalConsumableCheckboxes input[name="consumable"]:checked')).map(
+      (checkbox) => checkbox.value
+    ),
+  };
+  try {
+    await addProduct(productData);
+    // フォームをリセット
+    document.getElementById('modalAddProductForm').reset();
+    alert('商品が追加されました');
+    addProductModal.style.display = 'none';
+    await displayProducts();
+  } catch (error) {
+    console.error(error);
+    showError('商品の追加に失敗しました');
+  }
+});
 
   // 商品の情報を取得
   const productData = {
@@ -769,6 +819,8 @@ async function updateAllParentCategorySelects() {
       'overallInventoryParentCategorySelect',
       'pricingParentCategorySelect',
       'modalSubcategoryParentCategorySelect',
+      'modalProductParentCategorySelect', // 追加
+      'modalEditProductParentCategorySelect', // 追加
     ];
     selectIds.forEach((id) => {
       const select = document.getElementById(id);
@@ -803,7 +855,8 @@ async function updateSubcategorySelects() {
     inventoryParentCategorySelect: 'inventorySubcategorySelect',
     overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
     pricingParentCategorySelect: 'pricingSubcategorySelect',
-    // modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // この行を削除
+    modalProductParentCategorySelect: 'modalProductSubcategorySelect', // 追加
+    modalEditProductParentCategorySelect: 'modalEditProductSubcategorySelect', // 追加
   };
 
   for (const parentSelectId in parentCategorySelectIds) {
@@ -1102,50 +1155,93 @@ async function editProduct(product) {
   // 消耗品リストの取得
   const consumables = await getConsumables();
 
-  // 編集用のフォームを作成
-  const editForm = document.createElement('form');
-  editForm.innerHTML = `
-    <input type="text" name="name" value="${product.name}" required />
-    <input type="number" name="price" value="${product.price}" required />
-    <input type="number" name="cost" value="${product.cost}" required />
-    <input type="text" name="barcode" value="${product.barcode}" />
-    <input type="number" name="quantity" value="${product.quantity}" required />
-    <input type="number" name="size" value="${product.size}" required />
-    <div id="editConsumables">
-      <label>使用する消耗品:</label>
-      ${consumables.map(consumable => `
-        <div>
-          <input type="checkbox" name="consumable" value="${consumable.id}" id="edit-consumable-${consumable.id}" 
-          ${product.consumables && product.consumables.includes(consumable.id) ? 'checked' : ''} />
-          <label for="edit-consumable-${consumable.id}">${consumable.name}</label>
-        </div>
-      `).join('')}
-    </div>
-    <button type="submit">更新</button>
-    <button type="button" id="cancelEdit">キャンセル</button>
-  `;
+  // 編集用モーダル内のフォームに値をセット
+  document.getElementById('editProductId').value = product.id;
+  document.getElementById('modalEditProductName').value = product.name;
+  document.getElementById('modalEditProductPrice').value = product.price;
+  document.getElementById('modalEditProductCost').value = product.cost;
+  document.getElementById('modalEditProductBarcode').value = product.barcode;
+  document.getElementById('modalEditProductQuantity').value = product.quantity;
+  document.getElementById('modalEditProductSize').value = product.size;
 
-  // 編集フォームのイベントリスナー
-  editForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const updatedData = {
-      name: editForm.name.value,
-      price: parseFloat(editForm.price.value),
-      cost: parseFloat(editForm.cost.value),
-      barcode: editForm.barcode.value,
-      quantity: parseFloat(editForm.quantity.value),
-      size: parseFloat(editForm.size.value),
-      consumables: Array.from(editForm.querySelectorAll('input[name="consumable"]:checked')).map((checkbox) => checkbox.value),
-    };
-    try {
-      await updateProduct(product.id, updatedData);
-      alert('商品が更新されました');
-      await displayProducts();
-    } catch (error) {
-      console.error(error);
-      showError('商品の更新に失敗しました');
+  // カテゴリのセレクトボックスを更新
+  await updateAllParentCategorySelects();
+  document.getElementById('modalEditProductParentCategorySelect').value = product.parentCategoryId;
+  await updateSubcategorySelect(product.parentCategoryId, 'modalEditProductSubcategorySelect');
+  document.getElementById('modalEditProductSubcategorySelect').value = product.subcategoryId;
+
+  // 消耗品チェックボックスを更新
+  const consumableCheckboxesDiv = document.getElementById('modalEditConsumableCheckboxes');
+  consumableCheckboxesDiv.innerHTML = '';
+  consumables.forEach((consumable) => {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `edit-consumable-${consumable.id}`;
+    checkbox.value = consumable.id;
+    checkbox.name = 'consumable';
+    if (product.consumables && product.consumables.includes(consumable.id)) {
+      checkbox.checked = true;
     }
+
+    const label = document.createElement('label');
+    label.htmlFor = `edit-consumable-${consumable.id}`;
+    label.textContent = consumable.name;
+
+    const checkboxContainer = document.createElement('div');
+    checkboxContainer.appendChild(checkbox);
+    checkboxContainer.appendChild(label);
+
+    consumableCheckboxesDiv.appendChild(checkboxContainer);
   });
+
+  // 編集用モーダルを表示
+  editProductModal.style.display = 'block';
+}
+
+// 商品編集モーダルの要素を取得
+const editProductModal = document.getElementById('editProductModal');
+const closeEditProductModalBtn = document.getElementById('closeEditProductModal');
+
+// モーダルの閉じるボタンのクリックイベント
+closeEditProductModalBtn.addEventListener('click', () => {
+  editProductModal.style.display = 'none';
+});
+
+// モーダル外をクリックしたときにモーダルを閉じる
+window.addEventListener('click', (event) => {
+  if (event.target === editProductModal) {
+    editProductModal.style.display = 'none';
+  }
+});
+
+// 編集フォームの送信イベントリスナー
+document.getElementById('modalEditProductForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const productId = document.getElementById('editProductId').value;
+
+  const updatedData = {
+    name: document.getElementById('modalEditProductName').value,
+    parentCategoryId: document.getElementById('modalEditProductParentCategorySelect').value,
+    subcategoryId: document.getElementById('modalEditProductSubcategorySelect').value,
+    price: parseFloat(document.getElementById('modalEditProductPrice').value),
+    cost: parseFloat(document.getElementById('modalEditProductCost').value),
+    barcode: document.getElementById('modalEditProductBarcode').value,
+    quantity: parseFloat(document.getElementById('modalEditProductQuantity').value),
+    size: parseFloat(document.getElementById('modalEditProductSize').value),
+    consumables: Array.from(document.querySelectorAll('#modalEditConsumableCheckboxes input[name="consumable"]:checked')).map(
+      (checkbox) => checkbox.value
+    ),
+  };
+  try {
+    await updateProduct(productId, updatedData);
+    alert('商品が更新されました');
+    editProductModal.style.display = 'none';
+    await displayProducts();
+  } catch (error) {
+    console.error(error);
+    showError('商品の更新に失敗しました');
+  }
+});
 
   // キャンセルボタンのイベントリスナー
   editForm.querySelector('#cancelEdit').addEventListener('click', () => {
@@ -1157,6 +1253,35 @@ async function editProduct(product) {
   const productList = document.getElementById('productList');
   productList.innerHTML = '';
   productList.appendChild(editForm);
+
+// 商品追加用モーダルの消耗品チェックボックスを更新
+async function updateConsumableCheckboxesInModal() {
+  try {
+    const consumables = await getConsumables();
+    const consumableCheckboxesDiv = document.getElementById('modalConsumableCheckboxes');
+    consumableCheckboxesDiv.innerHTML = '';
+
+    consumables.forEach((consumable) => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = `modal-consumable-${consumable.id}`;
+      checkbox.value = consumable.id;
+      checkbox.name = 'consumable';
+
+      const label = document.createElement('label');
+      label.htmlFor = `modal-consumable-${consumable.id}`;
+      label.textContent = consumable.name;
+
+      const checkboxContainer = document.createElement('div');
+      checkboxContainer.appendChild(checkbox);
+      checkboxContainer.appendChild(label);
+
+      consumableCheckboxesDiv.appendChild(checkboxContainer);
+    });
+  } catch (error) {
+    console.error(error);
+    showError('消耗品の取得に失敗しました');
+  }
 }
 
 // 在庫管理セクションの商品一覧表示関数
