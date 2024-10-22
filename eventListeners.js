@@ -681,42 +681,100 @@ async function handleDeleteTransaction(transactionId) {
   }
 }
 
-// 親カテゴリ追加フォームのイベントリスナー
-document
-  .getElementById('addParentCategoryForm')
-  .addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('parentCategoryName').value;
-    try {
-      await addParentCategory(name);
-      document.getElementById('parentCategoryName').value = '';
-      await updateAllParentCategorySelects();
-      await displayParentCategories();
-      alert('親カテゴリが追加されました');
-    } catch (error) {
-      console.error(error);
-      showError('親カテゴリの追加に失敗しました');
-    }
-  });
+// モーダル要素の取得
+const addParentCategoryModal = document.getElementById('addParentCategoryModal');
+const addSubcategoryModal = document.getElementById('addSubcategoryModal');
 
-// サブカテゴリ追加フォームのイベントリスナー
-document
-  .getElementById('addSubcategoryForm')
-  .addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const parentCategoryId = document.getElementById('subcategoryParentCategorySelect').value;
-    const name = document.getElementById('subcategoryName').value;
-    try {
-      await addSubcategory(name, parentCategoryId);
-      document.getElementById('subcategoryName').value = '';
-      await displayParentCategories();
-      await updateAllParentCategorySelects();
-      alert('サブカテゴリが追加されました');
-    } catch (error) {
-      console.error(error);
-      showError('サブカテゴリの追加に失敗しました');
-    }
-  });
+// モーダルを開くボタンの取得
+const openAddParentCategoryModalBtn = document.getElementById('openAddParentCategoryModal');
+const openAddSubcategoryModalBtn = document.getElementById('openAddSubcategoryModal');
+
+// モーダルを閉じるボタンの取得
+const closeParentCategoryModalBtn = document.getElementById('closeParentCategoryModal');
+const closeSubcategoryModalBtn = document.getElementById('closeSubcategoryModal');
+
+// モーダルを開くイベントリスナー
+openAddParentCategoryModalBtn.addEventListener('click', () => {
+  addParentCategoryModal.style.display = 'block';
+});
+
+openAddSubcategoryModalBtn.addEventListener('click', () => {
+  addSubcategoryModal.style.display = 'block';
+  updateModalParentCategorySelect();
+});
+
+// モーダルを閉じるイベントリスナー
+closeParentCategoryModalBtn.addEventListener('click', () => {
+  addParentCategoryModal.style.display = 'none';
+});
+
+closeSubcategoryModalBtn.addEventListener('click', () => {
+  addSubcategoryModal.style.display = 'none';
+});
+
+// モーダル外をクリックしたときにモーダルを閉じる
+window.addEventListener('click', (event) => {
+  if (event.target === addParentCategoryModal) {
+    addParentCategoryModal.style.display = 'none';
+  }
+  if (event.target === addSubcategoryModal) {
+    addSubcategoryModal.style.display = 'none';
+  }
+});
+
+// モーダル内の親カテゴリセレクトボックスを更新する関数
+async function updateModalParentCategorySelect() {
+  try {
+    const parentCategories = await getParentCategories();
+    const select = document.getElementById('modalSubcategoryParentCategorySelect');
+    select.innerHTML = '<option value="">親カテゴリを選択</option>';
+    parentCategories.forEach((category) => {
+      const option = document.createElement('option');
+      option.value = category.id;
+      option.textContent = category.name;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error('親カテゴリの取得に失敗しました:', error);
+    showError('親カテゴリの取得に失敗しました');
+  }
+}
+
+// モーダル内の親カテゴリ追加フォームの送信イベントリスナー
+document.getElementById('modalAddParentCategoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('modalParentCategoryName').value;
+  try {
+    await addParentCategory(name);
+    document.getElementById('modalParentCategoryName').value = '';
+    addParentCategoryModal.style.display = 'none';
+    await updateAllParentCategorySelects();
+    await displayParentCategories();
+    alert('親カテゴリが追加されました');
+  } catch (error) {
+    console.error(error);
+    showError('親カテゴリの追加に失敗しました');
+  }
+});
+
+// モーダル内のサブカテゴリ追加フォームの送信イベントリスナー
+document.getElementById('modalAddSubcategoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const parentCategoryId = document.getElementById('modalSubcategoryParentCategorySelect').value;
+  const name = document.getElementById('modalSubcategoryName').value;
+  try {
+    await addSubcategory(name, parentCategoryId);
+    document.getElementById('modalSubcategoryName').value = '';
+    addSubcategoryModal.style.display = 'none';
+    await displayParentCategories();
+    await updateAllParentCategorySelects();
+    alert('サブカテゴリが追加されました');
+  } catch (error) {
+    console.error(error);
+    showError('サブカテゴリの追加に失敗しました');
+  }
+});
+
 
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
 async function updateAllParentCategorySelects() {
