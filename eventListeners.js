@@ -428,7 +428,6 @@ document.getElementById('modalAddProductForm').addEventListener('submit', async 
     console.error('商品の追加に失敗しました:', error);
     showError('商品の追加に失敗しました');
   }
-});
 
 // 消耗品リストを表示する関数
 async function displayConsumables() {
