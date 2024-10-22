@@ -173,3 +173,40 @@ table th {
   background-color: #f2f2f2;
   text-align: left;
 }
+
+/* モーダルのスタイル */
+.modal {
+  display: none; /* デフォルトでは非表示 */
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%; /* 全画面の幅 */
+  height: 100%; /* 全画面の高さ */
+  overflow: auto; /* 必要に応じてスクロール */
+  background-color: rgba(0, 0, 0, 0.4); /* 背景の半透明効果 */
+}
+
+/* モーダルコンテンツ */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 上下の中央に配置 */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* 幅を調整 */
+}
+
+/* 閉じるボタン */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
