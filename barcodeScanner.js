@@ -31,6 +31,7 @@ export function startQuaggaScanner() {
     console.log(`バーコードが検出されました: ${code}`);
     alert(`バーコードが検出されました: ${code}`);
     Quagga.stop(); // 必要に応じてスキャナーを停止
+    hideScanner(); // スキャナーを非表示にする関数を呼び出す
   });
 
   Quagga.onProcessed(function(result) {
@@ -58,12 +59,14 @@ export function startQuaggaScanner() {
   });
 }
 
-document.getElementById("startBarcodeScanButton").addEventListener("click", () => {
-  try {
-    console.log("startBarcodeScanButton がクリックされました"); // デバッグログ
-    startQuaggaScanner();
-  } catch (err) {
-    console.error("バーコードスキャナーを開始できませんでした:", err);
-    alert("バーコードスキャナーの起動に失敗しました。");
+// スキャナーを非表示にする関数
+function hideScanner() {
+  const scannerDiv = document.getElementById('barcode-scanner');
+  const cancelScanButton = document.getElementById('cancelScanButton');
+  if (scannerDiv) {
+    scannerDiv.style.display = 'none';
   }
-});
+  if (cancelScanButton) {
+    cancelScanButton.style.display = 'none';
+  }
+}
