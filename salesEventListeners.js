@@ -24,7 +24,7 @@ import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
 
 // エラーメッセージ表示関数
-function showError(message) {
+export function showError(message) {
   const errorDiv = document.getElementById('error-message');
   errorDiv.textContent = message;
   errorDiv.style.display = 'block';
@@ -89,7 +89,7 @@ document.getElementById('barcodeInput').addEventListener('keydown', async (e) =>
 });
 
 // カートに商品を追加する関数
-function addToCart(product) {
+export function addToCart(product) {
   console.log("カートに追加する商品:", product);
   const existingItem = salesCart.find((item) => item.product.id === product.id);
   if (existingItem) {
