@@ -88,17 +88,22 @@ document.getElementById('barcodeInput').addEventListener('keydown', async (e) =>
   }
 });
 
-// カートに商品を追加する関数
-export function addToCart(product) {
+export function addToCart(product, isScanned = false) {
   console.log("カートに追加する商品:", product);
   const existingItem = salesCart.find((item) => item.product.id === product.id);
   if (existingItem) {
-    existingItem.quantity += 1;
+    if (!isScanned) {
+      existingItem.quantity += 1;
+    } else {
+      // スキャンからの追加の場合は数量を増やさない
+      console.log("商品は既にカートに存在します。数量は変更しません。");
+    }
   } else {
     salesCart.push({ product, quantity: 1 });
   }
   displaySalesCart();
 }
+
 
 // QuaggaJS の初期化とコールバックの設定を追加
 function initializeQuagga() {
