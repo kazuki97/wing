@@ -36,10 +36,6 @@ function showError(message) {
 // バーコードスキャンセクションのイベントリスナーと関数
 let salesCart = [];
 
-// QuaggaJS 初期化フラグと処理中フラグ
-let isQuaggaInitialized = false;
-let isProcessing = false;
-
 // 支払い方法選択セレクトボックスの更新
 async function updatePaymentMethodSelect() {
   try {
@@ -58,7 +54,6 @@ async function updatePaymentMethodSelect() {
   }
 }
 
-// 手動でバーコードを入力して追加する機能
 document.getElementById('addBarcodeButton').addEventListener('click', async () => {
   const barcodeInput = document.getElementById('barcodeInput');
   const barcode = barcodeInput.value.trim();
@@ -105,34 +100,8 @@ function addToCart(product) {
   displaySalesCart();
 }
 
-// スキャンキャンセルボタンのイベントリスナー
-const cancelScanButton = document.getElementById('cancelScanButton');
-if (cancelScanButton) {
-  cancelScanButton.addEventListener('click', () => {
-    if (isQuaggaInitialized) {
-      Quagga.stop();
-      isQuaggaInitialized = false;
-      isProcessing = false;
-      const scannerDiv = document.getElementById('barcode-scanner');
-      if (scannerDiv) {
-        scannerDiv.style.display = 'none';
-      }
-      cancelScanButton.style.display = 'none';
-      alert('スキャンがキャンセルされました。');
-    }
-  });
-} else {
-  console.error("cancelScanButton が見つかりません。HTML に id='cancelScanButton' の要素が存在するか確認してください。");
-}
-
-// QuaggaJS の初期化とコールバックの設定
+// QuaggaJS の初期化とコールバックの設定を追加
 function initializeQuagga() {
-  if (isQuaggaInitialized) {
-    console.log("QuaggaJSは既に初期化されています。");
-    showError('バーコードスキャンが既に開始されています。');
-    return;
-  }
-
   if (!window.Quagga) {
     console.error("QuaggaJSがロードされていません");
     showError('バーコードスキャナーの初期化に失敗しました。QuaggaJSがロードされていません。');
@@ -160,66 +129,25 @@ function initializeQuagga() {
     }
     console.log("QuaggaJS の初期化が完了しました。");
     Quagga.start();
-    isQuaggaInitialized = true; // 初期化完了後にフラグを立てる
-    
-     // QuaggaJS のビデオフィードを表示
-    const scannerDiv = document.getElementById('barcode-scanner');
-    if (scannerDiv) {
-      scannerDiv.style.display = 'block';
-    }
-
-    // キャンセルボタンを表示
-    if (cancelScanButton) {
-      cancelScanButton.style.display = 'inline-block';
-    }
   });
 
-
-   Quagga.onDetected(async function(result) {
-    if (isProcessing) {
-      // 既に処理中の場合は無視
-      return;
-    }
-    isProcessing = true;
-
-    const barcode = result.codeResult.code.trim();
+  Quagga.onDetected(async function(result) {
+    const barcode = result.codeResult.code;
     console.log(`スキャンされたバーコード: ${barcode}`);
 
     try {
       const product = await getProductByBarcode(barcode);
       if (!product) {
         showError('該当する商品が見つかりません');
-        isProcessing = false;
         return;
       }
-      console.log("取得した商品情報:", product);
       addToCart(product);
 
       // 在庫管理セクションの表示を更新
       await displayInventoryProducts(); // 在庫管理セクションを再描画
-
-      // スキャン成功のフィードバック
-      alert(`商品「${product.name}」がカートに追加されました。`);
-
-      // QuaggaJS を停止してスキャンを終了
-      Quagga.stop();
-      isQuaggaInitialized = false;
-
-      // QuaggaJS のビデオフィードを非表示
-      const scannerDiv = document.getElementById('barcode-scanner');
-      if (scannerDiv) {
-        scannerDiv.style.display = 'none';
-      }
-
-      // キャンセルボタンを非表示
-      if (cancelScanButton) {
-        cancelScanButton.style.display = 'none';
-      }
     } catch (error) {
       console.error(error);
       showError('商品の取得に失敗しました');
-    } finally {
-      isProcessing = false;
     }
   });
 }
@@ -535,13 +463,3 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayOverallInventory(); // 全体在庫の初期表示
   await displayInventoryProducts(); // 在庫管理セクションの初期表示
 });
-
-// 「バーコードスキャン開始」ボタンのクリックイベントリスナー追加
-const startScanButton = document.getElementById('startScanButton');
-if (startScanButton) {
-  startScanButton.addEventListener('click', () => {
-    initializeQuagga();
-  });
-} else {
-  console.error("startScanButton が見つかりません。HTML に id='startScanButton' の要素が存在するか確認してください。");
-}
