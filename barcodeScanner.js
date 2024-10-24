@@ -1,5 +1,9 @@
 // barcodeScanner.js
 
+import { getProductByBarcode } from './products.js';
+import { addToCart, showError } from './salesEventListeners.js';
+import { displayInventoryProducts } from './eventListeners.js';
+
 export function startQuaggaScanner() {
   console.log("QuaggaJS スキャナーを開始します"); // デバッグログ
 
@@ -26,10 +30,25 @@ export function startQuaggaScanner() {
     Quagga.start();
   });
 
-  Quagga.onDetected(function(result) {
-    const code = result.codeResult.code;
-    console.log(`バーコードが検出されました: ${code}`);
-    alert(`バーコードが検出されました: ${code}`);
+  Quagga.onDetected(async function(result) {
+    const barcode = result.codeResult.code;
+    console.log(`スキャンされたバーコード: ${barcode}`);
+
+    try {
+      const product = await getProductByBarcode(barcode);
+      if (!product) {
+        showError('該当する商品が見つかりません');
+        return;
+      }
+      addToCart(product);
+
+      // 在庫管理セクションの表示を更新
+      await displayInventoryProducts(); // 在庫管理セクションを再描画
+    } catch (error) {
+      console.error(error);
+      showError('商品の取得に失敗しました');
+    }
+
     Quagga.stop(); // 必要に応じてスキャナーを停止
   });
 
