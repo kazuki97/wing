@@ -1,5 +1,6 @@
 // barcodeScanner.js
-import { Html5Qrcode } from "https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js";
+import { Html5Qrcode } from "https://unpkg.com/html5-qrcode@2.4.0/minified/html5-qrcode.min.js";
+
 
 export function startBarcodeScanner() {
   const html5QrCode = new Html5Qrcode("reader"); // 'reader'はカメラプレビューエリアのID
