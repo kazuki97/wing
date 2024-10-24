@@ -8,16 +8,17 @@ let scannerIsRunning = false; // スキャナーの状態を追跡
 
 export function startQuaggaScanner() {
   if (scannerIsRunning) {
-    return; // 既にスキャナーが動作中の場合は新たに起動しない
+    return; // 既にスキャナーが動作中の場合は何もしない
   }
 
   console.log("QuaggaJS スキャナーを開始します");
+  scannerIsRunning = true; // スキャナーが動作中であることを設定
 
   // onDetected 関数を定義
   const onDetected = async function(result) {
     const barcode = result.codeResult.code.trim();
     console.log(`スキャンされたバーコード: ${barcode}`);
-    // alert(`スキャンされたバーコード: ${barcode}`); // alertを削除
+    showMessage(`バーコード ${barcode} が追加されました`);
 
     try {
       const product = await getProductByBarcode(barcode);
@@ -26,7 +27,6 @@ export function startQuaggaScanner() {
         return;
       }
       addToCart(product); // スキャンからの追加
-      showMessage(`商品「${product.name}」がカートに追加されました`);
 
       // 在庫管理セクションの表示を更新
       await displayInventoryProducts();
@@ -63,11 +63,11 @@ export function startQuaggaScanner() {
     if (err) {
       console.error(err);
       showError("バーコードスキャナーの初期化に失敗しました。");
+      scannerIsRunning = false; // エラー時にリセット
       return;
     }
     console.log("QuaggaJS の初期化が完了しました。");
     Quagga.start();
-    scannerIsRunning = true; // スキャナーが動作中であることを設定
 
     // onDetected リスナーを登録
     Quagga.onDetected(onDetected);
