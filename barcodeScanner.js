@@ -1,8 +1,8 @@
 // barcodeScanner.js
-import { Html5Qrcode } from "https://unpkg.com/html5-qrcode@2.4.0/minified/html5-qrcode.min.js";
-
+import { Html5Qrcode } from "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"; // または jsDelivr を使用
 
 export function startBarcodeScanner() {
+  console.log("startBarcodeScanner 関数が呼び出されました"); // デバッグログ
   const html5QrCode = new Html5Qrcode("reader"); // 'reader'はカメラプレビューエリアのID
   const config = {
     fps: 10,
@@ -31,6 +31,7 @@ export function startBarcodeScanner() {
 
 document.getElementById("startBarcodeScanButton").addEventListener("click", () => {
   try {
+    console.log("startBarcodeScanButton がクリックされました"); // デバッグログ
     startBarcodeScanner();
   } catch (err) {
     console.error("バーコードスキャナーを開始できませんでした:", err);
