@@ -35,3 +35,11 @@ export function startBarcodeScanner(onDetected) {
     Quagga.stop();
   });
 }
+
+// 新規追加: ボタンにイベントリスナーを追加してカメラを起動
+document.getElementById('startBarcodeScanButton').addEventListener('click', () => {
+  startBarcodeScanner((code) => {
+    document.getElementById('barcodeInput').value = code;
+    console.log("スキャンされたバーコード:", code);
+  });
+});
