@@ -462,5 +462,4 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayPaymentMethods(); // 支払い方法の初期表示
   await displayOverallInventory(); // 全体在庫の初期表示
   await displayInventoryProducts(); // 在庫管理セクションの初期表示
-  initializeQuagga(); // QuaggaJS を初期化
 });
