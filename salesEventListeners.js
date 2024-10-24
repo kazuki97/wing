@@ -105,6 +105,26 @@ function addToCart(product) {
   displaySalesCart();
 }
 
+// スキャンキャンセルボタンのイベントリスナー
+const cancelScanButton = document.getElementById('cancelScanButton');
+if (cancelScanButton) {
+  cancelScanButton.addEventListener('click', () => {
+    if (isQuaggaInitialized) {
+      Quagga.stop();
+      isQuaggaInitialized = false;
+      isProcessing = false;
+      const scannerDiv = document.getElementById('barcode-scanner');
+      if (scannerDiv) {
+        scannerDiv.style.display = 'none';
+      }
+      cancelScanButton.style.display = 'none';
+      alert('スキャンがキャンセルされました。');
+    }
+  });
+} else {
+  console.error("cancelScanButton が見つかりません。HTML に id='cancelScanButton' の要素が存在するか確認してください。");
+}
+
 // QuaggaJS の初期化とコールバックの設定
 function initializeQuagga() {
   if (isQuaggaInitialized) {
@@ -142,14 +162,20 @@ function initializeQuagga() {
     Quagga.start();
     isQuaggaInitialized = true; // 初期化完了後にフラグを立てる
     
-    // QuaggaJS のビデオフィードを表示
+     // QuaggaJS のビデオフィードを表示
     const scannerDiv = document.getElementById('barcode-scanner');
     if (scannerDiv) {
       scannerDiv.style.display = 'block';
     }
+
+    // キャンセルボタンを表示
+    if (cancelScanButton) {
+      cancelScanButton.style.display = 'inline-block';
+    }
   });
 
-  Quagga.onDetected(async function(result) {
+
+   Quagga.onDetected(async function(result) {
     if (isProcessing) {
       // 既に処理中の場合は無視
       return;
@@ -183,6 +209,11 @@ function initializeQuagga() {
       const scannerDiv = document.getElementById('barcode-scanner');
       if (scannerDiv) {
         scannerDiv.style.display = 'none';
+      }
+
+      // キャンセルボタンを非表示
+      if (cancelScanButton) {
+        cancelScanButton.style.display = 'none';
       }
     } catch (error) {
       console.error(error);
