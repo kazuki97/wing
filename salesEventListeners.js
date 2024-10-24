@@ -100,6 +100,58 @@ function addToCart(product) {
   displaySalesCart();
 }
 
+// QuaggaJS の初期化とコールバックの設定を追加
+function initializeQuagga() {
+  if (!window.Quagga) {
+    console.error("QuaggaJSがロードされていません");
+    showError('バーコードスキャナーの初期化に失敗しました。QuaggaJSがロードされていません。');
+    return;
+  }
+
+  Quagga.init({
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      target: document.querySelector('#barcode-scanner'), // ビデオフィードを表示する要素
+      constraints: {
+        facingMode: "environment" // 背面カメラを使用
+      },
+    },
+    decoder: {
+      readers: ["ean_reader", "code_128_reader", "code_39_reader", "upc_reader", "upc_e_reader"],
+    },
+    locate: true, // バーコードの位置を特定
+  }, function(err) {
+    if (err) {
+      console.error(err);
+      showError('バーコードスキャナーの初期化に失敗しました。');
+      return;
+    }
+    console.log("QuaggaJS の初期化が完了しました。");
+    Quagga.start();
+  });
+
+  Quagga.onDetected(async function(result) {
+    const barcode = result.codeResult.code;
+    console.log(`スキャンされたバーコード: ${barcode}`);
+
+    try {
+      const product = await getProductByBarcode(barcode);
+      if (!product) {
+        showError('該当する商品が見つかりません');
+        return;
+      }
+      addToCart(product);
+
+      // 在庫管理セクションの表示を更新
+      await displayInventoryProducts(); // 在庫管理セクションを再描画
+    } catch (error) {
+      console.error(error);
+      showError('商品の取得に失敗しました');
+    }
+  });
+}
+
 // カートの表示
 async function displaySalesCart() {
   const salesCartTable = document.getElementById('salesCart').querySelector('tbody');
@@ -410,4 +462,5 @@ window.addEventListener('DOMContentLoaded', async () => {
   await displayPaymentMethods(); // 支払い方法の初期表示
   await displayOverallInventory(); // 全体在庫の初期表示
   await displayInventoryProducts(); // 在庫管理セクションの初期表示
+  initializeQuagga(); // QuaggaJS を初期化
 });
