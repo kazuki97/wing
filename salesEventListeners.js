@@ -33,62 +33,9 @@ function showError(message) {
   }, 5000);
 }
 
-// バーコードスキャンセクションのイベントリスナーと関数
+// カートに商品を追加する関数
 let salesCart = [];
 
-// 支払い方法選択セレクトボックスの更新
-async function updatePaymentMethodSelect() {
-  try {
-    const paymentMethods = await getPaymentMethods();
-    const select = document.getElementById('paymentMethodSelect');
-    select.innerHTML = '<option value="">支払い方法を選択</option>';
-    paymentMethods.forEach((method) => {
-      const option = document.createElement('option');
-      option.value = method.id;
-      option.textContent = method.name;
-      select.appendChild(option);
-    });
-  } catch (error) {
-    console.error(error);
-    showError('支払い方法の取得に失敗しました');
-  }
-}
-
-document.getElementById('addBarcodeButton').addEventListener('click', async () => {
-  const barcodeInput = document.getElementById('barcodeInput');
-  const barcode = barcodeInput.value.trim();
-  if (!barcode) {
-    showError('バーコードを入力してください');
-    return;
-  }
-  try {
-    const product = await getProductByBarcode(barcode);
-    if (!product) {
-      showError('該当する商品が見つかりません');
-      return;
-    }
-    // ここにログを追加
-    console.log("取得した商品情報:", product);
-    addToCart(product);
-    barcodeInput.value = '';
-    
-    // 在庫管理セクションの表示を更新
-    await displayInventoryProducts(); // 在庫管理セクションを再描画
-  } catch (error) {
-    console.error(error);
-    showError('商品の取得に失敗しました');
-  }
-});
-
-// Enterキーでバーコードを追加
-document.getElementById('barcodeInput').addEventListener('keydown', async (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    document.getElementById('addBarcodeButton').click();
-  }
-});
-
-// カートに商品を追加する関数
 function addToCart(product) {
   console.log("カートに追加する商品:", product);
   const existingItem = salesCart.find((item) => item.product.id === product.id);
@@ -141,6 +88,7 @@ function initializeQuagga() {
         showError('該当する商品が見つかりません');
         return;
       }
+      console.log("取得した商品情報:", product);
       addToCart(product);
 
       // 在庫管理セクションの表示を更新
@@ -151,6 +99,58 @@ function initializeQuagga() {
     }
   });
 }
+
+// 支払い方法選択セレクトボックスの更新
+async function updatePaymentMethodSelect() {
+  try {
+    const paymentMethods = await getPaymentMethods();
+    const select = document.getElementById('paymentMethodSelect');
+    select.innerHTML = '<option value="">支払い方法を選択</option>';
+    paymentMethods.forEach((method) => {
+      const option = document.createElement('option');
+      option.value = method.id;
+      option.textContent = method.name;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error(error);
+    showError('支払い方法の取得に失敗しました');
+  }
+}
+
+// 手動でバーコードを入力して追加する機能
+document.getElementById('addBarcodeButton').addEventListener('click', async () => {
+  const barcodeInput = document.getElementById('barcodeInput');
+  const barcode = barcodeInput.value.trim();
+  if (!barcode) {
+    showError('バーコードを入力してください');
+    return;
+  }
+  try {
+    const product = await getProductByBarcode(barcode);
+    if (!product) {
+      showError('該当する商品が見つかりません');
+      return;
+    }
+    console.log("取得した商品情報:", product);
+    addToCart(product);
+    barcodeInput.value = '';
+    
+    // 在庫管理セクションの表示を更新
+    await displayInventoryProducts(); // 在庫管理セクションを再描画
+  } catch (error) {
+    console.error(error);
+    showError('商品の取得に失敗しました');
+  }
+});
+
+// Enterキーでバーコードを追加する機能
+document.getElementById('barcodeInput').addEventListener('keydown', async (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('addBarcodeButton').click();
+  }
+});
 
 // カートの表示
 async function displaySalesCart() {
@@ -320,7 +320,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
 
       // 在庫の更新
       console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - requiredQuantity, subcategoryId: product.subcategoryId });
-     await updateProduct(product.id, { quantity: product.quantity - quantity, subcategoryId: product.subcategoryId });
+      await updateProduct(product.id, { quantity: product.quantity - requiredQuantity, subcategoryId: product.subcategoryId });
       // 全体在庫の更新
       console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
       await updateOverallInventory(product.subcategoryId, -requiredQuantity);
