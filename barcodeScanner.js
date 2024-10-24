@@ -1,24 +1,23 @@
 // barcodeScanner.js
 
 import { getProductByBarcode } from './products.js';
-import { addToCart, showError } from './salesEventListeners.js';
+import { addToCart, showError, showMessage } from './salesEventListeners.js';
 import { displayInventoryProducts } from './eventListeners.js';
 
-let onDetected; // グローバルに宣言
+let scannerIsRunning = false; // スキャナーの状態を追跡
 
 export function startQuaggaScanner() {
-  console.log("QuaggaJS スキャナーを開始します");
-
-  // 既存のリスナーを解除
-  if (onDetected) {
-    Quagga.offDetected(onDetected);
+  if (scannerIsRunning) {
+    return; // 既にスキャナーが動作中の場合は新たに起動しない
   }
 
+  console.log("QuaggaJS スキャナーを開始します");
+
   // onDetected 関数を定義
-  onDetected = async function(result) {
+  const onDetected = async function(result) {
     const barcode = result.codeResult.code.trim();
     console.log(`スキャンされたバーコード: ${barcode}`);
-    alert(`スキャンされたバーコード: ${barcode}`);
+    // alert(`スキャンされたバーコード: ${barcode}`); // alertを削除
 
     try {
       const product = await getProductByBarcode(barcode);
@@ -27,6 +26,7 @@ export function startQuaggaScanner() {
         return;
       }
       addToCart(product); // スキャンからの追加
+      showMessage(`商品「${product.name}」がカートに追加されました`);
 
       // 在庫管理セクションの表示を更新
       await displayInventoryProducts();
@@ -35,6 +35,8 @@ export function startQuaggaScanner() {
       showError('商品の取得に失敗しました');
     } finally {
       Quagga.stop();
+      Quagga.offDetected(onDetected); // イベントリスナーを解除
+      scannerIsRunning = false; // スキャナーの状態をリセット
     }
   };
 
@@ -60,11 +62,12 @@ export function startQuaggaScanner() {
   }, function(err) {
     if (err) {
       console.error(err);
-      alert("バーコードスキャナーの初期化に失敗しました。");
+      showError("バーコードスキャナーの初期化に失敗しました。");
       return;
     }
     console.log("QuaggaJS の初期化が完了しました。");
     Quagga.start();
+    scannerIsRunning = true; // スキャナーが動作中であることを設定
 
     // onDetected リスナーを登録
     Quagga.onDetected(onDetected);
@@ -77,6 +80,6 @@ document.getElementById("startBarcodeScanButton").addEventListener("click", () =
     startQuaggaScanner();
   } catch (err) {
     console.error("バーコードスキャナーを開始できませんでした:", err);
-    alert("バーコードスキャナーの起動に失敗しました。");
+    showError("バーコードスキャナーの起動に失敗しました。");
   }
 });
