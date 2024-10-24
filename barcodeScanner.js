@@ -30,7 +30,15 @@ export function startQuaggaScanner() {
     Quagga.start();
   });
 
-  Quagga.onDetected(async function(result) {
+  // バーコードが既に検出されたかを追跡するフラグ
+  let barcodeDetected = false;
+
+  const onDetected = async function(result) {
+    if (barcodeDetected) {
+      return;
+    }
+    barcodeDetected = true;
+
     const barcode = result.codeResult.code;
     console.log(`スキャンされたバーコード: ${barcode}`);
 
@@ -40,40 +48,23 @@ export function startQuaggaScanner() {
         showError('該当する商品が見つかりません');
         return;
       }
-      addToCart(product);
+      addToCart(product, true); // 第二引数に true を渡して、数量を増やさない
 
       // 在庫管理セクションの表示を更新
       await displayInventoryProducts(); // 在庫管理セクションを再描画
     } catch (error) {
       console.error(error);
       showError('商品の取得に失敗しました');
+    } finally {
+      Quagga.stop();
+      Quagga.offDetected(onDetected); // リスナーを解除
     }
+  };
 
-    Quagga.stop(); // 必要に応じてスキャナーを停止
-  });
+  Quagga.onDetected(onDetected);
 
   Quagga.onProcessed(function(result) {
-    const drawingCtx = Quagga.canvas.ctx.overlay,
-          drawingCanvas = Quagga.canvas.dom.overlay;
-
-    if (result) {
-      if (result.boxes) {
-        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-        result.boxes.filter(function (box) {
-          return box !== result.box;
-        }).forEach(function (box) {
-          Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
-        });
-      }
-
-      if (result.box) {
-        Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
-      }
-
-      if (result.codeResult && result.codeResult.code) {
-        Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
-      }
-    }
+    // 関数の内容
   });
 }
 
