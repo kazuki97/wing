@@ -33,6 +33,17 @@ export function showError(message) {
   }, 5000);
 }
 
+export function showMessage(message) {
+  const messageDiv = document.getElementById('message');
+  messageDiv.textContent = message;
+  messageDiv.style.display = 'block';
+
+  // 一定時間後に自動的にメッセージを消す
+  setTimeout(() => {
+    messageDiv.style.display = 'none';
+  }, 3000);
+}
+
 // バーコードスキャンセクションのイベントリスナーと関数
 let salesCart = [];
 
