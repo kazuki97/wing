@@ -33,14 +33,15 @@ export function startQuaggaScanner() {
   // バーコードが既に検出されたかを追跡するフラグ
   let barcodeDetected = false;
 
-  const onDetected = async function(result) {
-    if (barcodeDetected) {
-      return;
-    }
-    barcodeDetected = true;
+const onDetected = async function(result) {
+  if (barcodeDetected) {
+    return;
+  }
+  barcodeDetected = true;
 
-    const barcode = result.codeResult.code;
-    console.log(`スキャンされたバーコード: ${barcode}`);
+  const barcode = result.codeResult.code;
+  console.log(`スキャンされたバーコード: ${barcode}`);
+  alert(`スキャンされたバーコード: ${barcode}`); // 追加
 
     try {
       const product = await getProductByBarcode(barcode);
