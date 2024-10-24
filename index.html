@@ -524,20 +524,26 @@
     </section>
   </main>
 
- <!-- JavaScript ファイルの読み込み -->
-<script type="module" src="main.js"></script>
-<script type="module" src="barcodeScanner.js"></script> <!-- 追加 -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const yearSelect = document.getElementById('analysisYear');
-    const currentYear = new Date().getFullYear();
-    for (let year = 2015; year <= currentYear; year++) {
-      const option = document.createElement('option');
-      option.value = year;
-      option.textContent = `${year}年`;
-      yearSelect.appendChild(option);
-    }
-  });
-</script>
+ <!-- `html5-qrcode` ライブラリの読み込み -->
+  <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+  <!-- または jsDelivr を使用 -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script> -->
+
+  <!-- JavaScript ファイルの読み込み -->
+  <script type="module" src="main.js"></script>
+  <!-- `barcodeScanner.js` は `main.js` からインポートされるため、ここでは不要 -->
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const yearSelect = document.getElementById('analysisYear');
+      const currentYear = new Date().getFullYear();
+      for (let year = 2015; year <= currentYear; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year}年`;
+        yearSelect.appendChild(option);
+      }
+    });
+  </script>
 </body>
 </html>
