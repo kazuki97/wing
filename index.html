@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
- <!-- エラーメッセージ表示エリア -->
-<div id="error-message" class="error-message"></div>
+ <!-- エラーメッセージ表示エリア（1つだけ） -->
+  <div id="error-message" class="error-message" style="display: none; color: red;"></div>
 
   <!-- ナビゲーションメニュー -->
   <nav>
@@ -186,14 +186,19 @@
       </table>
     </section>
 
-<!-- バーコードスキャン開始ボタン -->
-<button id="startScanButton">バーコードスキャン開始</button>
 
-<!-- QuaggaJS のビデオフィードを表示する要素 -->
-<div id="barcode-scanner" style="width: 100%; height: 400px; display: none;"></div>
-
-<!-- エラーメッセージ表示領域（既に存在する場合は不要） -->
-<div id="error-message" style="display: none; color: red;"></div>
+    <!-- バーコードスキャンセクション -->
+    <section id="barcode" class="content-section" style="display: none;">
+      <h1>バーコードスキャン</h1>
+      
+      <!-- バーコードスキャン開始ボタン（1つに統一） -->
+      <button id="startScanButton">バーコードスキャン開始</button>
+      
+      <!-- スキャンキャンセルボタンの追加 -->
+      <button id="cancelScanButton" style="display: none;">スキャンキャンセル</button>
+      
+      <!-- QuaggaJS のビデオフィードを表示する要素 -->
+      <div id="barcode-scanner" style="width: 100%; height: 400px; display: none;"></div>
       
       <!-- 手動でバーコードを入力するための入力フィールドと追加ボタン -->
       <div id="barcodeScanner">
