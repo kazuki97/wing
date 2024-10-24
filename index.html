@@ -186,12 +186,17 @@
       </table>
     </section>
 
-    <!-- バーコードスキャン -->
-   <section id="barcode" class="content-section" style="display: none;">
+   <!-- バーコードスキャン -->
+<section id="barcode" class="content-section" style="display: none;">
   <h1>バーコードスキャン</h1>
+  
   <!-- バーコードスキャン開始ボタンを追加 -->
   <button id="startBarcodeScanButton">バーコードスキャンを開始</button>
-  <!-- バーコード入力フィールドと追加ボタン -->
+  
+  <!-- カメラプレビューエリア -->
+  <div id="reader" style="width: 300px; height: 300px;"></div>
+  
+  <!-- 手動でバーコードを入力するための入力フィールドと追加ボタン -->
   <div id="barcodeScanner">
     <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
     <button id="addBarcodeButton">追加</button>
