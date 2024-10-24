@@ -92,16 +92,12 @@ export function addToCart(product, isScanned = false) {
   console.log("カートに追加する商品:", product);
   const existingItem = salesCart.find((item) => item.product.id === product.id);
   if (existingItem) {
-    if (!isScanned) {
-      existingItem.quantity += 1;
-    } else {
-      // スキャンからの追加の場合は数量を増やさない
-      console.log("商品は既にカートに存在します。数量は変更しません。");
-    }
+    // 商品が既にカートに存在する場合、何もしない
+    console.log("商品は既にカートに存在します。");
   } else {
     salesCart.push({ product, quantity: 1 });
+    displaySalesCart(); // 新規に商品を追加した場合のみ表示を更新
   }
-  displaySalesCart();
 }
 
 
