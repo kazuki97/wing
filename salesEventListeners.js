@@ -141,6 +141,12 @@ function initializeQuagga() {
     console.log("QuaggaJS の初期化が完了しました。");
     Quagga.start();
     isQuaggaInitialized = true; // 初期化完了後にフラグを立てる
+    
+    // QuaggaJS のビデオフィードを表示
+    const scannerDiv = document.getElementById('barcode-scanner');
+    if (scannerDiv) {
+      scannerDiv.style.display = 'block';
+    }
   });
 
   Quagga.onDetected(async function(result) {
@@ -150,7 +156,7 @@ function initializeQuagga() {
     }
     isProcessing = true;
 
-    const barcode = result.codeResult.code;
+    const barcode = result.codeResult.code.trim();
     console.log(`スキャンされたバーコード: ${barcode}`);
 
     try {
@@ -172,6 +178,12 @@ function initializeQuagga() {
       // QuaggaJS を停止してスキャンを終了
       Quagga.stop();
       isQuaggaInitialized = false;
+
+      // QuaggaJS のビデオフィードを非表示
+      const scannerDiv = document.getElementById('barcode-scanner');
+      if (scannerDiv) {
+        scannerDiv.style.display = 'none';
+      }
     } catch (error) {
       console.error(error);
       showError('商品の取得に失敗しました');
@@ -494,6 +506,11 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 // 「バーコードスキャン開始」ボタンのクリックイベントリスナー追加
-document.getElementById('startScanButton').addEventListener('click', () => {
-  initializeQuagga();
-});
+const startScanButton = document.getElementById('startScanButton');
+if (startScanButton) {
+  startScanButton.addEventListener('click', () => {
+    initializeQuagga();
+  });
+} else {
+  console.error("startScanButton が見つかりません。HTML に id='startScanButton' の要素が存在するか確認してください。");
+}
