@@ -187,12 +187,15 @@
     </section>
 
     <!-- バーコードスキャン -->
-    <section id="barcode" class="content-section" style="display: none;">
-      <h1>バーコードスキャン</h1>
-      <!-- バーコード入力フィールドと追加ボタン -->
-      <div id="barcodeScanner">
-        <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
-        <button id="addBarcodeButton">追加</button>
+   <section id="barcode" class="content-section" style="display: none;">
+  <h1>バーコードスキャン</h1>
+  <!-- バーコードスキャン開始ボタンを追加 -->
+  <button id="startBarcodeScanButton">バーコードスキャンを開始</button>
+  <!-- バーコード入力フィールドと追加ボタン -->
+  <div id="barcodeScanner">
+    <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
+    <button id="addBarcodeButton">追加</button>
+  </div>
       </div>
       <!-- 支払い方法の選択 -->
       <div id="paymentMethodSelection">
