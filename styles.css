@@ -60,36 +60,6 @@ nav ul li a:hover {
     display: block;
   }
 
-  /* デフォルトでバーコードスキャンセクションのみを表示 */
-  .content-section {
-    display: none;
-  }
-
-  #barcode {
-    display: block;
-  }
-
-  /* ハンバーガーメニューが表示されたときのスタイル */
-  nav ul.show {
-    display: block;
-    position: absolute;
-    background-color: #333;
-    top: 50px; /* ナビゲーションバーの高さに合わせて調整 */
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-  }
-
-  nav ul.show li {
-    text-align: center;
-    padding: 10px 0;
-  }
-
-  nav ul.show li a {
-    display: block;
-    color: #fff;
-  }
-
   /* テーブルを横スクロール可能にする */
   table {
     display: block;
@@ -124,12 +94,43 @@ nav ul li a:hover {
   main {
     padding: 10px;
   }
+
+  /* デフォルトでバーコードスキャンセクションのみを表示 */
+  .content-section {
+    display: none;
+  }
+
+  #barcode {
+    display: block;
+  }
+
+  /* ハンバーガーメニューが表示されたときのスタイル */
+  nav ul.show {
+    display: block;
+    position: absolute;
+    background-color: #333;
+    top: 50px; /* ナビゲーションバーの高さに合わせて調整 */
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  nav ul.show li {
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  nav ul.show li a {
+    display: block;
+    color: #fff;
+  }
 }
 
 main {
   padding: 20px;
 }
 
+/* エラーメッセージとメッセージのスタイル */
 .error-message {
   position: fixed;
   top: 50px;
@@ -152,7 +153,7 @@ main {
   z-index: 1000;
 }
 
-
+/* フォームのスタイル */
 form {
   margin-bottom: 20px;
 }
@@ -168,6 +169,7 @@ button {
   margin-left: 5px;
 }
 
+/* リストのスタイル */
 ul {
   list-style: none;
   padding: 0;
