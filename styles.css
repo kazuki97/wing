@@ -50,41 +50,10 @@ nav ul li a:hover {
 
 /* モバイル表示時のスタイル強化 */
 @media screen and (max-width: 767px) {
-  /* テーブルを横スクロール可能にする */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
+  /* ナビゲーションメニューを非表示 */
+  nav ul {
+    display: none;
   }
-
-  /* 入力フィールドやボタンの幅を100%にする */
-  input, select, button {
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-  }
-
-  /* フォームの内側のパディングを調整 */
-  form {
-    padding: 10px;
-  }
-
-  /* 見出しのフォントサイズを調整 */
-  h1 {
-    font-size: 1.5em;
-  }
-
-  /* ボタンのテキストサイズを調整 */
-  button {
-    font-size: 1em;
-    padding: 10px;
-  }
-
-  /* メインコンテンツのパディングを調整 */
-  main {
-    padding: 10px;
-  }
-}
 
   /* ハンバーガーメニューアイコンを表示 */
   .menu-icon {
@@ -119,6 +88,41 @@ nav ul li a:hover {
   nav ul.show li a {
     display: block;
     color: #fff;
+  }
+
+  /* テーブルを横スクロール可能にする */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* 入力フィールドやボタンの幅を100%にする */
+  input, select, button {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+  }
+
+  /* フォームの内側のパディングを調整 */
+  form {
+    padding: 10px;
+  }
+
+  /* 見出しのフォントサイズを調整 */
+  h1 {
+    font-size: 1.5em;
+  }
+
+  /* ボタンのテキストサイズを調整 */
+  button {
+    font-size: 1em;
+    padding: 10px;
+  }
+
+  /* メインコンテンツのパディングを調整 */
+  main {
+    padding: 10px;
   }
 }
 
