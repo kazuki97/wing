@@ -36,6 +36,61 @@ nav ul li a:hover {
   background-color: #444;
 }
 
+/* ハンバーガーメニューアイコンのスタイル */
+.menu-icon {
+  display: none; /* デフォルトでは非表示 */
+  font-size: 30px;
+  cursor: pointer;
+  padding: 15px;
+  color: #fff;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+/* モバイル表示時のスタイル */
+@media screen and (max-width: 767px) {
+  /* ナビゲーションメニューを非表示 */
+  nav ul {
+    display: none;
+  }
+
+  /* ハンバーガーメニューアイコンを表示 */
+  .menu-icon {
+    display: block;
+  }
+
+  /* デフォルトでバーコードスキャンセクションのみを表示 */
+  .content-section {
+    display: none;
+  }
+
+  #barcode {
+    display: block;
+  }
+
+  /* ハンバーガーメニューが表示されたときのスタイル */
+  nav ul.show {
+    display: block;
+    position: absolute;
+    background-color: #333;
+    top: 50px; /* ナビゲーションバーの高さに合わせて調整 */
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  nav ul.show li {
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  nav ul.show li a {
+    display: block;
+    color: #fff;
+  }
+}
+
 main {
   padding: 20px;
 }
