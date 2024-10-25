@@ -48,12 +48,43 @@ nav ul li a:hover {
   right: 0;
 }
 
-/* モバイル表示時のスタイル */
+/* モバイル表示時のスタイル強化 */
 @media screen and (max-width: 767px) {
-  /* ナビゲーションメニューを非表示 */
-  nav ul {
-    display: none;
+  /* テーブルを横スクロール可能にする */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
+
+  /* 入力フィールドやボタンの幅を100%にする */
+  input, select, button {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+  }
+
+  /* フォームの内側のパディングを調整 */
+  form {
+    padding: 10px;
+  }
+
+  /* 見出しのフォントサイズを調整 */
+  h1 {
+    font-size: 1.5em;
+  }
+
+  /* ボタンのテキストサイズを調整 */
+  button {
+    font-size: 1em;
+    padding: 10px;
+  }
+
+  /* メインコンテンツのパディングを調整 */
+  main {
+    padding: 10px;
+  }
+}
 
   /* ハンバーガーメニューアイコンを表示 */
   .menu-icon {
