@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>ビジネス管理システム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -10,22 +11,32 @@
 <div id="error-message" class="error-message"></div>
 <div id="message" class="message" style="display: none;"></div>
 
-  <!-- ナビゲーションメニュー -->
-  <nav>
-    <ul>
-      <li><a href="#home" class="nav-link">ホーム</a></li>
-      <li><a href="#categories" class="nav-link">カテゴリ設定</a></li>
-      <li><a href="#products" class="nav-link">商品設定</a></li>
-      <li><a href="#inventory" class="nav-link">在庫管理</a></li>
-      <li><a href="#overall-inventory" class="nav-link">全体在庫</a></li>
-      <li><a href="#barcode" class="nav-link">バーコードスキャン</a></li>
-      <li><a href="#transactions" class="nav-link">売上管理</a></li>
-      <li><a href="#pricing" class="nav-link">単価設定</a></li>
-      <li><a href="#payment-methods" class="nav-link">支払い方法設定</a></li>
-      <li><a href="#sales-analysis" class="nav-link">売上分析</a></li> <!-- 売上分析の追加 -->
-      <li><a href="#consumables" class="nav-link">消耗品管理</a></li> <!-- 消耗品管理の追加 -->
-    </ul>
-  </nav>
+ <!-- ナビゲーションメニュー -->
+<nav>
+  <!-- ハンバーガーメニューアイコン -->
+  <div class="menu-icon" id="menuIcon">&#9776;</div>
+  <ul id="navMenu">
+    <li><a href="#home" class="nav-link">ホーム</a></li>
+    <li><a href="#categories" class="nav-link">カテゴリ設定</a></li>
+    <li><a href="#products" class="nav-link">商品設定</a></li>
+    <li><a href="#inventory" class="nav-link">在庫管理</a></li>
+    <li><a href="#overall-inventory" class="nav-link">全体在庫</a></li>
+    <li><a href="#barcode" class="nav-link">バーコードスキャン</a></li>
+    <li><a href="#transactions" class="nav-link">売上管理</a></li>
+    <li><a href="#pricing" class="nav-link">単価設定</a></li>
+    <li><a href="#payment-methods" class="nav-link">支払い方法設定</a></li>
+    <li><a href="#sales-analysis" class="nav-link">売上分析</a></li>
+    <li><a href="#consumables" class="nav-link">消耗品管理</a></li>
+  </ul>
+</nav>
+
+<!-- ログインフォーム -->
+<div id="loginForm" style="display: none;">
+  <form>
+    <input type="password" id="menuPassword" placeholder="パスワードを入力" required />
+    <button type="submit">ログイン</button>
+  </form>
+</div>
 
   <!-- 各セクションのコンテナ -->
   <main>
