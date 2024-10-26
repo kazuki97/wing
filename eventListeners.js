@@ -1320,10 +1320,20 @@ async function displayPricingRules() {
         <td>${rule.minQuantity}</td>
         <td>${rule.maxQuantity}</td>
         <td>${rule.unitPrice}</td>
-        <td><button class="delete-pricing-rule" data-id="${rule.id}">削除</button></td>
+        <td>
+          <button class="edit-pricing-rule" data-id="${rule.id}">編集</button>
+          <button class="delete-pricing-rule" data-id="${rule.id}">削除</button>
+        </td>
       `;
       pricingRulesList.appendChild(row);
     }
+    // **編集ボタンのイベントリスナーを追加**
+    document.querySelectorAll('.edit-pricing-rule').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const ruleId = e.target.dataset.id;
+        await openEditPricingRuleModal(ruleId);
+      });
+    });
     // 削除ボタンのイベントリスナー
     document.querySelectorAll('.delete-pricing-rule').forEach((button) => {
       button.addEventListener('click', async (e) => {
@@ -1345,6 +1355,56 @@ async function displayPricingRules() {
     showError('単価ルールの表示に失敗しました');
   }
 }
+
+// **単価ルール編集用モーダルを開く関数を追加**
+async function openEditPricingRuleModal(ruleId) {
+  try {
+    const rule = await getPricingRuleById(ruleId);
+    if (!rule) {
+      showError('単価ルールが見つかりません');
+      return;
+    }
+    // モーダル内のフォームに値をセット
+    document.getElementById('editPricingRuleId').value = rule.id;
+    document.getElementById('editMinQuantity').value = rule.minQuantity;
+    document.getElementById('editMaxQuantity').value = rule.maxQuantity;
+    document.getElementById('editUnitPrice').value = rule.unitPrice;
+    // モーダルを表示
+    document.getElementById('editPricingRuleModal').style.display = 'block';
+  } catch (error) {
+    console.error(error);
+    showError('単価ルールの取得に失敗しました');
+  }
+}
+
+// **単価ルールを更新するイベントリスナーを追加**
+document.getElementById('editPricingRuleForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const ruleId = document.getElementById('editPricingRuleId').value;
+  const minQuantity = parseFloat(document.getElementById('editMinQuantity').value);
+  const maxQuantity = parseFloat(document.getElementById('editMaxQuantity').value);
+  const unitPrice = parseFloat(document.getElementById('editUnitPrice').value);
+
+  if (minQuantity > maxQuantity) {
+    showError('最小数量は最大数量以下である必要があります');
+    return;
+  }
+
+  try {
+    await updatePricingRule(ruleId, { minQuantity, maxQuantity, unitPrice });
+    alert('単価ルールが更新されました');
+    document.getElementById('editPricingRuleModal').style.display = 'none';
+    await displayPricingRules();
+  } catch (error) {
+    console.error(error);
+    showError('単価ルールの更新に失敗しました');
+  }
+});
+
+// **モーダルを閉じるボタンのイベントリスナーを追加**
+document.getElementById('closeEditPricingRuleModal').addEventListener('click', () => {
+  document.getElementById('editPricingRuleModal').style.display = 'none';
+});
 
 // 単価設定セクションのサブカテゴリセレクトボックスのイベントリスナー
 document.getElementById('pricingSubcategorySelect').addEventListener('change', async () => {
