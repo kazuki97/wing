@@ -46,6 +46,33 @@ export async function getPricingRules(subcategoryId) {
   }
 }
 
+// **単価ルールの取得（ID指定）関数を追加**
+export async function getPricingRuleById(id) {
+  try {
+    const docRef = doc(db, 'pricingRules', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('単価ルールの取得エラー:', error);
+    throw error;
+  }
+}
+
+// **単価ルールの更新関数を追加**
+export async function updatePricingRule(id, updatedData) {
+  try {
+    const docRef = doc(db, 'pricingRules', id);
+    await updateDoc(docRef, updatedData);
+  } catch (error) {
+    console.error('単価ルールの更新エラー:', error);
+    throw error;
+  }
+}
+
 // 単価ルールの削除
 export async function deletePricingRule(id) {
   try {
