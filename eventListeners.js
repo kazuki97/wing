@@ -1053,51 +1053,73 @@ async function displayProducts() {
     const productList = document.getElementById('productList');
     productList.innerHTML = '';
 
-    products.forEach((product) => {
-      // 商品に関連付けられた消耗品の名前を取得
-      const consumableNames = product.consumables
-        ? product.consumables.map(consumableId => {
-            const consumable = consumablesList.find(c => c.id === consumableId);
-            return consumable ? consumable.name : '不明な消耗品';
-          }).join(', ')
-        : 'なし';
+    // サブカテゴリごとに商品をグループ化
+    const subcategoryMap = {};
+    for (const product of products) {
+      const subcategory = await getSubcategoryById(product.subcategoryId);
+      const subcategoryName = subcategory ? subcategory.name : '不明なサブカテゴリ';
+      if (!subcategoryMap[subcategoryName]) {
+        subcategoryMap[subcategoryName] = [];
+      }
+      subcategoryMap[subcategoryName].push(product);
+    }
 
-      // 商品情報と消耗品情報を表示
-      const listItem = document.createElement('li');
-      listItem.innerHTML = `
-        <strong>商品名:</strong> ${product.name}, <strong>数量:</strong> ${product.quantity || 0}, 
-        <strong>価格:</strong> ${product.price}, <strong>原価:</strong> ${product.cost}, 
-        <strong>バーコード:</strong> ${product.barcode}, <strong>サイズ:</strong> ${product.size}, 
-        <strong>使用する消耗品:</strong> ${consumableNames}
-      `;
+    // サブカテゴリごとに商品を表示
+    for (const subcategoryName in subcategoryMap) {
+      const subcategoryHeader = document.createElement('h3');
+      subcategoryHeader.textContent = subcategoryName;
+      productList.appendChild(subcategoryHeader);
 
-      // 編集ボタン
-      const editButton = document.createElement('button');
-      editButton.textContent = '編集';
-      editButton.addEventListener('click', () => {
-        editProduct(product);
-      });
+      const productUl = document.createElement('ul');
 
-      // 削除ボタン
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = '削除';
-      deleteButton.addEventListener('click', async () => {
-        if (confirm('本当に削除しますか？')) {
-          try {
-            await deleteProduct(product.id);
-            alert('商品が削除されました');
-            await displayProducts();
-          } catch (error) {
-            console.error(error);
-            showError('商品の削除に失敗しました');
+      subcategoryMap[subcategoryName].forEach((product) => {
+        // 商品に関連付けられた消耗品の名前を取得
+        const consumableNames = product.consumables
+          ? product.consumables.map(consumableId => {
+              const consumable = consumablesList.find(c => c.id === consumableId);
+              return consumable ? consumable.name : '不明な消耗品';
+            }).join(', ')
+          : 'なし';
+
+        // 商品情報と消耗品情報を表示
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>商品名:</strong> ${product.name}, <strong>数量:</strong> ${product.quantity || 0}, 
+          <strong>価格:</strong> ${product.price}, <strong>原価:</strong> ${product.cost}, 
+          <strong>バーコード:</strong> ${product.barcode}, <strong>サイズ:</strong> ${product.size}, 
+          <strong>使用する消耗品:</strong> ${consumableNames}
+        `;
+
+        // 編集ボタン
+        const editButton = document.createElement('button');
+        editButton.textContent = '編集';
+        editButton.addEventListener('click', () => {
+          editProduct(product);
+        });
+
+        // 削除ボタン
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '削除';
+        deleteButton.addEventListener('click', async () => {
+          if (confirm('本当に削除しますか？')) {
+            try {
+              await deleteProduct(product.id);
+              alert('商品が削除されました');
+              await displayProducts();
+            } catch (error) {
+              console.error(error);
+              showError('商品の削除に失敗しました');
+            }
           }
-        }
+        });
+
+        listItem.appendChild(editButton);
+        listItem.appendChild(deleteButton);
+        productUl.appendChild(listItem);
       });
 
-      listItem.appendChild(editButton);
-      listItem.appendChild(deleteButton);
-      productList.appendChild(listItem);
-    });
+      productList.appendChild(productUl);
+    }
   } catch (error) {
     console.error(error);
     showError('商品の表示に失敗しました');
