@@ -96,15 +96,6 @@ nav ul li a:hover {
     padding: 10px;
   }
 
-  /* デフォルトでバーコードスキャンセクションのみを表示 */
-  .content-section {
-    display: none;
-  }
-
-  #barcode {
-    display: block;
-  }
-
   /* ハンバーガーメニューが表示されたときのスタイル */
   nav ul.show {
     display: block;
