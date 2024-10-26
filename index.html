@@ -403,6 +403,21 @@
       </table>
     </section>
 
+<!-- 単価ルール編集用モーダル -->
+<div id="editPricingRuleModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeEditPricingRuleModal">&times;</span>
+    <h2>単価ルールの編集</h2>
+    <form id="editPricingRuleForm">
+      <input type="hidden" id="editPricingRuleId" />
+      <input type="number" id="editMinQuantity" placeholder="最小数量" required step="any" min="0" />
+      <input type="number" id="editMaxQuantity" placeholder="最大数量" required step="any" min="0" />
+      <input type="number" id="editUnitPrice" placeholder="単価" required step="any" min="0" />
+      <button type="submit">更新</button>
+    </form>
+  </div>
+</div>
+
     <!-- 支払い方法設定 -->
     <section id="payment-methods" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>支払い方法設定</h1>
