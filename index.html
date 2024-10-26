@@ -3,34 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <title>ビジネス管理システム</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ビューポートの設定を追加 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
- <!-- エラーメッセージ表示エリア -->
-<div id="error-message" class="error-message"></div>
-<div id="message" class="message" style="display: none;"></div>
+  <!-- エラーメッセージ表示エリア -->
+  <div id="error-message" class="error-message"></div>
+  <div id="message" class="message" style="display: none;"></div>
 
- <!-- ナビゲーションメニュー -->
-<nav>
-  <!-- ハンバーガーメニューアイコン -->
-  <div class="menu-icon" id="menuIcon">&#9776;</div>
-  <ul id="navMenu">
-    <li><a href="#home" class="nav-link">ホーム</a></li>
-    <li><a href="#categories" class="nav-link">カテゴリ設定</a></li>
-    <li><a href="#products" class="nav-link">商品設定</a></li>
-    <li><a href="#inventory" class="nav-link">在庫管理</a></li>
-    <li><a href="#overall-inventory" class="nav-link">全体在庫</a></li>
-    <li><a href="#barcode" class="nav-link">バーコードスキャン</a></li>
-    <li><a href="#transactions" class="nav-link">売上管理</a></li>
-    <li><a href="#pricing" class="nav-link">単価設定</a></li>
-    <li><a href="#payment-methods" class="nav-link">支払い方法設定</a></li>
-    <li><a href="#sales-analysis" class="nav-link">売上分析</a></li>
-    <li><a href="#consumables" class="nav-link">消耗品管理</a></li>
-  </ul>
-</nav>
+  <!-- ナビゲーションメニュー -->
+  <nav>
+    <!-- ハンバーガーメニューアイコンを追加 -->
+    <div class="menu-icon" id="menuIcon">&#9776;</div>
+    <ul id="navMenu">
+      <li><a href="#home" class="nav-link">ホーム</a></li>
+      <li><a href="#categories" class="nav-link">カテゴリ設定</a></li>
+      <li><a href="#products" class="nav-link">商品設定</a></li>
+      <li><a href="#inventory" class="nav-link">在庫管理</a></li>
+      <li><a href="#overall-inventory" class="nav-link">全体在庫</a></li>
+      <li><a href="#barcode" class="nav-link">バーコードスキャン</a></li>
+      <li><a href="#transactions" class="nav-link">売上管理</a></li>
+      <li><a href="#pricing" class="nav-link">単価設定</a></li>
+      <li><a href="#payment-methods" class="nav-link">支払い方法設定</a></li>
+      <li><a href="#sales-analysis" class="nav-link">売上分析</a></li>
+      <li><a href="#consumables" class="nav-link">消耗品管理</a></li>
+    </ul>
+  </nav>
 
-<!-- ログインフォーム -->
+  <!-- ログインフォームを追加 -->
   <div id="loginForm" style="display: none;">
     <form>
       <input type="password" id="menuPassword" placeholder="パスワードを入力" required />
@@ -38,124 +39,109 @@
     </form>
   </div>
 
-<!-- 各セクションのコンテナ -->
-<main>
-  <!-- バーコードスキャンセクションのみ表示 -->
-  <section id="barcode" class="content-section">
-    <h1>バーコードスキャン</h1>
+  <!-- 各セクションのコンテナ -->
+  <main>
+    <!-- ホーム -->
+    <section id="home" class="content-section">
+      <h1>ホーム</h1>
+    </section>
 
-    <!-- バーコードスキャン開始ボタンを追加 -->
-    <button id="startBarcodeScanButton">バーコードスキャンを開始</button>
+    <!-- カテゴリ設定セクション -->
+    <section id="categories" class="content-section" style="display: none;" data-requires-auth="true">
+      <h1>カテゴリ設定</h1>
 
-    <!-- バーコードスキャン用ビデオフィード -->
-    <div id="barcode-scanner" style="width: 100%; height: 300px;"></div>
+      <!-- モーダルを開くためのボタン -->
+      <button id="openAddParentCategoryModal">親カテゴリを追加</button>
+      <button id="openAddSubcategoryModal">サブカテゴリを追加</button>
 
-    <!-- 手動でバーコードを入力するための入力フィールドと追加ボタン -->
-    <div id="barcodeScanner">
-      <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
-      <button id="addBarcodeButton">追加</button>
+      <!-- カテゴリ一覧表示エリア -->
+      <div id="categoryList">
+        <ul id="parentCategoryList"></ul>
+      </div>
+    </section>
+
+    <!-- 親カテゴリ追加用モーダル -->
+    <div id="addParentCategoryModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeParentCategoryModal">&times;</span>
+        <h2>親カテゴリの追加</h2>
+        <form id="modalAddParentCategoryForm">
+          <input type="text" id="modalParentCategoryName" placeholder="親カテゴリ名" required />
+          <button type="submit">追加</button>
+        </form>
+      </div>
     </div>
-   <!-- ホームセクション -->
-<section id="home" class="content-section" style="display: none;">
-  <h1>ホーム</h1>
-</section>
 
-   <!-- カテゴリ設定セクション -->
-<section id="categories" class="content-section" style="display: none;">
-  <h1>カテゴリ設定</h1>
+    <!-- サブカテゴリ追加用モーダル -->
+    <div id="addSubcategoryModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeSubcategoryModal">&times;</span>
+        <h2>サブカテゴリの追加</h2>
+        <form id="modalAddSubcategoryForm">
+          <select id="modalSubcategoryParentCategorySelect" required></select>
+          <input type="text" id="modalSubcategoryName" placeholder="サブカテゴリ名" required />
+          <button type="submit">追加</button>
+        </form>
+      </div>
+    </div>
 
-  <!-- モーダルを開くためのボタン -->
-  <button id="openAddParentCategoryModal">親カテゴリを追加</button>
-  <button id="openAddSubcategoryModal">サブカテゴリを追加</button>
+    <!-- 商品設定 -->
+    <section id="products" class="content-section" style="display: none;" data-requires-auth="true">
+      <h1>商品設定</h1>
 
-  <!-- カテゴリ一覧表示エリア -->
-  <div id="categoryList">
-    <ul id="parentCategoryList"></ul>
-  </div>
-</section>
+      <!-- 商品追加モーダルを開くボタン -->
+      <button id="openAddProductModal">商品を追加</button>
 
-<!-- 親カテゴリ追加用モーダル -->
-<div id="addParentCategoryModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeParentCategoryModal">&times;</span>
-    <h2>親カテゴリの追加</h2>
-    <form id="modalAddParentCategoryForm">
-      <input type="text" id="modalParentCategoryName" placeholder="親カテゴリ名" required />
-      <button type="submit">追加</button>
-    </form>
-  </div>
-</div>
-
-<!-- サブカテゴリ追加用モーダル -->
-<div id="addSubcategoryModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeSubcategoryModal">&times;</span>
-    <h2>サブカテゴリの追加</h2>
-    <form id="modalAddSubcategoryForm">
-      <select id="modalSubcategoryParentCategorySelect" required></select>
-      <input type="text" id="modalSubcategoryName" placeholder="サブカテゴリ名" required />
-      <button type="submit">追加</button>
-    </form>
-  </div>
-</div>
-
- <!-- 商品設定 -->
-<section id="products" class="content-section" style="display: none;">
-  <h1>商品設定</h1>
-
-  <!-- 商品追加モーダルを開くボタン -->
-  <button id="openAddProductModal">商品を追加</button>
-
-  <!-- 商品フィルタリング -->
-  <div>
-    <select id="filterParentCategorySelect">
-      <option value="">すべての親カテゴリ</option>
-    </select>
-    <select id="filterSubcategorySelect">
-      <option value="">すべてのサブカテゴリ</option>
-    </select>
-  </div>
-
-  <!-- 商品一覧表示エリア -->
-  <ul id="productList"></ul>
-</section>
-
-<!-- 商品追加用モーダル -->
-<div id="addProductModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeAddProductModal">&times;</span>
-    <h2>商品追加</h2>
-    <!-- 商品追加フォーム -->
-    <form id="addProductForm">
-      <select id="productParentCategorySelect" required></select>
-      <select id="productSubcategorySelect" required></select>
-      <input type="text" id="productName" placeholder="商品名" required />
-      <input type="number" id="productPrice" placeholder="価格" required />
-      <input type="number" id="productCost" placeholder="原価" required />
-      <input type="text" id="productBarcode" placeholder="バーコード" />
-      <input type="number" id="productQuantity" placeholder="数量" required />
-      <input type="number" id="productSize" placeholder="サイズ" required />
-
-      <!-- 消耗品選択リストを追加 -->
-      <div id="consumablesSelection">
-        <label>使用する消耗品:</label>
-        <div id="consumableCheckboxes">
-          <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
-        </div>
+      <!-- 商品フィルタリング -->
+      <div>
+        <select id="filterParentCategorySelect">
+          <option value="">すべての親カテゴリ</option>
+        </select>
+        <select id="filterSubcategorySelect">
+          <option value="">すべてのサブカテゴリ</option>
+        </select>
       </div>
 
-      <button type="submit">追加</button>
-    </form>
-  </div>
-</div>
+      <!-- 商品一覧表示エリア -->
+      <ul id="productList"></ul>
+    </section>
 
-<!-- 商品編集フォーム（変更なし） -->
-<div id="editProductFormContainer" style="display: none;">
-  <!-- 編集フォームの内容 -->
-</div>
+    <!-- 商品追加用モーダル -->
+    <div id="addProductModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeAddProductModal">&times;</span>
+        <h2>商品追加</h2>
+        <!-- 商品追加フォーム -->
+        <form id="addProductForm">
+          <select id="productParentCategorySelect" required></select>
+          <select id="productSubcategorySelect" required></select>
+          <input type="text" id="productName" placeholder="商品名" required />
+          <input type="number" id="productPrice" placeholder="価格" required />
+          <input type="number" id="productCost" placeholder="原価" required />
+          <input type="text" id="productBarcode" placeholder="バーコード" />
+          <input type="number" id="productQuantity" placeholder="数量" required />
+          <input type="number" id="productSize" placeholder="サイズ" required />
+
+          <!-- 消耗品選択リストを追加 -->
+          <div id="consumablesSelection">
+            <label>使用する消耗品:</label>
+            <div id="consumableCheckboxes">
+              <!-- JavaScriptで消耗品チェックボックスを動的に追加 -->
+            </div>
+          </div>
+
+          <button type="submit">追加</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 商品編集フォーム（変更なし） -->
+    <div id="editProductFormContainer" style="display: none;">
+      <!-- 編集フォームの内容 -->
+    </div>
 
     <!-- 在庫管理 -->
-    <section id="inventory" class="content-section" style="display: none;">
+    <section id="inventory" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>在庫管理</h1>
       <!-- カテゴリフィルタリング -->
       <div>
@@ -186,7 +172,7 @@
     </section>
 
     <!-- 全体在庫 -->
-    <section id="overall-inventory" class="content-section" style="display: none;">
+    <section id="overall-inventory" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>全体在庫</h1>
       <!-- 全体在庫更新フォーム -->
       <form id="updateOverallInventoryForm">
@@ -213,7 +199,22 @@
       </table>
     </section>
 
-      
+    <!-- バーコードスキャン -->
+    <section id="barcode" class="content-section" style="display: none;">
+      <h1>バーコードスキャン</h1>
+
+      <!-- バーコードスキャン開始ボタンを追加 -->
+      <button id="startBarcodeScanButton">バーコードスキャンを開始</button>
+
+      <!-- バーコードスキャン用ビデオフィード -->
+      <div id="barcode-scanner" style="width: 100%; height: 300px;"></div>
+
+      <!-- 手動でバーコードを入力するための入力フィールドと追加ボタン -->
+      <div id="barcodeScanner">
+        <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
+        <button id="addBarcodeButton">追加</button>
+      </div>
+
       <!-- 支払い方法の選択 -->
       <div id="paymentMethodSelection">
         <label for="paymentMethodSelect">支払い方法:</label>
@@ -242,7 +243,7 @@
     </section>
 
     <!-- 売上管理 -->
-    <section id="transactions" class="content-section" style="display: none;">
+    <section id="transactions" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>売上管理</h1>
       <!-- フィルタリングフォーム -->
       <form id="filterTransactionsForm">
@@ -254,88 +255,88 @@
         <input type="checkbox" id="filterOnlyReturned" />
         <button type="submit">フィルタ</button>
       </form>
-     <!-- 手動で売上を追加するボタン -->
-<button id="manualAddTransactionButton">手動で売上を追加</button>
-    <!-- 手動で売上を追加するフォーム -->
-<div id="manualAddTransactionForm" style="display: none;">
-  <h2>売上の手動追加</h2>
-  <form id="addTransactionForm">
-    <label for="transactionProductName">商品名:</label>
-    <input type="text" id="transactionProductName" placeholder="商品名を入力" required />
-    
-    <label for="transactionProductPrice">単価:</label>
-    <input type="number" id="transactionProductPrice" placeholder="単価" required />
-    
-    <label for="transactionProductQuantity">数量:</label>
-    <input type="number" id="transactionProductQuantity" placeholder="数量" required />
-    
-    <label for="transactionProductCost">原価:</label>
-    <input type="number" id="transactionProductCost" placeholder="原価" required />
-    
-    <label for="transactionPaymentMethod">支払い方法:</label>
-    <select id="transactionPaymentMethod" required>
-      <!-- 支払い方法がここに表示されます -->
-    </select>
+      <!-- 手動で売上を追加するボタン -->
+      <button id="manualAddTransactionButton">手動で売上を追加</button>
+      <!-- 手動で売上を追加するフォーム -->
+      <div id="manualAddTransactionForm" style="display: none;">
+        <h2>売上の手動追加</h2>
+        <form id="addTransactionForm">
+          <label for="transactionProductName">商品名:</label>
+          <input type="text" id="transactionProductName" placeholder="商品名を入力" required />
 
-<label for="transactionSize">サイズ:</label>
-<input type="number" id="transactionSize" name="transactionSize" min="1" required>
-    
-    <button type="submit">追加</button>
-    <button type="button" id="cancelAddTransaction">キャンセル</button>
-  </form>
-</div>
-<!-- 取引の編集フォーム -->
-<div id="editTransactionFormContainer" style="display: none;">
-  <h2>取引編集</h2>
-  <form id="editTransactionForm">
-    <input type="hidden" id="editTransactionId">
-    <label for="editTransactionTimestamp">日時:</label>
-    <input type="datetime-local" id="editTransactionTimestamp" required>
-    
-    <label for="editTransactionProductName">商品名:</label>
-    <input type="text" id="editTransactionProductName" required>
-    
-    <label for="editTransactionQuantity">数量:</label>
-    <input type="number" id="editTransactionQuantity" required>
-    
-    <label for="editTransactionUnitPrice">販売価格:</label>
-    <input type="number" id="editTransactionUnitPrice" required>
-    
-   <label for="editTransactionCost">原価:</label>
-<input type="number" id="editTransactionCost" name="cost" required>
-    
-    <label for="editTransactionPaymentMethod">支払い方法:</label>
-    <select id="editTransactionPaymentMethod" required>
-      <!-- 支払い方法の選択肢がここに追加されます -->
-    </select>
+          <label for="transactionProductPrice">単価:</label>
+          <input type="number" id="transactionProductPrice" placeholder="単価" required />
 
-    <label for="editTransactionSize">サイズ:</label>
-<input type="number" id="editTransactionSize" name="editTransactionSize" min="1" required>
+          <label for="transactionProductQuantity">数量:</label>
+          <input type="number" id="transactionProductQuantity" placeholder="数量" required />
 
-    <button type="submit">更新</button>
-    <button type="button" id="cancelEditTransaction">キャンセル</button>
-  </form>
-</div>
+          <label for="transactionProductCost">原価:</label>
+          <input type="number" id="transactionProductCost" placeholder="原価" required />
+
+          <label for="transactionPaymentMethod">支払い方法:</label>
+          <select id="transactionPaymentMethod" required>
+            <!-- 支払い方法がここに表示されます -->
+          </select>
+
+          <label for="transactionSize">サイズ:</label>
+          <input type="number" id="transactionSize" name="transactionSize" min="1" required />
+
+          <button type="submit">追加</button>
+          <button type="button" id="cancelAddTransaction">キャンセル</button>
+        </form>
+      </div>
+      <!-- 取引の編集フォーム -->
+      <div id="editTransactionFormContainer" style="display: none;">
+        <h2>取引編集</h2>
+        <form id="editTransactionForm">
+          <input type="hidden" id="editTransactionId" />
+          <label for="editTransactionTimestamp">日時:</label>
+          <input type="datetime-local" id="editTransactionTimestamp" required />
+
+          <label for="editTransactionProductName">商品名:</label>
+          <input type="text" id="editTransactionProductName" required />
+
+          <label for="editTransactionQuantity">数量:</label>
+          <input type="number" id="editTransactionQuantity" required />
+
+          <label for="editTransactionUnitPrice">販売価格:</label>
+          <input type="number" id="editTransactionUnitPrice" required />
+
+          <label for="editTransactionCost">原価:</label>
+          <input type="number" id="editTransactionCost" name="cost" required />
+
+          <label for="editTransactionPaymentMethod">支払い方法:</label>
+          <select id="editTransactionPaymentMethod" required>
+            <!-- 支払い方法の選択肢がここに追加されます -->
+          </select>
+
+          <label for="editTransactionSize">サイズ:</label>
+          <input type="number" id="editTransactionSize" name="editTransactionSize" min="1" required />
+
+          <button type="submit">更新</button>
+          <button type="button" id="cancelEditTransaction">キャンセル</button>
+        </form>
+      </div>
       <!-- 売上データの表示エリア -->
-     <table id="transactionList">
-  <thead>
-    <tr>
-      <th>取引ID</th>
-      <th>日時</th>
-      <th>支払い方法</th>
-      <th>商品名</th>
-      <th>個数</th>
-      <th>売上金額</th>
-      <th>手数料</th> <!-- 手数料の列を追加 -->
-      <th>原価</th>
-      <th>利益</th>
-      <th>詳細</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- 売上データがここに表示されます -->
-  </tbody>
-</table>
+      <table id="transactionList">
+        <thead>
+          <tr>
+            <th>取引ID</th>
+            <th>日時</th>
+            <th>支払い方法</th>
+            <th>商品名</th>
+            <th>個数</th>
+            <th>売上金額</th>
+            <th>手数料</th>
+            <th>原価</th>
+            <th>利益</th>
+            <th>詳細</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 売上データがここに表示されます -->
+        </tbody>
+      </table>
       <!-- 取引の詳細表示エリア -->
       <div id="transactionDetails" style="display: none;">
         <h2>取引詳細</h2>
@@ -363,14 +364,14 @@
             <!-- 商品詳細がここに表示されます -->
           </tbody>
         </table>
-       <button id="returnTransactionButton">返品</button>
-  <button id="deleteTransactionButton">取引を削除する</button> <!-- 追加 -->
-  <button id="closeTransactionDetails">閉じる</button>
+        <button id="returnTransactionButton">返品</button>
+        <button id="deleteTransactionButton">取引を削除する</button>
+        <button id="closeTransactionDetails">閉じる</button>
       </div>
     </section>
 
     <!-- 単価設定 -->
-    <section id="pricing" class="content-section" style="display: none;">
+    <section id="pricing" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>単価設定</h1>
       <!-- 単価ルール追加フォーム -->
       <form id="addPricingRuleForm">
@@ -403,7 +404,7 @@
     </section>
 
     <!-- 支払い方法設定 -->
-    <section id="payment-methods" class="content-section" style="display: none;">
+    <section id="payment-methods" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>支払い方法設定</h1>
       <!-- 支払い方法追加フォーム -->
       <form id="addPaymentMethodForm">
@@ -426,56 +427,56 @@
       </table>
     </section>
 
-<!-- 消耗品管理セクション -->
-<section id="consumables" class="content-section" style="display: none;">
-  <h1>消耗品管理</h1>
-  <form id="addConsumableForm">
-    <input type="text" id="consumableName" placeholder="消耗品名" required />
-    <input type="number" id="consumableCost" placeholder="原価" required step="0.01" min="0" />
-    <button type="submit">追加</button>
-  </form>
-  <table id="consumableList">
-    <thead>
-      <tr>
-        <th>消耗品名</th>
-        <th>原価</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- 消耗品情報がここに表示されます -->
-    </tbody>
-  </table>
+    <!-- 消耗品管理セクション -->
+    <section id="consumables" class="content-section" style="display: none;" data-requires-auth="true">
+      <h1>消耗品管理</h1>
+      <form id="addConsumableForm">
+        <input type="text" id="consumableName" placeholder="消耗品名" required />
+        <input type="number" id="consumableCost" placeholder="原価" required step="0.01" min="0" />
+        <button type="submit">追加</button>
+      </form>
+      <table id="consumableList">
+        <thead>
+          <tr>
+            <th>消耗品名</th>
+            <th>原価</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 消耗品情報がここに表示されます -->
+        </tbody>
+      </table>
 
-  <!-- 消耗品使用量の表示 -->
-  <h2>消耗品使用量</h2>
-  <div id="consumableUsageFilters">
-    <label for="usageYear">年:</label>
-    <select id="usageYear">
-      <!-- 年の選択肢がここに表示されます -->
-    </select>
-    <label for="usageMonth">月:</label>
-    <select id="usageMonth">
-      <!-- 月の選択肢がここに表示されます -->
-    </select>
-    <button id="filterUsage">フィルタ</button>
-  </div>
-  <table id="consumableUsageList">
-    <thead>
-      <tr>
-        <th>消耗品名</th>
-        <th>使用量</th>
-        <th>使用日</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- 消耗品使用量がここに表示されます -->
-    </tbody>
-  </table>
-</section>
+      <!-- 消耗品使用量の表示 -->
+      <h2>消耗品使用量</h2>
+      <div id="consumableUsageFilters">
+        <label for="usageYear">年:</label>
+        <select id="usageYear">
+          <!-- 年の選択肢がここに表示されます -->
+        </select>
+        <label for="usageMonth">月:</label>
+        <select id="usageMonth">
+          <!-- 月の選択肢がここに表示されます -->
+        </select>
+        <button id="filterUsage">フィルタ</button>
+      </div>
+      <table id="consumableUsageList">
+        <thead>
+          <tr>
+            <th>消耗品名</th>
+            <th>使用量</th>
+            <th>使用日</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 消耗品使用量がここに表示されます -->
+        </tbody>
+      </table>
+    </section>
 
     <!-- 売上分析 -->
-    <section id="sales-analysis" class="content-section" style="display: none;">
+    <section id="sales-analysis" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>売上分析</h1>
       <!-- 集計対象選択フォーム -->
       <form id="analysisPeriodForm">
@@ -536,13 +537,13 @@
     </section>
   </main>
 
- <!-- QuaggaJS ライブラリの読み込み -->
+  <!-- QuaggaJS ライブラリの読み込み -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
   <!-- JavaScript ファイルの読み込み -->
   <script type="module" src="main.js"></script>
-  <!-- `barcodeScanner.js` は `main.js` からインポートされるため、ここでは不要 -->
 
+  <!-- 年のオプションを追加するスクリプト -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const yearSelect = document.getElementById('analysisYear');
