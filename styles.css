@@ -1,3 +1,7 @@
+/* styles.css */
+
+/* 共通スタイルは既存のコード */
+
 body {
   font-family: 'Noto Sans JP', sans-serif;
   margin: 0;
@@ -8,6 +12,7 @@ body {
 
 nav {
   background-color: #333;
+  position: relative; /* ハンバーガーメニューアイコンの位置調整のために追加 */
 }
 
 nav ul {
@@ -57,41 +62,6 @@ nav ul li a:hover {
     display: block;
   }
 
-  /* テーブルを横スクロール可能にする */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
-  /* 入力フィールドやボタンの幅を100%にする */
-  input, select, button {
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-  }
-
-  /* フォームの内側のパディングを調整 */
-  form {
-    padding: 10px;
-  }
-
-  /* 見出しのフォントサイズを調整 */
-  h1 {
-    font-size: 1.5em;
-  }
-
-  /* ボタンのテキストサイズを調整 */
-  button {
-    font-size: 1em;
-    padding: 10px;
-  }
-
-  /* メインコンテンツのパディングを調整 */
-  main {
-    padding: 10px;
-  }
-
   /* ハンバーガーメニューが表示されたときのスタイル */
   nav ul.show {
     display: block;
@@ -101,16 +71,20 @@ nav ul li a:hover {
     left: 0;
     width: 100%;
     z-index: 1000;
+    overflow-x: hidden; /* 横スクロールを防止 */
   }
 
   nav ul.show li {
     text-align: center;
     padding: 10px 0;
+    width: 100%; /* リンクが画面幅を超えないようにする */
   }
 
   nav ul.show li a {
     display: block;
     color: #fff;
+    width: 100%; /* リンクが画面幅を超えないようにする */
+    box-sizing: border-box;
   }
 }
 
@@ -118,30 +92,13 @@ main {
   padding: 20px;
 }
 
-/* エラーメッセージとメッセージのスタイル */
 .error-message {
-  position: fixed;
-  top: 50px;
-  right: 10px;
-  background-color: #d9534f;
-  color: white;
-  padding: 15px;
-  border-radius: 5px;
-  z-index: 1000;
+  background-color: #f44336;
+  color: #fff;
+  padding: 10px;
+  display: none;
 }
 
-.message {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background-color: #5cb85c;
-  color: white;
-  padding: 15px;
-  border-radius: 5px;
-  z-index: 1000;
-}
-
-/* フォームのスタイル */
 form {
   margin-bottom: 20px;
 }
@@ -157,7 +114,6 @@ button {
   margin-left: 5px;
 }
 
-/* リストのスタイル */
 ul {
   list-style: none;
   padding: 0;
@@ -169,6 +125,16 @@ ul li {
 
 ul li button {
   margin-left: 5px;
+}
+
+/* コンテンツセクションのスタイル */
+.content-section {
+  display: none;
+}
+
+/* ホームセクションはデフォルトで表示 */
+#home {
+  display: block;
 }
 
 /* テーブルのスタイル */
