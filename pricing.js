@@ -6,6 +6,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  getDoc, // **この行を追加**
   getDocs,
   query,
   where,
