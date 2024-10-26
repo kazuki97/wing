@@ -7,6 +7,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #f5f5f5;
+  overflow-x: hidden; /* 横方向のオーバーフローを隠す */
 }
 
 nav {
@@ -181,16 +182,6 @@ ul li {
 
 ul li button {
   margin-left: 5px;
-}
-
-/* コンテンツセクションのスタイル */
-.content-section {
-  display: none;
-}
-
-/* ホームセクションはデフォルトで表示 */
-#home {
-  display: block;
 }
 
 /* テーブルのスタイル */
