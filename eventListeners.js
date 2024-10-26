@@ -35,6 +35,8 @@ import {
   getPricingRules,
   deletePricingRule,
   getUnitPrice,
+  getPricingRuleById, // **追加**
+  updatePricingRule,  // **追加**
 } from './pricing.js';
 
 import {
