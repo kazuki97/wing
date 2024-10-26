@@ -3,7 +3,19 @@ import './eventListeners.js';
 import './salesEventListeners.js';
 import './barcodeScanner.js';
 
-// スムーズスクロールとセクションの表示制御
+// 初期表示のセクションを設定
+document.addEventListener('DOMContentLoaded', () => {
+  let defaultSectionId = '#home'; // PC版ではホームセクションを表示
+  if (window.innerWidth <= 767) {
+    defaultSectionId = '#barcode'; // スマホ版ではバーコードスキャンセクションを表示
+  }
+  document.querySelectorAll('.content-section').forEach((section) => {
+    section.style.display = 'none';
+  });
+  document.querySelector(defaultSectionId).style.display = 'block';
+});
+
+// ナビゲーションリンクのクリックイベント
 document.querySelectorAll('.nav-link').forEach((link) => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
@@ -11,14 +23,6 @@ document.querySelectorAll('.nav-link').forEach((link) => {
     const targetSection = document.querySelector(targetId);
 
     if (targetSection) {
-      // 認証が必要なセクションかどうかを確認
-      const requiresAuth = targetSection.getAttribute('data-requires-auth') === 'true';
-
-      if (requiresAuth && !isAuthenticated()) {
-        alert('このセクションを表示するにはパスワードが必要です。');
-        return;
-      }
-
       // 全てのセクションを非表示にする
       document.querySelectorAll('.content-section').forEach((section) => {
         section.style.display = 'none';
