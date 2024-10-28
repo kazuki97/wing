@@ -504,6 +504,25 @@
   </div>
 </div>
 
+<!-- 消耗品使用量編集用モーダル -->
+<div id="editConsumableUsageModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeEditConsumableUsageModal">&times;</span>
+    <h2>消耗品使用量の編集</h2>
+    <form id="editConsumableUsageForm">
+      <input type="hidden" id="editConsumableUsageId" />
+      <label for="editConsumableSelect">消耗品名:</label>
+      <select id="editConsumableSelect" required>
+        <!-- 消耗品の選択肢がここに追加されます -->
+      </select>
+      <input type="number" id="editQuantityUsed" placeholder="使用量" required step="any" min="0" />
+      <input type="datetime-local" id="editUsageTimestamp" required />
+      <button type="submit">更新</button>
+    </form>
+  </div>
+</div>
+
+
     <!-- 売上分析 -->
     <section id="sales-analysis" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>売上分析</h1>
