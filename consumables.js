@@ -1,7 +1,48 @@
 import { db } from './db.js'; // Firebaseの初期化をインポート
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  addDoc,
+  getDoc,
+  updateDoc,
+} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 const consumablesCollection = collection(db, 'consumables');
+
+// 消耗品をIDで取得する関数
+export async function getConsumableById(consumableId) {
+  try {
+    const docRef = doc(db, 'consumables', consumableId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('消耗品の取得に失敗しました:', error);
+    throw error;
+  }
+}
+
+// 消耗品使用量をIDで取得する関数
+export async function getConsumableUsageById(usageId) {
+  try {
+    const docRef = doc(db, 'consumableUsage', usageId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('消耗品使用量の取得に失敗しました:', error);
+    throw error;
+  }
+}
+
 
 // 消耗品リストの取得
 export async function getConsumables() {
@@ -100,17 +141,17 @@ async function displayConsumables() {
   }
 }
 
-// 消耗品の更新関数を追加
+// 消耗品の更新関数
 export async function updateConsumable(consumableId, updatedData) {
   try {
     await updateDoc(doc(db, 'consumables', consumableId), updatedData);
     console.log('消耗品が更新されました:', consumableId);
-    await displayConsumables(); // 消耗品リストを再表示
   } catch (error) {
     console.error('消耗品の更新に失敗しました:', error);
-    showError('消耗品の更新に失敗しました');
+    throw error;
   }
 }
+
 
 // 消耗品を削除する関数
 export async function deleteConsumable(consumableId) {
@@ -129,10 +170,9 @@ export async function updateConsumableUsage(usageId, updatedData) {
   try {
     await updateDoc(doc(db, 'consumableUsage', usageId), updatedData);
     console.log('消耗品使用量が更新されました:', usageId);
-    await displayConsumableUsage(); // 消耗品使用量リストを再表示
   } catch (error) {
     console.error('消耗品使用量の更新に失敗しました:', error);
-    showError('消耗品使用量の更新に失敗しました');
+    throw error;
   }
 }
 
@@ -141,12 +181,12 @@ export async function deleteConsumableUsage(usageId) {
   try {
     await deleteDoc(doc(db, 'consumableUsage', usageId));
     console.log('消耗品使用量が削除されました:', usageId);
-    await displayConsumableUsage(); // 消耗品使用量リストを再表示
   } catch (error) {
     console.error('消耗品使用量の削除に失敗しました:', error);
-    showError('消耗品使用量の削除に失敗しました');
+    throw error;
   }
 }
+
 
 
 // エラーメッセージ表示関数
