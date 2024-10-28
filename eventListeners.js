@@ -51,7 +51,13 @@ import {
   getPaymentMethods,
 } from './paymentMethods.js';
 
-import { getConsumables, getConsumableUsage } from './consumables.js'; // 消耗品使用量取得の関数もインポート
+import {
+  getConsumables,
+  getConsumableUsage,
+  getConsumableUsageById, // **追加**
+  updateConsumableUsage,  // **追加**
+  deleteConsumableUsage,  // **追加**
+} from './consumables.js';
 import { deleteConsumable } from './consumables.js'; // 削除の関数もインポート
 
 // 追加: updatePricingParentCategorySelectの定義
@@ -174,42 +180,121 @@ async function displayConsumableUsage(year, month) {
     const usageTableBody = document.getElementById('consumableUsageList').querySelector('tbody');
     usageTableBody.innerHTML = '';
 
-    // 消耗品使用量を集約
-    const usageMap = {};
-
+    // 消耗品使用量を表示
     consumableUsageList.forEach((usage) => {
-      if (!usageMap[usage.consumableId]) {
-        usageMap[usage.consumableId] = {
-          quantityUsed: 0,
-          timestamp: usage.timestamp,
-        };
-      }
-      usageMap[usage.consumableId].quantityUsed += usage.quantityUsed;
-    });
-
-    // 集約した使用量を表示
-    Object.keys(usageMap).forEach((consumableId) => {
-      const consumable = consumables.find(c => c.id === consumableId);
+      const consumable = consumables.find(c => c.id === usage.consumableId);
       const consumableName = consumable ? consumable.name : '不明な消耗品';
-      const usage = usageMap[consumableId];
 
       const row = document.createElement('tr');
       const date = new Date(usage.timestamp);
 
-      // 年と月だけを表示するフォーマット
-      const formattedDate = `${date.getFullYear()}/${date.getMonth() + 1}`;
+      // 日時を表示するフォーマット
+      const formattedDate = date.toLocaleString();
 
       row.innerHTML = `
         <td>${consumableName}</td>
         <td>${usage.quantityUsed}</td>
         <td>${formattedDate}</td>
+        <td>
+          <button class="edit-consumable-usage" data-id="${usage.id}">編集</button>
+          <button class="delete-consumable-usage" data-id="${usage.id}">削除</button>
+        </td>
       `;
       usageTableBody.appendChild(row);
     });
+
+    // **編集ボタンのイベントリスナーを追加**
+    document.querySelectorAll('.edit-consumable-usage').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const usageId = e.target.dataset.id;
+        await openEditConsumableUsageModal(usageId);
+      });
+    });
+
+    // **削除ボタンのイベントリスナーを追加**
+    document.querySelectorAll('.delete-consumable-usage').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const usageId = e.target.dataset.id;
+        if (confirm('本当に削除しますか？')) {
+          await deleteConsumableUsage(usageId);
+          alert('消耗品使用量が削除されました');
+          // 選択されている年と月で再表示
+          await displayConsumableUsage(year, month);
+        }
+      });
+    });
   } catch (error) {
     console.error('消耗品使用量の表示に失敗しました:', error);
+    showError('消耗品使用量の表示に失敗しました');
   }
 }
+
+// 消耗品使用量編集用モーダルを開く関数
+async function openEditConsumableUsageModal(usageId) {
+  try {
+    const usageData = await getConsumableUsageById(usageId);
+    if (!usageData) {
+      showError('消耗品使用量が見つかりません');
+      return;
+    }
+
+    // 消耗品リストを取得してセレクトボックスを更新
+    const consumables = await getConsumables();
+    const consumableSelect = document.getElementById('editConsumableSelect');
+    consumableSelect.innerHTML = '';
+    consumables.forEach((consumable) => {
+      const option = document.createElement('option');
+      option.value = consumable.id;
+      option.textContent = consumable.name;
+      consumableSelect.appendChild(option);
+    });
+
+    document.getElementById('editConsumableUsageId').value = usageData.id;
+    document.getElementById('editConsumableSelect').value = usageData.consumableId;
+    document.getElementById('editQuantityUsed').value = usageData.quantityUsed;
+    document.getElementById('editUsageTimestamp').value = new Date(usageData.timestamp).toISOString().slice(0, -1);
+    document.getElementById('editConsumableUsageModal').style.display = 'block';
+  } catch (error) {
+    console.error(error);
+    showError('消耗品使用量の取得に失敗しました');
+  }
+}
+
+// モーダルを閉じるボタンのイベントリスナー
+document.getElementById('closeEditConsumableUsageModal').addEventListener('click', () => {
+  document.getElementById('editConsumableUsageModal').style.display = 'none';
+});
+
+// 消耗品使用量の更新フォームの送信イベントリスナー
+document.getElementById('editConsumableUsageForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const usageId = document.getElementById('editConsumableUsageId').value;
+  const consumableId = document.getElementById('editConsumableSelect').value;
+  const quantityUsed = parseFloat(document.getElementById('editQuantityUsed').value);
+  const timestamp = new Date(document.getElementById('editUsageTimestamp').value);
+
+  if (!consumableId || isNaN(quantityUsed) || quantityUsed < 0 || isNaN(timestamp.getTime())) {
+    showError('有効なデータを入力してください');
+    return;
+  }
+
+  try {
+    await updateConsumableUsage(usageId, {
+      consumableId,
+      quantityUsed,
+      timestamp: timestamp.toISOString(),
+    });
+    alert('消耗品使用量が更新されました');
+    document.getElementById('editConsumableUsageModal').style.display = 'none';
+    const selectedYear = parseInt(document.getElementById('usageYear').value);
+    const selectedMonth = parseInt(document.getElementById('usageMonth').value);
+    await displayConsumableUsage(selectedYear, selectedMonth);
+  } catch (error) {
+    console.error('消耗品使用量の更新に失敗しました:', error);
+    showError('消耗品使用量の更新に失敗しました');
+  }
+});
+
 
 async function addTransactionEditListeners() {
   const editButtons = document.querySelectorAll('.edit-transaction');
@@ -394,18 +479,31 @@ async function displayConsumables() {
       row.innerHTML = `
         <td>${consumable.name}</td>
         <td>¥${consumable.cost}</td>
-        <td><button class="delete-consumable" data-id="${consumable.id}">削除</button></td>
+        <td>
+          <button class="edit-consumable" data-id="${consumable.id}">編集</button>
+          <button class="delete-consumable" data-id="${consumable.id}">削除</button>
+        </td>
       `;
       consumableTableBody.appendChild(row);
+    });
+
+    // **編集ボタンのイベントリスナーを追加**
+    document.querySelectorAll('.edit-consumable').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const consumableId = e.target.dataset.id;
+        await openEditConsumableModal(consumableId);
+      });
     });
 
     // 削除ボタンのイベントリスナーを設定
     document.querySelectorAll('.delete-consumable').forEach((button) => {
       button.addEventListener('click', async (e) => {
         const consumableId = e.target.dataset.id;
-        await deleteConsumable(consumableId);
-        alert('消耗品が削除されました');
-        await displayConsumables(); // 最新の消耗品リストを再表示
+        if (confirm('本当に削除しますか？')) {
+          await deleteConsumable(consumableId);
+          alert('消耗品が削除されました');
+          await displayConsumables(); // 最新の消耗品リストを再表示
+        }
       });
     });
   } catch (error) {
@@ -413,6 +511,55 @@ async function displayConsumables() {
     showError('消耗品の表示に失敗しました');
   }
 }
+
+// 消耗品編集用モーダルを開く関数
+async function openEditConsumableModal(consumableId) {
+  try {
+    const consumable = await getConsumableById(consumableId);
+    if (!consumable) {
+      showError('消耗品が見つかりません');
+      return;
+    }
+    // モーダル内のフォームに値をセット
+    document.getElementById('editConsumableId').value = consumable.id;
+    document.getElementById('editConsumableName').value = consumable.name;
+    document.getElementById('editConsumableCost').value = consumable.cost;
+    // モーダルを表示
+    document.getElementById('editConsumableModal').style.display = 'block';
+  } catch (error) {
+    console.error(error);
+    showError('消耗品の取得に失敗しました');
+  }
+}
+
+// モーダルを閉じるボタンのイベントリスナー
+document.getElementById('closeEditConsumableModal').addEventListener('click', () => {
+  document.getElementById('editConsumableModal').style.display = 'none';
+});
+
+// 消耗品の更新フォームの送信イベントリスナー
+document.getElementById('editConsumableForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const consumableId = document.getElementById('editConsumableId').value;
+  const updatedName = document.getElementById('editConsumableName').value.trim();
+  const updatedCost = parseFloat(document.getElementById('editConsumableCost').value);
+
+  if (!updatedName || isNaN(updatedCost) || updatedCost < 0) {
+    showError('消耗品名と有効な原価を入力してください');
+    return;
+  }
+
+  try {
+    await updateConsumable(consumableId, { name: updatedName, cost: updatedCost });
+    alert('消耗品が更新されました');
+    document.getElementById('editConsumableModal').style.display = 'none';
+    await displayConsumables();
+  } catch (error) {
+    console.error('消耗品の更新に失敗しました:', error);
+    showError('消耗品の更新に失敗しました');
+  }
+});
+
 
 // 売上管理セクションの取引データ表示関数
 export async function displayTransactions(filter = {}) {
