@@ -57,8 +57,11 @@ import {
   getConsumableUsageById, // **追加**
   updateConsumableUsage,  // **追加**
   deleteConsumableUsage,  // **追加**
+  getConsumableById,      // **ここを追加**
+  updateConsumable,       // **ここを追加**
 } from './consumables.js';
 import { deleteConsumable } from './consumables.js'; // 削除の関数もインポート
+
 
 // 追加: updatePricingParentCategorySelectの定義
 async function updatePricingParentCategorySelect() {
@@ -228,6 +231,7 @@ async function displayConsumableUsage(year, month) {
     showError('消耗品使用量の表示に失敗しました');
   }
 }
+
 
 // 消耗品使用量編集用モーダルを開く関数
 async function openEditConsumableUsageModal(usageId) {
