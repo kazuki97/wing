@@ -490,6 +490,20 @@
       </table>
     </section>
 
+<!-- 消耗品編集用モーダルを追加 -->
+<div id="editConsumableModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeEditConsumableModal">&times;</span>
+    <h2>消耗品の編集</h2>
+    <form id="editConsumableForm">
+      <input type="hidden" id="editConsumableId" />
+      <input type="text" id="editConsumableName" placeholder="消耗品名" required />
+      <input type="number" id="editConsumableCost" placeholder="原価" required step="0.01" min="0" />
+      <button type="submit">更新</button>
+    </form>
+  </div>
+</div>
+
     <!-- 売上分析 -->
     <section id="sales-analysis" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>売上分析</h1>
