@@ -100,6 +100,18 @@ async function displayConsumables() {
   }
 }
 
+// 消耗品の更新関数を追加
+export async function updateConsumable(consumableId, updatedData) {
+  try {
+    await updateDoc(doc(db, 'consumables', consumableId), updatedData);
+    console.log('消耗品が更新されました:', consumableId);
+    await displayConsumables(); // 消耗品リストを再表示
+  } catch (error) {
+    console.error('消耗品の更新に失敗しました:', error);
+    showError('消耗品の更新に失敗しました');
+  }
+}
+
 // 消耗品を削除する関数
 export async function deleteConsumable(consumableId) {
   try {
@@ -111,6 +123,31 @@ export async function deleteConsumable(consumableId) {
     showError('消耗品の削除に失敗しました');
   }
 }
+
+// 消耗品使用量の更新関数
+export async function updateConsumableUsage(usageId, updatedData) {
+  try {
+    await updateDoc(doc(db, 'consumableUsage', usageId), updatedData);
+    console.log('消耗品使用量が更新されました:', usageId);
+    await displayConsumableUsage(); // 消耗品使用量リストを再表示
+  } catch (error) {
+    console.error('消耗品使用量の更新に失敗しました:', error);
+    showError('消耗品使用量の更新に失敗しました');
+  }
+}
+
+// 消耗品使用量の削除関数
+export async function deleteConsumableUsage(usageId) {
+  try {
+    await deleteDoc(doc(db, 'consumableUsage', usageId));
+    console.log('消耗品使用量が削除されました:', usageId);
+    await displayConsumableUsage(); // 消耗品使用量リストを再表示
+  } catch (error) {
+    console.error('消耗品使用量の削除に失敗しました:', error);
+    showError('消耗品使用量の削除に失敗しました');
+  }
+}
+
 
 // エラーメッセージ表示関数
 function showError(message) {
