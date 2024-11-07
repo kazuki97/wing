@@ -6,8 +6,46 @@ import './salesEventListeners.js'; // 新たに追加
 import './barcodeScanner.js'; // 追加
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 初期表示のセクションを設定（変更なし）
-  // ...（省略）...
+  // 初期表示のセクションを設定
+  let defaultSectionId = '#home'; // PC版ではホームセクションを表示
+  if (window.innerWidth <= 767) {
+    defaultSectionId = '#barcode'; // スマホ版ではバーコードスキャンセクションを表示
+  }
+  document.querySelectorAll('.content-section').forEach((section) => {
+    section.style.display = 'none';
+  });
+  document.querySelector(defaultSectionId).style.display = 'block';
+
+  // スムーズスクロールとセクションの表示制御
+  document.querySelectorAll('.nav-link').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href');
+      const targetSection = document.querySelector(targetId);
+      if (targetSection) {
+        const requiresAuth = targetSection.getAttribute('data-requires-auth') === 'true';
+
+        if (window.innerWidth <= 767 && requiresAuth && !isAuthenticated()) {
+          alert('このセクションを表示するにはパスワードが必要です。');
+          return;
+        }
+
+        // 全てのセクションを非表示にする
+        document.querySelectorAll('.content-section').forEach((section) => {
+          section.style.display = 'none';
+        });
+        // 対象のセクションを表示する
+        targetSection.style.display = 'block';
+        // スクロールをトップに戻す
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // モバイル表示の場合、メニューを閉じる
+        if (window.innerWidth <= 767) {
+          document.getElementById('navMenu').classList.remove('show');
+        }
+      }
+    });
+  });
 
   // ハンバーガーメニューのクリックイベント
   document.getElementById('menuIcon').addEventListener('click', function() {
@@ -21,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ログインフォームの送信イベント
+ // ログインフォームの送信イベント
   document.getElementById('loginFormElement').addEventListener('submit', function(e) {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -85,4 +123,10 @@ function logout() {
     .catch((error) => {
       alert('ログアウトに失敗しました：' + error.message);
     });
+}
+
+// 認証チェック
+if (window.innerWidth <= 767 && requiresAuth && !auth.currentUser) {
+  alert('このセクションを表示するにはログインが必要です。');
+  return;
 }
