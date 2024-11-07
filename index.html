@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <!-- 既存のメタタグやスタイルシート -->
   <meta charset="UTF-8" />
   <title>ビジネス管理システム</title>
-  <!-- ビューポートの設定を追加 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="styles.css" />
+  
+  <!-- Firebaseのスクリプトタグをここに追加 -->
+  <!-- Firebase App (必須) -->
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
+  <!-- Firebase Authentication -->
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js"></script>
+  <!-- Firebase Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js"></script>
 </head>
+
 <body>
   <!-- エラーメッセージ表示エリア -->
   <div id="error-message" class="error-message"></div>
