@@ -1,4 +1,6 @@
 // salesEventListeners.js
+import { auth } from './db.js'; // authをインポート
+
 
 import {
   getProductByBarcode,
@@ -66,6 +68,11 @@ async function updatePaymentMethodSelect() {
 }
 
 document.getElementById('addBarcodeButton').addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('バーコードを追加するにはログインが必要です。');
+    return;
+  }
   const barcodeInput = document.getElementById('barcodeInput');
   const barcode = barcodeInput.value.trim();
   if (!barcode) {
@@ -242,6 +249,11 @@ function removeFromCart(productId) {
 
 // 販売完了ボタンのイベントリスナー
 document.getElementById('completeSaleButton').addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('販売を完了するにはログインが必要です。');
+    return;
+  }
   if (salesCart.length === 0) {
     showError('カートに商品がありません');
     return;
