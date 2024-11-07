@@ -306,6 +306,12 @@ async function addTransactionEditListeners() {
   const editButtons = document.querySelectorAll('.edit-transaction');
   editButtons.forEach((button) => {
     button.addEventListener('click', async (e) => {
+      const user = auth.currentUser;
+      if (!user) {
+        alert('取引を編集するにはログインが必要です。');
+        return;
+      }
+
       const transactionId = e.target.dataset.id;
       const transaction = await getTransactionById(transactionId);
       if (transaction) {
@@ -655,6 +661,11 @@ row.innerHTML = `
 // 売上管理セクションの取引詳細を表示する関数
 async function displayTransactionDetails(transactionId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('取引の詳細を表示するにはログインが必要です。');
+      return;
+    }
     const transaction = await getTransactionById(transactionId);
     if (!transaction) {
       showError('取引が見つかりません');
@@ -748,6 +759,11 @@ if (closeTransactionDetailsButton) {
 }
 
 async function handleReturnTransaction(transaction) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('返品処理を行うにはログインが必要です。');
+    return;
+  }
   const reason = prompt('返品理由を入力してください');
   if (!reason) {
     showError('返品理由を入力してください');
@@ -787,6 +803,11 @@ async function handleReturnTransaction(transaction) {
 }
 
 async function handleDeleteTransaction(transactionId) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('取引を削除するにはログインが必要です。');
+    return;
+  }
   if (confirm('この取引を削除しますか？')) {
     try {
       // 取引を取得
@@ -1210,6 +1231,11 @@ async function displaySubcategories(parentCategoryId) {
 
 async function displayProducts() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('商品を表示するにはログインが必要です。');
+      return;
+    }
     const parentCategoryId = document.getElementById('filterParentCategorySelect').value;
     const subcategoryId = document.getElementById('filterSubcategorySelect').value;
     const products = await getProducts(parentCategoryId, subcategoryId);
@@ -1292,6 +1318,11 @@ async function displayProducts() {
 
 // 商品の編集フォーム表示関数
 async function editProduct(product) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('商品を編集するにはログインが必要です。');
+    return;
+  }
   // 消耗品リストの取得
   const consumables = await getConsumables();
 
