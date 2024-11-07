@@ -1,6 +1,8 @@
 // eventListeners.js
 
 // インポート
+import { auth } from './db.js'; // authをインポート
+
 import {
   addParentCategory,
   getParentCategories,
@@ -441,6 +443,12 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 // 商品追加フォームのイベントリスナー
 document.getElementById('addProductForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert('商品を追加するにはログインが必要です。');
+    return;
+  }
 
   // 商品の情報を取得
   const productData = {
@@ -945,6 +953,11 @@ window.addEventListener('click', (event) => {
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
 async function updateAllParentCategorySelects() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('親カテゴリを取得するにはログインが必要です。');
+      return;
+    }
     const parentCategories = await getParentCategories();
     const selectIds = [
       'productParentCategorySelect',
