@@ -1,6 +1,5 @@
 // transactions.js
-
-import { db } from './db.js';
+import { db, auth } from './db.js';
 import {
   collection,
   addDoc,
@@ -15,6 +14,12 @@ import { getProductById } from './products.js';
 // 売上データの追加
 export async function addTransaction(transactionData) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('取引を追加するにはログインが必要です。');
+      return;
+    }
+
     // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
@@ -32,6 +37,12 @@ export async function addTransaction(transactionData) {
 // 取引データの取得
 export async function getTransactions() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('取引データを取得するにはログインが必要です。');
+      return [];
+    }
+
     const snapshot = await getDocs(collection(db, 'transactions'));
     return snapshot.docs.map((doc) => {
       const data = doc.data();
