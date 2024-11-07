@@ -1,4 +1,5 @@
-import { db } from './db.js';
+// inventoryManagement.js
+import { db, auth } from './db.js';
 import {
   collection,
   doc,
@@ -12,6 +13,12 @@ import {
 // 全体在庫の更新（サブカテゴリごと）
 export async function updateOverallInventory(subcategoryId, quantityChange) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = doc(db, 'overallInventory', subcategoryId);
     const currentInventory = await getOverallInventory(subcategoryId);
     const newQuantity = (currentInventory.quantity || 0) + quantityChange;
@@ -33,6 +40,12 @@ export async function updateOverallInventory(subcategoryId, quantityChange) {
 // 全体在庫の取得（サブカテゴリごと）
 export async function getOverallInventory(subcategoryId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('データを取得するにはログインが必要です。');
+      return { quantity: 0 };
+    }
+
     const docRef = doc(db, 'overallInventory', subcategoryId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -49,6 +62,12 @@ export async function getOverallInventory(subcategoryId) {
 // 全体在庫の一覧取得
 export async function getAllOverallInventories() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('データを取得するにはログインが必要です。');
+      return [];
+    }
+
     const snapshot = await getDocs(collection(db, 'overallInventory'));
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
@@ -60,6 +79,12 @@ export async function getAllOverallInventories() {
 // 全体在庫の削除
 export async function deleteOverallInventory(subcategoryId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = doc(db, 'overallInventory', subcategoryId);
     await deleteDoc(docRef);
   } catch (error) {
