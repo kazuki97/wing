@@ -3,12 +3,20 @@
 import { getProductByBarcode } from './products.js';
 import { addToCart, showError, showMessage } from './salesEventListeners.js';
 import { displayInventoryProducts } from './eventListeners.js';
+import { auth } from './db.js'; // authをインポート
 
 let scannerIsRunning = false; // スキャナーの状態を追跡
 
 export function startQuaggaScanner() {
   if (scannerIsRunning) {
     return; // 既にスキャナーが動作中の場合は何もしない
+  }
+
+  // ユーザーが認証されているか確認
+  const user = auth.currentUser;
+  if (!user) {
+    alert('バーコードスキャナーを使用するにはログインが必要です。');
+    return;
   }
 
   console.log("QuaggaJS スキャナーを開始します");
