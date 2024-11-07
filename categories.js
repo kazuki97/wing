@@ -1,5 +1,5 @@
 // categories.js
-import { db } from './db.js';
+import { db, auth } from './db.js';
 import {
   collection,
   addDoc,
@@ -15,6 +15,12 @@ import {
 // 親カテゴリの追加
 export async function addParentCategory(name) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = await addDoc(collection(db, 'parentCategories'), {
       name,
     });
@@ -28,6 +34,12 @@ export async function addParentCategory(name) {
 // 親カテゴリの取得
 export async function getParentCategories() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('データを取得するにはログインが必要です。');
+      return [];
+    }
+
     const snapshot = await getDocs(collection(db, 'parentCategories'));
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
@@ -39,6 +51,12 @@ export async function getParentCategories() {
 // 親カテゴリの編集
 export async function updateParentCategory(id, newName) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = doc(db, 'parentCategories', id);
     await updateDoc(docRef, { name: newName });
   } catch (error) {
@@ -50,6 +68,12 @@ export async function updateParentCategory(id, newName) {
 // 親カテゴリの削除
 export async function deleteParentCategory(id) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = doc(db, 'parentCategories', id);
     await deleteDoc(docRef);
     // 対応するサブカテゴリも削除
@@ -66,6 +90,12 @@ export async function deleteParentCategory(id) {
 // サブカテゴリの追加
 export async function addSubcategory(name, parentCategoryId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = await addDoc(collection(db, 'subcategories'), {
       name,
       parentCategoryId,
@@ -80,6 +110,12 @@ export async function addSubcategory(name, parentCategoryId) {
 // サブカテゴリの取得
 export async function getSubcategories(parentCategoryId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('データを取得するにはログインが必要です。');
+      return [];
+    }
+
     const q = query(
       collection(db, 'subcategories'),
       where('parentCategoryId', '==', parentCategoryId)
@@ -95,6 +131,12 @@ export async function getSubcategories(parentCategoryId) {
 // サブカテゴリIDからサブカテゴリ情報を取得
 export async function getSubcategoryById(subcategoryId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('データを取得するにはログインが必要です。');
+      return null;
+    }
+
     const docRef = doc(db, 'subcategories', subcategoryId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -112,6 +154,12 @@ export async function getSubcategoryById(subcategoryId) {
 // サブカテゴリの編集
 export async function updateSubcategory(id, newName) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = doc(db, 'subcategories', id);
     await updateDoc(docRef, { name: newName });
   } catch (error) {
@@ -123,6 +171,12 @@ export async function updateSubcategory(id, newName) {
 // サブカテゴリの削除
 export async function deleteSubcategory(id) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('操作を行うにはログインが必要です。');
+      return;
+    }
+
     const docRef = doc(db, 'subcategories', id);
     await deleteDoc(docRef);
   } catch (error) {
