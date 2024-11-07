@@ -1,5 +1,5 @@
 // products.js
-import { db } from './db.js';
+import { db, auth } from './db.js';
 import {
   collection,
   addDoc,
@@ -15,6 +15,12 @@ import {
 // 商品の追加
 export async function addProduct(productData) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('商品を追加するにはログインが必要です。');
+      return;
+    }
+
     const docRef = await addDoc(collection(db, 'products'), productData);
     return docRef.id;
   } catch (error) {
@@ -26,6 +32,12 @@ export async function addProduct(productData) {
 // 商品の取得
 export async function getProducts(parentCategoryId, subcategoryId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('商品データを取得するにはログインが必要です。');
+      return [];
+    }
+
     let q = collection(db, 'products');
     const conditions = [];
     if (parentCategoryId) {
@@ -44,6 +56,7 @@ export async function getProducts(parentCategoryId, subcategoryId) {
     throw error;
   }
 }
+
 
 // 商品IDから商品情報を取得
 export async function getProductById(productId) {
