@@ -125,8 +125,3 @@ function logout() {
     });
 }
 
-// 認証チェック
-if (window.innerWidth <= 767 && requiresAuth && !auth.currentUser) {
-  alert('このセクションを表示するにはログインが必要です。');
-  return;
-}
