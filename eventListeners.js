@@ -142,6 +142,11 @@ async function updateConsumableCheckboxes() {
 // 消耗品使用量の初期化処理
 async function initializeConsumableUsage() {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
 
@@ -180,6 +185,11 @@ async function initializeConsumableUsage() {
 // 消耗品使用量の表示
 async function displayConsumableUsage(year, month) {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const consumableUsageList = await getConsumableUsage(year, month); // 消耗品使用量を取得
     const consumables = await getConsumables(); // 全ての消耗品を取得
     const usageTableBody = document.getElementById('consumableUsageList').querySelector('tbody');
@@ -238,6 +248,11 @@ async function displayConsumableUsage(year, month) {
 // 消耗品使用量編集用モーダルを開く関数
 async function openEditConsumableUsageModal(usageId) {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const usageData = await getConsumableUsageById(usageId);
     if (!usageData) {
       showError('消耗品使用量が見つかりません');
@@ -488,6 +503,11 @@ document.getElementById('addProductForm').addEventListener('submit', async (e) =
 // 消耗品リストを表示する関数
 async function displayConsumables() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('消耗品を表示するにはログインが必要です。');
+      return;
+    }
     const consumablesList = await getConsumables();
     const consumableTableBody = document.getElementById('consumableList').querySelector('tbody');
     consumableTableBody.innerHTML = '';
@@ -533,6 +553,11 @@ async function displayConsumables() {
 // 消耗品編集用モーダルを開く関数
 async function openEditConsumableModal(consumableId) {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const consumable = await getConsumableById(consumableId);
     if (!consumable) {
       showError('消耗品が見つかりません');
@@ -1386,6 +1411,11 @@ async function editProduct(product) {
 // 在庫管理セクションの商品一覧表示関数
 export async function displayInventoryProducts() {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const parentCategoryId = document.getElementById('inventoryParentCategorySelect').value;
     const subcategoryId = document.getElementById('inventorySubcategorySelect').value;
     const products = await getProducts(parentCategoryId, subcategoryId);
@@ -1458,6 +1488,11 @@ document
 // 修正しました: 全体在庫の表示関数に削除ボタンを追加
 export async function displayOverallInventory() {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const overallInventories = await getAllOverallInventories();
     const overallInventoryList = document.getElementById('overallInventoryList').querySelector('tbody');
     overallInventoryList.innerHTML = '';
@@ -1523,6 +1558,11 @@ document
 // 単価ルールの表示
 async function displayPricingRules() {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const subcategoryId = document.getElementById('pricingSubcategorySelect').value;
     if (!subcategoryId) {
       // サブカテゴリが選択されていない場合は何もしない
@@ -1578,6 +1618,11 @@ async function displayPricingRules() {
 // **単価ルール編集用モーダルを開く関数を追加**
 async function openEditPricingRuleModal(ruleId) {
   try {
+const user = auth.currentUser;
+if (!user) {
+  alert('この操作を行うにはログインが必要です。');
+  return;
+}
     const rule = await getPricingRuleById(ruleId);
     if (!rule) {
       showError('単価ルールが見つかりません');
