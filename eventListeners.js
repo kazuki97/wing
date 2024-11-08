@@ -68,6 +68,11 @@ import { deleteConsumable } from './consumables.js'; // 削除の関数もイン
 // 追加: updatePricingParentCategorySelectの定義
 async function updatePricingParentCategorySelect() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('親カテゴリを取得するにはログインが必要です。');
+      return;
+    }
     const parentCategories = await getParentCategories();
     const select = document.getElementById('pricingParentCategorySelect');
     select.innerHTML = '<option value="">親カテゴリを選択</option>';
@@ -86,6 +91,11 @@ async function updatePricingParentCategorySelect() {
 // 支払い方法セレクトボックスの更新関数
 async function updatePaymentMethodSelect() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('支払い方法を取得するにはログインが必要です。');
+      return;
+    }
     const paymentMethods = await getPaymentMethods();
     const paymentMethodSelect = document.getElementById('transactionPaymentMethod');
     paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
@@ -113,6 +123,11 @@ function showError(message) {
 // 消耗品選択リストの更新関数
 async function updateConsumableCheckboxes() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('消耗品リストを取得するにはログインが必要です。');
+      return;
+    }
     const consumables = await getConsumables();
     const consumableCheckboxesDiv = document.getElementById('consumableCheckboxes');
     consumableCheckboxesDiv.innerHTML = '';
@@ -607,6 +622,11 @@ document.getElementById('editConsumableForm').addEventListener('submit', async (
 // 売上管理セクションの取引データ表示関数
 export async function displayTransactions(filter = {}) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('取引を表示するにはログインが必要です。');
+      return;
+    }
     let transactions = await getTransactions();
     const paymentMethods = await getPaymentMethods(); // 支払い方法を取得
     const paymentMethodMap = {};
@@ -933,6 +953,11 @@ window.addEventListener('click', (event) => {
 // モーダル内の親カテゴリ追加フォームの送信イベントリスナー
 document.getElementById('modalAddParentCategoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) {
+    alert('親カテゴリを追加するにはログインが必要です。');
+    return;
+  }
   const name = document.getElementById('modalParentCategoryName').value;
   try {
     await addParentCategory(name);
@@ -950,6 +975,11 @@ document.getElementById('modalAddParentCategoryForm').addEventListener('submit',
 // モーダル内のサブカテゴリ追加フォームの送信イベントリスナー
 document.getElementById('modalAddSubcategoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) {
+    alert('サブカテゴリを追加するにはログインが必要です。');
+    return;
+  }
   const parentCategoryId = document.getElementById('modalSubcategoryParentCategorySelect').value;
   const name = document.getElementById('modalSubcategoryName').value;
   try {
@@ -1040,6 +1070,11 @@ async function updateAllParentCategorySelects() {
 
 // サブカテゴリセレクトボックスの更新
 async function updateSubcategorySelects() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('サブカテゴリを取得するにはログインが必要です。');
+    return;
+  }
   const parentCategorySelectIds = {
     productParentCategorySelect: 'productSubcategorySelect',
     filterParentCategorySelect: 'filterSubcategorySelect',
@@ -1062,6 +1097,11 @@ async function updateSubcategorySelects() {
 // サブカテゴリセレクトボックスの個別更新関数
 async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('サブカテゴリを取得するにはログインが必要です。');
+      return;
+    }
     const select = document.getElementById(subcategorySelectId);
     if (select) {
       select.innerHTML = '<option value="">サブカテゴリを選択</option>';
@@ -1124,6 +1164,11 @@ async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
 // 親カテゴリ一覧の表示
 async function displayParentCategories() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('親カテゴリを表示するにはログインが必要です。');
+      return;
+    }
     const parentCategories = await getParentCategories();
     const parentCategoryList = document.getElementById('parentCategoryList');
     parentCategoryList.innerHTML = '';
@@ -1468,10 +1513,13 @@ async function updateOverallInventoryAfterSale(productId, quantitySold) {
 }
 
 // 全体在庫更新フォームのイベントリスナー
-document
-  .getElementById('updateOverallInventoryForm')
-  .addEventListener('submit', async (e) => {
-    e.preventDefault();
+document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) {
+    alert('全体在庫を更新するにはログインが必要です。');
+    return;
+  }
     const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
     const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
     try {
