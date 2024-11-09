@@ -1741,4 +1741,3 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
       document.getElementById('manualAddTransactionForm').style.display = 'none';
     });
   }
-});
