@@ -1027,7 +1027,7 @@ window.addEventListener('click', (event) => {
 
 
 // 親カテゴリセレクトボックスの更新（全てのセレクトボックスを更新）
-async function updateAllParentCategorySelects() {
+export async function updateAllParentCategorySelects() {
   try {
     const user = auth.currentUser;
     if (!user) {
