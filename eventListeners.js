@@ -66,7 +66,7 @@ import { deleteConsumable } from './consumables.js'; // 削除の関数もイン
 
 
 // 追加: updatePricingParentCategorySelectの定義
-async function updatePricingParentCategorySelect() {
+export async function updatePricingParentCategorySelect() {
   try {
     const user = auth.currentUser;
     if (!user) {
