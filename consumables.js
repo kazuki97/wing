@@ -111,7 +111,7 @@ addConsumableForm.addEventListener('submit', async (e) => {
 });
 
 // 消耗品一覧の表示
-async function displayConsumables() {
+export async function displayConsumables() {
   try {
     const snapshot = await getDocs(consumablesCollection);
     const consumableList = document.getElementById('consumableList').querySelector('tbody');
