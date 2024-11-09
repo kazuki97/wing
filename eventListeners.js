@@ -1,7 +1,8 @@
 // eventListeners.js
 
 // インポート
-import { auth } from './db.js'; // authをインポート
+import { auth } from './db.js';
+import { checkAuth } from './authCheck.js'; // 認証チェック関数をインポート
 
 import {
   addParentCategory,
