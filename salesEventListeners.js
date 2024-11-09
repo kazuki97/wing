@@ -52,6 +52,11 @@ let salesCart = [];
 // 支払い方法選択セレクトボックスの更新
 async function updatePaymentMethodSelect() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('支払い方法を取得するにはログインが必要です。');
+      return;
+    }
     const paymentMethods = await getPaymentMethods();
     const select = document.getElementById('paymentMethodSelect');
     select.innerHTML = '<option value="">支払い方法を選択</option>';
@@ -102,6 +107,11 @@ document.getElementById('addBarcodeButton').addEventListener('click', async () =
 document.getElementById('barcodeInput').addEventListener('keydown', async (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+      alert('バーコードを追加するにはログインが必要です。');
+      return;
+    }
     document.getElementById('addBarcodeButton').click();
   }
 });
@@ -151,6 +161,11 @@ function initializeQuagga() {
   });
 
   Quagga.onDetected(async function(result) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('バーコードをスキャンするにはログインが必要です。');
+    return;
+  }
     const barcode = result.codeResult.code;
     console.log(`スキャンされたバーコード: ${barcode}`);
 
@@ -173,6 +188,11 @@ function initializeQuagga() {
 
 // カートの表示
 async function displaySalesCart() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('カートを表示するにはログインが必要です。');
+    return;
+  }
   const salesCartTable = document.getElementById('salesCart').querySelector('tbody');
   salesCartTable.innerHTML = '';
   let totalAmount = 0;
@@ -377,6 +397,11 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
 // 支払い方法追加フォームのイベントリスナー
 document.getElementById('addPaymentMethodForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) {
+    alert('支払い方法を追加するにはログインが必要です。');
+    return;
+  }
   const name = document.getElementById('paymentMethodName').value.trim();
   const feeRate = parseFloat(document.getElementById('paymentMethodFee').value);
   if (!name || isNaN(feeRate)) {
@@ -398,6 +423,11 @@ document.getElementById('addPaymentMethodForm').addEventListener('submit', async
 // 支払い方法の表示
 async function displayPaymentMethods() {
   try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('支払い方法を表示するにはログインが必要です。');
+      return;
+    }
     const paymentMethods = await getPaymentMethods();
     const paymentMethodList = document.getElementById('paymentMethodList').querySelector('tbody');
     paymentMethodList.innerHTML = '';
@@ -463,6 +493,11 @@ async function displayPaymentMethods() {
 // 月次・年次フィルタの実装
 document.getElementById('filterTransactionsForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) {
+    alert('取引をフィルタリングするにはログインが必要です。');
+    return;
+  }
   const month = parseInt(document.getElementById('filterMonth').value, 10);
   const year = parseInt(document.getElementById('filterYear').value, 10);
   const onlyReturned = document.getElementById('filterOnlyReturned').checked;
@@ -481,6 +516,11 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
 
 // 初期化処理
 window.addEventListener('DOMContentLoaded', async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('アプリケーションを利用するにはログインが必要です。');
+    return;
+  }
   await updatePaymentMethodSelect();
   await displayTransactions(); // 売上管理セクションの初期表示
   await displayPaymentMethods(); // 支払い方法の初期表示
