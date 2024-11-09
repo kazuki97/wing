@@ -121,7 +121,7 @@ function showError(message) {
 }
 
 // 消耗品選択リストの更新関数
-async function updateConsumableCheckboxes() {
+export async function updateConsumableCheckboxes() {
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -1162,7 +1162,7 @@ async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
 });
 
 // 親カテゴリ一覧の表示
-async function displayParentCategories() {
+export async function displayParentCategories() {
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -1299,7 +1299,7 @@ async function displaySubcategories(parentCategoryId) {
 
 
 
-async function displayProducts() {
+export async function displayProducts() {
   try {
     const user = auth.currentUser;
     if (!user) {
