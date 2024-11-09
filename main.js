@@ -1,8 +1,8 @@
 // main.js
 import { auth } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-import { updateAllParentCategorySelects, updatePricingParentCategorySelect, displayParentCategories, displayProducts, displayOverallInventory, displayInventoryProducts, updateConsumableCheckboxes } from './eventListeners.js';
-import { displayTransactions } from './salesEventListeners.js';
+import { updateAllParentCategorySelects, updatePricingParentCategorySelect, displayParentCategories, displayProducts, displayOverallInventory, displayInventoryProducts, displayTransactions, updateConsumableCheckboxes } from './eventListeners.js';
+
 import { displayConsumables, initializeConsumableUsage } from './consumables.js';
 import './barcodeScanner.js'; // 追加
 
