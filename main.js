@@ -75,8 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navMenu.classList.toggle('show');
         showAuthenticatedContent();
 
-        // 初期化関数を呼び出す
-        initializeApp();
       })
       .catch((error) => {
         alert('ログインに失敗しました：' + error.message);
