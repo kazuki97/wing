@@ -1,8 +1,9 @@
 // main.js
 import { auth } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-import './eventListeners.js';
-import './salesEventListeners.js'; // 新たに追加
+import { updateAllParentCategorySelects, updatePricingParentCategorySelect, displayParentCategories, displayProducts, displayOverallInventory, displayInventoryProducts, updateConsumableCheckboxes } from './eventListeners.js';
+import { displayTransactions } from './salesEventListeners.js';
+import { displayConsumables, initializeConsumableUsage } from './consumables.js';
 import './barcodeScanner.js'; // 追加
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -25,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetSection) {
         const requiresAuth = targetSection.getAttribute('data-requires-auth') === 'true';
 
-        if (window.innerWidth <= 767 && requiresAuth && !isAuthenticated()) {
-          alert('このセクションを表示するにはパスワードが必要です。');
+        if (window.innerWidth <= 767 && requiresAuth && !auth.currentUser) {
+          alert('このセクションを表示するにはログインが必要です。');
           return;
         }
 
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
- // ログインフォームの送信イベント
+  // ログインフォームの送信イベント
   document.getElementById('loginFormElement').addEventListener('submit', function(e) {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -73,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const navMenu = document.getElementById('navMenu');
         navMenu.classList.toggle('show');
         showAuthenticatedContent();
+
+        // 初期化関数を呼び出す
+        initializeApp();
       })
       .catch((error) => {
         alert('ログインに失敗しました：' + error.message);
@@ -87,6 +91,9 @@ onAuthStateChanged(auth, (user) => {
     console.log('ユーザーがログインしています:', user.email);
     document.getElementById('loginForm').style.display = 'none';
     showAuthenticatedContent();
+
+    // 初期化関数を呼び出す
+    initializeApp();
   } else {
     // ユーザーがログインしていない
     console.log('ユーザーはログインしていません');
@@ -94,6 +101,20 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById('loginForm').style.display = 'block';
   }
 });
+
+// 初期化関数の定義
+function initializeApp() {
+  updateAllParentCategorySelects();
+  updatePricingParentCategorySelect();
+  displayParentCategories();
+  displayProducts();
+  displayOverallInventory();
+  displayInventoryProducts();
+  displayTransactions(); // 売上管理セクションの取引データ表示
+  displayConsumables(); // 消耗品リストの初期表示
+  updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
+  initializeConsumableUsage(); // 消耗品使用量の初期化
+}
 
 // 認証が必要なセクションを表示する関数
 function showAuthenticatedContent() {
@@ -112,7 +133,7 @@ function hideAuthenticatedContent() {
 }
 
 // ログアウト関数
-function logout() {
+window.logout = function() {
   signOut(auth)
     .then(() => {
       // ログアウト成功
@@ -123,5 +144,4 @@ function logout() {
     .catch((error) => {
       alert('ログアウトに失敗しました：' + error.message);
     });
-}
-
+};
