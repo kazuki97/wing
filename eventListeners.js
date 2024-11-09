@@ -1723,18 +1723,7 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
   await displayPricingRules();
 });
 
-// 初期化処理に売上管理セクションの編集ボタンのリスナーを追加
-window.addEventListener('DOMContentLoaded', async () => {
-  await updateAllParentCategorySelects();
-  await updatePricingParentCategorySelect();
-  await displayParentCategories();
-  await displayProducts();
-  await displayOverallInventory();
-  await displayInventoryProducts();
-  await displayTransactions(); // 売上管理セクションの取引データ表示
-  await displayConsumables(); // 消耗品リストの初期表示
-  await updateConsumableCheckboxes(); // 消耗品選択リストのチェックボックスを更新
-  await initializeConsumableUsage(); // 消耗品使用量の初期化
+
 
   // 手動で売上を追加するボタンのイベントリスナー
   const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
