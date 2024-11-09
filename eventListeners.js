@@ -155,7 +155,7 @@ export async function updateConsumableCheckboxes() {
 }
 
 // 消耗品使用量の初期化処理
-async function initializeConsumableUsage() {
+export async function initializeConsumableUsage() {
   try {
 const user = auth.currentUser;
 if (!user) {
