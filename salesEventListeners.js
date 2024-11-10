@@ -493,15 +493,17 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
 });
 
 // 初期化処理
-window.addEventListener('DOMContentLoaded', async () => {
-  const user = auth.currentUser;
-  if (!user) {
-    alert('アプリケーションを利用するにはログインが必要です。');
-    return;
+import { onAuthStateChanged } from 'firebase/auth'; // 追加のインポートが必要な場合
+
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
+    await displayTransactions(); // 売上管理セクションの初期表示
+    await displayPaymentMethods(); // 支払い方法の初期表示
+    await displayOverallInventory(); // 全体在庫の初期表示
+    await displayInventoryProducts(); // 在庫管理セクションの初期表示
+  } else {
+    // ユーザーがログアウトしている場合の処理（必要に応じて）
+    console.log('ユーザーがログインしていません');
   }
-  await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
-  await displayTransactions(); // 売上管理セクションの初期表示
-  await displayPaymentMethods(); // 支払い方法の初期表示
-  await displayOverallInventory(); // 全体在庫の初期表示
-  await displayInventoryProducts(); // 在庫管理セクションの初期表示
 });
