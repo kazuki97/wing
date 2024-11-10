@@ -388,7 +388,7 @@ const editTransactionForm = document.getElementById('editTransactionForm');
 if (editTransactionForm) {
   editTransactionForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     // 取引IDを取得
     const transactionId = document.getElementById('editTransactionId').value;
 
@@ -398,7 +398,9 @@ if (editTransactionForm) {
     const cost = parseFloat(document.getElementById('editTransactionCost').value);
     const size = parseFloat(document.getElementById('editTransactionSize').value); // サイズを取得
     const subtotal = quantity * unitPrice * size; // 小計計算 (サイズを考慮)
-    const profit = subtotal - (quantity * cost * size); // 利益計算 (サイズを考慮)
+
+    // 利益の計算
+    const profitAmount = subtotal - (quantity * cost * size); // 利益計算 (サイズを考慮)
 
     const updatedData = {
       timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
@@ -410,7 +412,7 @@ if (editTransactionForm) {
           cost: cost, // 原価
           size: size, // サイズ
           subtotal: subtotal, // 小計
-          profit: profit, // 利益
+          profit: profitAmount, // 利益
         }
       ],
       totalAmount: subtotal, // 合計金額
@@ -420,7 +422,6 @@ if (editTransactionForm) {
     try {
       // 取引データを更新
       await updateTransaction(transactionId, updatedData);
-      console.log('取引が更新されました:', updatedData); // 更新されたデータを確認するためのログ
       alert('取引が更新されました');
 
       // 編集フォームを非表示にし、フォームをリセット
@@ -436,7 +437,6 @@ if (editTransactionForm) {
   });
 }
 
-// 売上の手動追加フォームのsubmitイベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -450,37 +450,36 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 
   // 自動計算する項目
   const totalAmount = productPrice * productQuantity * productSize; // 売上金額
-  const profit = totalAmount - (productCost * productQuantity * productSize); // 利益計算
 
- // 売上データを生成
+  // 総原価の計算
+  const totalCost = productCost * productQuantity * productSize;
 
-// 総原価の計算
-const totalCost = productCost * productQuantity * productSize;
+  // 利益の計算（売上 - 原価 - 手数料）
+  const profitAmount = totalAmount - totalCost - 0; // 手数料があれば適宜設定
 
-// 利益の計算（売上 - 原価 - 手数料）
-const profitAmount = totalAmount - totalCost - 0; // 手数料があれば適宜設定
+  // 売上データを生成
+  const transactionData = {
+    items: [
+      {
+        productName,
+        unitPrice: productPrice,
+        quantity: productQuantity,
+        size: productSize,
+        subtotal: totalAmount, // 小計
+        cost: totalCost, // 総原価
+        profit: profitAmount, // 利益
+      }
+    ],
+    totalAmount,
+    paymentMethodId,
+    timestamp: new Date().toISOString(),
+    feeAmount: 0, // 手数料
+    netAmount: totalAmount, // 手数料を引いた金額
+    totalCost: totalCost, // 総原価
+    profit: profitAmount, // 総利益
+    manuallyAdded: true, // 手動追加フラグ
+  };
 
-const transactionData = {
-  items: [
-    {
-      productName,
-      unitPrice: productPrice,
-      quantity: productQuantity,
-      size: productSize,
-      subtotal: totalAmount, // 小計
-      cost: totalCost, // 総原価
-      profit: profitAmount, // 利益
-    }
-  ],
-  totalAmount,
-  paymentMethodId,
-  timestamp: new Date().toISOString(),
-  feeAmount: 0, // 手数料
-  netAmount: totalAmount, // 手数料を引いた金額
-  totalCost: totalCost, // 総原価
-  profit: profitAmount, // 総利益
-  manuallyAdded: true, // 手動追加フラグ
-};
   try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
