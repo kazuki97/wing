@@ -89,7 +89,7 @@ export async function updatePricingParentCategorySelect() {
 }
 
 // 支払い方法セレクトボックスの更新関数
-async function updatePaymentMethodSelect() {
+export async function updatePaymentMethodSelect() {
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -97,13 +97,18 @@ async function updatePaymentMethodSelect() {
       return;
     }
     const paymentMethods = await getPaymentMethods();
-    const paymentMethodSelect = document.getElementById('transactionPaymentMethod');
-    paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
-    paymentMethods.forEach((method) => {
-      const option = document.createElement('option');
-      option.value = method.id;
-      option.textContent = method.name;
-      paymentMethodSelect.appendChild(option);
+    const selectIds = ['transactionPaymentMethod', 'paymentMethodSelect']; // 追加したいセレクトボックスのID
+    selectIds.forEach((id) => {
+      const paymentMethodSelect = document.getElementById(id);
+      if (paymentMethodSelect) {
+        paymentMethodSelect.innerHTML = '<option value="">支払い方法を選択</option>';
+        paymentMethods.forEach((method) => {
+          const option = document.createElement('option');
+          option.value = method.id;
+          option.textContent = method.name;
+          paymentMethodSelect.appendChild(option);
+        });
+      }
     });
   } catch (error) {
     console.error('支払い方法の取得に失敗しました:', error);
