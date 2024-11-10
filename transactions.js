@@ -14,6 +14,7 @@ import { getProductById } from './products.js';
 // 売上データの追加
 export async function addTransaction(transactionData) {
   try {
+ console.log('保存する取引データ:', transactionData);
     const user = auth.currentUser;
     if (!user) {
       alert('取引を追加するにはログインが必要です。');
