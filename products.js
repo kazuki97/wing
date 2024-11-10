@@ -125,3 +125,17 @@ export async function deleteProduct(id) {
     throw error;
   }
 }
+
+
+export async function updateProductQuantity(productId, newQuantity) {
+  try {
+    // Firestore の商品コレクションを参照
+    const productRef = doc(db, 'products', productId);
+    // 商品の在庫数を更新
+    await updateDoc(productRef, { quantity: newQuantity });
+    console.log('在庫数が更新されました');
+  } catch (error) {
+    console.error('在庫数の更新に失敗しました:', error);
+    throw error; // エラーを再スローしてキャッチブロックで処理
+  }
+}
