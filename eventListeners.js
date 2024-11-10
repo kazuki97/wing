@@ -685,24 +685,27 @@ export async function displayTransactions(filter = {}) {
       }
 
       // 手動追加の場合、総原価と利益を直接使用
-const totalCost = transaction.totalCost !== undefined ? transaction.totalCost : (transaction.items[0].cost * transaction.items[0].quantity * transaction.items[0].size);
-const profit = transaction.profit !== undefined ? transaction.profit : (transaction.netAmount - totalCost - (transaction.feeAmount || 0));
+      const totalCost = transaction.totalCost !== undefined ? transaction.totalCost : (transaction.items[0].cost * transaction.items[0].quantity * transaction.items[0].size);
+      const profit = transaction.profit !== undefined ? transaction.profit : (transaction.netAmount - totalCost - (transaction.feeAmount || 0));
 
-row.innerHTML = `
-  <td>${transaction.id}</td>
-  <td>${formattedTimestamp}</td>
-  <td>${paymentMethodName}</td>
-  <td>${productNames || '手動追加'}</td>
-  <td>${totalQuantity || '-'}</td>
-  <td>¥${transaction.totalAmount}</td>
-  <td>¥${transaction.feeAmount || 0}</td>
-  <td>¥${totalCost}</td>
-  <td>¥${profit}</td>
-  <td>
-    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-  </td>
-`;
+      row.innerHTML = `
+        <td>${transaction.id}</td>
+        <td>${formattedTimestamp}</td>
+        <td>${paymentMethodName}</td>
+        <td>${productNames || '手動追加'}</td>
+        <td>${totalQuantity || '-'}</td>
+        <td>¥${transaction.totalAmount}</td>
+        <td>¥${transaction.feeAmount || 0}</td>
+        <td>¥${totalCost}</td>
+        <td>¥${profit}</td>
+        <td>
+          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+        </td>
+      `;
+
+      transactionList.appendChild(row); // テーブルに行を追加
+    } // ← ここで 'for' ループを閉じます
 
     // 詳細ボタンと編集ボタンのイベントリスナーの追加
     document.querySelectorAll('.view-transaction-details').forEach((button) => {
@@ -711,13 +714,14 @@ row.innerHTML = `
         await displayTransactionDetails(transactionId);
       });
     });
+
     await addTransactionEditListeners();
+
   } catch (error) {
     console.error(error);
     showError('取引の表示に失敗しました');
   }
 }
-
 
 // 売上管理セクションの取引詳細を表示する関数
 async function displayTransactionDetails(transactionId) {
