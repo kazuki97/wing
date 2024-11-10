@@ -493,9 +493,9 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
 });
 
 // 初期化処理
-import { onAuthStateChanged } from 'firebase/auth'; // 追加のインポートが必要な場合
+import { onAuthStateChanged } from 'firebase/auth'; // 既に正しくインポートされています
 
-auth.onAuthStateChanged(async (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
     await displayTransactions(); // 売上管理セクションの初期表示
@@ -503,7 +503,8 @@ auth.onAuthStateChanged(async (user) => {
     await displayOverallInventory(); // 全体在庫の初期表示
     await displayInventoryProducts(); // 在庫管理セクションの初期表示
   } else {
-    // ユーザーがログアウトしている場合の処理（必要に応じて）
+    // ユーザーがログアウトしている場合の処理
     console.log('ユーザーがログインしていません');
+    // 必要に応じてログインフォームを表示する処理を追加してください
   }
 });
