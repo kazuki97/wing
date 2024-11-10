@@ -453,27 +453,22 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   const profit = totalAmount - (productCost * productQuantity * productSize); // 利益計算
 
   // 売上データを生成
-const transactionData = {
-  items: [
-    {
-      productName,
-      unitPrice: productPrice,
-      quantity: productQuantity,
-      size: productSize,
-      subtotal: totalAmount, // 小計を追加
-      cost: productCost,
-      profit: profit, // 利益を追加
-    }
-  ],
-  totalAmount,
-  paymentMethodId,
-  timestamp: new Date().toISOString(),
-  feeAmount: 0, // 手数料がある場合は適宜設定
-  netAmount: totalAmount, // 手数料を引いた金額
-  totalCost: productCost * productQuantity * productSize, // 総原価を追加
-  profit: profit, // 総利益を追加
-  manuallyAdded: true, // 手動追加フラグを追加
-};
+  const transactionData = {
+    items: [
+      {
+        productName,
+        unitPrice: productPrice,
+        quantity: productQuantity,
+        size: productSize, // サイズを追加
+        totalAmount,
+        cost: productCost,
+        profit,
+      }
+    ],
+    totalAmount,
+    paymentMethodId,
+    timestamp: new Date().toISOString(),
+  };
 
   try {
     await addTransaction(transactionData);
@@ -680,23 +675,21 @@ export async function displayTransactions(filter = {}) {
       }
 
       // 修正箇所: 原価と利益をリストに表示
-// eventListeners.js
-
 row.innerHTML = `
-  <td>${transaction.id}</td>
-  <td>${formattedTimestamp}</td>
-  <td>${paymentMethodName}</td>
-  <td>${productNames || '手動追加'}</td>
-  <td>${totalQuantity || '-'}</td>
-  <td>¥${transaction.totalAmount}</td>
-  <td>¥${transaction.feeAmount || 0}</td>
-  <td>¥${transaction.items[0].cost || 0}</td>
-  <td>¥${transaction.netAmount - transaction.items[0].cost || 0}</td>
-  <td>
-    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-  </td>
-`;
+        <td>${transaction.id}</td>
+        <td>${formattedTimestamp}</td>
+        <td>${paymentMethodName}</td>
+        <td>${productNames || '手動追加'}</td>
+        <td>${totalQuantity || '-'}</td>
+        <td>¥${transaction.totalAmount}</td> <!-- 売上金額はそのまま -->
+        <td>¥${transaction.feeAmount || 0}</td> <!-- 手数料を表示 -->
+        <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価を表示 -->
+        <td>¥${transaction.netAmount - transaction.items[0].cost || 0}</td> <!-- 利益を表示 -->
+        <td>
+          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+        </td>
+      `;
 
       transactionList.appendChild(row);
     }
