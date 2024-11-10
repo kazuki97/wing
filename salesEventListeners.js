@@ -492,11 +492,10 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
   await displayTransactions(filter);
 });
 
-// salesEventListeners.js
-import { auth, onAuthStateChanged } from './db.js'; // 修正済みのインポート
+import { auth } from './db.js';
 
 // 初期化処理
-onAuthStateChanged(auth, async (user) => {
+auth.onAuthStateChanged(async (user) => {
   if (user) {
     await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
     await displayTransactions(); // 売上管理セクションの初期表示
