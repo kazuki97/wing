@@ -645,6 +645,7 @@ export async function displayTransactions(filter = {}) {
       alert('取引を表示するにはログインが必要です。');
       return;
     }
+
     let transactions = await getTransactions();
     const paymentMethods = await getPaymentMethods(); // 支払い方法を取得
     const paymentMethodMap = {};
@@ -667,14 +668,24 @@ export async function displayTransactions(filter = {}) {
 
     const transactionList = document.getElementById('transactionList').querySelector('tbody');
     transactionList.innerHTML = '';
+
     for (const transaction of transactions) {
       const row = document.createElement('tr');
       if (transaction.isReturned) {
         row.style.color = 'red';
       }
 
-      const productNames = transaction.items.map((item) => item.productName).join(', ');
-      const totalQuantity = transaction.items.reduce((sum, item) => sum + item.quantity, 0);
+      // transaction.items が存在し、配列であり、少なくとも1つの要素があるかを確認
+      const itemsExist = Array.isArray(transaction.items) && transaction.items.length > 0;
+
+      const productNames = itemsExist
+        ? transaction.items.map((item) => item.productName).join(', ')
+        : '商品情報なし';
+
+      const totalQuantity = itemsExist
+        ? transaction.items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)
+        : '-';
+
       const paymentMethodName = paymentMethodMap[transaction.paymentMethodId] || '不明な支払い方法';
 
       // タイムスタンプを適切にフォーマット
@@ -686,28 +697,47 @@ export async function displayTransactions(filter = {}) {
         }
       }
 
-      // 手動追加の場合、総原価と利益を直接使用
-      const totalCost = transaction.totalCost !== undefined ? transaction.totalCost : (transaction.items[0].cost * transaction.items[0].quantity * transaction.items[0].size);
-      const profit = transaction.profit !== undefined ? transaction.profit : (transaction.netAmount - totalCost - (transaction.feeAmount || 0));
+      // totalCost の計算
+      let totalCost = 0;
+      if (transaction.totalCost !== undefined) {
+        totalCost = parseFloat(transaction.totalCost) || 0;
+      } else if (itemsExist) {
+        totalCost = transaction.items.reduce((sum, item) => {
+          const cost = parseFloat(item.cost) || 0;
+          const quantity = parseFloat(item.quantity) || 0;
+          const size = parseFloat(item.size) || 0;
+          return sum + cost * quantity * size;
+        }, 0);
+      }
+
+      // netAmount と feeAmount の数値変換
+      const netAmount = parseFloat(transaction.netAmount) || 0;
+      const feeAmount = parseFloat(transaction.feeAmount) || 0;
+
+      // profit の計算
+      const profit =
+        transaction.profit !== undefined
+          ? parseFloat(transaction.profit) || 0
+          : netAmount - totalCost - feeAmount;
 
       row.innerHTML = `
         <td>${transaction.id}</td>
         <td>${formattedTimestamp}</td>
         <td>${paymentMethodName}</td>
-        <td>${productNames || '手動追加'}</td>
-        <td>${totalQuantity || '-'}</td>
-        <td>¥${transaction.totalAmount}</td>
-        <td>¥${transaction.feeAmount || 0}</td>
-        <td>¥${totalCost}</td>
-        <td>¥${profit}</td>
+        <td>${productNames}</td>
+        <td>${totalQuantity}</td>
+        <td>¥${netAmount.toFixed(2)}</td>
+        <td>¥${feeAmount.toFixed(2)}</td>
+        <td>¥${totalCost.toFixed(2)}</td>
+        <td>¥${profit.toFixed(2)}</td>
         <td>
           <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
           <button class="edit-transaction" data-id="${transaction.id}">編集</button>
         </td>
       `;
 
-      transactionList.appendChild(row); // テーブルに行を追加
-    } // ← ここで 'for' ループを閉じます
+      transactionList.appendChild(row);
+    }
 
     // 詳細ボタンと編集ボタンのイベントリスナーの追加
     document.querySelectorAll('.view-transaction-details').forEach((button) => {
@@ -718,7 +748,6 @@ export async function displayTransactions(filter = {}) {
     });
 
     await addTransactionEditListeners();
-
   } catch (error) {
     console.error(error);
     showError('取引の表示に失敗しました');
