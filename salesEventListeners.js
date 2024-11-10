@@ -1,7 +1,7 @@
 // salesEventListeners.js
 import { auth } from './db.js'; // authをインポート
 import { updatePaymentMethodSelect } from './eventListeners.js'; // インポート追加
-
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js'; // 修正ポイント
 
 import {
   getProductByBarcode,
@@ -492,10 +492,8 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
   await displayTransactions(filter);
 });
 
-import { auth } from './db.js';
-
 // 初期化処理
-auth.onAuthStateChanged(async (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
     await displayTransactions(); // 売上管理セクションの初期表示
@@ -504,6 +502,6 @@ auth.onAuthStateChanged(async (user) => {
     await displayInventoryProducts(); // 在庫管理セクションの初期表示
   } else {
     console.log('ユーザーがログインしていません');
-    // 必要に応じてログインフォームを表示する処理を追加してください
+    // 必要に応じてログインフォームを表示する処理を追加
   }
 });
