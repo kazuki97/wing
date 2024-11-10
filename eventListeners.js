@@ -351,8 +351,20 @@ async function addTransactionEditListeners() {
       const transactionId = e.target.dataset.id;
       const transaction = await getTransactionById(transactionId);
       if (transaction) {
-        // 商品情報を取得
-        const product = await getProductById(transaction.items[0].productId);
+        let product = null;
+
+        if (transaction.items[0].productId) {
+          // 商品情報を取得
+          product = await getProductById(transaction.items[0].productId);
+        } else {
+          // 手動追加の場合、transaction.items[0] から商品情報を取得
+          product = {
+            name: transaction.items[0].productName,
+            price: transaction.items[0].unitPrice,
+            cost: transaction.items[0].cost,
+            size: transaction.items[0].size,
+          };
+        }
         
         // 支払い方法の選択肢を更新
         const paymentMethods = await getPaymentMethods();
@@ -381,7 +393,6 @@ async function addTransactionEditListeners() {
     });
   });
 }
-
 
 // 売上管理セクションの取引データ編集フォームのイベントリスナー
 const editTransactionForm = document.getElementById('editTransactionForm');
