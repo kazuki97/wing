@@ -680,6 +680,8 @@ export async function displayTransactions(filter = {}) {
       }
 
       // 修正箇所: 原価と利益をリストに表示
+// eventListeners.js
+
 row.innerHTML = `
   <td>${transaction.id}</td>
   <td>${formattedTimestamp}</td>
@@ -688,8 +690,8 @@ row.innerHTML = `
   <td>${totalQuantity || '-'}</td>
   <td>¥${transaction.totalAmount}</td>
   <td>¥${transaction.feeAmount || 0}</td>
-  <td>¥${transaction.totalCost || 0}</td>
-  <td>¥${transaction.profit || 0}</td>
+  <td>¥${transaction.items[0].cost || 0}</td>
+  <td>¥${transaction.netAmount - transaction.items[0].cost || 0}</td>
   <td>
     <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
     <button class="edit-transaction" data-id="${transaction.id}">編集</button>
