@@ -21,3 +21,6 @@ export const db = getFirestore(app);
 
 // Firebase Authenticationの取得
 export const auth = getAuth(app);
+
+// onAuthStateChanged をエクスポート
+export { onAuthStateChanged };
