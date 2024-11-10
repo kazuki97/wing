@@ -1,5 +1,6 @@
 // salesEventListeners.js
 import { auth } from './db.js'; // authをインポート
+import { updatePaymentMethodSelect } from './eventListeners.js'; // インポート追加
 
 
 import {
@@ -521,7 +522,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     alert('アプリケーションを利用するにはログインが必要です。');
     return;
   }
-  await updatePaymentMethodSelect();
+  await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
   await displayTransactions(); // 売上管理セクションの初期表示
   await displayPaymentMethods(); // 支払い方法の初期表示
   await displayOverallInventory(); // 全体在庫の初期表示
