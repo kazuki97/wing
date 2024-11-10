@@ -50,29 +50,6 @@ export function showMessage(message) {
 // バーコードスキャンセクションのイベントリスナーと関数
 let salesCart = [];
 
-// 支払い方法選択セレクトボックスの更新
-async function updatePaymentMethodSelect() {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      alert('支払い方法を取得するにはログインが必要です。');
-      return;
-    }
-    const paymentMethods = await getPaymentMethods();
-    const select = document.getElementById('paymentMethodSelect');
-    select.innerHTML = '<option value="">支払い方法を選択</option>';
-    paymentMethods.forEach((method) => {
-      const option = document.createElement('option');
-      option.value = method.id;
-      option.textContent = method.name;
-      select.appendChild(option);
-    });
-  } catch (error) {
-    console.error(error);
-    showError('支払い方法の取得に失敗しました');
-  }
-}
-
 document.getElementById('addBarcodeButton').addEventListener('click', async () => {
   const user = auth.currentUser;
   if (!user) {
