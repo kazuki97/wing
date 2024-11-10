@@ -452,24 +452,35 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   const totalAmount = productPrice * productQuantity * productSize; // 売上金額
   const profit = totalAmount - (productCost * productQuantity * productSize); // 利益計算
 
-  // 売上データを生成
-  const transactionData = {
-    items: [
-      {
-        productName,
-        unitPrice: productPrice,
-        quantity: productQuantity,
-        size: productSize, // サイズを追加
-        totalAmount,
-        cost: productCost,
-        profit,
-      }
-    ],
-    totalAmount,
-    paymentMethodId,
-    timestamp: new Date().toISOString(),
-  };
+ // 売上データを生成
 
+// 総原価の計算
+const totalCost = productCost * productQuantity * productSize;
+
+// 利益の計算（売上 - 原価 - 手数料）
+const profit = totalAmount - totalCost - 0; // 手数料があれば適宜設定
+
+const transactionData = {
+  items: [
+    {
+      productName,
+      unitPrice: productPrice,
+      quantity: productQuantity,
+      size: productSize,
+      subtotal: totalAmount, // 小計
+      cost: totalCost, // 総原価
+      profit: profit, // 利益
+    }
+  ],
+  totalAmount,
+  paymentMethodId,
+  timestamp: new Date().toISOString(),
+  feeAmount: 0, // 手数料
+  netAmount: totalAmount, // 手数料を引いた金額
+  totalCost: totalCost, // 総原価
+  profit: profit, // 総利益
+  manuallyAdded: true, // 手動追加フラグ
+};
   try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
@@ -674,25 +685,25 @@ export async function displayTransactions(filter = {}) {
         }
       }
 
-      // 修正箇所: 原価と利益をリストに表示
-row.innerHTML = `
-        <td>${transaction.id}</td>
-        <td>${formattedTimestamp}</td>
-        <td>${paymentMethodName}</td>
-        <td>${productNames || '手動追加'}</td>
-        <td>${totalQuantity || '-'}</td>
-        <td>¥${transaction.totalAmount}</td> <!-- 売上金額はそのまま -->
-        <td>¥${transaction.feeAmount || 0}</td> <!-- 手数料を表示 -->
-        <td>¥${transaction.items[0].cost || 0}</td> <!-- 原価を表示 -->
-        <td>¥${transaction.netAmount - transaction.items[0].cost || 0}</td> <!-- 利益を表示 -->
-        <td>
-          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-        </td>
-      `;
+      // 手動追加の場合、総原価と利益を直接使用
+const totalCost = transaction.totalCost !== undefined ? transaction.totalCost : (transaction.items[0].cost * transaction.items[0].quantity * transaction.items[0].size);
+const profit = transaction.profit !== undefined ? transaction.profit : (transaction.netAmount - totalCost - (transaction.feeAmount || 0));
 
-      transactionList.appendChild(row);
-    }
+row.innerHTML = `
+  <td>${transaction.id}</td>
+  <td>${formattedTimestamp}</td>
+  <td>${paymentMethodName}</td>
+  <td>${productNames || '手動追加'}</td>
+  <td>${totalQuantity || '-'}</td>
+  <td>¥${transaction.totalAmount}</td>
+  <td>¥${transaction.feeAmount || 0}</td>
+  <td>¥${totalCost}</td>
+  <td>¥${profit}</td>
+  <td>
+    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+  </td>
+`;
 
     // 詳細ボタンと編集ボタンのイベントリスナーの追加
     document.querySelectorAll('.view-transaction-details').forEach((button) => {
@@ -740,8 +751,8 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
     document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
     document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
-    document.getElementById('detailTotalCost').textContent = transaction.cost !== undefined ? `¥${transaction.cost}` : '¥0';
-    document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
+   document.getElementById('detailTotalCost').textContent = transaction.totalCost !== undefined ? `¥${transaction.totalCost}` : '¥0';
+document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
     
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
@@ -749,14 +760,19 @@ async function displayTransactionDetails(transactionId) {
     if (transaction.items && transaction.items.length > 0) {
       for (const item of transaction.items) {
         const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${item.productName}</td>
-          <td>${item.quantity}</td>
-          <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
-          <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
-          <td>¥${item.cost !== undefined ? item.cost : '情報なし'}</td>
-          <td>¥${item.profit !== undefined ? item.profit : '情報なし'}</td>
-        `;
+        // 各商品の総原価と利益を計算
+const itemTotalCost = item.cost; // 手動追加の場合、総原価が入っている
+const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
+
+row.innerHTML = `
+  <td>${item.productName}</td>
+  <td>${item.quantity}</td>
+  <td>${item.size}</td>
+  <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
+  <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
+  <td>¥${itemTotalCost !== undefined ? itemTotalCost : '情報なし'}</td>
+  <td>¥${itemProfit !== undefined ? itemProfit : '情報なし'}</td>
+`;
         detailProductList.appendChild(row);
       }
     } else {
