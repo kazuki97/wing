@@ -3,6 +3,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/fireba
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 
+// Firebaseアプリの初期化
 const firebaseConfig = {
   apiKey: "AIzaSyBND1iUtwW9-D3wisl5-wO_-Sfahab0zmA",
   authDomain: "wing-system.firebaseapp.com",
@@ -13,7 +14,6 @@ const firebaseConfig = {
   measurementId: "G-806S4XB84E"
 };
 
-// Firebaseアプリの初期化
 const app = initializeApp(firebaseConfig);
 
 // Firestoreデータベースの取得
@@ -21,6 +21,3 @@ export const db = getFirestore(app);
 
 // Firebase Authenticationの取得
 export const auth = getAuth(app);
-
-// onAuthStateChanged をエクスポート
-export { onAuthStateChanged };
