@@ -179,18 +179,25 @@ async function updateInventoryAfterTransactionDelete(product) {
 async function recordConsumableUsage(transactionItems) {
   try {
     for (const item of transactionItems) {
-      const product = await getProductById(item.productId); // 商品情報を取得
-      if (product.consumables && product.consumables.length > 0) {
-        for (const consumableId of product.consumables) {
-          await addConsumableUsage(consumableId, item.quantity * item.size); // サイズを考慮して消耗量を計算
+      if (item.productId) {
+        // 商品情報を取得
+        const product = await getProductById(item.productId);
+        if (product.consumables && product.consumables.length > 0) {
+          for (const consumableId of product.consumables) {
+            await addConsumableUsage(consumableId, item.quantity * item.size);
+          }
         }
+      } else {
+        // 手動追加の場合、消耗品使用量の記録をスキップ
+        console.warn('productId が存在しないため、消耗品使用量の記録をスキップします:', item);
       }
     }
   } catch (error) {
     console.error('消耗品使用量の記録に失敗しました:', error);
-    throw error;
+    // エラーを再スローせず、処理を続行
   }
 }
+
 
 // 消耗品使用量をデータベースに追加する関数
 async function addConsumableUsage(consumableId, quantityUsed) {
