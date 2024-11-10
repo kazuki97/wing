@@ -440,7 +440,7 @@ if (editTransactionForm) {
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // 手動追加商品の情報を取得し、数値型に変換
+  // 手動追加商品の情報を取得
   const productName = document.getElementById('transactionProductName').value;
   const productPrice = parseFloat(document.getElementById('transactionProductPrice').value);
   const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value);
@@ -450,14 +450,14 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 
   // 入力値の検証
   if (isNaN(productPrice) || isNaN(productQuantity) || isNaN(productCost) || isNaN(productSize)) {
-    showError('数値を入力してください');
+    showError('価格、数量、原価、サイズには数値を入力してください');
     return;
   }
 
   // 自動計算する項目
-  const totalAmount = productPrice * productQuantity * productSize;
-  const totalCost = productCost * productQuantity * productSize;
-  const profitAmount = totalAmount - totalCost - 0; // 手数料があれば適宜設定
+  const totalAmount = productPrice * productQuantity * productSize; // 売上金額
+  const totalCost = productCost * productQuantity * productSize;    // 総原価
+  const profitAmount = totalAmount - totalCost - 0;                 // 利益 (手数料なし)
 
   // 売上データを生成
   const transactionData = {
@@ -467,15 +467,15 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         unitPrice: productPrice,
         quantity: productQuantity,
         size: productSize,
-        subtotal: totalAmount,
-        cost: totalCost,
-        profit: profitAmount,
+        subtotal: totalAmount,  // 小計
+        cost: productCost,      // 単価原価 (修正)
+        profit: profitAmount,   // 利益
       }
     ],
     totalAmount,
     paymentMethodId,
     timestamp: new Date().toISOString(),
-    feeAmount: 0,
+    feeAmount: 0,          // 手数料
     netAmount: totalAmount,
     totalCost,
     profit: profitAmount,
