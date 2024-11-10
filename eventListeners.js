@@ -23,6 +23,7 @@ import {
   updateProduct,
   deleteProduct,
   getAllProducts,
+  updateProductQuantity, // この行を追加
 } from './products.js';
 
 import {
