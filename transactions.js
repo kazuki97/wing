@@ -158,24 +158,13 @@ async function updateInventoryAfterTransactionDelete(product) {
 }
 
 // 消耗品の使用量を記録する関数
-// 消耗品使用量の記録
-export async function recordConsumableUsage(transactionData) {
+async function recordConsumableUsage(transactionItems) {
   try {
-    for (const item of transactionData.items) {
-      if (!item.productId) {
-        // 手動追加された商品には productId がないため、処理をスキップ
-        continue;
-      }
-      // 商品情報を取得
-      const product = await getProductById(item.productId);
-      if (product && product.consumables) {
+    for (const item of transactionItems) {
+      const product = await getProductById(item.productId); // 商品情報を取得
+      if (product.consumables && product.consumables.length > 0) {
         for (const consumableId of product.consumables) {
-          // 消耗品使用量を記録
-          await addDoc(collection(db, 'consumableUsage'), {
-            consumableId,
-            quantityUsed: item.quantity * product.size,
-            timestamp: transactionData.timestamp,
-          });
+          await addConsumableUsage(consumableId, item.quantity * item.size); // サイズを考慮して消耗量を計算
         }
       }
     }
@@ -184,6 +173,7 @@ export async function recordConsumableUsage(transactionData) {
     throw error;
   }
 }
+
 // 消耗品使用量をデータベースに追加する関数
 async function addConsumableUsage(consumableId, quantityUsed) {
   const timestamp = new Date().toISOString();
