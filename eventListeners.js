@@ -445,12 +445,17 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   const productPrice = parseFloat(document.getElementById('transactionProductPrice').value);
   const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value);
   const productCost = parseFloat(document.getElementById('transactionProductCost').value);
-  const productSize = parseFloat(document.getElementById('transactionSize').value);
+  let productSize = parseFloat(document.getElementById('transactionSize').value);
   const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
 
+  // productSize が未入力または NaN の場合、デフォルト値 1 を設定
+  if (isNaN(productSize) || productSize <= 0) {
+    productSize = 1;
+  }
+
   // 入力値の検証
-  if (isNaN(productPrice) || isNaN(productQuantity) || isNaN(productCost) || isNaN(productSize)) {
-    showError('価格、数量、原価、サイズには数値を入力してください');
+  if (isNaN(productPrice) || isNaN(productQuantity) || isNaN(productCost)) {
+    showError('価格、数量、原価には数値を入力してください');
     return;
   }
 
@@ -468,7 +473,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         quantity: productQuantity,
         size: productSize,
         subtotal: totalAmount,  // 小計
-        cost: productCost,      // 単価原価 (修正)
+        cost: productCost,      // 単価原価
         profit: profitAmount,   // 利益
       }
     ],
@@ -720,21 +725,21 @@ export async function displayTransactions(filter = {}) {
           ? parseFloat(transaction.profit) || 0
           : netAmount - totalCost - feeAmount;
 
-      row.innerHTML = `
-        <td>${transaction.id}</td>
-        <td>${formattedTimestamp}</td>
-        <td>${paymentMethodName}</td>
-        <td>${productNames}</td>
-        <td>${totalQuantity}</td>
-        <td>¥${netAmount.toFixed(2)}</td>
-        <td>¥${feeAmount.toFixed(2)}</td>
-        <td>¥${totalCost.toFixed(2)}</td>
-        <td>¥${profit.toFixed(2)}</td>
-        <td>
-          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-        </td>
-      `;
+     row.innerHTML = `
+  <td>${transaction.id}</td>
+  <td>${formattedTimestamp}</td>
+  <td>${paymentMethodName}</td>
+  <td>${productNames}</td>
+  <td>${totalQuantity}</td>
+  <td>¥${Math.round(netAmount)}</td>
+  <td>¥${Math.round(feeAmount)}</td>
+  <td>¥${Math.round(totalCost)}</td>
+  <td>¥${Math.round(profit)}</td>
+  <td>
+    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+  </td>
+`;
 
       transactionList.appendChild(row);
     }
