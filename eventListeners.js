@@ -440,21 +440,23 @@ if (editTransactionForm) {
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // 手動追加商品の情報を取得
-  const productName = document.getElementById('transactionProductName').value; // 商品名を取得
-  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value); // 販売単価を取得
-  const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value); // 数量を取得
-  const productCost = parseFloat(document.getElementById('transactionProductCost').value); // 原価を取得
-  const productSize = parseFloat(document.getElementById('transactionSize').value); // サイズを取得
+  // 手動追加商品の情報を取得し、数値型に変換
+  const productName = document.getElementById('transactionProductName').value;
+  const productPrice = parseFloat(document.getElementById('transactionProductPrice').value);
+  const productQuantity = parseFloat(document.getElementById('transactionProductQuantity').value);
+  const productCost = parseFloat(document.getElementById('transactionProductCost').value);
+  const productSize = parseFloat(document.getElementById('transactionSize').value);
   const paymentMethodId = document.getElementById('transactionPaymentMethod').value;
 
+  // 入力値の検証
+  if (isNaN(productPrice) || isNaN(productQuantity) || isNaN(productCost) || isNaN(productSize)) {
+    showError('数値を入力してください');
+    return;
+  }
+
   // 自動計算する項目
-  const totalAmount = productPrice * productQuantity * productSize; // 売上金額
-
-  // 総原価の計算
+  const totalAmount = productPrice * productQuantity * productSize;
   const totalCost = productCost * productQuantity * productSize;
-
-  // 利益の計算（売上 - 原価 - 手数料）
   const profitAmount = totalAmount - totalCost - 0; // 手数料があれば適宜設定
 
   // 売上データを生成
@@ -465,27 +467,27 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         unitPrice: productPrice,
         quantity: productQuantity,
         size: productSize,
-        subtotal: totalAmount, // 小計
-        cost: totalCost, // 総原価
-        profit: profitAmount, // 利益
+        subtotal: totalAmount,
+        cost: totalCost,
+        profit: profitAmount,
       }
     ],
     totalAmount,
     paymentMethodId,
     timestamp: new Date().toISOString(),
-    feeAmount: 0, // 手数料
-    netAmount: totalAmount, // 手数料を引いた金額
-    totalCost: totalCost, // 総原価
-    profit: profitAmount, // 総利益
-    manuallyAdded: true, // 手動追加フラグ
+    feeAmount: 0,
+    netAmount: totalAmount,
+    totalCost,
+    profit: profitAmount,
+    manuallyAdded: true,
   };
 
   try {
     await addTransaction(transactionData);
     alert('売上が追加されました');
-    document.getElementById('manualAddTransactionForm').style.display = 'none'; // フォームを非表示にする
-    e.target.reset(); // フォームをリセット
-    await displayTransactions(); // 最新の売上リストを再表示
+    document.getElementById('manualAddTransactionForm').style.display = 'none';
+    e.target.reset();
+    await displayTransactions();
   } catch (error) {
     console.error('売上の追加に失敗しました:', error);
     showError('売上の追加に失敗しました');
