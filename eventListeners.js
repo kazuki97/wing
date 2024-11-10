@@ -458,7 +458,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 const totalCost = productCost * productQuantity * productSize;
 
 // 利益の計算（売上 - 原価 - 手数料）
-const profit = totalAmount - totalCost - 0; // 手数料があれば適宜設定
+const profitAmount = totalAmount - totalCost - 0; // 手数料があれば適宜設定
 
 const transactionData = {
   items: [
@@ -469,7 +469,7 @@ const transactionData = {
       size: productSize,
       subtotal: totalAmount, // 小計
       cost: totalCost, // 総原価
-      profit: profit, // 利益
+      profit: profitAmount, // 利益
     }
   ],
   totalAmount,
@@ -478,7 +478,7 @@ const transactionData = {
   feeAmount: 0, // 手数料
   netAmount: totalAmount, // 手数料を引いた金額
   totalCost: totalCost, // 総原価
-  profit: profit, // 総利益
+  profit: profitAmount, // 総利益
   manuallyAdded: true, // 手動追加フラグ
 };
   try {
