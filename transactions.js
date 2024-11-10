@@ -20,6 +20,24 @@ export async function addTransaction(transactionData) {
       return;
     }
 
+    // 数値フィールドを明示的に数値型に変換
+    transactionData.totalAmount = Number(transactionData.totalAmount);
+    transactionData.netAmount = Number(transactionData.netAmount);
+    transactionData.totalCost = Number(transactionData.totalCost);
+    transactionData.profit = Number(transactionData.profit);
+    transactionData.feeAmount = Number(transactionData.feeAmount);
+
+    // items 内の数値フィールドも数値型に変換
+    transactionData.items = transactionData.items.map((item) => ({
+      ...item,
+      unitPrice: Number(item.unitPrice),
+      quantity: Number(item.quantity),
+      size: Number(item.size),
+      subtotal: Number(item.subtotal),
+      cost: Number(item.cost),
+      profit: Number(item.profit),
+    }));
+
     // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
