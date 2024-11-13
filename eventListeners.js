@@ -1528,14 +1528,22 @@ async function editProduct(product) {
 // 在庫管理セクションの商品一覧表示関数
 export async function displayInventoryProducts() {
   try {
-const user = auth.currentUser;
-if (!user) {
-  alert('この操作を行うにはログインが必要です。');
-  return;
-}
+    const user = auth.currentUser;
+    if (!user) {
+      alert('この操作を行うにはログインが必要です。');
+      return;
+    }
     const parentCategoryId = document.getElementById('inventoryParentCategorySelect').value;
     const subcategoryId = document.getElementById('inventorySubcategorySelect').value;
     const products = await getProducts(parentCategoryId, subcategoryId);
+
+    // **商品を名前内の数値でソート**
+    products.sort((a, b) => {
+      const numA = extractNumberFromName(a.name);
+      const numB = extractNumberFromName(b.name);
+      return numA - numB;
+    });
+
     const inventoryList = document.getElementById('inventoryList').querySelector('tbody');
     inventoryList.innerHTML = '';
     for (const product of products) {
@@ -1551,7 +1559,8 @@ if (!user) {
       `;
       inventoryList.appendChild(row);
     }
-    // 在庫数更新ボタンのイベントリスナー
+
+    // 在庫数更新ボタンのイベントリスナー（既存のコード）
     document.querySelectorAll('.update-inventory').forEach((button) => {
       button.addEventListener('click', async (e) => {
         const row = e.target.closest('tr');
@@ -1572,6 +1581,13 @@ if (!user) {
     showError('在庫情報の表示に失敗しました');
   }
 }
+
+// **商品名から数値を抽出する関数を追加**
+function extractNumberFromName(name) {
+  const match = name.match(/\d+/);
+  return match ? parseFloat(match[0]) : 0;
+}
+
 
 // 販売完了後に全体在庫を更新する関数
 // 修正しました: 販売完了後に全体在庫を減少させる関数を追加
