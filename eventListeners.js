@@ -1220,34 +1220,41 @@ async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
   });
 });
 
+// イベントリスナーの重複登録を防ぐためのフラグ
+let subcategoryEventListenersAdded = false;
+
 function addSubcategorySelectEventListeners() {
-  const subcategorySelectIds = ['productSubcategorySelect', 'filterSubcategorySelect', 'inventorySubcategorySelect', 'overallInventorySubcategorySelect', 'pricingSubcategorySelect'];
-  
+  if (subcategoryEventListenersAdded) {
+    return; // すでにイベントリスナーが登録されている場合は何もしない
+  }
+
+  const subcategorySelectIds = [
+    'productSubcategorySelect',
+    'filterSubcategorySelect',
+    'inventorySubcategorySelect',
+    'overallInventorySubcategorySelect',
+    'pricingSubcategorySelect',
+  ];
+
   subcategorySelectIds.forEach((id) => {
     const selectElement = document.getElementById(id);
     if (selectElement) {
-      // 既存のイベントリスナーを削除
-      selectElement.removeEventListener('change', handleSubcategoryChange);
-
-      // 新しいイベントリスナーを登録
-      selectElement.addEventListener('change', handleSubcategoryChange);
+      selectElement.addEventListener('change', async (event) => {
+        if (id === 'inventorySubcategorySelect') {
+          await displayInventoryProducts();
+        } else if (id === 'filterSubcategorySelect') {
+          await displayProducts();
+        } else if (id === 'pricingSubcategorySelect') {
+          await displayPricingRules();
+        }
+      });
     }
   });
+
+  subcategoryEventListenersAdded = true; // フラグを立てる
 }
 
-// サブカテゴリセレクトボックスの変更時に呼ばれるイベントハンドラー
-async function handleSubcategoryChange(event) {
-  const id = event.target.id;
-  if (id === 'inventorySubcategorySelect') {
-    await displayInventoryProducts();
-  } else if (id === 'filterSubcategorySelect') {
-    await displayProducts();
-  } else if (id === 'pricingSubcategorySelect') {
-    await displayPricingRules();
-  }
-}
-
-// 初期化時にイベントリスナーを登録
+// アプリケーションの初期化時に一度だけ呼び出す
 addSubcategorySelectEventListeners();
 
 // 親カテゴリ一覧の表示
