@@ -1176,7 +1176,17 @@ async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
     }
     const select = document.getElementById(subcategorySelectId);
     if (select) {
-      select.innerHTML = '<option value="">サブカテゴリを選択</option>';
+      // **既存のオプションを削除**
+      while (select.firstChild) {
+        select.removeChild(select.firstChild);
+      }
+
+      // **初期のオプションを追加**
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = 'サブカテゴリを選択';
+      select.appendChild(defaultOption);
+
       if (!parentCategoryId) {
         return;
       }
@@ -1195,6 +1205,7 @@ async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
     showError('サブカテゴリの取得に失敗しました');
   }
 }
+
 
 
 // 各親カテゴリセレクトボックスのイベントリスナー
@@ -1256,6 +1267,7 @@ function addSubcategorySelectEventListeners() {
 
 // アプリケーションの初期化時に一度だけ呼び出す
 addSubcategorySelectEventListeners();
+
 
 // 親カテゴリ一覧の表示
 export async function displayParentCategories() {
