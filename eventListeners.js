@@ -450,7 +450,7 @@ if (editTransactionForm) {
 
 // 手動で売上を追加するフォームの送信イベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
-  e.prevent防ぎます;
+  e.preventDefault();
 
   // 手動追加商品の情報を取得
   const productName = document.getElementById('transactionProductName').value;
@@ -476,7 +476,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   const totalCost = productCost * productQuantity * productSize;    // 総原価
   const profitAmount = totalAmount - totalCost - 0;                 // 利益 (手数料なし)
 
-  // **totalCost を数値として小数点以下2桁に固定**
+  // totalCost を数値として小数点以下2桁に固定
   const totalCostFixed = parseFloat(totalCost.toFixed(2));
 
   // 売上データを生成
@@ -497,7 +497,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     timestamp: new Date().toISOString(),
     feeAmount: 0,          // 手数料
     netAmount: totalAmount,
-    totalCost: totalCostFixed, // **修正点**
+    totalCost: totalCostFixed,
     profit: profitAmount,
     manuallyAdded: true,
   };
@@ -513,6 +513,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     showError('売上の追加に失敗しました');
   }
 });
+
 
 
 // 商品追加フォームのイベントリスナー
