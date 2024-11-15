@@ -935,26 +935,26 @@ async function handleDeleteTransaction(transactionId) {
       const transaction = await getTransactionById(transactionId);
       console.log('削除する取引:', transaction); // デバッグ: 取引内容を確認
 
-     if (transaction && transaction.items && transaction.items.length > 0) {
-    for (const item of transaction.items) {
-      const productId = item.productId;
+      if (transaction && transaction.items && transaction.items.length > 0) {
+        for (const item of transaction.items) {
+          const productId = item.productId;
 
-      if (!productId) {
-        // 手動追加の取引の場合、在庫更新をスキップ
-        continue;
-      }
+          if (!productId) {
+            // 手動追加の取引の場合、在庫更新をスキップ
+            continue;
+          }
 
-      const quantity = item.quantity;
-      const size = item.size;
-      const requiredQuantity = quantity * size;
+          const quantity = item.quantity;
+          const size = item.size;
+          const requiredQuantity = quantity * size;
 
-      // 商品の取得
-      const product = await getProductById(productId);
-      if (!product) {
-        console.error(`商品ID ${productId} が見つかりませんでした`);
-        showError('商品が見つかりませんでした');
-        continue; // 見つからなかった商品はスキップします
-      }
+          // 商品の取得
+          const product = await getProductById(productId);
+          if (!product) {
+            console.error(`商品ID ${productId} が見つかりませんでした`);
+            showError('商品が見つかりませんでした');
+            continue; // 見つからなかった商品はスキップします
+          }
 
           const updatedQuantity = product.quantity + quantity;
           await updateProduct(productId, { quantity: updatedQuantity });
@@ -976,15 +976,19 @@ async function handleDeleteTransaction(transactionId) {
       }
 
       // 取引を削除
-  await deleteTransaction(transactionId);
-  alert('取引が削除されました');
-  document.getElementById('transactionDetails').style.display = 'none';
-  await displayTransactions(); // 売上管理セクションを更新
-  await displayOverallInventory(); // 全体在庫リストを再描画
-  await displayInventoryProducts(); // 在庫管理リストを再描画
-}
+      await deleteTransaction(transactionId);
+      alert('取引が削除されました');
+      document.getElementById('transactionDetails').style.display = 'none';
+      await displayTransactions(); // 売上管理セクションを更新
+      await displayOverallInventory(); // 全体在庫リストを再描画
+      await displayInventoryProducts(); // 在庫管理リストを再描画
+    } catch (error) {
+      console.error('取引の削除に失敗しました:', error);
+      showError('取引の削除に失敗しました');
+    }
   }
 }
+
 
 // モーダル要素の取得
 const addParentCategoryModal = document.getElementById('addParentCategoryModal');
