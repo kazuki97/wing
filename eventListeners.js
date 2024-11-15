@@ -806,7 +806,8 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
     document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
     document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
-   document.getElementById('detailTotalCost').textContent = transaction.totalCost !== undefined ? `¥${transaction.totalCost}` : '¥0';
+  document.getElementById('detailTotalCost').textContent = transaction.totalCost !== undefined ? `¥${parseFloat(transaction.totalCost).toFixed(2)}` : '¥0';
+
 document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
     
     const detailProductList = document.getElementById('detailProductList');
