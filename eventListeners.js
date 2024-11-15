@@ -1645,22 +1645,26 @@ async function updateOverallInventoryAfterSale(productId, quantitySold) {
 // 全体在庫更新フォームのイベントリスナー
 document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const user = auth.currentUser;
   if (!user) {
     alert('全体在庫を更新するにはログインが必要です。');
     return;
   }
-    const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
-    const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
-    try {
-      await updateOverallInventory(subcategoryId, quantity);
-      alert('全体在庫が更新されました');
-      await displayOverallInventory();
-    } catch (error) {
-      console.error(error);
-      showError('全体在庫の更新に失敗しました');
-    }
-  });
+
+  const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
+  const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
+
+  try {
+    await updateOverallInventory(subcategoryId, quantity);
+    alert('全体在庫が更新されました');
+    await displayOverallInventory();
+  } catch (error) {
+    console.error(error);
+    showError('全体在庫の更新に失敗しました');
+  }
+});
+
 
 // 全体在庫の表示関数を修正して削除ボタンを追加
 // 修正しました: 全体在庫の表示関数に削除ボタンを追加
