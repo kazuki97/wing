@@ -448,8 +448,9 @@ if (editTransactionForm) {
   });
 }
 
+// 手動で売上を追加するフォームの送信イベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+  e.prevent防ぎます;
 
   // 手動追加商品の情報を取得
   const productName = document.getElementById('transactionProductName').value;
@@ -475,6 +476,9 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   const totalCost = productCost * productQuantity * productSize;    // 総原価
   const profitAmount = totalAmount - totalCost - 0;                 // 利益 (手数料なし)
 
+  // **totalCost を数値として小数点以下2桁に固定**
+  const totalCostFixed = parseFloat(totalCost.toFixed(2));
+
   // 売上データを生成
   const transactionData = {
     items: [
@@ -493,7 +497,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     timestamp: new Date().toISOString(),
     feeAmount: 0,          // 手数料
     netAmount: totalAmount,
-    totalCost,
+    totalCost: totalCostFixed, // **修正点**
     profit: profitAmount,
     manuallyAdded: true,
   };
@@ -509,6 +513,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     showError('売上の追加に失敗しました');
   }
 });
+
 
 // 商品追加フォームのイベントリスナー
 document.getElementById('addProductForm').addEventListener('submit', async (e) => {
@@ -744,7 +749,7 @@ export async function displayTransactions(filter = {}) {
   <td>${totalQuantity}</td>
   <td>¥${Math.round(netAmount)}</td>
   <td>¥${Math.round(feeAmount)}</td>
-  <td>¥${Math.round(totalCost)}</td>
+  <td>¥${totalCost.toFixed(2)}</td>
   <td>¥${Math.round(profit)}</td>
   <td>
     <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
