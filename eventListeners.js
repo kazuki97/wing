@@ -735,11 +735,8 @@ export async function displayTransactions(filter = {}) {
       const netAmount = parseFloat(transaction.netAmount) || 0;
       const feeAmount = parseFloat(transaction.feeAmount) || 0;
 
-      // profit の計算
-      const profit =
-        transaction.profit !== undefined
-          ? parseFloat(transaction.profit) || 0
-          : netAmount - totalCost - feeAmount;
+     // **常に利益を再計算**
+const profit = netAmount - totalCost - feeAmount;
 
      row.innerHTML = `
   <td>${transaction.id}</td>
