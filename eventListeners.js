@@ -395,6 +395,7 @@ async function addTransactionEditListeners() {
 }
 
 // 売上管理セクションの取引データ編集フォームのイベントリスナー
+// 売上管理セクションの取引データ編集フォームのイベントリスナー
 const editTransactionForm = document.getElementById('editTransactionForm');
 if (editTransactionForm) {
   editTransactionForm.addEventListener('submit', async (e) => {
@@ -408,10 +409,20 @@ if (editTransactionForm) {
     const unitPrice = parseFloat(document.getElementById('editTransactionUnitPrice').value);
     const cost = parseFloat(document.getElementById('editTransactionCost').value);
     const size = parseFloat(document.getElementById('editTransactionSize').value); // サイズを取得
-    const subtotal = quantity * unitPrice * size; // 小計計算 (サイズを考慮)
 
-    // 利益の計算
-    const profitAmount = subtotal - (quantity * cost * size); // 利益計算 (サイズを考慮)
+    // 入力値の検証
+    if (isNaN(quantity) || isNaN(unitPrice) || isNaN(cost) || isNaN(size)) {
+      showError('数量、販売単価、原価、サイズには有効な数値を入力してください');
+      return;
+    }
+
+    const subtotal = unitPrice * quantity * size; // 小計計算 (サイズを考慮)
+    const totalCost = cost * quantity * size;      // 総原価計算
+    const profitAmount = subtotal - totalCost - (parseFloat(document.getElementById('editTransactionFeeAmount').value) || 0); // 利益計算 (手数料を考慮)
+
+    // 総原価を小数点以下2桁に固定
+    const totalCostFixed = parseFloat(totalCost.toFixed(2));
+    const profitAmountFixed = parseFloat(profitAmount.toFixed(2));
 
     const updatedData = {
       timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
@@ -423,11 +434,13 @@ if (editTransactionForm) {
           cost: cost, // 原価
           size: size, // サイズ
           subtotal: subtotal, // 小計
-          profit: profitAmount, // 利益
+          profit: profitAmountFixed, // 利益
         }
       ],
       totalAmount: subtotal, // 合計金額
       paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 支払い方法
+      totalCost: totalCostFixed, // 総原価を追加
+      profit: profitAmountFixed, // 総利益を追加
     };
 
     try {
@@ -447,6 +460,7 @@ if (editTransactionForm) {
     }
   });
 }
+
 
 // 手動で売上を追加するフォームの送信イベントリスナー
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
