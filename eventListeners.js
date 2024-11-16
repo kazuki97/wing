@@ -832,32 +832,37 @@ async function displayTransactionDetails(transactionId) {
       for (const item of transaction.items) {
         const row = document.createElement('tr');
 
-        // 原価が未定義の場合、商品データから取得
-        let itemTotalCost = item.cost;
-        if (itemTotalCost === undefined || isNaN(itemTotalCost)) {
-          // 商品データを取得
-          let product = null;
-          try {
-            if (item.productId) {
-              product = await getProductById(item.productId);
-            } else if (item.barcode) {
-              product = await getProductByBarcode(item.barcode);
-            } else if (item.productName) {
-              product = await getProductByName(item.productName);
-            }
+       // 原価が未定義の場合、商品データから取得
+let itemTotalCost = item.cost;
+if (itemTotalCost === undefined || isNaN(itemTotalCost)) {
+  // 商品データを取得
+  let product = null;
+  try {
+    if (item.productId) {
+      product = await getProductById(item.productId);
+    } else if (item.barcode) {
+      product = await getProductByBarcode(item.barcode);
+    } else if (item.productName) {
+      product = await getProductByName(item.productName);
+    }
 
-            if (product) {
-              console.log("商品データ取得成功:", product); // デバッグ用
-              itemTotalCost = (parseFloat(product.cost) || 0) * (parseFloat(item.quantity) || 0) * (parseFloat(item.size) || 1);
-            } else {
-              console.warn("商品データが見つかりません:", item);
-              itemTotalCost = 0;
-            }
-          } catch (error) {
-            console.error("商品データの取得エラー:", error);
-            itemTotalCost = 0;
-          }
-        }
+    if (product) {
+      console.log("商品データ取得成功:", product); // デバッグ用
+      itemTotalCost = (parseFloat(product.cost) || 0) * (parseFloat(item.quantity) || 0) * (parseFloat(item.size) || 1);
+    } else {
+      console.warn("商品データが見つかりません:", item);
+      itemTotalCost = 0; // データが見つからない場合は0にする
+    }
+  } catch (error) {
+    console.error("商品データの取得エラー:", error);
+    itemTotalCost = 0; // エラー時も0に設定
+  }
+}
+
+// itemTotalCost が正しい値であることを確認する
+if (isNaN(itemTotalCost)) {
+  itemTotalCost = 0; // 万が一 NaN の場合でも 0 を設定
+}
 
         const itemProfit = item.profit !== undefined
           ? item.profit
