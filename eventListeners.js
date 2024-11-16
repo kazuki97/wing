@@ -828,44 +828,43 @@ async function displayTransactionDetails(transactionId) {
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
 
-     if (transaction.items && transaction.items.length > 0) {
-    for (const item of transaction.items) {
-      const row = document.createElement('tr');
+    if (transaction.items && transaction.items.length > 0) {
+      for (const item of transaction.items) {
+        const row = document.createElement('tr');
 
-      // 原価が未定義の場合、商品データから取得
-      let itemTotalCost = item.cost;
-      if (itemTotalCost === undefined || isNaN(itemTotalCost)) {
-        // 商品データを取得
-        let product = null;
-        if (item.productId) {
-          product = await getProductById(item.productId);
-        } else if (item.barcode) {
-          product = await getProductByBarcode(item.barcode);
-        } else if (item.productName) {
-          product = await getProductByName(item.productName);
+        // 原価が未定義の場合、商品データから取得
+        let itemTotalCost = item.cost;
+        if (itemTotalCost === undefined || isNaN(itemTotalCost)) {
+          // 商品データを取得
+          let product = null;
+          if (item.productId) {
+            product = await getProductById(item.productId);
+          } else if (item.barcode) {
+            product = await getProductByBarcode(item.barcode);
+          } else if (item.productName) {
+            product = await getProductByName(item.productName);
+          }
+
+          if (product) {
+            itemTotalCost = (parseFloat(product.cost) || 0) * (parseFloat(item.quantity) || 0) * (parseFloat(item.size) || 1);
+          } else {
+            itemTotalCost = 0;
+          }
         }
 
-        if (product) {
-          itemTotalCost = (parseFloat(product.cost) || 0) * (parseFloat(item.quantity) || 0) * (parseFloat(item.size) || 1);
-        } else {
-          itemTotalCost = 0;
-        }
+        const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
+
+        row.innerHTML = `
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>${item.size}</td>
+          <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
+          <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
+          <td>¥${itemTotalCost !== undefined ? itemTotalCost : '情報なし'}</td>
+          <td>¥${itemProfit !== undefined ? itemProfit : '情報なし'}</td>
+        `;
+        detailProductList.appendChild(row);
       }
-
-      const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
-
-      row.innerHTML = `
-        <td>${item.productName}</td>
-        <td>${item.quantity}</td>
-        <td>${item.size}</td>
-        <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
-        <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
-        <td>¥${itemTotalCost !== undefined ? itemTotalCost : '情報なし'}</td>
-        <td>¥${itemProfit !== undefined ? itemProfit : '情報なし'}</td>
-      `;
-      detailProductList.appendChild(row);
-    }
-  }
     } else {
       const row = document.createElement('tr');
       row.innerHTML = '<td colspan="7">商品情報はありません</td>';
@@ -899,6 +898,7 @@ async function displayTransactionDetails(transactionId) {
     showError('取引の詳細を表示できませんでした');
   }
 }
+
 
 
 const cancelEditTransactionButton = document.getElementById('cancelEditTransaction');
