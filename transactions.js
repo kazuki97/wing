@@ -29,15 +29,15 @@ export async function addTransaction(transactionData) {
     transactionData.feeAmount = Number(transactionData.feeAmount);
 
     // items 内の数値フィールドも数値型に変換
-    transactionData.items = transactionData.items.map((item) => ({
-      ...item,
-      unitPrice: Number(item.unitPrice),
-      quantity: Number(item.quantity),
-      size: Number(item.size),
-      subtotal: Number(item.subtotal),
-      cost: Number(item.cost),
-      profit: Number(item.profit),
-    }));
+transactionData.items = transactionData.items.map((item) => ({
+  ...item,
+  unitPrice: Number(item.unitPrice),
+  quantity: Number(item.quantity),
+  size: Number(item.size),
+  subtotal: Number(item.subtotal),
+  cost: parseFloat(item.cost) || 0, // 修正箇所
+  profit: Number(item.profit),
+}));
 
     // `timestamp` を Date オブジェクトとして保存
     transactionData.timestamp = new Date();
@@ -77,14 +77,24 @@ export async function getTransactions() {
   }
 }
 
-// 特定の取引データの取得
 export async function getTransactionById(transactionId) {
   try {
     const docRef = doc(db, 'transactions', transactionId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      // `timestamp` フィールドを Date オブジェクトに変換
+
+      // データ検証と補正
+      if (data.items && Array.isArray(data.items)) {
+        data.items = data.items.map(item => ({
+          ...item,
+          cost: parseFloat(item.cost) || 0, // `cost`が未定義の場合は0を補完
+          quantity: parseFloat(item.quantity) || 0,
+          size: parseFloat(item.size) || 1,
+        }));
+      }
+
+      // `timestamp`のフォーマット
       if (data.timestamp && data.timestamp.toDate) {
         data.timestamp = data.timestamp.toDate();
       }
