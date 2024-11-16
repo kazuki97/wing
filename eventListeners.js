@@ -837,22 +837,31 @@ async function displayTransactionDetails(transactionId) {
         if (itemTotalCost === undefined || isNaN(itemTotalCost)) {
           // 商品データを取得
           let product = null;
-          if (item.productId) {
-            product = await getProductById(item.productId);
-          } else if (item.barcode) {
-            product = await getProductByBarcode(item.barcode);
-          } else if (item.productName) {
-            product = await getProductByName(item.productName);
-          }
+          try {
+            if (item.productId) {
+              product = await getProductById(item.productId);
+            } else if (item.barcode) {
+              product = await getProductByBarcode(item.barcode);
+            } else if (item.productName) {
+              product = await getProductByName(item.productName);
+            }
 
-          if (product) {
-            itemTotalCost = (parseFloat(product.cost) || 0) * (parseFloat(item.quantity) || 0) * (parseFloat(item.size) || 1);
-          } else {
+            if (product) {
+              console.log("商品データ取得成功:", product); // デバッグ用
+              itemTotalCost = (parseFloat(product.cost) || 0) * (parseFloat(item.quantity) || 0) * (parseFloat(item.size) || 1);
+            } else {
+              console.warn("商品データが見つかりません:", item);
+              itemTotalCost = 0;
+            }
+          } catch (error) {
+            console.error("商品データの取得エラー:", error);
             itemTotalCost = 0;
           }
         }
 
-        const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
+        const itemProfit = item.profit !== undefined
+          ? item.profit
+          : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
 
         row.innerHTML = `
           <td>${item.productName}</td>
