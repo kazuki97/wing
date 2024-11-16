@@ -57,6 +57,24 @@ export async function getProducts(parentCategoryId, subcategoryId) {
   }
 }
 
+// 商品名から商品を取得
+export async function getProductByName(name) {
+  try {
+    const q = query(collection(db, 'products'), where('name', '==', name));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const docSnap = snapshot.docs[0];
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      console.error('商品名に対応する商品が見つかりません');
+      return null;
+    }
+  } catch (error) {
+    console.error('商品の取得エラー:', error);
+    throw error;
+  }
+}
+
 
 // 商品IDから商品情報を取得
 export async function getProductById(productId) {
