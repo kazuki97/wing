@@ -713,18 +713,36 @@ export async function displayTransactions(filter = {}) {
         }
       }
 
-      // totalCost の計算
-      let totalCost = 0;
-      if (transaction.totalCost !== undefined) {
-        totalCost = parseFloat(transaction.totalCost) || 0;
-      } else if (itemsExist) {
-        totalCost = transaction.items.reduce((sum, item) => {
-          const cost = parseFloat(item.cost) || 0;
-          const quantity = parseFloat(item.quantity) || 0;
-          const size = parseFloat(item.size) || 0;
-          return sum + cost * quantity * size;
-        }, 0);
+    // totalCost の計算
+let totalCost = 0;
+if (transaction.totalCost !== undefined) {
+  totalCost = parseFloat(transaction.totalCost) || 0;
+} else if (itemsExist) {
+  totalCost = 0;
+  for (const item of transaction.items) {
+    let cost = parseFloat(item.cost);
+    const quantity = parseFloat(item.quantity) || 0;
+    const size = parseFloat(item.size) || 1;
+
+    if (isNaN(cost) || cost === undefined) {
+      // 商品データを取得
+      let product = null;
+      if (item.productId) {
+        product = await getProductById(item.productId);
+      } else if (item.barcode) {
+        product = await getProductByBarcode(item.barcode);
       }
+      if (product) {
+        cost = parseFloat(product.cost) || 0;
+      } else {
+        cost = 0;
+      }
+    }
+
+    totalCost += cost * quantity * size;
+  }
+}
+
 
       // netAmount と feeAmount の数値変換
       const netAmount = parseFloat(transaction.netAmount) || 0;
