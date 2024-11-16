@@ -713,39 +713,18 @@ export async function displayTransactions(filter = {}) {
         }
       }
 
-   // totalCost の計算
-    let totalCost = 0;
-    if (transaction.totalCost !== undefined) {
-      totalCost = parseFloat(transaction.totalCost) || 0;
-    } else if (itemsExist) {
-      totalCost = 0;
-      for (const item of transaction.items) {
-        let cost = parseFloat(item.cost);
-        const quantity = parseFloat(item.quantity) || 0;
-        const size = parseFloat(item.size) || 1;
-
-        if (isNaN(cost) || cost === undefined) {
-          // 商品データを取得
-          let product = null;
-          if (item.productId) {
-            product = await getProductById(item.productId);
-          } else if (item.barcode) {
-            product = await getProductByBarcode(item.barcode);
-          } else if (item.productName) {
-            product = await getProductByName(item.productName);
-          }
-
-          if (product) {
-            cost = parseFloat(product.cost) || 0;
-          } else {
-            cost = 0;
-          }
-        }
-
-        totalCost += cost * quantity * size;
+      // totalCost の計算
+      let totalCost = 0;
+      if (transaction.totalCost !== undefined) {
+        totalCost = parseFloat(transaction.totalCost) || 0;
+      } else if (itemsExist) {
+        totalCost = transaction.items.reduce((sum, item) => {
+          const cost = parseFloat(item.cost) || 0;
+          const quantity = parseFloat(item.quantity) || 0;
+          const size = parseFloat(item.size) || 0;
+          return sum + cost * quantity * size;
+        }, 0);
       }
-    }
-
 
       // netAmount と feeAmount の数値変換
       const netAmount = parseFloat(transaction.netAmount) || 0;
@@ -809,10 +788,10 @@ async function displayTransactionDetails(transactionId) {
     const transactionDetails = document.getElementById('transactionDetails');
     document.getElementById('detailTransactionId').textContent = transaction.id;
 
-    // タイムスタンプのパース
+    // タイムスタンプのパース（シンプルな処理を採用）
     let timestampText = '日時情報なし';
     if (transaction.timestamp) {
-      const date = new Date(transaction.timestamp);
+      const date = new Date(transaction.timestamp); // タイムスタンプを直接使用
       if (!isNaN(date)) {
         timestampText = date.toLocaleString();
       }
@@ -822,66 +801,34 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
     document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
     document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
-    document.getElementById('detailTotalCost').textContent = transaction.totalCost !== undefined ? `¥${transaction.totalCost}` : '¥0';
-    document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
-
+   document.getElementById('detailTotalCost').textContent = transaction.totalCost !== undefined ? `¥${transaction.totalCost}` : '¥0';
+document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
+    
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
 
     if (transaction.items && transaction.items.length > 0) {
       for (const item of transaction.items) {
         const row = document.createElement('tr');
+        // 各商品の総原価と利益を計算
+const itemTotalCost = item.cost; // 手動追加の場合、総原価が入っている
+const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
 
-       // 原価が未定義の場合、商品データから取得
-let itemTotalCost = item.cost;
-if (itemTotalCost === undefined || isNaN(itemTotalCost)) {
-  // 商品データを取得
-  let product = null;
-  try {
-    if (item.productId) {
-      product = await getProductById(item.productId);
-    } else if (item.barcode) {
-      product = await getProductByBarcode(item.barcode);
-    } else if (item.productName) {
-      product = await getProductByName(item.productName);
-    }
-
-    if (product) {
-      console.log("商品データ取得成功:", product); // デバッグ用
-      itemTotalCost = (parseFloat(product.cost) || 0) * (parseFloat(item.quantity) || 0) * (parseFloat(item.size) || 1);
-    } else {
-      console.warn("商品データが見つかりません:", item);
-      itemTotalCost = 0; // データが見つからない場合は0にする
-    }
-  } catch (error) {
-    console.error("商品データの取得エラー:", error);
-    itemTotalCost = 0; // エラー時も0に設定
-  }
-}
-
-// itemTotalCost が正しい値であることを確認する
-if (isNaN(itemTotalCost)) {
-  itemTotalCost = 0; // 万が一 NaN の場合でも 0 を設定
-}
-
-        const itemProfit = item.profit !== undefined
-          ? item.profit
-          : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
-
-        row.innerHTML = `
-          <td>${item.productName}</td>
-          <td>${item.quantity}</td>
-          <td>${item.size}</td>
-          <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
-          <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
-          <td>¥${itemTotalCost !== undefined ? itemTotalCost : '情報なし'}</td>
-          <td>¥${itemProfit !== undefined ? itemProfit : '情報なし'}</td>
-        `;
+row.innerHTML = `
+  <td>${item.productName}</td>
+  <td>${item.quantity}</td>
+  <td>${item.size}</td>
+  <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
+  <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
+  <td>¥${itemTotalCost !== undefined ? itemTotalCost : '情報なし'}</td>
+  <td>¥${itemProfit !== undefined ? itemProfit : '情報なし'}</td>
+`;
         detailProductList.appendChild(row);
       }
     } else {
+      // 手動追加のため、商品明細が無い
       const row = document.createElement('tr');
-      row.innerHTML = '<td colspan="7">商品情報はありません</td>';
+      row.innerHTML = '<td colspan="6">商品情報はありません</td>';
       detailProductList.appendChild(row);
     }
 
@@ -912,8 +859,6 @@ if (isNaN(itemTotalCost)) {
     showError('取引の詳細を表示できませんでした');
   }
 }
-
-
 
 const cancelEditTransactionButton = document.getElementById('cancelEditTransaction');
 if (cancelEditTransactionButton) {
