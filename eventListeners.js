@@ -714,17 +714,22 @@ export async function displayTransactions(filter = {}) {
       }
 
       // totalCost の計算
-      let totalCost = 0;
-      if (transaction.totalCost !== undefined) {
-        totalCost = parseFloat(transaction.totalCost) || 0;
-      } else if (itemsExist) {
-        totalCost = transaction.items.reduce((sum, item) => {
-          const cost = parseFloat(item.cost) || 0;
-          const quantity = parseFloat(item.quantity) || 0;
-          const size = parseFloat(item.size) || 0;
-          return sum + cost * quantity * size;
-        }, 0);
-      }
+    let totalCost = 0;
+if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCost))) {
+  totalCost = parseFloat(transaction.totalCost);
+} else if (itemsExist) {
+  totalCost = transaction.items.reduce((sum, item) => {
+    let cost = parseFloat(item.cost);
+    if (isNaN(cost)) cost = 0;
+    let quantity = parseFloat(item.quantity);
+    if (isNaN(quantity)) quantity = 0;
+    let size = parseFloat(item.size);
+    if (isNaN(size) || size <= 0) size = 1; // サイズが無効な場合は1をデフォルト値に
+    return sum + cost * quantity * size;
+  }, 0);
+} else {
+  totalCost = 0;
+}
 
       // netAmount と feeAmount の数値変換
       const netAmount = parseFloat(transaction.netAmount) || 0;
