@@ -401,8 +401,11 @@ if (editTransactionForm) {
     e.preventDefault();
 
     // 取引IDを取得
-    const transactionId = document.getElementById('editTransactionId').value;
-
+   let productSize = parseFloat(document.getElementById('transactionSize').value);
+// productSize が未入力または NaN の場合、デフォルト値 1 を設定
+if (isNaN(productSize) || productSize <= 0) {
+  productSize = 1;
+}
     // フォームからデータを取得
     const quantity = parseFloat(document.getElementById('editTransactionQuantity').value);
     const unitPrice = parseFloat(document.getElementById('editTransactionUnitPrice').value);
