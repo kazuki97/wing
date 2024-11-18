@@ -401,16 +401,20 @@ if (editTransactionForm) {
     e.preventDefault();
 
     // 取引IDを取得
-   let productSize = parseFloat(document.getElementById('transactionSize').value);
-// productSize が未入力または NaN の場合、デフォルト値 1 を設定
-if (isNaN(productSize) || productSize <= 0) {
-  productSize = 1;
-}
+    const transactionId = document.getElementById('editTransactionId').value;
+
     // フォームからデータを取得
     const quantity = parseFloat(document.getElementById('editTransactionQuantity').value);
     const unitPrice = parseFloat(document.getElementById('editTransactionUnitPrice').value);
     const cost = parseFloat(document.getElementById('editTransactionCost').value);
     const size = parseFloat(document.getElementById('editTransactionSize').value); // サイズを取得
+
+    // 入力値の検証
+    if (isNaN(quantity) || isNaN(unitPrice) || isNaN(cost) || isNaN(size)) {
+      showError('有効な数値を入力してください');
+      return;
+    }
+
     const subtotal = quantity * unitPrice * size; // 小計計算 (サイズを考慮)
 
     // 利益の計算
@@ -468,36 +472,35 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   }
 
   // 入力値の検証
-  if (isNaN(productPrice) || isNaN(productQuantity) || isNaN(productCost)) {
-    showError('価格、数量、原価には数値を入力してください');
+  if (isNaN(productPrice) || isNaN(productQuantity) || isNaN(productCost) || isNaN(productSize)) {
+    showError('価格、数量、原価、サイズには数値を入力してください');
     return;
   }
 
   // 自動計算する項目
-  const totalAmount = productPrice * productQuantity * productSize; // 売上金額
-  const totalCost = productCost * productQuantity * productSize;    // 総原価
-  const profitAmount = totalAmount - totalCost - 0;                 // 利益 (手数料なし)
+  const subtotal = productPrice * productQuantity * productSize; // 小計
+  const totalCost = productCost * productQuantity * productSize; // 総原価
+  const profitAmount = subtotal - totalCost; // 利益
 
   // 売上データを生成
   const transactionData = {
-  items: [
-    {
-      productName,
-      unitPrice: productPrice,
-      quantity: productQuantity,
-      size: productSize,
-      subtotal: totalAmount,  // 小計
-      cost: productCost * productQuantity * productSize, // 総原価
-      profit: profitAmount,   // 利益
-    }
-  ],
-  totalCost: totalCost, // 取引全体の総原価
-    totalAmount,
+    items: [
+      {
+        productName,
+        unitPrice: productPrice,
+        quantity: productQuantity,
+        size: productSize,
+        subtotal: subtotal,  // 小計
+        cost: productCost,   // 単価原価
+        profit: profitAmount, // 利益
+      }
+    ],
+    totalCost: totalCost, // 取引全体の総原価
+    totalAmount: subtotal,
     paymentMethodId,
     timestamp: new Date().toISOString(),
     feeAmount: 0,          // 手数料
-    netAmount: totalAmount,
-    totalCost,
+    netAmount: subtotal,
     profit: profitAmount,
     manuallyAdded: true,
   };
@@ -513,6 +516,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
     showError('売上の追加に失敗しました');
   }
 });
+
 
 // 商品追加フォームのイベントリスナー
 document.getElementById('addProductForm').addEventListener('submit', async (e) => {
@@ -818,18 +822,18 @@ document.getElementById('detailTotalProfit').textContent = transaction.profit !=
       for (const item of transaction.items) {
         const row = document.createElement('tr');
         // 各商品の総原価と利益を計算
-const itemTotalCost = item.cost; // 手動追加の場合、総原価が入っている
-const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
+        const itemTotalCost = item.cost * item.quantity * item.size;
+        const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - (transaction.feeAmount || 0));
 
-row.innerHTML = `
-  <td>${item.productName}</td>
-  <td>${item.quantity}</td>
-  <td>${item.size}</td>
-  <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
-  <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
-  <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
-  <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
-`;
+        row.innerHTML = `
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>${item.size}</td>
+          <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
+          <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
+          <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
+          <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
+        `;
         detailProductList.appendChild(row);
       }
     } else {
@@ -1517,9 +1521,9 @@ async function editProduct(product) {
     <input type="text" name="name" value="${product.name}" required />
     <input type="number" name="price" value="${product.price}" required />
     <input type="number" name="cost" value="${product.cost}" required />
-    <input type="text" name="barcode" value="${product.barcode}" />
-    <input type="number" name="quantity" value="${product.quantity}" required />
-    <input type="number" name="size" value="${product.size}" required />
+    <input type="text" name="barcode" value="${product.barcode || ''}" />
+    <input type="number" name="quantity" value="${product.quantity || 0}" required />
+    <input type="number" name="size" value="${product.size || 1}" required />
     <div id="editConsumables">
       <label>使用する消耗品:</label>
       ${consumables.map(consumable => `
@@ -1546,6 +1550,18 @@ async function editProduct(product) {
       size: parseFloat(editForm.size.value),
       consumables: Array.from(editForm.querySelectorAll('input[name="consumable"]:checked')).map((checkbox) => checkbox.value),
     };
+
+    // 入力値の検証
+    if (
+      isNaN(updatedData.price) ||
+      isNaN(updatedData.cost) ||
+      isNaN(updatedData.quantity) ||
+      isNaN(updatedData.size)
+    ) {
+      showError('有効な数値を入力してください');
+      return;
+    }
+
     try {
       await updateProduct(product.id, updatedData);
       alert('商品が更新されました');
@@ -1567,6 +1583,7 @@ async function editProduct(product) {
   productList.innerHTML = '';
   productList.appendChild(editForm);
 }
+
 
 // 在庫管理セクションの商品一覧表示関数
 export async function displayInventoryProducts() {
