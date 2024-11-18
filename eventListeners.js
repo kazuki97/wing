@@ -717,23 +717,20 @@ export async function displayTransactions(filter = {}) {
         }
       }
 
-      // totalCost の計算
-    let totalCost = 0;
+     // totalCost の計算
+let totalCost = 0;
 if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCost))) {
   totalCost = parseFloat(transaction.totalCost);
 } else if (itemsExist) {
   totalCost = transaction.items.reduce((sum, item) => {
-    let cost = parseFloat(item.cost);
-    if (isNaN(cost)) cost = 0;
-    let quantity = parseFloat(item.quantity);
-    if (isNaN(quantity)) quantity = 0;
-    let size = parseFloat(item.size);
-    if (isNaN(size) || size <= 0) size = 1; // サイズが無効な場合は1をデフォルト値に
-    return sum + cost * quantity * size;
+    let itemTotalCost = parseFloat(item.cost);
+    if (isNaN(itemTotalCost)) itemTotalCost = 0;
+    return sum + itemTotalCost; // 手動追加の場合、item.costは総原価
   }, 0);
 } else {
   totalCost = 0;
 }
+
 
       // netAmount と feeAmount の数値変換
       const netAmount = parseFloat(transaction.netAmount) || 0;
