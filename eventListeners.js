@@ -827,10 +827,10 @@ row.innerHTML = `
   <td>${item.productName}</td>
   <td>${item.quantity}</td>
   <td>${item.size}</td>
-  <td>¥${item.unitPrice !== undefined ? item.unitPrice : '情報なし'}</td>
-  <td>¥${item.subtotal !== undefined ? item.subtotal : '情報なし'}</td>
-  <td>¥${itemTotalCost !== undefined ? itemTotalCost : '情報なし'}</td>
-  <td>¥${itemProfit !== undefined ? itemProfit : '情報なし'}</td>
+  <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
+  <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
+  <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
+  <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
 `;
         detailProductList.appendChild(row);
       }
