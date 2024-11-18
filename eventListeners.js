@@ -480,17 +480,18 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
 
   // 売上データを生成
   const transactionData = {
-    items: [
-      {
-        productName,
-        unitPrice: productPrice,
-        quantity: productQuantity,
-        size: productSize,
-        subtotal: totalAmount,  // 小計
-        cost: productCost,      // 単価原価
-        profit: profitAmount,   // 利益
-      }
-    ],
+  items: [
+    {
+      productName,
+      unitPrice: productPrice,
+      quantity: productQuantity,
+      size: productSize,
+      subtotal: totalAmount,  // 小計
+      cost: productCost * productQuantity * productSize, // 総原価
+      profit: profitAmount,   // 利益
+    }
+  ],
+  totalCost: totalCost, // 取引全体の総原価
     totalAmount,
     paymentMethodId,
     timestamp: new Date().toISOString(),
