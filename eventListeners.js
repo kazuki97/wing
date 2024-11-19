@@ -837,9 +837,32 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
     document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${Math.round(transaction.feeAmount)}` : '¥0';
     document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${Math.round(transaction.netAmount)}` : '¥0';
-    const totalCost = parseFloat(transaction.totalCost);
-    document.getElementById('detailTotalCost').textContent = !isNaN(totalCost) ? `¥${Math.round(totalCost)}` : '¥0';
-    document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${Math.round(transaction.profit)}` : '¥0';
+
+    // **総原価を計算または取得**
+    let totalCost;
+    if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCost))) {
+      totalCost = parseFloat(transaction.totalCost);
+    } else {
+      // `totalCost` が存在しない場合、各商品の原価を合計して総原価を計算
+      totalCost = transaction.items.reduce((sum, item) => {
+        // **item.cost が合計原価として保存されていると仮定**
+        return sum + (item.cost || 0);
+      }, 0);
+    }
+
+    document.getElementById('detailTotalCost').textContent = `¥${Math.round(totalCost)}`;
+
+    // 総利益も同様に確認
+    let totalProfit;
+    if (transaction.profit !== undefined && !isNaN(parseFloat(transaction.profit))) {
+      totalProfit = parseFloat(transaction.profit);
+    } else {
+      // 総利益を再計算
+      const totalSubtotal = transaction.items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+      totalProfit = totalSubtotal - totalCost - (transaction.feeAmount || 0);
+    }
+
+    document.getElementById('detailTotalProfit').textContent = `¥${Math.round(totalProfit)}`;
 
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
