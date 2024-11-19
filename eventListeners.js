@@ -859,15 +859,16 @@ async function displayTransactionDetails(transactionId) {
         // 利益を計算（手数料を含める）
         const itemProfit = (item.subtotal || 0) - itemTotalCost - itemFee;
 
-        row.innerHTML = `
-          <td>${item.productName}</td>
-          <td>${item.quantity}</td>
-          <td>${item.size}</td>
-          <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
-          <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
-          <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
-          <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
-        `;
+       row.innerHTML = `
+  <td>${item.productName}</td>
+  <td>${item.quantity}</td>
+  <td>${item.size}</td>
+  <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
+  <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
+  <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
+  <td>¥${!isNaN(itemFee) ? Math.round(itemFee) : '情報なし'}</td> <!-- 手数料を表示 -->
+  <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
+`;
         detailProductList.appendChild(row);
       }
     } else {
