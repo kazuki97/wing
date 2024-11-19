@@ -417,31 +417,31 @@ if (editTransactionForm) {
 
     const subtotal = quantity * unitPrice * size; // 小計計算 (サイズを考慮)
 
+    // 手数料の取得（必要に応じて追加）
+    const feeAmount = parseFloat(document.getElementById('editTransactionFeeAmount').value) || 0;
+
     // 利益の計算
-   const feeAmount = parseFloat(document.getElementById('editTransactionFeeAmount').value) || 0;
+    const profitAmount = subtotal - (quantity * cost * size) - feeAmount; // 利益計算 (サイズと手数料を考慮)
 
-// 利益の計算
-const profitAmount = subtotal - (quantity * cost * size) - feeAmount; // 利益計算 (サイズと手数料を考慮)
-
-const updatedData = {
-  timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
-  items: [
-    {
-      productName: document.getElementById('editTransactionProductName').value, // 商品名
-      quantity: quantity, // 数量
-      unitPrice: unitPrice, // 販売単価
-      cost: cost, // 原価
-      size: size, // サイズ
-      subtotal: subtotal, // 小計
-      profit: profitAmount, // 利益
-    }
-  ],
-  totalAmount: subtotal, // 合計金額
-  feeAmount: feeAmount,   // 手数料
-  netAmount: subtotal - feeAmount,
-  profit: profitAmount,   // 総利益
-  paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 支払い方法
-};
+    const updatedData = {
+      timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
+      items: [
+        {
+          productName: document.getElementById('editTransactionProductName').value, // 商品名
+          quantity: quantity, // 数量
+          unitPrice: unitPrice, // 販売単価
+          cost: cost, // 原価
+          size: size, // サイズ
+          subtotal: subtotal, // 小計
+          profit: profitAmount, // 利益
+        }
+      ],
+      totalAmount: subtotal, // 合計金額
+      feeAmount: feeAmount,   // 手数料
+      netAmount: subtotal - feeAmount,
+      profit: profitAmount,   // 総利益
+      paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 支払い方法
+    };
 
     try {
       // 取引データを更新
@@ -486,37 +486,35 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   // 自動計算する項目
   const subtotal = productPrice * productQuantity * productSize; // 小計
   const totalCost = productCost * productQuantity * productSize; // 総原価
-  const profitAmount = subtotal - totalCost; // 利益
+
+  // 手数料の取得（必要に応じて追加）
+  const feeAmount = parseFloat(document.getElementById('transactionFeeAmount').value) || 0;
+
+  // 利益の計算
+  const profitAmount = subtotal - totalCost - feeAmount; // 利益（手数料を差し引く）
 
   // 売上データを生成
- // 手数料の取得（必要に応じて追加）
-const feeAmount = parseFloat(document.getElementById('transactionFeeAmount').value) || 0;
-
-// 利益の計算
-const profitAmount = subtotal - totalCost - feeAmount; // 利益（手数料を差し引く）
-
-// 売上データを生成
-const transactionData = {
-  items: [
-    {
-      productName,
-      unitPrice: productPrice,
-      quantity: productQuantity,
-      size: productSize,
-      subtotal: subtotal,  // 小計
-      cost: productCost,   // 単価原価
-      profit: profitAmount, // 利益
-    }
-  ],
-  totalCost: totalCost, // 取引全体の総原価
-  totalAmount: subtotal,
-  paymentMethodId,
-  timestamp: new Date().toISOString(),
-  feeAmount: feeAmount,          // 手数料
-  netAmount: subtotal - feeAmount,
-  profit: profitAmount,
-  manuallyAdded: true,
-};
+  const transactionData = {
+    items: [
+      {
+        productName,
+        unitPrice: productPrice,
+        quantity: productQuantity,
+        size: productSize,
+        subtotal: subtotal,  // 小計
+        cost: productCost,   // 単価原価
+        profit: profitAmount, // 利益
+      }
+    ],
+    totalCost: totalCost, // 取引全体の総原価
+    totalAmount: subtotal,
+    paymentMethodId,
+    timestamp: new Date().toISOString(),
+    feeAmount: feeAmount,          // 手数料
+    netAmount: subtotal - feeAmount,
+    profit: profitAmount,
+    manuallyAdded: true,
+  };
 
   try {
     await addTransaction(transactionData);
