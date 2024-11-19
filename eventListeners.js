@@ -826,7 +826,7 @@ async function displayTransactionDetails(transactionId) {
 document.getElementById('detailTotalCost').textContent = !isNaN(totalCost) ? `¥${Math.round(totalCost)}` : '¥0';
 document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
     
-   const detailProductList = document.getElementById('detailProductList');
+  const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
 
     if (transaction.items && transaction.items.length > 0) {
