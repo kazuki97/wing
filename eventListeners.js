@@ -850,31 +850,32 @@ async function displayTransactionDetails(transactionId) {
       for (const item of transaction.items) {
         const row = document.createElement('tr');
 
-        // 各商品の総原価を計算
-        const itemTotalCost = (item.cost || 0) * (item.quantity || 0) * (item.size || 1); // **修正ポイント**
+        // 各商品の手数料を計算
+        const itemFee = totalSubtotal > 0 ? ((item.subtotal || 0) / totalSubtotal) * totalFee : 0;
 
-        // 手数料を各商品の売上金額に比例して割り当て
-        const itemFee = totalSubtotal > 0 ? (item.subtotal || 0) / totalSubtotal * totalFee : 0;
+        // 原価はすでに合計原価として保存されていると仮定
+        const itemTotalCost = item.cost || 0;
 
-        // 利益を計算（手数料を含める）
+        // 利益を計算
+        // 利益 = 売上金額 - 原価 - 手数料
         const itemProfit = (item.subtotal || 0) - itemTotalCost - itemFee;
 
-       row.innerHTML = `
-  <td>${item.productName}</td>
-  <td>${item.quantity}</td>
-  <td>${item.size}</td>
-  <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
-  <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
-  <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
-  <td>¥${!isNaN(itemFee) ? Math.round(itemFee) : '情報なし'}</td> <!-- 手数料を表示 -->
-  <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
-`;
+        row.innerHTML = `
+          <td>${item.productName}</td>
+          <td>${item.quantity}</td>
+          <td>${item.size}</td>
+          <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
+          <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
+          <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
+          <td>¥${!isNaN(itemFee) ? Math.round(itemFee) : '情報なし'}</td>
+          <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
+        `;
         detailProductList.appendChild(row);
       }
     } else {
       // 手動追加のため、商品明細が無い
       const row = document.createElement('tr');
-      row.innerHTML = '<td colspan="7">商品情報はありません</td>';
+      row.innerHTML = '<td colspan="8">商品情報はありません</td>';
       detailProductList.appendChild(row);
     }
 
