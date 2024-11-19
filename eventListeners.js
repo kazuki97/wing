@@ -851,12 +851,12 @@ async function displayTransactionDetails(transactionId) {
         const row = document.createElement('tr');
 
         // 各商品の総原価を計算
-        const itemTotalCost = (item.cost || 0) * (item.quantity || 0) * (item.size || 1);
+        const itemTotalCost = (item.cost || 0) * (item.quantity || 0) * (item.size || 1); // **修正ポイント**
 
         // 手数料を各商品の売上金額に比例して割り当て
         const itemFee = totalSubtotal > 0 ? (item.subtotal || 0) / totalSubtotal * totalFee : 0;
 
-        // 利益を計算
+        // 利益を計算（手数料を含める）
         const itemProfit = (item.subtotal || 0) - itemTotalCost - itemFee;
 
         row.innerHTML = `
@@ -876,6 +876,7 @@ async function displayTransactionDetails(transactionId) {
       row.innerHTML = '<td colspan="7">商品情報はありません</td>';
       detailProductList.appendChild(row);
     }
+
 
     // 返品ボタンの表示（手動追加の場合は非表示にする）
     const returnButton = document.getElementById('returnTransactionButton');
