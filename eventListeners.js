@@ -822,35 +822,42 @@ async function displayTransactionDetails(transactionId) {
     const transactionDetails = document.getElementById('transactionDetails');
     document.getElementById('detailTransactionId').textContent = transaction.id;
 
-    // タイムスタンプのパース（シンプルな処理を採用）
+    // タイムスタンプのパース
     let timestampText = '日時情報なし';
     if (transaction.timestamp) {
-      const date = new Date(transaction.timestamp); // タイムスタンプを直接使用
+      const date = new Date(transaction.timestamp);
       if (!isNaN(date)) {
         timestampText = date.toLocaleString();
       }
     }
     document.getElementById('detailTimestamp').textContent = timestampText;
 
+    // 支払い方法名を取得（必要なら追加のコードが必要）
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
-    document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${transaction.feeAmount}` : '¥0';
-    document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${transaction.netAmount}` : '¥0';
-  const totalCost = parseFloat(transaction.totalCost);
-document.getElementById('detailTotalCost').textContent = !isNaN(totalCost) ? `¥${Math.round(totalCost)}` : '¥0';
-document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${transaction.profit}` : '¥0';
-    
-  const detailProductList = document.getElementById('detailProductList');
+    document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${Math.round(transaction.feeAmount)}` : '¥0';
+    document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${Math.round(transaction.netAmount)}` : '¥0';
+    const totalCost = parseFloat(transaction.totalCost);
+    document.getElementById('detailTotalCost').textContent = !isNaN(totalCost) ? `¥${Math.round(totalCost)}` : '¥0';
+    document.getElementById('detailTotalProfit').textContent = transaction.profit !== undefined ? `¥${Math.round(transaction.profit)}` : '¥0';
+
+    const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
 
     if (transaction.items && transaction.items.length > 0) {
       const totalFee = transaction.feeAmount || 0;
-      const feePerItem = totalFee / transaction.items.length; // 各商品に対する手数料の割当
+      const totalSubtotal = transaction.items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
 
       for (const item of transaction.items) {
         const row = document.createElement('tr');
-        // 各商品の総原価と利益を計算
-        const itemTotalCost = item.cost * item.quantity * item.size;
-        const itemProfit = item.profit !== undefined ? item.profit : (item.subtotal - itemTotalCost - feePerItem);
+
+        // 各商品の総原価を計算
+        const itemTotalCost = (item.cost || 0) * (item.quantity || 0) * (item.size || 1);
+
+        // 手数料を各商品の売上金額に比例して割り当て
+        const itemFee = totalSubtotal > 0 ? (item.subtotal || 0) / totalSubtotal * totalFee : 0;
+
+        // 利益を計算
+        const itemProfit = (item.subtotal || 0) - itemTotalCost - itemFee;
 
         row.innerHTML = `
           <td>${item.productName}</td>
