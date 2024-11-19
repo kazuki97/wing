@@ -408,6 +408,7 @@ if (editTransactionForm) {
     const unitPrice = parseFloat(document.getElementById('editTransactionUnitPrice').value);
     const cost = parseFloat(document.getElementById('editTransactionCost').value);
     const size = parseFloat(document.getElementById('editTransactionSize').value); // サイズを取得
+    const paymentMethodId = document.getElementById('editTransactionPaymentMethod').value;
 
     // 入力値の検証
     if (isNaN(quantity) || isNaN(unitPrice) || isNaN(cost) || isNaN(size)) {
@@ -417,8 +418,14 @@ if (editTransactionForm) {
 
     const subtotal = quantity * unitPrice * size; // 小計計算 (サイズを考慮)
 
-    // 手数料の取得（必要に応じて追加）
-    const feeAmount = parseFloat(document.getElementById('editTransactionFeeAmount').value) || 0;
+    // 支払い方法の手数料を取得
+    let feeAmount = 0;
+    if (paymentMethodId) {
+      const paymentMethod = await getPaymentMethodById(paymentMethodId);
+      if (paymentMethod && paymentMethod.feeRate) {
+        feeAmount = subtotal * paymentMethod.feeRate; // 手数料計算
+      }
+    }
 
     // 利益の計算
     const profitAmount = subtotal - (quantity * cost * size) - feeAmount; // 利益計算 (サイズと手数料を考慮)
@@ -437,10 +444,10 @@ if (editTransactionForm) {
         }
       ],
       totalAmount: subtotal, // 合計金額
-      feeAmount: feeAmount,   // 手数料
-      netAmount: subtotal - feeAmount,
-      profit: profitAmount,   // 総利益
-      paymentMethodId: document.getElementById('editTransactionPaymentMethod').value, // 支払い方法
+      paymentMethodId,
+      feeAmount: feeAmount,           // 手数料
+      netAmount: subtotal - feeAmount, // 手数料を引いた金額
+      profit: profitAmount,           // 総利益
     };
 
     try {
@@ -487,8 +494,14 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
   const subtotal = productPrice * productQuantity * productSize; // 小計
   const totalCost = productCost * productQuantity * productSize; // 総原価
 
-  // 手数料の取得（必要に応じて追加）
-  const feeAmount = parseFloat(document.getElementById('transactionFeeAmount').value) || 0;
+  // 支払い方法の手数料を取得
+  let feeAmount = 0;
+  if (paymentMethodId) {
+    const paymentMethod = await getPaymentMethodById(paymentMethodId);
+    if (paymentMethod && paymentMethod.feeRate) {
+      feeAmount = subtotal * paymentMethod.feeRate; // 手数料計算（例：feeRateが0.03なら3%）
+    }
+  }
 
   // 利益の計算
   const profitAmount = subtotal - totalCost - feeAmount; // 利益（手数料を差し引く）
@@ -506,13 +519,13 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         profit: profitAmount, // 利益
       }
     ],
-    totalCost: totalCost, // 取引全体の総原価
-    totalAmount: subtotal,
+    totalCost: totalCost,      // 取引全体の総原価
+    totalAmount: subtotal,     // 合計金額
     paymentMethodId,
     timestamp: new Date().toISOString(),
     feeAmount: feeAmount,          // 手数料
-    netAmount: subtotal - feeAmount,
-    profit: profitAmount,
+    netAmount: subtotal - feeAmount, // 手数料を引いた金額
+    profit: profitAmount,       // 総利益
     manuallyAdded: true,
   };
 
