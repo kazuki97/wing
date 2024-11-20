@@ -31,19 +31,18 @@
       <li><a href="#sales-analysis" class="nav-link">売上分析</a></li>
       <li><a href="#consumables" class="nav-link">消耗品管理</a></li>
       <!-- ログアウトボタンを追加 -->
-    <li><a href="#" onclick="logout(); return false;">ログアウト</a></li>
-  </ul>
+      <li><a href="#" onclick="logout(); return false;">ログアウト</a></li>
+    </ul>
   </nav>
 
   <!-- ログインフォームを修正 -->
-<div id="loginForm" style="display: none;">
-  <form id="loginFormElement">
-    <input type="email" id="email" placeholder="メールアドレスを入力" required />
-    <input type="password" id="password" placeholder="パスワードを入力" required />
-    <button type="submit">ログイン</button>
-  </form>
-</div>
-
+  <div id="loginForm" style="display: none;">
+    <form id="loginFormElement">
+      <input type="email" id="email" placeholder="メールアドレスを入力" required />
+      <input type="password" id="password" placeholder="パスワードを入力" required />
+      <button type="submit">ログイン</button>
+    </form>
+  </div>
 
   <!-- 各セクションのコンテナ -->
   <main>
@@ -159,22 +158,24 @@
         </select>
       </div>
       <!-- 商品一覧表示エリア -->
-      <table id="inventoryList">
-        <thead>
-          <tr>
-            <th>商品名</th>
-            <th>数量</th>
-            <th>価格</th>
-            <th>原価</th>
-            <th>バーコード</th>
-            <th>サイズ</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 商品情報がここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="inventoryList">
+          <thead>
+            <tr>
+              <th>商品名</th>
+              <th>数量</th>
+              <th>価格</th>
+              <th>原価</th>
+              <th>バーコード</th>
+              <th>サイズ</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 商品情報がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- 全体在庫 -->
@@ -192,17 +193,19 @@
         <button type="submit">更新</button>
       </form>
       <!-- 全体在庫一覧表示エリア -->
-      <table id="overallInventoryList">
-        <thead>
-          <tr>
-            <th>サブカテゴリ名</th>
-            <th>在庫数</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 全体在庫情報がここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="overallInventoryList">
+          <thead>
+            <tr>
+              <th>サブカテゴリ名</th>
+              <th>在庫数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 全体在庫情報がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- バーコードスキャン -->
@@ -229,20 +232,22 @@
         </select>
       </div>
       <!-- 販売カート -->
-      <table id="salesCart">
-        <thead>
-          <tr>
-            <th>商品名</th>
-            <th>数量</th>
-            <th>単価</th>
-            <th>小計</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- カート内の商品がここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="salesCart">
+          <thead>
+            <tr>
+              <th>商品名</th>
+              <th>数量</th>
+              <th>単価</th>
+              <th>小計</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- カート内の商品がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
       <!-- 合計金額表示と販売完了ボタン -->
       <div id="totalAmount">合計金額: ¥0</div>
       <button id="completeSaleButton">販売完了</button>
@@ -324,25 +329,27 @@
         </form>
       </div>
       <!-- 売上データの表示エリア -->
-      <table id="transactionList">
-        <thead>
-          <tr>
-            <th>取引ID</th>
-            <th>日時</th>
-            <th>支払い方法</th>
-            <th>商品名</th>
-            <th>個数</th>
-            <th>売上金額</th>
-            <th>手数料</th>
-            <th>原価</th>
-            <th>利益</th>
-            <th>詳細</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 売上データがここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="transactionList">
+          <thead>
+            <tr>
+              <th>取引ID</th>
+              <th>日時</th>
+              <th>支払い方法</th>
+              <th>商品名</th>
+              <th>個数</th>
+              <th>売上金額</th>
+              <th>手数料</th>
+              <th>原価</th>
+              <th>利益</th>
+              <th>詳細</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 売上データがここに表示されます -->
+          </tbody>
+        </table>
+      </div>
       <!-- 取引の詳細表示エリア -->
       <div id="transactionDetails" style="display: none;">
         <h2>取引詳細</h2>
@@ -355,23 +362,25 @@
         <p>総利益: ¥<span id="detailTotalProfit"></span></p>
         <!-- 返品情報 -->
         <p id="returnInfo"></p>
-        <table>
-  <thead>
-    <tr>
-      <th>商品名</th>
-      <th>数量</th>
-      <th>サイズ</th>
-      <th>単価</th>
-      <th>売上金額</th>
-      <th>原価</th>
-      <th>手数料</th> <!-- 手数料の列を追加 -->
-      <th>利益</th>
-    </tr>
-  </thead>
-  <tbody id="detailProductList">
-    <!-- 商品詳細がここに表示されます -->
-  </tbody>
-</table>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>商品名</th>
+                <th>数量</th>
+                <th>サイズ</th>
+                <th>単価</th>
+                <th>売上金額</th>
+                <th>原価</th>
+                <th>手数料</th>
+                <th>利益</th>
+              </tr>
+            </thead>
+            <tbody id="detailProductList">
+              <!-- 商品詳細がここに表示されます -->
+            </tbody>
+          </table>
+        </div>
         <button id="returnTransactionButton">返品</button>
         <button id="deleteTransactionButton">取引を削除する</button>
         <button id="closeTransactionDetails">閉じる</button>
@@ -395,36 +404,38 @@
         <button type="submit">追加</button>
       </form>
       <!-- 単価ルール一覧表示エリア -->
-      <table id="pricingRulesList">
-        <thead>
-          <tr>
-            <th>サブカテゴリ名</th>
-            <th>最小数量</th>
-            <th>最大数量</th>
-            <th>単価</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 単価ルール情報がここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="pricingRulesList">
+          <thead>
+            <tr>
+              <th>サブカテゴリ名</th>
+              <th>最小数量</th>
+              <th>最大数量</th>
+              <th>単価</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 単価ルール情報がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
-<!-- 単価ルール編集用モーダル -->
-<div id="editPricingRuleModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeEditPricingRuleModal">&times;</span>
-    <h2>単価ルールの編集</h2>
-    <form id="editPricingRuleForm">
-      <input type="hidden" id="editPricingRuleId" />
-      <input type="number" id="editMinQuantity" placeholder="最小数量" required step="any" min="0" />
-      <input type="number" id="editMaxQuantity" placeholder="最大数量" required step="any" min="0" />
-      <input type="number" id="editUnitPrice" placeholder="単価" required step="any" min="0" />
-      <button type="submit">更新</button>
-    </form>
-  </div>
-</div>
+    <!-- 単価ルール編集用モーダル -->
+    <div id="editPricingRuleModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeEditPricingRuleModal">&times;</span>
+        <h2>単価ルールの編集</h2>
+        <form id="editPricingRuleForm">
+          <input type="hidden" id="editPricingRuleId" />
+          <input type="number" id="editMinQuantity" placeholder="最小数量" required step="any" min="0" />
+          <input type="number" id="editMaxQuantity" placeholder="最大数量" required step="any" min="0" />
+          <input type="number" id="editUnitPrice" placeholder="単価" required step="any" min="0" />
+          <button type="submit">更新</button>
+        </form>
+      </div>
+    </div>
 
     <!-- 支払い方法設定 -->
     <section id="payment-methods" class="content-section" style="display: none;" data-requires-auth="true">
@@ -436,18 +447,20 @@
         <button type="submit">追加</button>
       </form>
       <!-- 支払い方法一覧表示エリア -->
-      <table id="paymentMethodList">
-        <thead>
-          <tr>
-            <th>支払い方法名</th>
-            <th>手数料率(%)</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 支払い方法情報がここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="paymentMethodList">
+          <thead>
+            <tr>
+              <th>支払い方法名</th>
+              <th>手数料率(%)</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 支払い方法情報がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- 消耗品管理セクション -->
@@ -458,18 +471,20 @@
         <input type="number" id="consumableCost" placeholder="原価" required step="0.01" min="0" />
         <button type="submit">追加</button>
       </form>
-      <table id="consumableList">
-        <thead>
-          <tr>
-            <th>消耗品名</th>
-            <th>原価</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 消耗品情報がここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="consumableList">
+          <thead>
+            <tr>
+              <th>消耗品名</th>
+              <th>原価</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 消耗品情報がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
 
       <!-- 消耗品使用量の表示 -->
       <h2>消耗品使用量</h2>
@@ -484,52 +499,53 @@
         </select>
         <button id="filterUsage">フィルタ</button>
       </div>
-      <table id="consumableUsageList">
-        <thead>
-          <tr>
-            <th>消耗品名</th>
-            <th>使用量</th>
-            <th>使用日</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 消耗品使用量がここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="consumableUsageList">
+          <thead>
+            <tr>
+              <th>消耗品名</th>
+              <th>使用量</th>
+              <th>使用日</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 消耗品使用量がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
-<!-- 消耗品編集用モーダルを追加 -->
-<div id="editConsumableModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeEditConsumableModal">&times;</span>
-    <h2>消耗品の編集</h2>
-    <form id="editConsumableForm">
-      <input type="hidden" id="editConsumableId" />
-      <input type="text" id="editConsumableName" placeholder="消耗品名" required />
-      <input type="number" id="editConsumableCost" placeholder="原価" required step="0.01" min="0" />
-      <button type="submit">更新</button>
-    </form>
-  </div>
-</div>
+    <!-- 消耗品編集用モーダルを追加 -->
+    <div id="editConsumableModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeEditConsumableModal">&times;</span>
+        <h2>消耗品の編集</h2>
+        <form id="editConsumableForm">
+          <input type="hidden" id="editConsumableId" />
+          <input type="text" id="editConsumableName" placeholder="消耗品名" required />
+          <input type="number" id="editConsumableCost" placeholder="原価" required step="0.01" min="0" />
+          <button type="submit">更新</button>
+        </form>
+      </div>
+    </div>
 
-<!-- 消耗品使用量編集用モーダル -->
-<div id="editConsumableUsageModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="closeEditConsumableUsageModal">&times;</span>
-    <h2>消耗品使用量の編集</h2>
-    <form id="editConsumableUsageForm">
-      <input type="hidden" id="editConsumableUsageId" />
-      <label for="editConsumableSelect">消耗品名:</label>
-      <select id="editConsumableSelect" required>
-        <!-- 消耗品の選択肢がここに追加されます -->
-      </select>
-      <input type="number" id="editQuantityUsed" placeholder="使用量" required step="any" min="0" />
-      <input type="datetime-local" id="editUsageTimestamp" required />
-      <button type="submit">更新</button>
-    </form>
-  </div>
-</div>
-
+    <!-- 消耗品使用量編集用モーダル -->
+    <div id="editConsumableUsageModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeEditConsumableUsageModal">&times;</span>
+        <h2>消耗品使用量の編集</h2>
+        <form id="editConsumableUsageForm">
+          <input type="hidden" id="editConsumableUsageId" />
+          <label for="editConsumableSelect">消耗品名:</label>
+          <select id="editConsumableSelect" required>
+            <!-- 消耗品の選択肢がここに追加されます -->
+          </select>
+          <input type="number" id="editQuantityUsed" placeholder="使用量" required step="any" min="0" />
+          <input type="datetime-local" id="editUsageTimestamp" required />
+          <button type="submit">更新</button>
+        </form>
+      </div>
+    </div>
 
     <!-- 売上分析 -->
     <section id="sales-analysis" class="content-section" style="display: none;" data-requires-auth="true">
@@ -565,29 +581,31 @@
         <button type="submit">表示する</button>
       </form>
       <!-- 売上分析集計テーブル -->
-      <table id="salesSummaryTable">
-        <thead>
-          <tr>
-            <th rowspan="2">集計期間</th>
-            <th rowspan="2">売上</th>
-            <th rowspan="2">原価</th>
-            <th rowspan="2">利益</th>
-            <th rowspan="2">会計数</th>
-            <th rowspan="2">客単価</th>
-            <th rowspan="2">商品数</th>
-            <th colspan="2">支払方法別売上</th>
-            <th rowspan="2">割引額</th>
-            <th rowspan="2">詳細</th>
-          </tr>
-          <tr>
-            <th>現金</th>
-            <th>その他</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 売上集計データがここに表示されます -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table id="salesSummaryTable">
+          <thead>
+            <tr>
+              <th rowspan="2">集計期間</th>
+              <th rowspan="2">売上</th>
+              <th rowspan="2">原価</th>
+              <th rowspan="2">利益</th>
+              <th rowspan="2">会計数</th>
+              <th rowspan="2">客単価</th>
+              <th rowspan="2">商品数</th>
+              <th colspan="2">支払方法別売上</th>
+              <th rowspan="2">割引額</th>
+              <th rowspan="2">詳細</th>
+            </tr>
+            <tr>
+              <th>現金</th>
+              <th>その他</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 売上集計データがここに表示されます -->
+          </tbody>
+        </table>
+      </div>
       <!-- 売上分析グラフ表示エリア -->
       <canvas id="salesChart"></canvas>
     </section>
