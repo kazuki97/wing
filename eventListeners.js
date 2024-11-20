@@ -52,6 +52,7 @@ import {
 
 import {
   getPaymentMethods,
+  getPaymentMethodById,
 } from './paymentMethods.js';
 
 import {
