@@ -34,6 +34,21 @@ export async function getPaymentMethods() {
   }
 }
 
+export async function getPaymentMethodById(paymentMethodId) {
+  try {
+    const paymentMethodDoc = await db.collection('paymentMethods').doc(paymentMethodId).get();
+    if (paymentMethodDoc.exists) {
+      return { id: paymentMethodDoc.id, ...paymentMethodDoc.data() };
+    } else {
+      console.warn(`支払い方法ID ${paymentMethodId} が見つかりませんでした`);
+      return null;
+    }
+  } catch (error) {
+    console.error('支払い方法の取得に失敗しました:', error);
+    throw error;
+  }
+}
+
 // 支払い方法の更新
 export async function updatePaymentMethod(id, name, feeRate) {
   try {
