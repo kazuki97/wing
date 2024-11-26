@@ -1665,7 +1665,7 @@ export async function displayInventoryProducts() {
       return numA - numB;
     });
 
-    const inventoryList = document.getElementById('inventoryList').querySelector('tbody');
+   const inventoryList = document.getElementById('inventoryList').querySelector('tbody');
     inventoryList.innerHTML = '';
     for (const product of products) {
       const row = document.createElement('tr');
@@ -1676,10 +1676,23 @@ export async function displayInventoryProducts() {
         <td>${product.cost}</td>
         <td>${product.barcode}</td>
         <td>${product.size}</td>
-        <td><button class="update-inventory">更新</button></td>
+        <td>
+          <button class="update-inventory">更新</button>
+        </td>
+        <td>
+          <button class="view-inventory-history" data-product-id="${product.id}">変動履歴を見る</button>
+        </td>
       `;
       inventoryList.appendChild(row);
     }
+
+    // 「変動履歴を見る」ボタンのイベントリスナーを追加
+    document.querySelectorAll('.view-inventory-history').forEach((button) => {
+      button.addEventListener('click', (e) => {
+        const productId = e.target.dataset['productId'];
+        viewInventoryHistory(productId);
+      });
+    });
 
     // 在庫数更新ボタンのイベントリスナー（既存のコード）
     document.querySelectorAll('.update-inventory').forEach((button) => {
