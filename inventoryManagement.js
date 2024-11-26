@@ -37,6 +37,24 @@ export async function updateOverallInventory(subcategoryId, quantityChange) {
   }
 }
 
+export async function getInventoryChangesByProductId(productId) {
+  try {
+    const snapshot = await db.collection('inventoryChanges')
+      .where('productId', '==', productId)
+      .orderBy('timestamp', 'desc')
+      .get();
+
+    const changes = [];
+    snapshot.forEach((doc) => {
+      changes.push({ id: doc.id, ...doc.data() });
+    });
+    return changes;
+  } catch (error) {
+    console.error('在庫変動履歴の取得に失敗しました:', error);
+    throw error;
+  }
+}
+
 // 全体在庫の取得（サブカテゴリごと）
 export async function getOverallInventory(subcategoryId) {
   try {
