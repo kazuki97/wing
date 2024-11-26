@@ -549,6 +549,28 @@
       </div>
     </div>
 
+ <!-- 在庫変動履歴表示用モーダルをここに追加 -->
+        <div id="inventoryHistoryModal" class="modal">
+          <div class="modal-content">
+            <span class="close" id="closeInventoryHistoryModal">&times;</span>
+            <h2>在庫変動履歴</h2>
+            <table id="inventoryHistoryTable">
+              <thead>
+                <tr>
+                  <th>日時</th>
+                  <th>変動数</th>
+                  <th>変更後の数量</th>
+                  <th>操作したユーザー</th>
+                  <th>理由</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 履歴データがここに表示されます -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
     <!-- 売上分析 -->
     <section id="sales-analysis" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>売上分析</h1>
