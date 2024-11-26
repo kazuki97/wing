@@ -145,38 +145,40 @@
       <!-- 編集フォームの内容 -->
     </div>
 
-    <!-- 在庫管理 -->
-    <section id="inventory" class="content-section" style="display: none;" data-requires-auth="true">
-      <h1>在庫管理</h1>
-      <!-- カテゴリフィルタリング -->
-      <div>
-        <select id="inventoryParentCategorySelect" required>
-          <option value="">親カテゴリを選択</option>
-        </select>
-        <select id="inventorySubcategorySelect" required>
-          <option value="">サブカテゴリを選択</option>
-        </select>
-      </div>
-      <!-- 商品一覧表示エリア -->
-      <div class="table-responsive">
-        <table id="inventoryList">
-          <thead>
-            <tr>
-              <th>商品名</th>
-              <th>数量</th>
-              <th>価格</th>
-              <th>原価</th>
-              <th>バーコード</th>
-              <th>サイズ</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- 商品情報がここに表示されます -->
-          </tbody>
-        </table>
-      </div>
-    </section>
+   <!-- 在庫管理 -->
+<section id="inventory" class="content-section" style="display: none;" data-requires-auth="true">
+  <h1>在庫管理</h1>
+  <!-- カテゴリフィルタリング -->
+  <div>
+    <select id="inventoryParentCategorySelect" required>
+      <option value="">親カテゴリを選択</option>
+    </select>
+    <select id="inventorySubcategorySelect" required>
+      <option value="">サブカテゴリを選択</option>
+    </select>
+  </div>
+  <!-- 商品一覧表示エリア -->
+  <div class="table-responsive">
+    <table id="inventoryList">
+      <thead>
+        <tr>
+          <th>商品名</th>
+          <th>数量</th>
+          <th>価格</th>
+          <th>原価</th>
+          <th>バーコード</th>
+          <th>サイズ</th>
+          <th>操作</th>
+          <th>変動履歴</th> <!-- ここを追加 -->
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 商品情報がここに表示されます -->
+      </tbody>
+    </table>
+  </div>
+</section>
+
 
     <!-- 全体在庫 -->
     <section id="overall-inventory" class="content-section" style="display: none;" data-requires-auth="true">
