@@ -8,6 +8,11 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
+  query,
+  where,
+  orderBy,
+  addDoc,
+  serverTimestamp, // **追加**
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 // 全体在庫の更新（サブカテゴリごと）
@@ -27,7 +32,7 @@ export async function updateOverallInventory(subcategoryId, quantityChange) {
       docRef,
       {
         quantity: newQuantity,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp(), // **修正**
       },
       { merge: true }
     );
@@ -37,12 +42,16 @@ export async function updateOverallInventory(subcategoryId, quantityChange) {
   }
 }
 
+// 在庫変動履歴の取得
 export async function getInventoryChangesByProductId(productId) {
   try {
-    const snapshot = await db.collection('inventoryChanges')
-      .where('productId', '==', productId)
-      .orderBy('timestamp', 'desc')
-      .get();
+    const q = query(
+      collection(db, 'inventoryChanges'),
+      where('productId', '==', productId),
+      orderBy('timestamp', 'desc')
+    );
+
+    const snapshot = await getDocs(q);
 
     const changes = [];
     snapshot.forEach((doc) => {
