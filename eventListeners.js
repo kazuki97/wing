@@ -1694,6 +1694,79 @@ export async function displayInventoryProducts() {
       });
     });
 
+async function viewInventoryHistory(productId) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('在庫変動履歴を表示するにはログインが必要です。');
+      return;
+    }
+    // Firestore から指定された商品IDの在庫変動履歴を取得
+    const inventoryChanges = await getInventoryChangesByProductId(productId);
+
+    // モーダルウィンドウまたは別の方法で履歴を表示
+    // ここではコンソールに出力します（後で実装を拡張してください）
+    console.log('在庫変動履歴:', inventoryChanges);
+  } catch (error) {
+    console.error('在庫変動履歴の取得に失敗しました:', error);
+    showError('在庫変動履歴の取得に失敗しました');
+  }
+}
+
+// モーダル要素の取得
+const inventoryHistoryModal = document.getElementById('inventoryHistoryModal');
+const closeInventoryHistoryModalBtn = document.getElementById('closeInventoryHistoryModal');
+
+// モーダルを閉じるイベントリスナー
+closeInventoryHistoryModalBtn.addEventListener('click', () => {
+  inventoryHistoryModal.style.display = 'none';
+});
+
+// モーダル外をクリックしたときにモーダルを閉じる
+window.addEventListener('click', (event) => {
+  if (event.target === inventoryHistoryModal) {
+    inventoryHistoryModal.style.display = 'none';
+  }
+});
+
+// viewInventoryHistory 関数の修正
+async function viewInventoryHistory(productId) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('在庫変動履歴を表示するにはログインが必要です。');
+      return;
+    }
+    // Firestore から指定された商品IDの在庫変動履歴を取得
+    const inventoryChanges = await getInventoryChangesByProductId(productId);
+
+    // テーブルに履歴を表示
+    const tbody = document.getElementById('inventoryHistoryTable').querySelector('tbody');
+    tbody.innerHTML = ''; // 既存の内容をクリア
+
+    inventoryChanges.forEach((change) => {
+      const row = document.createElement('tr');
+      const date = new Date(change.timestamp);
+      row.innerHTML = `
+        <td>${date.toLocaleString()}</td>
+        <td>${change.changeAmount}</td>
+        <td>${change.newQuantity}</td>
+        <td>${change.userName || '不明'}</td>
+        <td>${change.reason || 'なし'}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    // モーダルを表示
+    inventoryHistoryModal.style.display = 'block';
+  } catch (error) {
+    console.error('在庫変動履歴の取得に失敗しました:', error);
+    showError('在庫変動履歴の取得に失敗しました');
+  }
+}
+
+
+
     // 在庫数更新ボタンのイベントリスナー（既存のコード）
     document.querySelectorAll('.update-inventory').forEach((button) => {
       button.addEventListener('click', async (e) => {
