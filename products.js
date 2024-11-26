@@ -147,33 +147,20 @@ export async function deleteProduct(id) {
 
 export async function updateProductQuantity(productId, newQuantity) {
   try {
-    // Firestore の商品コレクションを参照
     const productRef = doc(db, 'products', productId);
-    // 商品の在庫数を更新
-    await updateDoc(productRef, { quantity: newQuantity });
-    console.log('在庫数が更新されました');
-  } catch (error) {
-    console.error('在庫数の更新に失敗しました:', error);
-    throw error; // エラーを再スローしてキャッチブロックで処理
-  }
-}
+    const productDoc = await getDoc(productRef);
 
-export async function updateProductQuantity(productId, newQuantity) {
-  try {
-    const productRef = db.collection('products').doc(productId);
-    const productDoc = await productRef.get();
-
-    if (!productDoc.exists) {
+    if (!productDoc.exists()) {
       throw new Error('商品が見つかりません');
     }
 
     const oldQuantity = productDoc.data().quantity || 0;
     const changeAmount = newQuantity - oldQuantity;
 
-    await productRef.update({ quantity: newQuantity });
+    await updateDoc(productRef, { quantity: newQuantity });
 
     // 在庫変動履歴を記録
-    await db.collection('inventoryChanges').add({
+    await addDoc(collection(db, 'inventoryChanges'), {
       productId: productId,
       timestamp: new Date().toISOString(),
       changeAmount: changeAmount,
@@ -182,8 +169,12 @@ export async function updateProductQuantity(productId, newQuantity) {
       userName: auth.currentUser.email, // またはユーザー名
       reason: '在庫数の手動更新',
     });
+
+    console.log('在庫数が更新され、在庫変動履歴が記録されました');
+
   } catch (error) {
     console.error('在庫数の更新に失敗しました:', error);
     throw error;
   }
 }
+
