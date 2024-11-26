@@ -31,6 +31,7 @@ import {
   getOverallInventory,
   getAllOverallInventories,
   deleteOverallInventory,
+ getInventoryChangesByProductId,
 } from './inventoryManagement.js';
 
 import {
