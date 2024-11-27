@@ -2072,7 +2072,7 @@ if (cancelAddTransactionButton) {
   });
 }
 
-// **修正点**: 売上処理のイベントリスナーを関数の外に移動
+// 売上処理のイベントリスナーを設定
 document.addEventListener('DOMContentLoaded', () => {
   const processSaleForm = document.getElementById('processSaleForm');
   if (processSaleForm) {
@@ -2088,12 +2088,13 @@ document.addEventListener('DOMContentLoaded', () => {
         await processSale(barcode, quantitySold);
         // フォームをリセット
         e.target.reset();
+        alert('売上が登録されました');
+        // 在庫リストを更新
+        await displayInventoryProducts();
       } catch (error) {
         console.error('売上処理に失敗しました:', error);
         showError('売上の記録に失敗しました');
       }
     });
-  } else {
-    console.error('processSaleForm が見つかりません');
   }
 });
