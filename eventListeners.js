@@ -31,7 +31,8 @@ import {
   getOverallInventory,
   getAllOverallInventories,
   deleteOverallInventory,
- getInventoryChangesByProductId,
+  getInventoryChangesByProductId,
+  getOverallInventoryChangesBySubcategoryId, // **追加**
 } from './inventoryManagement.js';
 
 import {
@@ -1704,6 +1705,22 @@ closeInventoryHistoryModalBtn.addEventListener('click', () => {
   inventoryHistoryModal.style.display = 'none';
 });
 
+// **追加**: 全体在庫変動履歴モーダルの要素取得
+const overallInventoryHistoryModal = document.getElementById('overallInventoryHistoryModal');
+const closeOverallInventoryHistoryModalBtn = document.getElementById('closeOverallInventoryHistoryModal');
+
+// モーダルを閉じるイベントリスナー
+closeOverallInventoryHistoryModalBtn.addEventListener('click', () => {
+  overallInventoryHistoryModal.style.display = 'none';
+});
+
+// モーダル外をクリックしたときにモーダルを閉じる
+window.addEventListener('click', (event) => {
+  if (event.target === overallInventoryHistoryModal) {
+    overallInventoryHistoryModal.style.display = 'none';
+  }
+});
+
 // モーダル外をクリックしたときにモーダルを閉じる
 window.addEventListener('click', (event) => {
   if (event.target === inventoryHistoryModal) {
@@ -1747,7 +1764,42 @@ async function viewInventoryHistory(productId) {
   }
 }
 
+// **追加**: 全体在庫変動履歴を表示する関数
+async function viewOverallInventoryHistory(subcategoryId) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('在庫変動履歴を表示するにはログインが必要です。');
+      return;
+    }
 
+    const inventoryChanges = await getOverallInventoryChangesBySubcategoryId(subcategoryId);
+
+    // テーブルに履歴を表示
+    const tbody = document.getElementById('overallInventoryHistoryTable').querySelector('tbody');
+    tbody.innerHTML = ''; // 既存の内容をクリア
+
+    inventoryChanges.forEach((change) => {
+      const date = change.timestamp.toDate ? change.timestamp.toDate() : new Date(change.timestamp);
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${date.toLocaleString()}</td>
+        <td>${change.changeAmount}</td>
+        <td>${change.newQuantity}</td>
+        <td>${change.userName || '不明'}</td>
+        <td>${change.reason || 'なし'}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    // モーダルを表示
+    document.getElementById('overallInventoryHistoryModal').style.display = 'block';
+
+  } catch (error) {
+    console.error('全体在庫変動履歴の取得に失敗しました:', error);
+    showError('全体在庫変動履歴の取得に失敗しました');
+  }
+}
 
     // 在庫数更新ボタンのイベントリスナー（既存のコード）
     document.querySelectorAll('.update-inventory').forEach((button) => {
@@ -1789,7 +1841,7 @@ async function updateOverallInventoryAfterSale(productId, quantitySold) {
   }
 }
 
-// 全体在庫更新フォームのイベントリスナー
+// **修正**: 全体在庫更新フォームのイベントリスナー
 document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
@@ -1797,27 +1849,26 @@ document.getElementById('updateOverallInventoryForm').addEventListener('submit',
     alert('全体在庫を更新するにはログインが必要です。');
     return;
   }
-    const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
-    const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
-    try {
-      await updateOverallInventory(subcategoryId, quantity);
-      alert('全体在庫が更新されました');
-      await displayOverallInventory();
-    } catch (error) {
-      console.error(error);
-      showError('全体在庫の更新に失敗しました');
-    }
-  });
+  const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
+  const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
+  const reason = document.getElementById('overallInventoryReason').value || '在庫数の手動更新';
 
-// 全体在庫の表示関数を修正して削除ボタンを追加
-// 修正しました: 全体在庫の表示関数に削除ボタンを追加
+  try {
+    await updateOverallInventory(subcategoryId, quantity, reason);
+    alert('全体在庫が更新されました');
+    await displayOverallInventory();
+  } catch (error) {
+    console.error(error);
+    showError('全体在庫の更新に失敗しました');
+  }
+});
 export async function displayOverallInventory() {
   try {
-const user = auth.currentUser;
-if (!user) {
-  alert('この操作を行うにはログインが必要です。');
-  return;
-}
+    const user = auth.currentUser;
+    if (!user) {
+      alert('この操作を行うにはログインが必要です。');
+      return;
+    }
     const overallInventories = await getAllOverallInventories();
     const overallInventoryList = document.getElementById('overallInventoryList').querySelector('tbody');
     overallInventoryList.innerHTML = '';
@@ -1827,10 +1878,21 @@ if (!user) {
       row.innerHTML = `
         <td>${subcategory ? subcategory.name : '不明なサブカテゴリ'}</td>
         <td>${inventory.quantity || 0}</td>
-        <td><button class="delete-overall-inventory" data-id="${inventory.id}">削除</button></td>
+        <td>
+          <button class="view-overall-inventory-history" data-subcategory-id="${inventory.id}">変動履歴を見る</button>
+          <button class="delete-overall-inventory" data-id="${inventory.id}">削除</button>
+        </td>
       `;
       overallInventoryList.appendChild(row);
     }
+
+    // **追加**: 「変動履歴を見る」ボタンのイベントリスナーを追加
+    document.querySelectorAll('.view-overall-inventory-history').forEach((button) => {
+      button.addEventListener('click', (e) => {
+        const subcategoryId = e.target.dataset['subcategoryId'];
+        viewOverallInventoryHistory(subcategoryId);
+      });
+    });
 
     // 削除ボタンのイベントリスナー
     document.querySelectorAll('.delete-overall-inventory').forEach((button) => {
