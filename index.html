@@ -9,8 +9,6 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
-<body>
   <!-- エラーメッセージ表示エリア -->
   <div id="error-message" class="error-message"></div>
   <div id="message" class="message" style="display: none;"></div>
@@ -35,6 +33,7 @@
       <li><a href="#" onclick="logout(); return false;">ログアウト</a></li>
     </ul>
   </nav>
+
 
   <!-- ログインフォームを修正 -->
   <div id="loginForm" style="display: none;">
@@ -147,39 +146,51 @@
     </div>
 
    <!-- 在庫管理 -->
-<section id="inventory" class="content-section" style="display: none;" data-requires-auth="true">
-  <h1>在庫管理</h1>
-  <!-- カテゴリフィルタリング -->
-  <div>
-    <select id="inventoryParentCategorySelect" required>
-      <option value="">親カテゴリを選択</option>
-    </select>
-    <select id="inventorySubcategorySelect" required>
-      <option value="">サブカテゴリを選択</option>
-    </select>
-  </div>
-  <!-- 商品一覧表示エリア -->
-  <div class="table-responsive">
-    <table id="inventoryList">
-      <thead>
-        <tr>
-          <th>商品名</th>
-          <th>数量</th>
-          <th>価格</th>
-          <th>原価</th>
-          <th>バーコード</th>
-          <th>サイズ</th>
-          <th>操作</th>
-          <th>変動履歴</th> <!-- ここを追加 -->
-        </tr>
-      </thead>
-      <tbody>
-        <!-- 商品情報がここに表示されます -->
-      </tbody>
-    </table>
-  </div>
-</section>
+    <section id="inventory" class="content-section" style="display: none;" data-requires-auth="true">
+      <h1>在庫管理</h1>
+      <!-- カテゴリフィルタリング -->
+      <div>
+        <select id="inventoryParentCategorySelect" required>
+          <option value="">親カテゴリを選択</option>
+        </select>
+        <select id="inventorySubcategorySelect" required>
+          <option value="">サブカテゴリを選択</option>
+        </select>
+      </div>
+      <!-- 商品一覧表示エリア -->
+      <div class="table-responsive">
+        <table id="inventoryList">
+          <thead>
+            <tr>
+              <th>商品名</th>
+              <th>数量</th>
+              <th>価格</th>
+              <th>原価</th>
+              <th>バーコード</th>
+              <th>サイズ</th>
+              <th>操作</th>
+              <th>変動履歴</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 商品情報がここに表示されます -->
+          </tbody>
+        </table>
+      </div>
 
+      <!-- **ここに processSaleForm を追加** -->
+      <!-- 売上処理フォーム -->
+      <h2>売上処理</h2>
+      <form id="processSaleForm">
+        <label for="saleBarcode">バーコード:</label>
+        <input type="text" id="saleBarcode" placeholder="バーコードを入力" required />
+
+        <label for="saleQuantity">数量:</label>
+        <input type="number" id="saleQuantity" placeholder="数量" required min="1" />
+
+        <button type="submit">売上登録</button>
+      </form>
+    </section>
 
     <!-- 全体在庫 -->
 <section id="overall-inventory" class="content-section" style="display: none;" data-requires-auth="true">
