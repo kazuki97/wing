@@ -1874,6 +1874,7 @@ document.getElementById('updateOverallInventoryForm').addEventListener('submit',
     showError('全体在庫の更新に失敗しました');
   }
 });
+// 全体在庫を表示する関数をエクスポート
 export async function displayOverallInventory() {
   try {
     const user = auth.currentUser;
@@ -1927,6 +1928,7 @@ export async function displayOverallInventory() {
     showError('全体在庫の表示に失敗しました');
   }
 }
+
 
 // 単価ルール追加フォームのイベントリスナー
 document
