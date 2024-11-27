@@ -1693,8 +1693,9 @@ async function viewInventoryHistory(productId) {
     tbody.innerHTML = ''; // 既存の内容をクリア
 
     inventoryChanges.forEach((change) => {
+      // **修正点: 日付の取得方法を修正**
+      const date = change.timestamp.toDate ? change.timestamp.toDate() : new Date(change.timestamp);
       const row = document.createElement('tr');
-      const date = new Date(change.timestamp);
       row.innerHTML = `
         <td>${date.toLocaleString()}</td>
         <td>${change.changeAmount}</td>
