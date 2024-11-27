@@ -67,6 +67,13 @@ import {
 } from './consumables.js';
 import { deleteConsumable } from './consumables.js'; // 削除の関数もインポート
 
+/**
+ * エラーメッセージを表示する関数
+ * @param {string} message - 表示するエラーメッセージ
+ */
+export function showError(message) {
+  alert(message);
+}
 
 // 追加: updatePricingParentCategorySelectの定義
 export async function updatePricingParentCategorySelect() {
