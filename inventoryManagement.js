@@ -76,7 +76,7 @@ export async function updateOverallInventory(subcategoryId, quantityChange, reas
     );
 
     // 在庫変動履歴を記録
-    await addDoc(collection(db, 'overallInventoryChanges'), {
+    const inventoryChange = {
       subcategoryId: subcategoryId,
       timestamp: serverTimestamp(),
       changeAmount: quantityChange,
@@ -84,7 +84,8 @@ export async function updateOverallInventory(subcategoryId, quantityChange, reas
       userId: user.uid,
       userName: user.displayName || user.email,
       reason: reason,
-    });
+    };
+    await addDoc(collection(db, 'overallInventoryChanges'), inventoryChange);
 
     console.log('全体在庫が更新され、在庫変動履歴が記録されました');
 
@@ -136,7 +137,12 @@ export async function getOverallInventoryChangesBySubcategoryId(subcategoryId) {
 
     const changes = [];
     snapshot.forEach((doc) => {
-      changes.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+      // `timestamp` を Date オブジェクトに変換
+      if (data.timestamp && data.timestamp.toDate) {
+        data.timestamp = data.timestamp.toDate();
+      }
+      changes.push({ id: doc.id, ...data });
     });
     return changes;
   } catch (error) {
