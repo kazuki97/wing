@@ -51,23 +51,25 @@ export async function processSale(barcode, quantitySold) {
 
     // 売上トランザクションの追加
     const transactionData = {
-      productId,
-      quantitySold,
+      items: [{
+        productId: productId,
+        quantity: quantitySold,
+        unitPrice: product.price,
+        subtotal: product.price * quantitySold,
+        cost: product.cost,
+        profit: (product.price - product.cost) * quantitySold,
+      }],
+      totalAmount: product.price * quantitySold,
+      totalCost: product.cost * quantitySold,
+      profit: (product.price - product.cost) * quantitySold,
       timestamp: serverTimestamp(),
       userId: user.uid,
       userName: user.displayName || user.email,
-      // その他必要なデータ...
-      totalAmount: product.price * quantitySold, // 例: 単価 × 数量
-      netAmount: (product.price * quantitySold) - (product.cost * quantitySold), // 例: 売上 - 原価
-      totalCost: product.cost * quantitySold,
-      feeAmount: 0, // 必要に応じて設定
-      profit: (product.price - product.cost) * quantitySold,
       manuallyAdded: false,
     };
-    const transactionId = await addTransaction(transactionData);
 
-    // 消耗品の使用量を記録
-    await recordConsumableUsage(transactionData.items);
+    // 取引データの追加
+    await addTransaction(transactionData);
 
     alert('売上が正常に記録されました。');
   } catch (error) {
