@@ -16,7 +16,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 // 全体在庫の更新（サブカテゴリごと）
-export async function updateOverallInventory(subcategoryId, quantityChange) {
+// reason パラメータを追加
+export async function updateOverallInventory(subcategoryId, quantityChange, reason = '在庫数の手動更新') {
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -26,28 +27,43 @@ export async function updateOverallInventory(subcategoryId, quantityChange) {
 
     const docRef = doc(db, 'overallInventory', subcategoryId);
     const currentInventory = await getOverallInventory(subcategoryId);
-    const newQuantity = (currentInventory.quantity || 0) + quantityChange;
+    const oldQuantity = currentInventory.quantity || 0;
+    const newQuantity = oldQuantity + quantityChange;
 
     await setDoc(
       docRef,
       {
         quantity: newQuantity,
-        updatedAt: serverTimestamp(), // **修正**
+        updatedAt: serverTimestamp(),
       },
       { merge: true }
     );
+
+    // **在庫変動履歴を記録**
+    await addDoc(collection(db, 'overallInventoryChanges'), {
+      subcategoryId: subcategoryId,
+      timestamp: serverTimestamp(),
+      changeAmount: quantityChange,
+      newQuantity: newQuantity,
+      userId: user.uid,
+      userName: user.email, // 必要に応じてユーザー名を使用
+      reason: reason,
+    });
+
+    console.log('全体在庫が更新され、在庫変動履歴が記録されました');
+
   } catch (error) {
     console.error('全体在庫の更新エラー:', error);
     throw error;
   }
 }
 
-// 在庫変動履歴の取得
-export async function getInventoryChangesByProductId(productId) {
+// **全体在庫変動履歴の取得**
+export async function getOverallInventoryChangesBySubcategoryId(subcategoryId) {
   try {
     const q = query(
-      collection(db, 'inventoryChanges'),
-      where('productId', '==', productId),
+      collection(db, 'overallInventoryChanges'),
+      where('subcategoryId', '==', subcategoryId),
       orderBy('timestamp', 'desc')
     );
 
@@ -59,7 +75,7 @@ export async function getInventoryChangesByProductId(productId) {
     });
     return changes;
   } catch (error) {
-    console.error('在庫変動履歴の取得に失敗しました:', error);
+    console.error('全体在庫変動履歴の取得に失敗しました:', error);
     throw error;
   }
 }
