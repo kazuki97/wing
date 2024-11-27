@@ -16,49 +16,38 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 // 商品の在庫数量を更新し、変動履歴を記録する関数
-export async function updateProductQuantity(productId, quantityChange, reason = '在庫数の手動更新') {
+export async function updateProductQuantity(productId, quantityChange, reason = '') {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('在庫を更新するにはログインが必要です。');
+  }
   try {
-    const user = auth.currentUser;
-    if (!user) {
-      alert('操作を行うにはログインが必要です。');
-      return;
-    }
-
     const productRef = doc(db, 'products', productId);
-    const productSnap = await getDoc(productRef);
-
-    if (!productSnap.exists()) {
-      alert('商品が見つかりません。');
-      return;
+    const productDoc = await getDoc(productRef);
+    if (!productDoc.exists()) {
+      throw new Error('商品が見つかりません');
     }
+    const productData = productDoc.data();
+    const newQuantity = (productData.quantity || 0) + quantityChange;
 
-    const oldQuantity = productSnap.data().quantity || 0;
-    const newQuantity = oldQuantity + quantityChange;
+    await updateDoc(productRef, { quantity: newQuantity });
 
-    await updateDoc(productRef, {
-      quantity: newQuantity,
-      updatedAt: serverTimestamp(),
-    });
-
-    // 在庫変動履歴を記録
-    await addDoc(collection(db, 'inventoryChanges'), {
+    // 在庫変動履歴を追加
+    const inventoryChange = {
       productId: productId,
-      timestamp: serverTimestamp(),
       changeAmount: quantityChange,
       newQuantity: newQuantity,
+      timestamp: serverTimestamp(), // サーバータイムスタンプを使用
       userId: user.uid,
       userName: user.displayName || user.email,
       reason: reason,
-    });
-
-    console.log('在庫が更新され、在庫変動履歴が記録されました');
+    };
+    await addDoc(collection(db, 'inventoryChanges'), inventoryChange);
   } catch (error) {
-    console.error('在庫の更新エラー:', error);
-    alert('在庫の更新に失敗しました。');
+    console.error('在庫数量の更新に失敗しました:', error);
     throw error;
   }
 }
-
 
 // 全体在庫の更新（サブカテゴリごと）
 export async function updateOverallInventory(subcategoryId, quantityChange, reason = '在庫数の手動更新') {
