@@ -40,8 +40,8 @@ import {
   getPricingRules,
   deletePricingRule,
   getUnitPrice,
-  getPricingRuleById, // **追加**
-  updatePricingRule,  // **追加**
+  getPricingRuleById,
+  updatePricingRule,
 } from './pricing.js';
 
 import {
@@ -50,27 +50,26 @@ import {
   updateTransaction,
   deleteTransaction,
   addTransaction,
-  processSale, // **ここを追加**
+  processSale,
 } from './transactions.js';
+
 import {
   getPaymentMethods,
+  getPaymentMethodById, // **追加**
 } from './paymentMethods.js';
 
 import {
   getConsumables,
   getConsumableUsage,
-  getConsumableUsageById, // **追加**
-  updateConsumableUsage,  // **追加**
-  deleteConsumableUsage,  // **追加**
-  getConsumableById,      // **ここを追加**
-  updateConsumable,       // **ここを追加**
+  getConsumableUsageById,
+  updateConsumableUsage,
+  deleteConsumableUsage,
+  getConsumableById,
+  updateConsumable,
 } from './consumables.js';
-import { deleteConsumable } from './consumables.js'; // 削除の関数もインポート
 
-/**
- * エラーメッセージを表示する関数
- * @param {string} message - 表示するエラーメッセージ
- */
+import { deleteConsumable } from './consumables.js';
+
 // エラーメッセージ表示関数
 export function showError(message) {
   const errorDiv = document.getElementById('error-message');
@@ -80,6 +79,7 @@ export function showError(message) {
     errorDiv.style.display = 'none';
   }, 5000);
 }
+
 
 // 追加: updatePricingParentCategorySelectの定義
 export async function updatePricingParentCategorySelect() {
@@ -1818,41 +1818,12 @@ export async function displayInventoryProducts() {
       });
     });
 
-    // **売上処理のイベントリスナーを追加**
-    document.getElementById('processSaleForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const barcode = document.getElementById('saleBarcode').value;
-      const quantitySold = parseFloat(document.getElementById('saleQuantity').value);
-      if (!barcode || isNaN(quantitySold) || quantitySold <= 0) {
-        showError('有効なバーコードと数量を入力してください');
-        return;
-      }
-      try {
-        await processSale(barcode, quantitySold);
-        // フォームをリセット
-        e.target.reset();
-      } catch (error) {
-        console.error('売上処理に失敗しました:', error);
-        showError('売上の記録に失敗しました');
-      }
-    });
-
     // **商品名から数値を抽出する関数を追加**
     function extractNumberFromName(name) {
       const match = name.match(/\d+/);
       return match ? parseFloat(match[0]) : 0;
     }
 
-    // 販売完了後に全体在庫を更新する関数
-    // 修正しました: 販売完了後に全体在庫を減少させる関数を追加
-    async function updateOverallInventoryAfterSale(productId, quantitySold) {
-      try {
-        await updateOverallInventory(productId, -quantitySold);
-      } catch (error) {
-        console.error('全体在庫の更新エラー:', error);
-        showError('全体在庫の更新に失敗しました');
-      }
-    }
   } catch (error) {
     console.error(error);
     showError('在庫商品の表示に失敗しました');
@@ -2084,21 +2055,45 @@ document.getElementById('pricingSubcategorySelect').addEventListener('change', a
   await displayPricingRules();
 });
 
+// 手動で売上を追加するボタンのイベントリスナー
+const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
+if (manualAddTransactionButton) {
+  manualAddTransactionButton.addEventListener('click', async () => {
+    document.getElementById('manualAddTransactionForm').style.display = 'block';
+    await updatePaymentMethodSelect(); // 支払い方法のセレクトボックスを更新
+  });
+}
 
+// 手動追加フォームのキャンセルボタンのイベントリスナー
+const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
+if (cancelAddTransactionButton) {
+  cancelAddTransactionButton.addEventListener('click', () => {
+    document.getElementById('manualAddTransactionForm').style.display = 'none';
+  });
+}
 
-  // 手動で売上を追加するボタンのイベントリスナー
-  const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
-  if (manualAddTransactionButton) {
-    manualAddTransactionButton.addEventListener('click', async () => {
-      document.getElementById('manualAddTransactionForm').style.display = 'block';
-      await updatePaymentMethodSelect(); // 支払い方法のセレクトボックスを更新
+// **修正点**: 売上処理のイベントリスナーを関数の外に移動
+document.addEventListener('DOMContentLoaded', () => {
+  const processSaleForm = document.getElementById('processSaleForm');
+  if (processSaleForm) {
+    processSaleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const barcode = document.getElementById('saleBarcode').value;
+      const quantitySold = parseFloat(document.getElementById('saleQuantity').value);
+      if (!barcode || isNaN(quantitySold) || quantitySold <= 0) {
+        showError('有効なバーコードと数量を入力してください');
+        return;
+      }
+      try {
+        await processSale(barcode, quantitySold);
+        // フォームをリセット
+        e.target.reset();
+      } catch (error) {
+        console.error('売上処理に失敗しました:', error);
+        showError('売上の記録に失敗しました');
+      }
     });
+  } else {
+    console.error('processSaleForm が見つかりません');
   }
-
-  // 手動追加フォームのキャンセルボタンのイベントリスナー
-  const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
-  if (cancelAddTransactionButton) {
-    cancelAddTransactionButton.addEventListener('click', () => {
-      document.getElementById('manualAddTransactionForm').style.display = 'none';
-    });
-  }
+});
