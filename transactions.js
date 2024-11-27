@@ -55,13 +55,14 @@ export async function processSale(barcode, quantitySold) {
         productId: productId,
         quantity: quantitySold,
         unitPrice: product.price,
-        subtotal: product.price * quantitySold,
+        size: product.size || 1,
+        subtotal: product.price * quantitySold * (product.size || 1),
         cost: product.cost,
-        profit: (product.price - product.cost) * quantitySold,
+        profit: (product.price - product.cost) * quantitySold * (product.size || 1),
       }],
-      totalAmount: product.price * quantitySold,
-      totalCost: product.cost * quantitySold,
-      profit: (product.price - product.cost) * quantitySold,
+      totalAmount: product.price * quantitySold * (product.size || 1),
+      totalCost: product.cost * quantitySold * (product.size || 1),
+      profit: (product.price - product.cost) * quantitySold * (product.size || 1),
       timestamp: serverTimestamp(),
       userId: user.uid,
       userName: user.displayName || user.email,
@@ -81,7 +82,6 @@ export async function processSale(barcode, quantitySold) {
 // 売上データの追加
 export async function addTransaction(transactionData) {
   try {
-    console.log('保存する取引データ:', transactionData);
     const user = auth.currentUser;
     if (!user) {
       alert('取引を追加するにはログインが必要です。');
@@ -90,10 +90,8 @@ export async function addTransaction(transactionData) {
 
     // 数値フィールドを明示的に数値型に変換
     transactionData.totalAmount = Number(transactionData.totalAmount);
-    transactionData.netAmount = Number(transactionData.netAmount);
     transactionData.totalCost = Number(transactionData.totalCost);
     transactionData.profit = Number(transactionData.profit);
-    transactionData.feeAmount = Number(transactionData.feeAmount);
 
     // items 内の数値フィールドも数値型に変換
     transactionData.items = transactionData.items.map((item) => ({
@@ -102,7 +100,7 @@ export async function addTransaction(transactionData) {
       quantity: Number(item.quantity),
       size: Number(item.size),
       subtotal: Number(item.subtotal),
-      cost: parseFloat(item.cost) || 0, // 修正箇所
+      cost: Number(item.cost),
       profit: Number(item.profit),
     }));
 
@@ -110,6 +108,13 @@ export async function addTransaction(transactionData) {
     transactionData.timestamp = serverTimestamp();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
 
+    return docRef.id;
+  } catch (error) {
+    console.error('取引の追加エラー:', error);
+    alert('取引の追加に失敗しました。');
+    throw error;
+  }
+}
     // 消耗品の使用量を記録
     await recordConsumableUsage(transactionData.items);
 
