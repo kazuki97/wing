@@ -47,7 +47,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
       changeAmount: quantityChange,
       newQuantity: newQuantity,
       userId: user.uid,
-      userName: user.displayName || user.email, // 必要に応じてユーザー名を使用
+      userName: user.displayName || user.email,
       reason: reason,
     });
 
@@ -58,6 +58,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
     throw error;
   }
 }
+
 
 // 全体在庫の更新（サブカテゴリごと）
 export async function updateOverallInventory(subcategoryId, quantityChange, reason = '在庫数の手動更新') {
