@@ -181,34 +181,60 @@
 
 
     <!-- 全体在庫 -->
-    <section id="overall-inventory" class="content-section" style="display: none;" data-requires-auth="true">
-      <h1>全体在庫</h1>
-      <!-- 全体在庫更新フォーム -->
-      <form id="updateOverallInventoryForm">
-        <select id="overallInventoryParentCategorySelect" required>
-          <option value="">親カテゴリを選択</option>
-        </select>
-        <select id="overallInventorySubcategorySelect" required>
-          <option value="">サブカテゴリを選択</option>
-        </select>
-        <input type="number" id="overallInventoryQuantity" placeholder="在庫数" required />
-        <button type="submit">更新</button>
-      </form>
-      <!-- 全体在庫一覧表示エリア -->
-      <div class="table-responsive">
-        <table id="overallInventoryList">
-          <thead>
-            <tr>
-              <th>サブカテゴリ名</th>
-              <th>在庫数</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- 全体在庫情報がここに表示されます -->
-          </tbody>
-        </table>
-      </div>
-    </section>
+<section id="overall-inventory" class="content-section" style="display: none;" data-requires-auth="true">
+  <h1>全体在庫</h1>
+  <!-- 全体在庫更新フォーム -->
+  <form id="updateOverallInventoryForm">
+    <select id="overallInventoryParentCategorySelect" required>
+      <option value="">親カテゴリを選択</option>
+    </select>
+    <select id="overallInventorySubcategorySelect" required>
+      <option value="">サブカテゴリを選択</option>
+    </select>
+    <input type="number" id="overallInventoryQuantity" placeholder="在庫数" required />
+    <!-- **理由入力フィールドを追加** -->
+    <input type="text" id="overallInventoryReason" placeholder="理由を入力" />
+    <button type="submit">更新</button>
+  </form>
+  <!-- 全体在庫一覧表示エリア -->
+  <div class="table-responsive">
+    <table id="overallInventoryList">
+      <thead>
+        <tr>
+          <th>サブカテゴリ名</th>
+          <th>在庫数</th>
+          <!-- **「変動履歴」列を追加** -->
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 全体在庫情報がここに表示されます -->
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- **全体在庫変動履歴表示用モーダルを追加** -->
+<div id="overallInventoryHistoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeOverallInventoryHistoryModal">&times;</span>
+    <h2>全体在庫変動履歴</h2>
+    <table id="overallInventoryHistoryTable">
+      <thead>
+        <tr>
+          <th>日時</th>
+          <th>変動数</th>
+          <th>変更後の数量</th>
+          <th>操作したユーザー</th>
+          <th>理由</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 履歴データがここに表示されます -->
+      </tbody>
+    </table>
+  </div>
+</div>
 
     <!-- バーコードスキャン -->
     <section id="barcode" class="content-section" style="display: none;">
