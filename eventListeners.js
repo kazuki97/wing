@@ -71,8 +71,14 @@ import { deleteConsumable } from './consumables.js'; // 削除の関数もイン
  * エラーメッセージを表示する関数
  * @param {string} message - 表示するエラーメッセージ
  */
+// エラーメッセージ表示関数
 export function showError(message) {
-  alert(message);
+  const errorDiv = document.getElementById('error-message');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  setTimeout(() => {
+    errorDiv.style.display = 'none';
+  }, 5000);
 }
 
 // 追加: updatePricingParentCategorySelectの定義
@@ -123,16 +129,6 @@ export async function updatePaymentMethodSelect() {
   } catch (error) {
     console.error('支払い方法の取得に失敗しました:', error);
   }
-}
-
-// エラーメッセージ表示関数
-function showError(message) {
-  const errorDiv = document.getElementById('error-message');
-  errorDiv.textContent = message;
-  errorDiv.style.display = 'block';
-  setTimeout(() => {
-    errorDiv.style.display = 'none';
-  }, 5000);
 }
 
 // 消耗品選択リストの更新関数
