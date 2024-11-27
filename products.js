@@ -75,7 +75,6 @@ export async function getProductByName(name) {
   }
 }
 
-
 // 商品IDから商品情報を取得
 export async function getProductById(productId) {
   try {
@@ -144,37 +143,4 @@ export async function deleteProduct(id) {
   }
 }
 
-
-export async function updateProductQuantity(productId, newQuantity) {
-  try {
-    const productRef = doc(db, 'products', productId);
-    const productDoc = await getDoc(productRef);
-
-    if (!productDoc.exists()) {
-      throw new Error('商品が見つかりません');
-    }
-
-    const oldQuantity = productDoc.data().quantity || 0;
-    const changeAmount = newQuantity - oldQuantity;
-
-    await updateDoc(productRef, { quantity: newQuantity });
-
-    // 在庫変動履歴を記録
-    await addDoc(collection(db, 'inventoryChanges'), {
-      productId: productId,
-      timestamp: new Date().toISOString(),
-      changeAmount: changeAmount,
-      newQuantity: newQuantity,
-      userId: auth.currentUser.uid,
-      userName: auth.currentUser.email, // またはユーザー名
-      reason: '在庫数の手動更新',
-    });
-
-    console.log('在庫数が更新され、在庫変動履歴が記録されました');
-
-  } catch (error) {
-    console.error('在庫数の更新に失敗しました:', error);
-    throw error;
-  }
-}
-
+// **`updateProductQuantity` 関数を削除**（`inventoryManagement.js` に統一）
