@@ -1799,60 +1799,68 @@ export async function displayInventoryProducts() {
     });
 
     // **商品の在庫数量を更新する関数の修正**
-document.querySelectorAll('.update-inventory').forEach((button) => {
-  button.addEventListener('click', async (e) => {
-    const row = e.target.closest('tr');
-    const productId = row.querySelector('.inventory-quantity').dataset.productId;
-    const newQuantity = parseFloat(row.querySelector('.inventory-quantity').value);
-    try {
-      const product = await getProductById(productId);
-      const currentQuantity = product.quantity || 0;
-      const quantityChange = newQuantity - currentQuantity;
-      await updateProductQuantity(productId, quantityChange, '在庫数の手動更新');
-      alert('在庫数が更新されました');
-      await displayInventoryProducts();
-    } catch (error) {
-      console.error(error);
-      showError('在庫数の更新に失敗しました');
+    document.querySelectorAll('.update-inventory').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        const row = e.target.closest('tr');
+        const productId = row.querySelector('.inventory-quantity').dataset.productId;
+        const newQuantity = parseFloat(row.querySelector('.inventory-quantity').value);
+        try {
+          const product = await getProductById(productId);
+          const currentQuantity = product.quantity || 0;
+          const quantityChange = newQuantity - currentQuantity;
+          await updateProductQuantity(productId, quantityChange, '在庫数の手動更新');
+          alert('在庫数が更新されました');
+          await displayInventoryProducts();
+        } catch (error) {
+          console.error(error);
+          showError('在庫数の更新に失敗しました');
+        }
+      });
+    });
+
+    // **売上処理のイベントリスナーを追加**
+    document.getElementById('processSaleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const barcode = document.getElementById('saleBarcode').value;
+      const quantitySold = parseFloat(document.getElementById('saleQuantity').value);
+      if (!barcode || isNaN(quantitySold) || quantitySold <= 0) {
+        showError('有効なバーコードと数量を入力してください');
+        return;
+      }
+      try {
+        await processSale(barcode, quantitySold);
+        // フォームをリセット
+        e.target.reset();
+      } catch (error) {
+        console.error('売上処理に失敗しました:', error);
+        showError('売上の記録に失敗しました');
+      }
+    });
+
+    // **商品名から数値を抽出する関数を追加**
+    function extractNumberFromName(name) {
+      const match = name.match(/\d+/);
+      return match ? parseFloat(match[0]) : 0;
     }
-  });
-});
 
-// **売上処理のイベントリスナーを追加**
-document.getElementById('processSaleForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const barcode = document.getElementById('saleBarcode').value;
-  const quantitySold = parseFloat(document.getElementById('saleQuantity').value);
-  if (!barcode || isNaN(quantitySold) || quantitySold <= 0) {
-    showError('有効なバーコードと数量を入力してください');
-    return;
-  }
-  try {
-    await processSale(barcode, quantitySold);
-    // フォームをリセット
-    e.target.reset();
+    // 販売完了後に全体在庫を更新する関数
+    // 修正しました: 販売完了後に全体在庫を減少させる関数を追加
+    async function updateOverallInventoryAfterSale(productId, quantitySold) {
+      try {
+        await updateOverallInventory(productId, -quantitySold);
+      } catch (error) {
+        console.error('全体在庫の更新エラー:', error);
+        showError('全体在庫の更新に失敗しました');
+      }
+    }
   } catch (error) {
-    console.error('売上処理に失敗しました:', error);
-    showError('売上の記録に失敗しました');
+    console.error(error);
+    showError('在庫商品の表示に失敗しました');
   }
-});
+} // **displayInventoryProducts 関数の終了**
 
-// **商品名から数値を抽出する関数を追加**
-function extractNumberFromName(name) {
-  const match = name.match(/\d+/);
-  return match ? parseFloat(match[0]) : 0;
-}
+/** ここで関数が終了していることを確認 **/
 
-// 販売完了後に全体在庫を更新する関数
-// 修正しました: 販売完了後に全体在庫を減少させる関数を追加
-async function updateOverallInventoryAfterSale(productId, quantitySold) {
-  try {
-    await updateOverallInventory(productId, -quantitySold);
-  } catch (error) {
-    console.error('全体在庫の更新エラー:', error);
-    showError('全体在庫の更新に失敗しました');
-  }
-}
 // **修正**: 全体在庫更新フォームのイベントリスナー
 document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1873,7 +1881,7 @@ document.getElementById('updateOverallInventoryForm').addEventListener('submit',
     console.error(error);
     showError('全体在庫の更新に失敗しました');
   }
-});
+}); // **addEventListener の終了**
 
 // 全体在庫を表示する関数をエクスポート
 export async function displayOverallInventory() {
@@ -1929,7 +1937,6 @@ export async function displayOverallInventory() {
     showError('全体在庫の表示に失敗しました');
   }
 }
-
 
 // 単価ルール追加フォームのイベントリスナー
 document
