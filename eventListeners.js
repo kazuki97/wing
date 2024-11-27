@@ -1648,68 +1648,18 @@ async function editProduct(product) {
 }
 
 
-// 在庫管理セクションの商品一覧表示関数
-export async function displayInventoryProducts() {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      alert('この操作を行うにはログインが必要です。');
-      return;
-    }
-    const parentCategoryId = document.getElementById('inventoryParentCategorySelect').value;
-    const subcategoryId = document.getElementById('inventorySubcategorySelect').value;
-    const products = await getProducts(parentCategoryId, subcategoryId);
-
-    // **商品を名前内の数値でソート**
-    products.sort((a, b) => {
-      const numA = extractNumberFromName(a.name);
-      const numB = extractNumberFromName(b.name);
-      return numA - numB;
-    });
-
-   const inventoryList = document.getElementById('inventoryList').querySelector('tbody');
-    inventoryList.innerHTML = '';
-    for (const product of products) {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${product.name}</td>
-        <td><input type="number" value="${product.quantity || 0}" data-product-id="${product.id}" class="inventory-quantity" /></td>
-        <td>${product.price}</td>
-        <td>${product.cost}</td>
-        <td>${product.barcode}</td>
-        <td>${product.size}</td>
-        <td>
-          <button class="update-inventory">更新</button>
-        </td>
-        <td>
-          <button class="view-inventory-history" data-product-id="${product.id}">変動履歴を見る</button>
-        </td>
-      `;
-      inventoryList.appendChild(row);
-    }
-
-    // 「変動履歴を見る」ボタンのイベントリスナーを追加
-    document.querySelectorAll('.view-inventory-history').forEach((button) => {
-      button.addEventListener('click', (e) => {
-        const productId = e.target.dataset['productId'];
-        viewInventoryHistory(productId);
-      });
-    });
-
-// モーダル要素の取得
+// モーダル要素の取得（グローバルスコープで一度だけ取得）
 const inventoryHistoryModal = document.getElementById('inventoryHistoryModal');
 const closeInventoryHistoryModalBtn = document.getElementById('closeInventoryHistoryModal');
 
-// モーダルを閉じるイベントリスナー
+const overallInventoryHistoryModal = document.getElementById('overallInventoryHistoryModal');
+const closeOverallInventoryHistoryModalBtn = document.getElementById('closeOverallInventoryHistoryModal');
+
+// モーダルを閉じるイベントリスナー（グローバルスコープで一度だけ設定）
 closeInventoryHistoryModalBtn.addEventListener('click', () => {
   inventoryHistoryModal.style.display = 'none';
 });
 
-// **追加**: 全体在庫変動履歴モーダルの要素取得
-const overallInventoryHistoryModal = document.getElementById('overallInventoryHistoryModal');
-const closeOverallInventoryHistoryModalBtn = document.getElementById('closeOverallInventoryHistoryModal');
-
-// モーダルを閉じるイベントリスナー
 closeOverallInventoryHistoryModalBtn.addEventListener('click', () => {
   overallInventoryHistoryModal.style.display = 'none';
 });
@@ -1719,16 +1669,12 @@ window.addEventListener('click', (event) => {
   if (event.target === overallInventoryHistoryModal) {
     overallInventoryHistoryModal.style.display = 'none';
   }
-});
-
-// モーダル外をクリックしたときにモーダルを閉じる
-window.addEventListener('click', (event) => {
   if (event.target === inventoryHistoryModal) {
     inventoryHistoryModal.style.display = 'none';
   }
 });
 
-// viewInventoryHistory 関数の宣言（重複を避けて一度だけ宣言）
+// **viewInventoryHistory 関数の宣言（グローバルスコープ）**
 async function viewInventoryHistory(productId) {
   try {
     const user = auth.currentUser;
@@ -1764,7 +1710,7 @@ async function viewInventoryHistory(productId) {
   }
 }
 
-// **追加**: 全体在庫変動履歴を表示する関数
+// **viewOverallInventoryHistory 関数の宣言（グローバルスコープ）**
 async function viewOverallInventoryHistory(subcategoryId) {
   try {
     const user = auth.currentUser;
@@ -1793,13 +1739,61 @@ async function viewOverallInventoryHistory(subcategoryId) {
     });
 
     // モーダルを表示
-    document.getElementById('overallInventoryHistoryModal').style.display = 'block';
+    overallInventoryHistoryModal.style.display = 'block';
 
   } catch (error) {
     console.error('全体在庫変動履歴の取得に失敗しました:', error);
     showError('全体在庫変動履歴の取得に失敗しました');
   }
 }
+
+// 在庫管理セクションの商品一覧表示関数
+export async function displayInventoryProducts() {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('この操作を行うにはログインが必要です。');
+      return;
+    }
+    const parentCategoryId = document.getElementById('inventoryParentCategorySelect').value;
+    const subcategoryId = document.getElementById('inventorySubcategorySelect').value;
+    const products = await getProducts(parentCategoryId, subcategoryId);
+
+    // **商品を名前内の数値でソート**
+    products.sort((a, b) => {
+      const numA = extractNumberFromName(a.name);
+      const numB = extractNumberFromName(b.name);
+      return numA - numB;
+    });
+
+    const inventoryList = document.getElementById('inventoryList').querySelector('tbody');
+    inventoryList.innerHTML = '';
+    for (const product of products) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${product.name}</td>
+        <td><input type="number" value="${product.quantity || 0}" data-product-id="${product.id}" class="inventory-quantity" /></td>
+        <td>${product.price}</td>
+        <td>${product.cost}</td>
+        <td>${product.barcode}</td>
+        <td>${product.size}</td>
+        <td>
+          <button class="update-inventory">更新</button>
+        </td>
+        <td>
+          <button class="view-inventory-history" data-product-id="${product.id}">変動履歴を見る</button>
+        </td>
+      `;
+      inventoryList.appendChild(row);
+    }
+
+    // 「変動履歴を見る」ボタンのイベントリスナーを追加
+    document.querySelectorAll('.view-inventory-history').forEach((button) => {
+      button.addEventListener('click', (e) => {
+        const productId = e.target.dataset['productId'];
+        viewInventoryHistory(productId);
+      });
+    });
 
     // 在庫数更新ボタンのイベントリスナー（既存のコード）
     document.querySelectorAll('.update-inventory').forEach((button) => {
@@ -1829,7 +1823,6 @@ function extractNumberFromName(name) {
   return match ? parseFloat(match[0]) : 0;
 }
 
-
 // 販売完了後に全体在庫を更新する関数
 // 修正しました: 販売完了後に全体在庫を減少させる関数を追加
 async function updateOverallInventoryAfterSale(productId, quantitySold) {
@@ -1840,7 +1833,6 @@ async function updateOverallInventoryAfterSale(productId, quantitySold) {
     showError('全体在庫の更新に失敗しました');
   }
 }
-
 // **修正**: 全体在庫更新フォームのイベントリスナー
 document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
