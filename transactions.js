@@ -44,13 +44,16 @@ export async function processSale(barcode, quantitySold) {
     const productSize = product.size || 1;
 
     // 在庫更新（履歴も自動的に記録される）
+    console.log('Calling updateProductQuantity...');
     await updateProductQuantity(productId, -quantitySold, `売上による在庫減少: ${quantitySold}個`);
+    console.log('updateProductQuantity called successfully.');
 
     // 全体在庫の更新（サイズを考慮）
     const subcategoryId = product.subcategoryId;
     if (subcategoryId) {
       const overallQuantityChange = -quantitySold * productSize;
       await updateOverallInventory(subcategoryId, overallQuantityChange, `売上による全体在庫減少: ${overallQuantityChange}個`);
+      console.log('updateOverallInventory called successfully.');
     }
 
     // 売上トランザクションの追加
@@ -80,6 +83,7 @@ export async function processSale(barcode, quantitySold) {
 
     // 取引データの追加
     const transactionId = await addTransaction(transactionData);
+    console.log(`Transaction added with ID: ${transactionId}`);
 
     alert('売上が正常に記録されました。');
     return transactionId; // 必要に応じて取引IDを返す
@@ -117,9 +121,11 @@ export async function addTransaction(transactionData) {
     // `timestamp` を Firestore のサーバータイムスタンプとして保存
     transactionData.timestamp = serverTimestamp();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
+    console.log(`Transaction document added with ID: ${docRef.id}`);
 
     // 消耗品の使用量を記録
     await recordConsumableUsage(transactionData.items);
+    console.log('Consumable usage recorded successfully.');
 
     return docRef.id;
   } catch (error) {
@@ -197,12 +203,14 @@ export async function updateTransaction(transactionId, updatedData) {
       for (const item of updatedData.items) {
         // 在庫を増加
         await updateProductQuantity(item.productId, item.quantity, `返品による在庫増加: ${item.quantity}個`);
+        console.log(`updateProductQuantity called for productId: ${item.productId}`);
 
         // 全体在庫も増加（サイズを考慮）
         const product = await getProductById(item.productId);
         const productSize = product.size || 1;
         const overallQuantityChange = item.quantity * productSize;
         await updateOverallInventory(product.subcategoryId, overallQuantityChange, `返品による全体在庫増加: ${overallQuantityChange}個`);
+        console.log(`updateOverallInventory called for subcategoryId: ${product.subcategoryId}`);
       }
     }
   } catch (error) {
@@ -221,12 +229,14 @@ export async function deleteTransaction(transactionId) {
       for (const item of transaction.items) {
         // 在庫を増加
         await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
+        console.log(`updateProductQuantity called for productId: ${item.productId}`);
 
         // 全体在庫も増加（サイズを考慮）
         const product = await getProductById(item.productId);
         const productSize = product.size || 1;
         const overallQuantityChange = item.quantity * productSize;
         await updateOverallInventory(product.subcategoryId, overallQuantityChange, `取引削除による全体在庫増加: ${overallQuantityChange}個`);
+        console.log(`updateOverallInventory called for subcategoryId: ${product.subcategoryId}`);
       }
     }
     await deleteDoc(docRef);
@@ -248,6 +258,7 @@ export async function recordConsumableUsage(transactionItems) {
         if (product.consumables && product.consumables.length > 0) {
           for (const consumableId of product.consumables) {
             await addConsumableUsage(consumableId, item.quantity * item.size);
+            console.log(`Consumable usage recorded for consumableId: ${consumableId}`);
           }
         }
       } else {
@@ -270,6 +281,7 @@ async function addConsumableUsage(consumableId, quantityUsed) {
       quantityUsed,
       timestamp: timestamp,
     });
+    console.log(`ConsumableUsage document added for consumableId: ${consumableId}`);
   } catch (error) {
     console.error('消耗品使用量の追加に失敗しました:', error);
     throw error;
