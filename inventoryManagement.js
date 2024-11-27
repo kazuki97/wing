@@ -26,6 +26,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
 
     const productRef = doc(db, 'products', productId);
     const productSnap = await getDoc(productRef);
+
     if (!productSnap.exists()) {
       alert('商品が見つかりません。');
       return;
@@ -34,7 +35,6 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
     const oldQuantity = productSnap.data().quantity || 0;
     const newQuantity = oldQuantity + quantityChange;
 
-    // 在庫を更新
     await updateDoc(productRef, {
       quantity: newQuantity,
       updatedAt: serverTimestamp(),
