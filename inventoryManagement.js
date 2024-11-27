@@ -22,6 +22,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
     throw new Error('在庫を更新するにはログインが必要です。');
   }
   try {
+    console.log(`updateProductQuantity called with productId: ${productId}, quantityChange: ${quantityChange}, reason: ${reason}`);
     const productRef = doc(db, 'products', productId);
     const productDoc = await getDoc(productRef);
     if (!productDoc.exists()) {
@@ -31,6 +32,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
     const newQuantity = (productData.quantity || 0) + quantityChange;
 
     await updateDoc(productRef, { quantity: newQuantity });
+    console.log(`Product quantity updated. New quantity: ${newQuantity}`);
 
     // 在庫変動履歴を追加
     const inventoryChange = {
@@ -43,6 +45,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
       reason: reason,
     };
     await addDoc(collection(db, 'inventoryChanges'), inventoryChange);
+    console.log('Inventory change recorded:', inventoryChange);
   } catch (error) {
     console.error('在庫数量の更新に失敗しました:', error);
     throw error;
@@ -79,7 +82,7 @@ export async function updateOverallInventory(subcategoryId, quantityChange, reas
       changeAmount: quantityChange,
       newQuantity: newQuantity,
       userId: user.uid,
-      userName: user.displayName || user.email, // 必要に応じてユーザー名を使用
+      userName: user.displayName || user.email,
       reason: reason,
     });
 
@@ -105,7 +108,12 @@ export async function getInventoryChangesByProductId(productId) {
 
     const changes = [];
     snapshot.forEach((doc) => {
-      changes.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+      // `timestamp` を Date オブジェクトに変換
+      if (data.timestamp && data.timestamp.toDate) {
+        data.timestamp = data.timestamp.toDate();
+      }
+      changes.push({ id: doc.id, ...data });
     });
     return changes;
   } catch (error) {
