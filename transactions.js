@@ -40,29 +40,38 @@ export async function processSale(barcode, quantitySold) {
       return;
     }
 
+    // 商品サイズを取得（デフォルトは1）
+    const productSize = product.size || 1;
+
     // 在庫更新（履歴も自動的に記録される）
     await updateProductQuantity(productId, -quantitySold, `売上による在庫減少: ${quantitySold}個`);
 
-    // 全体在庫の更新（サブカテゴリIDが必要）
+    // 全体在庫の更新（サイズを考慮）
     const subcategoryId = product.subcategoryId;
     if (subcategoryId) {
-      await updateOverallInventory(subcategoryId, -quantitySold, `売上による全体在庫減少: ${quantitySold}個`);
+      const overallQuantityChange = -quantitySold * productSize;
+      await updateOverallInventory(subcategoryId, overallQuantityChange, `売上による全体在庫減少: ${overallQuantityChange}個`);
     }
 
     // 売上トランザクションの追加
+    const subtotal = product.price * quantitySold * productSize;
+    const totalCost = product.cost * quantitySold * productSize;
+    const profit = (product.price - product.cost) * quantitySold * productSize;
+
     const transactionData = {
       items: [{
         productId: productId,
+        productName: product.name,
         quantity: quantitySold,
         unitPrice: product.price,
-        size: product.size || 1,
-        subtotal: product.price * quantitySold * (product.size || 1),
+        size: productSize,
+        subtotal: subtotal,
         cost: product.cost,
-        profit: (product.price - product.cost) * quantitySold * (product.size || 1),
+        profit: profit,
       }],
-      totalAmount: product.price * quantitySold * (product.size || 1),
-      totalCost: product.cost * quantitySold * (product.size || 1),
-      profit: (product.price - product.cost) * quantitySold * (product.size || 1),
+      totalAmount: subtotal,
+      totalCost: totalCost,
+      profit: profit,
       timestamp: serverTimestamp(),
       userId: user.uid,
       userName: user.displayName || user.email,
@@ -156,7 +165,7 @@ export async function getTransactionById(transactionId) {
       if (data.items && Array.isArray(data.items)) {
         data.items = data.items.map(item => ({
           ...item,
-          cost: parseFloat(item.cost) || 0, // `cost`が未定義の場合は0を補完
+          cost: parseFloat(item.cost) || 0,
           quantity: parseFloat(item.quantity) || 0,
           size: parseFloat(item.size) || 1,
         }));
@@ -182,38 +191,23 @@ export async function updateTransaction(transactionId, updatedData) {
   try {
     const docRef = doc(db, 'transactions', transactionId);
     await updateDoc(docRef, updatedData);
-    // 更新後、在庫と全体在庫も反映
-    if (updatedData.hasOwnProperty('products')) {
-      for (const product of updatedData.products) {
-        await updateInventoryAfterTransactionUpdate(product);
+
+    // 在庫と全体在庫を更新（商品が返品された場合など）
+    if (updatedData.isReturned && updatedData.items) {
+      for (const item of updatedData.items) {
+        // 在庫を増加
+        await updateProductQuantity(item.productId, item.quantity, `返品による在庫増加: ${item.quantity}個`);
+
+        // 全体在庫も増加（サイズを考慮）
+        const product = await getProductById(item.productId);
+        const productSize = product.size || 1;
+        const overallQuantityChange = item.quantity * productSize;
+        await updateOverallInventory(product.subcategoryId, overallQuantityChange, `返品による全体在庫増加: ${overallQuantityChange}個`);
       }
     }
   } catch (error) {
     console.error('取引の更新エラー:', error);
     alert('取引の更新に失敗しました。');
-    throw error;
-  }
-}
-
-// 在庫と全体在庫の更新処理
-async function updateInventoryAfterTransactionUpdate(product) {
-  try {
-    const inventoryDocRef = doc(db, 'inventory', product.subcategoryId);
-    const inventorySnap = await getDoc(inventoryDocRef);
-    if (inventorySnap.exists()) {
-      const newQuantity = inventorySnap.data().quantity - product.quantityDifference;
-      await updateDoc(inventoryDocRef, { quantity: newQuantity });
-    }
-
-    const overallInventoryDocRef = doc(db, 'overallInventory', product.subcategoryId);
-    const overallInventorySnap = await getDoc(overallInventoryDocRef);
-    if (overallInventorySnap.exists()) {
-      const newOverallQuantity = overallInventorySnap.data().quantity - product.quantityDifference;
-      await updateDoc(overallInventoryDocRef, { quantity: newOverallQuantity });
-    }
-  } catch (error) {
-    console.error('在庫または全体在庫の更新エラー:', error);
-    alert('在庫または全体在庫の更新に失敗しました。');
     throw error;
   }
 }
@@ -225,7 +219,14 @@ export async function deleteTransaction(transactionId) {
     const transaction = await getTransactionById(transactionId);
     if (transaction && transaction.items) {
       for (const item of transaction.items) {
-        await updateInventoryAfterTransactionDelete(item);
+        // 在庫を増加
+        await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
+
+        // 全体在庫も増加（サイズを考慮）
+        const product = await getProductById(item.productId);
+        const productSize = product.size || 1;
+        const overallQuantityChange = item.quantity * productSize;
+        await updateOverallInventory(product.subcategoryId, overallQuantityChange, `取引削除による全体在庫増加: ${overallQuantityChange}個`);
       }
     }
     await deleteDoc(docRef);
@@ -233,29 +234,6 @@ export async function deleteTransaction(transactionId) {
   } catch (error) {
     console.error('取引の削除エラー:', error);
     alert('取引の削除に失敗しました。');
-    throw error;
-  }
-}
-
-// 在庫と全体在庫の削除後の更新処理
-async function updateInventoryAfterTransactionDelete(item) {
-  try {
-    const inventoryDocRef = doc(db, 'inventory', item.subcategoryId);
-    const inventorySnap = await getDoc(inventoryDocRef);
-    if (inventorySnap.exists()) {
-      const newQuantity = inventorySnap.data().quantity + item.quantity;
-      await updateDoc(inventoryDocRef, { quantity: newQuantity });
-    }
-
-    const overallInventoryDocRef = doc(db, 'overallInventory', item.subcategoryId);
-    const overallInventorySnap = await getDoc(overallInventoryDocRef);
-    if (overallInventorySnap.exists()) {
-      const newOverallQuantity = overallInventorySnap.data().quantity + item.quantity;
-      await updateDoc(overallInventoryDocRef, { quantity: newOverallQuantity });
-    }
-  } catch (error) {
-    console.error('在庫または全体在庫の削除後の更新エラー:', error);
-    alert('在庫または全体在庫の削除後の更新に失敗しました。');
     throw error;
   }
 }
