@@ -22,8 +22,9 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
     throw new Error('在庫を更新するにはログインが必要です。');
   }
   try {
-    console.log(`updateProductQuantity called with productId: ${productId}, quantityChange: ${quantityChange}, reason: ${reason}`);
-    const productRef = doc(db, 'products', productId);
+    const productIdStr = String(productId);
+    console.log(`updateProductQuantity called with productId: ${productIdStr}, quantityChange: ${quantityChange}, reason: ${reason}`);
+    const productRef = doc(db, 'products', productIdStr);
     const productDoc = await getDoc(productRef);
     if (!productDoc.exists()) {
       throw new Error('商品が見つかりません');
@@ -36,7 +37,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
 
     // 在庫変動履歴を追加
     const inventoryChange = {
-      productId: productId,  // ← フィールド名を 'productId' に修正
+      productId: productIdStr, // 文字列として保存
       changeAmount: quantityChange,
       newQuantity: newQuantity,
       timestamp: serverTimestamp(), // サーバータイムスタンプを使用
@@ -99,9 +100,11 @@ export async function updateOverallInventory(subcategoryId, quantityChange, reas
 // 在庫変動履歴の取得
 export async function getInventoryChangesByProductId(productId) {
   try {
+    // productIdを文字列として扱う
+    const productIdStr = String(productId);
     const q = query(
       collection(db, 'inventoryChanges'),
-      where('productId', '==', productId),  // ← フィールド名と一致
+      where('productId', '==', productIdStr),
       orderBy('timestamp', 'desc')
     );
 
