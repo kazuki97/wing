@@ -33,14 +33,14 @@ export async function processSale(barcode, quantitySold) {
       return;
     }
 
-    const productId = product.id;
-    const currentQuantity = product.quantity || 0;
+    // **product.quantity を数値に変換**
+    const currentQuantity = Number(product.quantity) || 0;
     if (currentQuantity < quantitySold) {
       showError('在庫が不足しています。');
       return;
     }
 
-    // 商品サイズを取得（デフォルトは1）
+    const productId = product.id;
     const productSize = product.size || 1;
 
     // 在庫更新（履歴も自動的に記録される）
@@ -92,6 +92,7 @@ export async function processSale(barcode, quantitySold) {
     showError('売上の記録に失敗しました。');
   }
 }
+
 
 // 売上データの追加
 export async function addTransaction(transactionData) {
