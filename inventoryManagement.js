@@ -36,7 +36,7 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
 
     // 在庫変動履歴を追加
     const inventoryChange = {
-      productId: productId,
+      productId: productId,  // ← フィールド名を 'productId' に修正
       changeAmount: quantityChange,
       newQuantity: newQuantity,
       timestamp: serverTimestamp(), // サーバータイムスタンプを使用
@@ -101,7 +101,7 @@ export async function getInventoryChangesByProductId(productId) {
   try {
     const q = query(
       collection(db, 'inventoryChanges'),
-      where('productId', '==', productId),
+      where('productId', '==', productId),  // ← フィールド名と一致
       orderBy('timestamp', 'desc')
     );
 
