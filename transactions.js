@@ -33,15 +33,21 @@ export async function processSale(barcode, quantitySold) {
       return;
     }
 
-    const productId = product.id;
-    const currentQuantity = Number(product.quantity) || 0; // 商品在庫数（サイズを考慮しない）
-    const productSize = product.size || 1; // サイズ取得
+    console.log('取得した商品情報:', product);
 
-    // 在庫判定（サイズを考慮せず数量のみ）
+    const productId = product.id;
+    const currentQuantity = Number(product.quantity) || 0; // 明示的に数値型へ変換
+    const productSize = product.size || 1; // サイズ取得
+    quantitySold = Number(quantitySold); // 販売数量も数値型へ変換
+
+    // 在庫判定（サイズを考慮しない）
+    console.log(`DEBUG: currentQuantity: ${currentQuantity}, quantitySold: ${quantitySold}`);
     if (currentQuantity < quantitySold) {
+      console.log(`在庫不足エラー: 在庫数: ${currentQuantity}, 必要数: ${quantitySold}`);
       showError(`在庫が不足しています。在庫数: ${currentQuantity}, 必要数: ${quantitySold}`);
       return;
     }
+    console.log('在庫は十分です。販売処理を進めます。');
 
     // 在庫更新（履歴も自動的に記録される）
     console.log('Calling updateProductQuantity...');
@@ -56,7 +62,7 @@ export async function processSale(barcode, quantitySold) {
       console.log('updateOverallInventory called successfully.');
     }
 
-    // 売上トランザクションを記録
+    // 売上トランザクションの追加
     const subtotal = product.price * quantitySold * productSize;
     const totalCost = product.cost * quantitySold * productSize;
     const profit = (product.price - product.cost) * quantitySold * productSize;
