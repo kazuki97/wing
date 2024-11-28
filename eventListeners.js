@@ -1,9 +1,6 @@
 // eventListeners.js
 
-// インポート
-import { auth } from './db.js';
-
-// Firestore の関数をインポート
+// Firebase Firestore の関数を CDN からインポート
 import {
   collection,
   query,
@@ -15,7 +12,13 @@ import {
   addDoc,
   updateDoc,
   serverTimestamp
-} from 'firebase/firestore';
+} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+
+// Firebase Authentication を使用する場合
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
+
+// db.js から db と auth をインポート
+import { db, auth } from './db.js';
 
 import {
   addParentCategory,
