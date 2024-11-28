@@ -3,6 +3,20 @@
 // インポート
 import { auth } from './db.js';
 
+// Firestore の関数をインポート
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  doc,
+  getDoc,
+  addDoc,
+  updateDoc,
+  serverTimestamp
+} from 'firebase/firestore';
+
 import {
   addParentCategory,
   getParentCategories,
