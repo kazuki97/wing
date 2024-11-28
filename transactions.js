@@ -36,28 +36,31 @@ export async function processSale(barcode, quantitySold) {
     console.log('取得した商品情報:', product);
 
     const productId = product.id;
-    const currentQuantity = Number(product.quantity) || 0; // 明示的に数値型へ変換
+    const currentQuantity = Number(product.quantity) || 0; // 数値型に変換
     const productSize = product.size || 1; // サイズ取得
     quantitySold = Number(quantitySold); // 販売数量も数値型へ変換
 
+    // デバッグログ
+    console.log(`在庫数 (currentQuantity): ${currentQuantity}, 型: ${typeof currentQuantity}`);
+    console.log(`販売数量 (quantitySold): ${quantitySold}, 型: ${typeof quantitySold}`);
+    console.log(`商品サイズ (productSize): ${productSize}`);
+
     // 在庫判定（サイズを考慮しない）
-    console.log(`DEBUG: currentQuantity: ${currentQuantity}, quantitySold: ${quantitySold}`);
     if (currentQuantity < quantitySold) {
-      console.log(`在庫不足エラー: 在庫数: ${currentQuantity}, 必要数: ${quantitySold}`);
+      console.error(`在庫不足エラー: 在庫数 (${currentQuantity}) が販売数量 (${quantitySold}) を下回っています。`);
       showError(`在庫が不足しています。在庫数: ${currentQuantity}, 必要数: ${quantitySold}`);
       return;
     }
     console.log('在庫は十分です。販売処理を進めます。');
 
-    // 在庫更新（履歴も自動的に記録される）
-    console.log('Calling updateProductQuantity...');
+    // 在庫更新
     await updateProductQuantity(productId, -quantitySold, `売上による在庫減少: ${quantitySold}個`);
     console.log('updateProductQuantity called successfully.');
 
     // 全体在庫の更新（サイズを考慮）
     const subcategoryId = product.subcategoryId;
     if (subcategoryId) {
-      const overallQuantityChange = -quantitySold * productSize; // サイズを考慮
+      const overallQuantityChange = -quantitySold * productSize;
       await updateOverallInventory(subcategoryId, overallQuantityChange, `売上による全体在庫減少: ${overallQuantityChange}個`);
       console.log('updateOverallInventory called successfully.');
     }
@@ -99,7 +102,6 @@ export async function processSale(barcode, quantitySold) {
     showError('売上の記録に失敗しました。');
   }
 }
-
 
 // 売上データの追加
 export async function addTransaction(transactionData) {
