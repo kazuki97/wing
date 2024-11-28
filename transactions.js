@@ -36,12 +36,12 @@ export async function processSale(barcode, quantitySold) {
     // **product.quantity を数値に変換**
     const currentQuantity = Number(product.quantity) || 0;
 
-    // === ここにログを追加 ===
     if (currentQuantity < quantitySold) {
-      console.log(`currentQuantity (${currentQuantity}) is less than quantitySold (${quantitySold})`);
-      showError('在庫が不足しています。');
-      return;
-    }
+  console.log(`currentQuantity (${currentQuantity}) is less than quantitySold (${quantitySold})`);
+  console.log(`Product Data:`, product); // 商品データの全体をログ
+  showError('在庫が不足しています。');
+  return;
+}
 
     const productId = product.id;
     const productSize = product.size || 1;
