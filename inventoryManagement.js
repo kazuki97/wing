@@ -30,7 +30,10 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
       throw new Error('商品が見つかりません');
     }
     const productData = productDoc.data();
-    const newQuantity = (productData.quantity || 0) + quantityChange;
+
+    // **productData.quantity を数値に変換**
+    const currentQuantity = Number(productData.quantity) || 0;
+    const newQuantity = currentQuantity + quantityChange;
 
     await updateDoc(productRef, { quantity: newQuantity });
     console.log(`Product quantity updated. New quantity: ${newQuantity}`);
