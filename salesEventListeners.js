@@ -245,7 +245,6 @@ function removeFromCart(productId) {
   displaySalesCart();
 }
 
-// 販売完了ボタンのイベントリスナー
 document.getElementById('completeSaleButton').addEventListener('click', async () => {
   const user = auth.currentUser;
   if (!user) {
@@ -262,7 +261,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     showError('支払い方法を選択してください');
     return;
   }
-  
+
   // 商品のサブカテゴリIDを確認するログを追加
   salesCart.forEach(item => {
     console.log("販売完了 - 商品ID:", item.product.id, "サブカテゴリID:", item.product.subcategoryId);
@@ -282,10 +281,9 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     for (const item of salesCart) {
       const product = item.product;
       const quantity = item.quantity;
-      const requiredQuantity = product.size * quantity;
 
-      // 商品の在庫チェック
-      if (product.quantity < requiredQuantity) {
+      // 商品の在庫チェック（サイズを考慮しない）
+      if (product.quantity < quantity) {
         showError(`商品「${product.name}」の在庫が不足しています`);
         return;
       }
@@ -318,7 +316,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     for (const item of salesCart) {
       const product = item.product;
       const quantity = item.quantity;
-      const requiredQuantity = product.size * quantity;
+      const requiredQuantity = product.size * quantity; // サイズを考慮した全体数量
       const cost = product.cost * requiredQuantity;
       const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity);
       const subtotal = unitPrice * requiredQuantity;
@@ -340,10 +338,11 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
         subcategoryId: product.subcategoryId, // サブカテゴリID
       });
 
-      // 在庫の更新
-      console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - requiredQuantity, subcategoryId: product.subcategoryId });
-     await updateProduct(product.id, { quantity: product.quantity - quantity, subcategoryId: product.subcategoryId });
-      // 全体在庫の更新
+      // 在庫の更新（サイズを考慮しない）
+      console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - quantity });
+      await updateProduct(product.id, { quantity: product.quantity - quantity });
+
+      // 全体在庫の更新（サイズを考慮）
       console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
       await updateOverallInventory(product.subcategoryId, -requiredQuantity);
     }
@@ -360,7 +359,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     alert('販売が完了しました');
     // 売上管理セクションを更新
     await displayTransactions();
-    
+
     // 在庫管理セクションと全体在庫の再描画
     await displayOverallInventory(); // 全体在庫の再描画
     await displayInventoryProducts(); // 在庫管理セクションの再描画
