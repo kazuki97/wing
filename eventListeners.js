@@ -1763,7 +1763,7 @@ export async function displayInventoryProducts() {
     const subcategoryId = document.getElementById('inventorySubcategorySelect').value;
     const products = await getProducts(parentCategoryId, subcategoryId);
 
-    // **商品を名前内の数値でソート**
+    // 商品を名前内の数値でソート
     products.sort((a, b) => {
       const numA = extractNumberFromName(a.name);
       const numB = extractNumberFromName(b.name);
@@ -1791,15 +1791,15 @@ export async function displayInventoryProducts() {
       inventoryList.appendChild(row);
     }
 
-    // 「変動履歴を見る」ボタンのイベントリスナーを追加
+   // 「変動履歴を見る」ボタンのイベントリスナーを追加
     document.querySelectorAll('.view-inventory-history').forEach((button) => {
-      button.addEventListener('click', (e) => {
+      button.addEventListener('click', async (e) => {
         const productId = e.target.dataset['productId'];
-        viewInventoryHistory(productId);
+        await displayProductInventoryHistory(productId);
       });
     });
 
-    // **商品の在庫数量を更新する関数の修正**
+    // 在庫数量更新ボタンのイベントリスナー
     document.querySelectorAll('.update-inventory').forEach((button) => {
       button.addEventListener('click', async (e) => {
         const row = e.target.closest('tr');
@@ -1819,7 +1819,7 @@ export async function displayInventoryProducts() {
       });
     });
 
-    // **商品名から数値を抽出する関数を追加**
+    // 数値を抽出する関数
     function extractNumberFromName(name) {
       const match = name.match(/\d+/);
       return match ? parseFloat(match[0]) : 0;
@@ -1829,9 +1829,118 @@ export async function displayInventoryProducts() {
     console.error(error);
     showError('在庫商品の表示に失敗しました');
   }
-} // **displayInventoryProducts 関数の終了**
+}
 
-/** ここで関数が終了していることを確認 **/
+/**
+ * 個別商品の在庫数量を更新し、変動履歴を記録する関数
+ * @param {string} productId - 更新する商品のID
+ * @param {number} quantityChange - 在庫の変動量（増加は正、減少は負）
+ * @param {string} reason - 在庫変動の理由
+ */
+export async function updateProductQuantity(productId, quantityChange, reason = '') {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('在庫を更新するにはログインが必要です。');
+  }
+  try {
+    const productRef = doc(db, 'products', productId);
+    const productDoc = await getDoc(productRef);
+    if (!productDoc.exists()) {
+      throw new Error('商品が見つかりません');
+    }
+    const productData = productDoc.data();
+
+    // 新しい在庫数量を計算
+    const newQuantity = (productData.quantity || 0) + quantityChange;
+
+    // 在庫数量を更新
+    await updateDoc(productRef, { quantity: newQuantity });
+
+    // 在庫変動履歴を `productInventoryChanges` コレクションに追加
+    const productInventoryChange = {
+      productId: productId,
+      changeAmount: quantityChange,
+      newQuantity: newQuantity,
+      timestamp: serverTimestamp(),
+      userId: user.uid,
+      userName: user.displayName || user.email,
+      reason: reason,
+    };
+
+    await addDoc(collection(db, 'productInventoryChanges'), productInventoryChange);
+  } catch (error) {
+    console.error('在庫数量の更新に失敗しました:', error);
+    showError('在庫数量の更新に失敗しました。');
+    throw error;
+  }
+}
+
+/**
+ * 個別商品の在庫変動履歴を取得する関数
+ * @param {string} productId - 取得する商品のID
+ * @returns {Array} - 在庫変動履歴の配列
+ */
+export async function getProductInventoryChangesByProductId(productId) {
+  try {
+    const q = query(
+      collection(db, 'productInventoryChanges'),
+      where('productId', '==', productId),
+      orderBy('timestamp', 'desc')
+    );
+
+    const snapshot = await getDocs(q);
+
+    const changes = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      // `timestamp` を Date オブジェクトに変換
+      if (data.timestamp && data.timestamp.toDate) {
+        data.timestamp = data.timestamp.toDate();
+      }
+      changes.push({ id: doc.id, ...data });
+    });
+    return changes;
+  } catch (error) {
+    console.error('在庫変動履歴の取得に失敗しました:', error);
+    showError('在庫変動履歴の取得に失敗しました。');
+    throw error;
+  }
+}
+
+/**
+ * 個別商品の在庫履歴を表示する関数
+ * @param {string} productId - 対象商品のID
+ */
+export async function displayProductInventoryHistory(productId) {
+  try {
+    const changes = await getProductInventoryChangesByProductId(productId);
+    const historyTableBody = document.getElementById('productInventoryHistory').querySelector('tbody');
+    historyTableBody.innerHTML = '';
+
+    changes.forEach((change) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${change.changeAmount}</td>
+        <td>${change.newQuantity}</td>
+        <td>${change.timestamp.toLocaleString()}</td>
+        <td>${change.userName}</td>
+        <td>${change.reason}</td>
+      `;
+      historyTableBody.appendChild(row);
+    });
+
+    // モーダルを表示
+    document.getElementById('productInventoryHistoryModal').style.display = 'block';
+  } catch (error) {
+    console.error('個別商品の在庫履歴の表示に失敗しました:', error);
+    showError('個別商品の在庫履歴の表示に失敗しました。');
+  }
+}
+
+// モーダルを閉じるボタンのイベントリスナー
+document.getElementById('closeProductInventoryHistoryModal').addEventListener('click', () => {
+  document.getElementById('productInventoryHistoryModal').style.display = 'none';
+});
 
 // **修正**: 全体在庫更新フォームのイベントリスナー
 document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
