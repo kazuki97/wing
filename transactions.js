@@ -33,23 +33,21 @@ export async function processSale(barcode, quantitySold) {
       return;
     }
 
-    // **product.quantity を数値に変換**
-    const currentQuantity = Number(product.quantity) || 0;
-
-    if (currentQuantity < quantitySold) {
-  console.log(`currentQuantity (${currentQuantity}) is less than quantitySold (${quantitySold})`);
-  console.log(`Product Data:`, product); // 商品データの全体をログ
-  showError('在庫が不足しています。');
-  return;
-}
-
     const productId = product.id;
-    const productSize = product.size || 1;
+    const currentQuantity = Number(product.quantity) || 0; // 数値型に変換
+    const productSize = product.size || 1; // サイズを取得
+
+    // 在庫判定 (サイズを考慮しない)
+    if (currentQuantity < quantitySold) {
+      showError(`在庫が不足しています。在庫数: ${currentQuantity}, 必要数: ${quantitySold}`);
+      return;
+    }
 
     // 在庫更新（履歴も自動的に記録される）
     console.log('Calling updateProductQuantity...');
     await updateProductQuantity(productId, -quantitySold, `売上による在庫減少: ${quantitySold}個`);
     console.log('updateProductQuantity called successfully.');
+
 
 
     // 全体在庫の更新（サイズを考慮）
