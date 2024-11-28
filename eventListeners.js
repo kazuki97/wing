@@ -1837,7 +1837,7 @@ export async function displayInventoryProducts() {
  * @param {number} quantityChange - 在庫の変動量（増加は正、減少は負）
  * @param {string} reason - 在庫変動の理由
  */
-export async function updateProductQuantity(productId, quantityChange, reason = '') {
+export async function updateProductQuantityInProductInventoryChanges(productId, quantityChange, reason = '') {
   const user = auth.currentUser;
   if (!user) {
     throw new Error('在庫を更新するにはログインが必要です。');
