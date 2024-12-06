@@ -1,4 +1,5 @@
 // pricing.js
+
 import { db } from './db.js';
 import {
   collection,
@@ -6,7 +7,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  getDoc, // **この行を追加**
+  getDoc,
   getDocs,
   query,
   where,
@@ -34,10 +35,8 @@ export async function getPricingRules(subcategoryId) {
     const q = query(
       collection(db, 'pricingRules'),
       where('subcategoryId', '==', subcategoryId)
-      // orderBy('minQuantity', 'asc') は削除しました
     );
     const snapshot = await getDocs(q);
-    // 手動でソート
     const pricingRules = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     pricingRules.sort((a, b) => a.minQuantity - b.minQuantity);
     return pricingRules;
@@ -47,7 +46,6 @@ export async function getPricingRules(subcategoryId) {
   }
 }
 
-// **単価ルールの取得（ID指定）関数を追加**
 export async function getPricingRuleById(id) {
   try {
     const docRef = doc(db, 'pricingRules', id);
@@ -63,7 +61,6 @@ export async function getPricingRuleById(id) {
   }
 }
 
-// **単価ルールの更新関数を追加**
 export async function updatePricingRule(id, updatedData) {
   try {
     const docRef = doc(db, 'pricingRules', id);
@@ -86,7 +83,8 @@ export async function deletePricingRule(id) {
 }
 
 // 購入数量に応じた単価の取得
-export async function getUnitPrice(subcategoryId, totalQuantity) {
+// 修正: defaultPrice パラメータを追加
+export async function getUnitPrice(subcategoryId, totalQuantity, defaultPrice) {
   try {
     const pricingRules = await getPricingRules(subcategoryId);
     for (const rule of pricingRules) {
@@ -94,8 +92,8 @@ export async function getUnitPrice(subcategoryId, totalQuantity) {
         return rule.unitPrice;
       }
     }
-    // 適用可能なルールがない場合は null を返す
-    return null;
+    // 適用可能なルールがない場合は defaultPrice を返す
+    return defaultPrice;
   } catch (error) {
     console.error('単価の取得エラー:', error);
     throw error;
