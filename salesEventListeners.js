@@ -191,7 +191,7 @@ async function displaySalesCart() {
     const totalQuantity = subcategoryQuantities[subcategoryId];
 
     // 単価を取得
-    const unitPrice = await getUnitPrice(subcategoryId, totalQuantity);
+    const unitPrice = await getUnitPrice(subcategoryId, totalQuantity, product.price);
     const subtotal = unitPrice * product.size * quantity;
     totalAmount += subtotal;
 
@@ -318,7 +318,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
       const quantity = item.quantity;
       const requiredQuantity = product.size * quantity; // サイズを考慮した全体数量
       const cost = product.cost * requiredQuantity;
-      const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity);
+      const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
       const subtotal = unitPrice * requiredQuantity;
 
       totalCost += cost;
