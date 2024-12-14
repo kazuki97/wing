@@ -103,7 +103,7 @@ export async function processSale(barcode, quantitySold) {
   }
 }
 
-// 売上データの追加
+// 売上データの追加（修正後）
 export async function addTransaction(transactionData) {
   try {
     const user = auth.currentUser;
@@ -112,12 +112,10 @@ export async function addTransaction(transactionData) {
       return;
     }
 
-    // 数値フィールドを明示的に数値型に変換
     transactionData.totalAmount = Number(transactionData.totalAmount);
     transactionData.totalCost = Number(transactionData.totalCost);
     transactionData.profit = Number(transactionData.profit);
 
-    // items 内の数値フィールドも数値型に変換
     transactionData.items = transactionData.items.map((item) => ({
       ...item,
       unitPrice: Number(item.unitPrice),
@@ -128,14 +126,15 @@ export async function addTransaction(transactionData) {
       profit: Number(item.profit),
     }));
 
-    // `timestamp` を Firestore のサーバータイムスタンプとして保存
     transactionData.timestamp = serverTimestamp();
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
     console.log(`Transaction document added with ID: ${docRef.id}`);
 
-    // 消耗品の使用量を記録
-    await recordConsumableUsage(transactionData.items);
-    console.log('Consumable usage recorded successfully.');
+    // 手動追加(manuallyAdded)がfalseの場合のみ消耗品使用量を記録
+    if (!transactionData.manuallyAdded) {
+      await recordConsumableUsage(transactionData.items);
+      console.log('Consumable usage recorded successfully.');
+    }
 
     return docRef.id;
   } catch (error) {
@@ -202,25 +201,20 @@ export async function getTransactionById(transactionId) {
   }
 }
 
-// 取引データの更新（返品処理で使用）
+// 取引データの更新（返品処理用：修正後）
 export async function updateTransaction(transactionId, updatedData) {
   try {
     const docRef = doc(db, 'transactions', transactionId);
     await updateDoc(docRef, updatedData);
 
-    // 在庫と全体在庫を更新（商品が返品された場合など）
-    if (updatedData.isReturned && updatedData.items) {
+    // 手動追加でない、かつ返品の場合のみ在庫・全体在庫を更新
+    if (!updatedData.manuallyAdded && updatedData.isReturned && updatedData.items) {
       for (const item of updatedData.items) {
-        // 在庫を増加
         await updateProductQuantity(item.productId, item.quantity, `返品による在庫増加: ${item.quantity}個`);
-        console.log(`updateProductQuantity called for productId: ${item.productId}`);
-
-        // 全体在庫も増加（サイズを考慮）
         const product = await getProductById(item.productId);
         const productSize = product.size || 1;
         const overallQuantityChange = item.quantity * productSize;
         await updateOverallInventory(product.subcategoryId, overallQuantityChange, `返品による全体在庫増加: ${overallQuantityChange}個`);
-        console.log(`updateOverallInventory called for subcategoryId: ${product.subcategoryId}`);
       }
     }
   } catch (error) {
@@ -230,25 +224,23 @@ export async function updateTransaction(transactionId, updatedData) {
   }
 }
 
-// 取引データの削除
+// 取引データの削除（修正後）
 export async function deleteTransaction(transactionId) {
   try {
     const docRef = doc(db, 'transactions', transactionId);
     const transaction = await getTransactionById(transactionId);
-    if (transaction && transaction.items) {
-      for (const item of transaction.items) {
-        // 在庫を増加
-        await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
-        console.log(`updateProductQuantity called for productId: ${item.productId}`);
 
-        // 全体在庫も増加（サイズを考慮）
+    // 手動追加でない場合のみ在庫・全体在庫を復旧
+    if (transaction && transaction.items && !transaction.manuallyAdded) {
+      for (const item of transaction.items) {
+        await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
         const product = await getProductById(item.productId);
         const productSize = product.size || 1;
         const overallQuantityChange = item.quantity * productSize;
         await updateOverallInventory(product.subcategoryId, overallQuantityChange, `取引削除による全体在庫増加: ${overallQuantityChange}個`);
-        console.log(`updateOverallInventory called for subcategoryId: ${product.subcategoryId}`);
       }
     }
+
     await deleteDoc(docRef);
     console.log('取引が削除されました');
   } catch (error) {
