@@ -7,6 +7,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  getDoc, // getDocをインポート
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 // 支払い方法の追加
@@ -36,8 +37,9 @@ export async function getPaymentMethods() {
 
 export async function getPaymentMethodById(paymentMethodId) {
   try {
-    const paymentMethodDoc = await db.collection('paymentMethods').doc(paymentMethodId).get();
-    if (paymentMethodDoc.exists) {
+    const paymentMethodRef = doc(collection(db, 'paymentMethods'), paymentMethodId);
+    const paymentMethodDoc = await getDoc(paymentMethodRef);
+    if (paymentMethodDoc.exists()) {
       return { id: paymentMethodDoc.id, ...paymentMethodDoc.data() };
     } else {
       console.warn(`支払い方法ID ${paymentMethodId} が見つかりませんでした`);
