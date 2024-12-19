@@ -449,28 +449,34 @@ if (editTransactionForm) {
       }
     }
 
-    // 利益の計算
-    const profitAmount = subtotal - (quantity * cost * size) - feeAmount; // 利益計算 (サイズと手数料を考慮)
+    // totalCost を定義（合計原価）
+// 単価原価 = cost（1個あたりの原価）
+// 合計原価 = 単価原価 * 数量 * サイズ
+const totalCost = cost * quantity * size;
 
-   const updatedData = {
-  timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(), // 日時
+// 利益の計算
+// 利益 = 小計 - 総原価 - 手数料
+const profitAmount = subtotal - totalCost - feeAmount;
+
+const updatedData = {
+  timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(),
   items: [
     {
-      productName: document.getElementById('editTransactionProductName').value, // 商品名
-      quantity: quantity, // 数量
-      unitPrice: unitPrice, // 販売単価
-      cost: totalCost,           // 合計原価を保存
-      size: size, // サイズ
-      subtotal: subtotal, // 小計
-      profit: profitAmount, // 利益
+      productName: document.getElementById('editTransactionProductName').value,
+      quantity: quantity,
+      unitPrice: unitPrice,
+      cost: totalCost,      // 合計原価を保存
+      size: size,
+      subtotal: subtotal,
+      profit: profitAmount,
     }
   ],
-  totalAmount: subtotal,     // 合計金額
-  totalCost: totalCost,      // **総原価を追加**
+  totalAmount: subtotal,
+  totalCost: totalCost,     // 定義した totalCost をここで使用
   paymentMethodId,
-  feeAmount: feeAmount,           // 手数料
-  netAmount: subtotal - feeAmount, // 手数料を引いた金額
-  profit: profitAmount,           // 総利益
+  feeAmount: feeAmount,
+  netAmount: subtotal - feeAmount,
+  profit: profitAmount,
 };
 
     try {
