@@ -544,7 +544,7 @@ document.getElementById('addTransactionForm').addEventListener('submit', async (
         quantity: productQuantity,
         size: productSize,
         subtotal: subtotal,  // 小計
-        cost: productCost,   // 単価原価
+        cost: totalCost,   // productCost × productQuantity × productSize   // 単価原価
         profit: profitAmount, // 利益
       }
     ],
