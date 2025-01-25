@@ -293,6 +293,25 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     const totalAmount = Math.round(
       parseFloat(document.getElementById('totalAmount').textContent.replace('合計金額: ¥', ''))
     );
+
+// ▼▼▼ ここから割引の処理を追加 ▼▼▼
+  const discountAmountElement = document.getElementById('discountAmount');
+  const discountReasonElement = document.getElementById('discountReason');
+
+  // 入力された割引額を数値化（未入力・不正値なら0扱い）
+  let discountValue = parseFloat(discountAmountElement.value);
+  if (isNaN(discountValue)) discountValue = 0;
+
+  // 割引理由の選択値を取得
+  const discountReason = discountReasonElement.value;
+
+  // 割引後の金額を計算
+  let discountedTotal = totalAmount - discountValue;
+  if (discountedTotal < 0) {
+    discountedTotal = 0; // 合計がマイナスにならないようガード
+  }
+  // ▲▲▲ ここまで割引の処理を追加 ▲▲▲
+
     const feeAmount = Math.round((totalAmount * feeRate) / 100);
     const netAmount = totalAmount - feeAmount;
 
@@ -311,7 +330,13 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
       manuallyAdded: false,
       cost: 0,
       profit: 0,
-    };
+   // ▼▼▼ 割引情報を新たに追加 ▼▼▼
+    discount: {
+      amount: discountValue,
+      reason: discountReason,
+    },
+    // ▲▲▲
+  };
 
     for (const item of salesCart) {
       const product = item.product;
