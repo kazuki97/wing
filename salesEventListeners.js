@@ -312,8 +312,9 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
   }
   // ▲▲▲ ここまで割引の処理を追加 ▲▲▲
 
-    const feeAmount = Math.round((totalAmount * feeRate) / 100);
-    const netAmount = totalAmount - feeAmount;
+
+const feeAmount = Math.round((discountedTotal * feeRate) / 100);
+const netAmount = discountedTotal - feeAmount;
 
     // 原価と利益の計算
     let totalCost = 0;
@@ -321,7 +322,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     // 販売データの作成
     const transactionData = {
       timestamp: new Date(),
-      totalAmount: totalAmount,
+      totalAmount: discountedTotal,  // 割引後の合計を格納
       feeAmount: feeAmount,
       netAmount: netAmount,
       paymentMethodId: paymentMethodId,
