@@ -233,6 +233,13 @@ export async function deleteTransaction(transactionId) {
     // 手動追加でない場合のみ在庫・全体在庫を復旧
     if (transaction && transaction.items && !transaction.manuallyAdded) {
       for (const item of transaction.items) {
+// ▼▼▼ ここで productId があるかチェック ▼▼▼
+        if (!item.productId) {
+          // productId が無いアイテムは在庫操作をスキップする
+          console.warn('productId が存在しないため在庫更新をスキップします:', item);
+          continue;
+        }
+        // ▲▲▲
         await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
         const product = await getProductById(item.productId);
         const productSize = product.size || 1;
