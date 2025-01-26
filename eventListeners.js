@@ -892,6 +892,24 @@ async function displayTransactionDetails(transactionId) {
 
     document.getElementById('detailTotalProfit').textContent = `¥${Math.round(totalProfit)}`;
 
+// 「総利益」を表示した直後（またはその近く）に挿入
+if (transaction.discount) {
+  // 割引額と理由を取得
+  const discountAmount = transaction.discount.amount || 0;
+  const discountReason = transaction.discount.reason || '不明';
+
+  // 表示用の文言を組み立て
+  const discountInfoText = `割引額: ¥${discountAmount} (理由: ${discountReason})`;
+
+  // <p>要素を作って取引詳細モーダルに追加
+  const discountInfoParagraph = document.createElement('p');
+  discountInfoParagraph.textContent = discountInfoText;
+
+  // "transactionDetails" が取引詳細を包む大枠の要素
+  transactionDetails.appendChild(discountInfoParagraph);
+}
+
+
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
 
