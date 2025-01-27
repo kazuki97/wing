@@ -818,6 +818,34 @@ if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCo
       transactionList.appendChild(row);
     }
 
++   // ▼▼▼ ここから「合計を集計し表示する」処理を追加 ▼▼▼
++   let totalSales = 0;    // 合計売上 (割引後)
++   let totalProfit = 0;   // 合計利益
++   let totalDiscount = 0; // 合計割引額
++
++   for (const t of transactions) {
++     // ここで「売上金額」をどのフィールドにするかによって変わる
++     // (割引後であれば t.totalAmount や t.netAmount を使う)
++     totalSales += (t.totalAmount || 0);
++     totalProfit += (t.profit || 0);
++     // 割引額
++     if (t.discount && t.discount.amount) {
++       totalDiscount += parseFloat(t.discount.amount);
++     }
++   }
++
++   // HTML側に <div id="transactionsSummary"></div> を用意しておいて、
++   // そこに合計額などを出力する
++   const summaryDiv = document.getElementById('transactionsSummary');
++   if (summaryDiv) {
++     summaryDiv.innerHTML = `
++       <p>合計売上金額: ¥${Math.round(totalSales)}</p>
++       <p>合計利益: ¥${Math.round(totalProfit)}</p>
++       <p>合計割引額: ¥${Math.round(totalDiscount)}</p>
++     `;
++   }
++   // ▲▲▲ 合計表示の追加ここまで ▲▲▲
+
     // 詳細ボタンと編集ボタンのイベントリスナーの追加
     document.querySelectorAll('.view-transaction-details').forEach((button) => {
       button.addEventListener('click', async (e) => {
