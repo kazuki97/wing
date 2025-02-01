@@ -369,25 +369,14 @@ async function addTransactionEditListeners() {
         alert('取引を編集するにはログインが必要です。');
         return;
       }
-
       const transactionId = e.target.dataset.id;
       const transaction = await getTransactionById(transactionId);
       if (transaction) {
-        let product = null;
+        // 取引全体の共通項目をセット
+        document.getElementById('editTransactionId').value = transaction.id;
+        document.getElementById('editTransactionTimestamp').value =
+          new Date(transaction.timestamp).toISOString().slice(0, 16);
 
-        if (transaction.items[0].productId) {
-          // 商品情報を取得
-          product = await getProductById(transaction.items[0].productId);
-        } else {
-          // 手動追加の場合、transaction.items[0] から商品情報を取得
-          product = {
-            name: transaction.items[0].productName,
-            price: transaction.items[0].unitPrice,
-            cost: transaction.items[0].cost,
-            size: transaction.items[0].size,
-          };
-        }
-        
         // 支払い方法の選択肢を更新
         const paymentMethods = await getPaymentMethods();
         const paymentMethodSelect = document.getElementById('editTransactionPaymentMethod');
@@ -398,18 +387,54 @@ async function addTransactionEditListeners() {
           option.textContent = method.name;
           paymentMethodSelect.appendChild(option);
         });
-
-        // 編集フォームに商品情報と現在の取引データをセット
-        document.getElementById('editTransactionId').value = transaction.id;
-        document.getElementById('editTransactionTimestamp').value = new Date(transaction.timestamp).toISOString().slice(0, 16);
-        document.getElementById('editTransactionProductName').value = product.name;
-        document.getElementById('editTransactionQuantity').value = transaction.items[0].quantity;
-        document.getElementById('editTransactionUnitPrice').value = product.price; // 商品の単価
-        document.getElementById('editTransactionCost').value = product.cost; // 商品の原価
-        document.getElementById('editTransactionSize').value = product.size; // 商品のサイズ
         paymentMethodSelect.value = transaction.paymentMethodId || '';
 
-        // 編集フォームの表示
+        // 複数商品の情報編集用コンテナを取得し、初期化
+        const itemsContainer = document.getElementById('editTransactionItemsContainer');
+        itemsContainer.innerHTML = '';
+
+        // transaction.items 配列の各商品について、入力行を動的に作成
+        transaction.items.forEach((item, index) => {
+          // もし productId がある場合、詳細情報を取得（必要なら）
+          // ここでは item 内の情報をそのまま使います
+          const productName = item.productName || '';
+          const quantity = item.quantity || 0;
+          const unitPrice = item.unitPrice || 0;
+          const cost = item.cost || 0;
+          const size = item.size || 1;
+
+          // 各商品の入力行を作成
+          const itemDiv = document.createElement('div');
+          itemDiv.classList.add('edit-transaction-item');
+          itemDiv.style.border = "1px solid #ccc";
+          itemDiv.style.marginBottom = "0.5rem";
+          itemDiv.style.padding = "0.5rem";
+          itemDiv.innerHTML = `
+            <div>
+              <label>商品名:</label>
+              <input type="text" name="editTransactionProductName_${index}" value="${productName}" required />
+            </div>
+            <div>
+              <label>数量:</label>
+              <input type="number" name="editTransactionQuantity_${index}" value="${quantity}" required />
+            </div>
+            <div>
+              <label>販売価格:</label>
+              <input type="number" name="editTransactionUnitPrice_${index}" value="${unitPrice}" required />
+            </div>
+            <div>
+              <label>原価:</label>
+              <input type="number" name="editTransactionCost_${index}" value="${cost}" required />
+            </div>
+            <div>
+              <label>サイズ:</label>
+              <input type="number" name="editTransactionSize_${index}" value="${size}" min="1" required />
+            </div>
+          `;
+          itemsContainer.appendChild(itemDiv);
+        });
+
+        // 編集フォームを表示
         document.getElementById('editTransactionFormContainer').style.display = 'block';
       }
     });
@@ -422,73 +447,70 @@ if (editTransactionForm) {
   editTransactionForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // 取引IDを取得
+    // 取引全体の共通情報を取得
     const transactionId = document.getElementById('editTransactionId').value;
-
-    // フォームからデータを取得
-    const quantity = parseFloat(document.getElementById('editTransactionQuantity').value);
-    const unitPrice = parseFloat(document.getElementById('editTransactionUnitPrice').value);
-    const cost = parseFloat(document.getElementById('editTransactionCost').value);
-    const size = parseFloat(document.getElementById('editTransactionSize').value); // サイズを取得
+    const timestampStr = document.getElementById('editTransactionTimestamp').value;
+    const timestamp = new Date(timestampStr).toISOString();
     const paymentMethodId = document.getElementById('editTransactionPaymentMethod').value;
 
-    // 入力値の検証
-    if (isNaN(quantity) || isNaN(unitPrice) || isNaN(cost) || isNaN(size)) {
-      showError('有効な数値を入力してください');
-      return;
-    }
+    // 複数商品の編集用コンテナから各商品の情報を収集
+    const itemsContainer = document.getElementById('editTransactionItemsContainer');
+    const itemDivs = itemsContainer.getElementsByClassName('edit-transaction-item');
+    const items = [];
+    for (let i = 0; i < itemDivs.length; i++) {
+      const div = itemDivs[i];
+      // 各入力フィールドは、名前にインデックスを付与している前提です
+      const productName = div.querySelector(`input[name="editTransactionProductName_${i}"]`).value;
+      const quantity = parseFloat(div.querySelector(`input[name="editTransactionQuantity_${i}"]`).value);
+      const unitPrice = parseFloat(div.querySelector(`input[name="editTransactionUnitPrice_${i}"]`).value);
+      const cost = parseFloat(div.querySelector(`input[name="editTransactionCost_${i}"]`).value);
+      const size = parseFloat(div.querySelector(`input[name="editTransactionSize_${i}"]`).value);
 
-    const subtotal = quantity * unitPrice * size; // 小計計算 (サイズを考慮)
-
-    // 支払い方法の手数料を取得
-    let feeAmount = 0;
-    if (paymentMethodId) {
-      const paymentMethod = await getPaymentMethodById(paymentMethodId);
-      if (paymentMethod && paymentMethod.feeRate) {
-        feeAmount = subtotal * paymentMethod.feeRate; // 手数料計算
+      // 基本的な検証
+      if (isNaN(quantity) || isNaN(unitPrice) || isNaN(cost) || isNaN(size)) {
+        showError('すべての商品の有効な数値を入力してください');
+        return;
       }
+
+      const subtotal = quantity * unitPrice * size;
+      const itemProfit = subtotal - (cost * quantity * size);
+
+      items.push({
+        productName: productName,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        cost: cost,
+        size: size,
+        subtotal: subtotal,
+        profit: itemProfit,
+      });
     }
 
-    // totalCost を定義（合計原価）
-// 単価原価 = cost（1個あたりの原価）
-// 合計原価 = 単価原価 * 数量 * サイズ
-const totalCost = cost * quantity * size;
+    // 全商品の合計を計算
+    const totalAmount = items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    const totalCost = items.reduce((sum, item) => sum + (item.cost * item.quantity * item.size || 0), 0);
+    const totalProfit = items.reduce((sum, item) => sum + (item.profit || 0), 0);
 
-// 利益の計算
-// 利益 = 小計 - 総原価 - 手数料
-const profitAmount = subtotal - totalCost - feeAmount;
+    // 手数料や純売上については必要に応じて計算してください
+    const feeAmount = 0; // 例：手数料がなければ0
+    const netAmount = totalAmount - feeAmount;
 
-const updatedData = {
-  timestamp: new Date(document.getElementById('editTransactionTimestamp').value).toISOString(),
-  items: [
-    {
-      productName: document.getElementById('editTransactionProductName').value,
-      quantity: quantity,
-      unitPrice: unitPrice,
-      cost: totalCost,      // 合計原価を保存
-      size: size,
-      subtotal: subtotal,
-      profit: profitAmount,
-    }
-  ],
-  totalAmount: subtotal,
-  totalCost: totalCost,     // 定義した totalCost をここで使用
-  paymentMethodId,
-  feeAmount: feeAmount,
-  netAmount: subtotal - feeAmount,
-  profit: profitAmount,
-};
+    const updatedData = {
+      timestamp: timestamp,
+      items: items,
+      totalAmount: totalAmount,
+      totalCost: totalCost,
+      paymentMethodId: paymentMethodId,
+      feeAmount: feeAmount,
+      netAmount: netAmount,
+      profit: totalProfit,
+    };
 
     try {
-      // 取引データを更新
       await updateTransaction(transactionId, updatedData);
       alert('取引が更新されました');
-
-      // 編集フォームを非表示にし、フォームをリセット
       document.getElementById('editTransactionFormContainer').style.display = 'none';
       editTransactionForm.reset();
-
-      // 最新のデータでリストを再描画
       await displayTransactions();
     } catch (error) {
       console.error(error);
@@ -496,6 +518,7 @@ const updatedData = {
     }
   });
 }
+
 
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
