@@ -472,14 +472,17 @@ if (editTransactionForm) {
         return;
       }
 
+      // 小計は販売価格×数量×サイズ（登録時の計算方法）
       const subtotal = quantity * unitPrice * size;
-      const itemProfit = subtotal - (cost * quantity * size);
+      // 修正：編集時、cost は既に「原価×サイズ」として入力されていると仮定するため、
+      // 利益の計算は subtotal - (cost × 数量) で十分
+      const itemProfit = subtotal - (cost * quantity);
 
       items.push({
         productName: productName,
         quantity: quantity,
         unitPrice: unitPrice,
-        cost: cost,
+        cost: cost,  // ここは入力された値をそのまま利用
         size: size,
         subtotal: subtotal,
         profit: itemProfit,
@@ -488,11 +491,12 @@ if (editTransactionForm) {
 
     // 全商品の合計を計算
     const totalAmount = items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
-    const totalCost = items.reduce((sum, item) => sum + (item.cost * item.quantity * item.size || 0), 0);
+    // 修正：合計原価は各商品の cost（既に原価×サイズの値）×数量
+    const totalCost = items.reduce((sum, item) => sum + (item.cost * item.quantity || 0), 0);
     const totalProfit = items.reduce((sum, item) => sum + (item.profit || 0), 0);
 
-    // 手数料や純売上については必要に応じて計算してください
-    const feeAmount = 0; // 例：手数料がなければ0
+    // 手数料や純売上については必要に応じて計算（ここでは例として手数料0とする）
+    const feeAmount = 0;
     const netAmount = totalAmount - feeAmount;
 
     const updatedData = {
@@ -518,6 +522,7 @@ if (editTransactionForm) {
     }
   });
 }
+
 
 
 document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
