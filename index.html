@@ -373,38 +373,34 @@
           <button type="button" id="cancelAddTransaction">キャンセル</button>
         </form>
       </div>
-      <!-- 取引の編集フォーム -->
-      <div id="editTransactionFormContainer" style="display: none;">
-        <h2>取引編集</h2>
-        <form id="editTransactionForm">
-          <input type="hidden" id="editTransactionId" />
-          <label for="editTransactionTimestamp">日時:</label>
-          <input type="datetime-local" id="editTransactionTimestamp" required />
+      <!-- 取引の編集フォーム（複数商品対応版） -->
+<div id="editTransactionFormContainer" style="display: none;">
+  <h2>取引編集</h2>
+  <form id="editTransactionForm">
+    <!-- 取引ID（隠しフィールド） -->
+    <input type="hidden" id="editTransactionId" />
 
-          <label for="editTransactionProductName">商品名:</label>
-          <input type="text" id="editTransactionProductName" required />
+    <!-- 取引全体の日時 -->
+    <label for="editTransactionTimestamp">日時:</label>
+    <input type="datetime-local" id="editTransactionTimestamp" required />
 
-          <label for="editTransactionQuantity">数量:</label>
-          <input type="number" id="editTransactionQuantity" required />
+    <!-- 複数商品の情報編集用コンテナ -->
+    <div id="editTransactionItemsContainer">
+      <!-- この中に、各商品の入力グループ（商品名、数量、販売価格、原価、サイズなど）を動的に追加します -->
+    </div>
 
-          <label for="editTransactionUnitPrice">販売価格:</label>
-          <input type="number" id="editTransactionUnitPrice" required />
+    <!-- 取引全体の支払い方法 -->
+    <label for="editTransactionPaymentMethod">支払い方法:</label>
+    <select id="editTransactionPaymentMethod" required>
+      <!-- 支払い方法の選択肢がここに追加されます -->
+    </select>
 
-          <label for="editTransactionCost">原価:</label>
-          <input type="number" id="editTransactionCost" name="cost" required />
+    <!-- 更新・キャンセルボタン -->
+    <button type="submit">更新</button>
+    <button type="button" id="cancelEditTransaction">キャンセル</button>
+  </form>
+</div>
 
-          <label for="editTransactionPaymentMethod">支払い方法:</label>
-          <select id="editTransactionPaymentMethod" required>
-            <!-- 支払い方法の選択肢がここに追加されます -->
-          </select>
-
-          <label for="editTransactionSize">サイズ:</label>
-          <input type="number" id="editTransactionSize" name="editTransactionSize" min="1" required />
-
-          <button type="submit">更新</button>
-          <button type="button" id="cancelEditTransaction">キャンセル</button>
-        </form>
-      </div>
       <!-- 売上データの表示エリア -->
       <div class="table-responsive">
         <table id="transactionList">
