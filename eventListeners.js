@@ -743,6 +743,30 @@ export async function displayTransactions(filter = {}) {
       });
     }
 
+// ▼▼▼ ここからソート処理を追加 ▼▼▼
+    transactions.sort((a, b) => {
+      let aTime, bTime;
+      
+      // a.timestamp が Firestore Timestamp オブジェクトの場合
+      if (a.timestamp && typeof a.timestamp.toDate === 'function') {
+        aTime = a.timestamp.toDate().getTime();
+      } else {
+        aTime = new Date(a.timestamp).getTime();
+      }
+      
+      // b.timestamp も同様に処理
+      if (b.timestamp && typeof b.timestamp.toDate === 'function') {
+        bTime = b.timestamp.toDate().getTime();
+      } else {
+        bTime = new Date(b.timestamp).getTime();
+      }
+      
+      // 昇順にソート（古い順）
+      return aTime - bTime;
+    });
+    // ▲▲▲ ソート処理ここまで ▲▲▲
+
+
     const transactionList = document.getElementById('transactionList').querySelector('tbody');
     transactionList.innerHTML = '';
 
