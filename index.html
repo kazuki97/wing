@@ -269,75 +269,133 @@
   </div>
 </div>
 
-    <!-- バーコードスキャン -->
-    <section id="barcode" class="content-section" style="display: none;">
-      <h1>バーコードスキャン</h1>
+    document.getElementById('completeSaleButton').addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('販売を完了するにはログインが必要です。');
+    return;
+  }
+  if (salesCart.length === 0) {
+    showError('カートに商品がありません');
+    return;
+  }
+  console.log("販売完了時のカート情報:", salesCart);
+  const paymentMethodId = document.getElementById('paymentMethodSelect').value;
+  if (!paymentMethodId) {
+    showError('支払い方法を選択してください');
+    return;
+  }
 
-      <!-- バーコードスキャン開始ボタンを追加 -->
-      <button id="startBarcodeScanButton">バーコードスキャンを開始</button>
+  // 商品のサブカテゴリIDをログ出力
+  salesCart.forEach(item => {
+    console.log("販売完了 - 商品ID:", item.product.id, "サブカテゴリID:", item.product.subcategoryId);
+  });
 
-      <!-- バーコードスキャン用ビデオフィード -->
-      <div id="barcode-scanner" style="width: 100%; height: 300px;"></div>
+  try {
+    const paymentMethods = await getPaymentMethods();
+    const paymentMethod = paymentMethods.find((method) => method.id === paymentMethodId);
+    if (!paymentMethod) {
+      showError('無効な支払い方法です');
+      return;
+    }
+    const feeRate = paymentMethod.feeRate;
 
-      <!-- 手動でバーコードを入力するための入力フィールドと追加ボタン -->
-      <div id="barcodeScanner">
-        <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
-        <button id="addBarcodeButton">追加</button>
-      </div>
+    // 在庫チェック
+    for (const item of salesCart) {
+      const product = item.product;
+      const quantity = item.quantity;
+      if (product.quantity < quantity) {
+        showError(`商品「${product.name}」の在庫が不足しています`);
+        return;
+      }
+    }
 
-      <!-- 支払い方法の選択 -->
-      <div id="paymentMethodSelection">
-        <label for="paymentMethodSelect">支払い方法:</label>
-        <select id="paymentMethodSelect" required>
-          <!-- 支払い方法がここに表示されます -->
-        </select>
-      </div>
-      <!-- 販売カート -->
-      <div class="table-responsive">
-        <table id="salesCart">
-          <thead>
-            <tr>
-              <th>商品名</th>
-              <th>数量</th>
-              <th>単価</th>
-              <th>小計</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- カート内の商品がここに表示されます -->
-          </tbody>
-        </table>
-      </div>
-      <!-- 合計金額表示と販売完了ボタン -->
-      <div id="totalAmount">合計金額: ¥0</div>
+    const totalAmount = Math.round(
+      parseFloat(document.getElementById('totalAmount').textContent.replace('合計金額: ¥', ''))
+    );
 
-<!-- ▼▼▼ ここから追加 ▼▼▼ -->
-<div id="saleDateContainer">
-  <label for="saleDate">販売日:</label>
-  <input type="date" id="saleDate" />
-</div>
-<!-- ▲▲▲ ここまで追加 ▲▲▲ -->
+    // 割引処理
+    const discountAmountElement = document.getElementById('discountAmount');
+    const discountReasonElement = document.getElementById('discountReason');
+    let discountValue = parseFloat(discountAmountElement.value);
+    if (isNaN(discountValue)) discountValue = 0;
+    const discountReason = discountReasonElement.value;
+    let discountedTotal = totalAmount - discountValue;
+    if (discountedTotal < 0) {
+      discountedTotal = 0;
+    }
 
+    // ▼▼▼ 販売日入力フィールドから販売日を取得 ▼▼▼
+    const saleDateInput = document.getElementById('saleDate');
+    let saleTimestamp;
+    if (saleDateInput && saleDateInput.value) {
+      // 入力された日付 (yyyy-mm-dd) の午前0時を timestamp とする
+      saleTimestamp = new Date(saleDateInput.value + "T00:00");
+    } else {
+      saleTimestamp = new Date();
+    }
+    // ▲▲▲ 販売日取得ここまで ▲▲▲
 
-<!-- ▼▼▼ ここから追加 ▼▼▼ -->
-<div id="discountSection">
-  <label for="discountAmount">割引額:</label>
-  <input type="number" id="discountAmount" step="any" min="0" value="0" />
+    const feeAmount = Math.round((discountedTotal * feeRate) / 100);
+    const netAmount = discountedTotal - feeAmount;
+    let totalCost = 0;
+    const transactionItems = [];
+    for (const item of salesCart) {
+      const product = item.product;
+      const quantity = item.quantity;
+      const requiredQuantity = product.size * quantity;
+      const cost = product.cost * requiredQuantity;
+      const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
+      const subtotal = unitPrice * requiredQuantity;
+      totalCost += cost;
+      console.log("商品ID:", product.id, "サブカテゴリID:", product.subcategoryId);
+      transactionItems.push({
+        productId: product.id,
+        productName: product.name,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        size: product.size,
+        subtotal: subtotal,
+        cost: cost,
+        profit: subtotal - cost,
+        subcategoryId: product.subcategoryId,
+      });
+      console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - quantity });
+      await updateProduct(product.id, { quantity: product.quantity - quantity });
+      console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
+      await updateOverallInventory(product.subcategoryId, -requiredQuantity);
+    }
 
-  <label for="discountReason">割引理由:</label>
-  <select id="discountReason">
-    <option value="">選択してください</option>
-    <option value="1">理由1</option>
-    <option value="2">理由2</option>
-    <option value="3">理由3</option>
-    <option value="4">理由4</option>
-  </select>
-</div>
-<!-- ▲▲▲ ここまで追加 ▲▲▲ -->
+    const transactionData = {
+      timestamp: saleTimestamp,  // 修正後：入力された販売日を使用
+      totalAmount: discountedTotal,
+      feeAmount: feeAmount,
+      netAmount: netAmount,
+      paymentMethodId: paymentMethodId,
+      paymentMethodName: paymentMethod.name,
+      items: transactionItems,
+      manuallyAdded: false,
+      cost: totalCost,
+      profit: netAmount - totalCost,
+      discount: {
+        amount: discountValue,
+        reason: discountReason,
+      },
+    };
 
-      <button id="completeSaleButton">販売完了</button>
-    </section>
+    await addTransaction(transactionData);
+    salesCart = [];
+    displaySalesCart();
+    alert('販売が完了しました');
+    await displayTransactions();
+    await displayOverallInventory();
+    await displayInventoryProducts();
+  } catch (error) {
+    console.error(error);
+    showError('販売処理に失敗しました');
+  }
+});
+
 
     <!-- 売上管理 -->
     <section id="transactions" class="content-section" style="display: none;" data-requires-auth="true">
