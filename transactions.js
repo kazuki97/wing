@@ -241,13 +241,22 @@ export async function deleteTransaction(transactionId) {
           continue;
         }
         // 商品ドキュメントの在庫を復元（販売時に -1 だったならここで +1 する）
+        // ※販売時は updateProductQuantity(productId, -quantity, …) を使用しているので
+        // 削除時は同じ関数を呼び出し、item.quantity を正の値で足し戻す
         await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
+        console.log(`商品ID ${item.productId} の在庫を ${item.quantity} 個戻しました。`);
 
-        // 全体在庫も同様に復元（販売時に –(数量 × サイズ) だったので、ここで +(数量 × サイズ)）
+        // 全体在庫は、販売時に「- (quantity × size)」だったので、ここで「+ (quantity × size)」を行う
         const product = await getProductById(item.productId);
+        if (!product) {
+          console.error(`商品ID ${item.productId} が見つかりませんでした`);
+          showError('商品が見つかりませんでした');
+          continue;
+        }
         const productSize = product.size || 1;
         const overallQuantityChange = item.quantity * productSize;
         await updateOverallInventory(product.subcategoryId, overallQuantityChange, `取引削除による全体在庫増加: ${overallQuantityChange}個`);
+        console.log(`サブカテゴリID ${product.subcategoryId} の全体在庫を ${overallQuantityChange} 個戻しました。`);
       }
     }
 
@@ -260,6 +269,7 @@ export async function deleteTransaction(transactionId) {
     throw error;
   }
 }
+
 
 
 // 消耗品の使用量を記録する関数
