@@ -126,7 +126,9 @@ export async function addTransaction(transactionData) {
       profit: Number(item.profit),
     }));
 
-    transactionData.timestamp = serverTimestamp();
+    // 修正後：transactionData.timestamp が設定されていればその値を使用、なければ serverTimestamp() を利用する
+    transactionData.timestamp = transactionData.timestamp ? transactionData.timestamp : serverTimestamp();
+    
     const docRef = await addDoc(collection(db, 'transactions'), transactionData);
     console.log(`Transaction document added with ID: ${docRef.id}`);
 
