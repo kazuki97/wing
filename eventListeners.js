@@ -743,6 +743,7 @@ document.getElementById('editConsumableForm').addEventListener('submit', async (
 
 
 // 売上管理セクションの取引データ表示関数
+// 売上管理セクションの取引データ表示関数（修正後の該当部分）
 export async function displayTransactions(filter = {}) {
   try {
     const user = auth.currentUser;
@@ -771,29 +772,22 @@ export async function displayTransactions(filter = {}) {
       });
     }
 
-// ▼▼▼ ここからソート処理を追加 ▼▼▼
+    // ▼▼▼ ソート処理（古い順に昇順） ▼▼▼
     transactions.sort((a, b) => {
       let aTime, bTime;
-      
-      // a.timestamp が Firestore Timestamp オブジェクトの場合
       if (a.timestamp && typeof a.timestamp.toDate === 'function') {
         aTime = a.timestamp.toDate().getTime();
       } else {
         aTime = new Date(a.timestamp).getTime();
       }
-      
-      // b.timestamp も同様に処理
       if (b.timestamp && typeof b.timestamp.toDate === 'function') {
         bTime = b.timestamp.toDate().getTime();
       } else {
         bTime = new Date(b.timestamp).getTime();
       }
-      
-      // 昇順にソート（古い順）
       return aTime - bTime;
     });
     // ▲▲▲ ソート処理ここまで ▲▲▲
-
 
     const transactionList = document.getElementById('transactionList').querySelector('tbody');
     transactionList.innerHTML = '';
@@ -804,20 +798,15 @@ export async function displayTransactions(filter = {}) {
         row.style.color = 'red';
       }
 
-      // transaction.items が存在し、配列であり、少なくとも1つの要素があるかを確認
       const itemsExist = Array.isArray(transaction.items) && transaction.items.length > 0;
-
       const productNames = itemsExist
         ? transaction.items.map((item) => item.productName).join(', ')
         : '商品情報なし';
-
       const totalQuantity = itemsExist
         ? transaction.items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)
         : '-';
-
       const paymentMethodName = paymentMethodMap[transaction.paymentMethodId] || '不明な支払い方法';
 
-      // タイムスタンプを適切にフォーマット
       let formattedTimestamp = '日時情報なし';
       if (transaction.timestamp) {
         const date = new Date(transaction.timestamp);
@@ -826,92 +815,114 @@ export async function displayTransactions(filter = {}) {
         }
       }
 
-     // totalCost の計算
-let totalCost = 0;
-if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCost))) {
-  totalCost = parseFloat(transaction.totalCost);
-} else if (itemsExist) {
-  totalCost = transaction.items.reduce((sum, item) => {
-    let itemTotalCost = parseFloat(item.cost);
-    if (isNaN(itemTotalCost)) itemTotalCost = 0;
-    return sum + itemTotalCost; // 手動追加の場合、item.costは総原価
-  }, 0);
-} else {
-  totalCost = 0;
-}
+      let totalCost = 0;
+      if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCost))) {
+        totalCost = parseFloat(transaction.totalCost);
+      } else if (itemsExist) {
+        totalCost = transaction.items.reduce((sum, item) => {
+          let itemTotalCost = parseFloat(item.cost);
+          if (isNaN(itemTotalCost)) itemTotalCost = 0;
+          return sum + itemTotalCost;
+        }, 0);
+      } else {
+        totalCost = 0;
+      }
 
-
-      // netAmount と feeAmount の数値変換
       const netAmount = parseFloat(transaction.netAmount) || 0;
       const feeAmount = parseFloat(transaction.feeAmount) || 0;
-
-      // profit の計算
       const profit =
         transaction.profit !== undefined
           ? parseFloat(transaction.profit) || 0
           : netAmount - totalCost - feeAmount;
 
-     row.innerHTML = `
-  <td>${transaction.id}</td>
-  <td>${formattedTimestamp}</td>
-  <td>${paymentMethodName}</td>
-  <td>${productNames}</td>
-  <td>${totalQuantity}</td>
-  <td>¥${Math.round(netAmount)}</td>
-  <td>¥${Math.round(feeAmount)}</td>
-  <td>¥${Math.round(totalCost)}</td>
-  <td>¥${Math.round(profit)}</td>
-  <td>
-    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-  </td>
-`;
-
+      // チェックボックスを先頭セルに追加
+      row.innerHTML = `
+        <td><input type="checkbox" class="transaction-checkbox" value="${transaction.id}" /></td>
+        <td>${transaction.id}</td>
+        <td>${formattedTimestamp}</td>
+        <td>${paymentMethodName}</td>
+        <td>${productNames}</td>
+        <td>${totalQuantity}</td>
+        <td>¥${Math.round(netAmount)}</td>
+        <td>¥${Math.round(feeAmount)}</td>
+        <td>¥${Math.round(totalCost)}</td>
+        <td>¥${Math.round(profit)}</td>
+        <td>
+          <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+          <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+        </td>
+      `;
       transactionList.appendChild(row);
     }
 
- // ▼▼▼ ここから「合計を集計し表示する」処理を追加 ▼▼▼
-  let totalSales = 0;    // 合計売上 (割引後)
- let totalProfit = 0;   // 合計利益
- let totalDiscount = 0; // 合計割引額
+    // ▼▼▼ 合計集計表示処理（変更なし） ▼▼▼
+    let totalSales = 0;    // 合計売上 (割引後)
+    let totalProfit = 0;   // 合計利益
+    let totalDiscount = 0; // 合計割引額
 
- for (const t of transactions) {
-   // ここで「売上金額」をどのフィールドにするかによって変わる
-  // (割引後であれば t.totalAmount や t.netAmount を使う)
-    totalSales += (t.totalAmount || 0);
-    totalProfit += (t.profit || 0);
-   // 割引額
-   if (t.discount && t.discount.amount) {
-     totalDiscount += parseFloat(t.discount.amount);
+    for (const t of transactions) {
+      totalSales += (t.totalAmount || 0);
+      totalProfit += (t.profit || 0);
+      if (t.discount && t.discount.amount) {
+        totalDiscount += parseFloat(t.discount.amount);
+      }
     }
-  }
+    const summaryDiv = document.getElementById('transactionsSummary');
+    if (summaryDiv) {
+      summaryDiv.innerHTML = `
+        <p>合計売上金額: ¥${Math.round(totalSales)}</p>
+        <p>合計利益: ¥${Math.round(totalProfit)}</p>
+        <p>合計割引額: ¥${Math.round(totalDiscount)}</p>
+      `;
+    }
+    // ▲▲▲ 合計表示ここまで ▲▲▲
 
-  // HTML側に <div id="transactionsSummary"></div> を用意しておいて、
-  // そこに合計額などを出力する
-  const summaryDiv = document.getElementById('transactionsSummary');
-  if (summaryDiv) {
-    summaryDiv.innerHTML = `
-      <p>合計売上金額: ¥${Math.round(totalSales)}</p>
-    <p>合計利益: ¥${Math.round(totalProfit)}</p>
-      <p>合計割引額: ¥${Math.round(totalDiscount)}</p>
-    `;
-   }
-  // ▲▲▲ 合計表示の追加ここまで ▲▲▲
-
-    // 詳細ボタンと編集ボタンのイベントリスナーの追加
+    // 既存の詳細・編集ボタンのイベントリスナー設定（変更なし）
     document.querySelectorAll('.view-transaction-details').forEach((button) => {
       button.addEventListener('click', async (e) => {
         const transactionId = e.target.dataset.id;
         await displayTransactionDetails(transactionId);
       });
     });
-
     await addTransactionEditListeners();
   } catch (error) {
     console.error(error);
     showError('取引の表示に失敗しました');
   }
 }
+
+// ▼▼▼ 全選択チェックボックスの処理 ▼▼▼
+document.getElementById('selectAllTransactions').addEventListener('change', (e) => {
+  const checked = e.target.checked;
+  const checkboxes = document.querySelectorAll('.transaction-checkbox');
+  checkboxes.forEach((cb) => {
+    cb.checked = checked;
+  });
+});
+
+// ▼▼▼ 一括削除ボタンの処理 ▼▼▼
+document.getElementById('deleteSelectedTransactionsButton').addEventListener('click', async () => {
+  const selectedCheckboxes = document.querySelectorAll('.transaction-checkbox:checked');
+  if (selectedCheckboxes.length === 0) {
+    alert('削除する取引を選択してください。');
+    return;
+  }
+  if (!confirm(`選択された ${selectedCheckboxes.length} 件の取引を削除してよろしいですか？`)) {
+    return;
+  }
+  const transactionIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+  try {
+    for (const id of transactionIds) {
+      await deleteTransaction(id);
+    }
+    alert('選択された取引が削除されました。');
+    await displayTransactions();
+  } catch (error) {
+    console.error(error);
+    showError('取引の一括削除に失敗しました');
+  }
+});
+
 
 // 売上管理セクションの取引詳細を表示する関数
 async function displayTransactionDetails(transactionId) {
