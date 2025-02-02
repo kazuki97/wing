@@ -402,27 +402,32 @@
 </div>
 
       <!-- 売上データの表示エリア -->
-      <div class="table-responsive">
-        <table id="transactionList">
-          <thead>
-            <tr>
-              <th>取引ID</th>
-              <th>日時</th>
-              <th>支払い方法</th>
-              <th>商品名</th>
-              <th>個数</th>
-              <th>売上金額</th>
-              <th>手数料</th>
-              <th>原価</th>
-              <th>利益</th>
-              <th>詳細</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- 売上データがここに表示されます -->
-          </tbody>
-        </table>
-      </div>
+<div class="table-responsive">
+  <table id="transactionList">
+    <thead>
+      <tr>
+        <!-- チェックボックス列（全選択用） -->
+        <th><input type="checkbox" id="selectAllTransactions" /></th>
+        <th>取引ID</th>
+        <th>日時</th>
+        <th>支払い方法</th>
+        <th>商品名</th>
+        <th>個数</th>
+        <th>売上金額</th>
+        <th>手数料</th>
+        <th>原価</th>
+        <th>利益</th>
+        <th>詳細</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 取引データがここに表示されます -->
+    </tbody>
+  </table>
+</div>
+
+<!-- 一括削除ボタン（テーブルの上部または下部に配置） -->
+<button id="deleteSelectedTransactionsButton">選択した取引を一括削除</button>
 
 <!-- ▼▼▼ ここを追加 ▼▼▼ -->
 <div id="transactionsSummary" style="margin-top: 1rem;">
