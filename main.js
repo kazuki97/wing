@@ -1,9 +1,9 @@
 // main.js
-import { auth } from './db.js';
+import { auth, db } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-import { updateAllParentCategorySelects, updatePricingParentCategorySelect, displayParentCategories, displayProducts, displayOverallInventory, displayInventoryProducts, displayTransactions, updateConsumableCheckboxes, initializeConsumableUsage  } from './eventListeners.js';
-
-import { displayConsumables} from './consumables.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+import { updateAllParentCategorySelects, updatePricingParentCategorySelect, displayParentCategories, displayProducts, displayOverallInventory, displayInventoryProducts, displayTransactions, updateConsumableCheckboxes, initializeConsumableUsage } from './eventListeners.js';
+import { displayConsumables } from './consumables.js';
 import './barcodeScanner.js'; // 追加
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -73,8 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loginForm').style.display = 'none';
         const navMenu = document.getElementById('navMenu');
         navMenu.classList.toggle('show');
-        showAuthenticatedContent();
-
+        // ログイン後の UI 制御は onAuthStateChanged 内で行う
       })
       .catch((error) => {
         alert('ログインに失敗しました：' + error.message);
@@ -88,7 +87,25 @@ onAuthStateChanged(auth, (user) => {
     // ユーザーがログインしている
     console.log('ユーザーがログインしています:', user.email);
     document.getElementById('loginForm').style.display = 'none';
-    showAuthenticatedContent();
+    // Firestore の "users" コレクションからユーザーの役割を取得
+    const userDocRef = doc(db, "users", user.uid);
+    getDoc(userDocRef)
+      .then(docSnap => {
+        if (docSnap.exists()) {
+          const role = docSnap.data().role;
+          console.log("取得したユーザーの役割:", role);
+          // 役割に応じた UI 制御を実施
+          applyRoleBasedUI(role);
+        } else {
+          console.warn("ユーザードキュメントが見つかりませんでした。");
+          // ドキュメントがない場合は、すべて表示（または適宜処理）
+          showAuthenticatedContent();
+        }
+      })
+      .catch(error => {
+        console.error("ユーザー情報取得エラー:", error);
+        showAuthenticatedContent();
+      });
 
     // 初期化関数を呼び出す
     initializeApp();
@@ -114,11 +131,36 @@ function initializeApp() {
   initializeConsumableUsage(); // 消耗品使用量の初期化
 }
 
+// 役割に応じた UI 制御関数
+function applyRoleBasedUI(role) {
+  if (role === 'barcode') {
+    // 役割が "barcode"（アルバイト）の場合、バーコードスキャンセクション以外を非表示にする
+    document.querySelectorAll('.content-section').forEach((section) => {
+      if (section.id !== 'barcode') {
+        section.style.display = 'none';
+      }
+    });
+    // ナビゲーションのリンクも、バーコード関連のもの以外を非表示にする
+    document.querySelectorAll('nav ul li a').forEach((link) => {
+      if (!link.getAttribute('href').includes('#barcode')) {
+        link.style.display = 'none';
+      }
+    });
+  } else {
+    // それ以外（例："admin" など）は認証が必要なセクションをすべて表示する
+    showAuthenticatedContent();
+  }
+}
+
 // 認証が必要なセクションを表示する関数
 function showAuthenticatedContent() {
   const sections = document.querySelectorAll('[data-requires-auth="true"]');
   sections.forEach((section) => {
     section.style.display = 'block';
+  });
+  // ナビゲーションのリンクもすべて表示
+  document.querySelectorAll('nav ul li a').forEach((link) => {
+    link.style.display = 'block';
   });
 }
 
