@@ -374,8 +374,6 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
   }
 });
 
-
-
 // 支払い方法設定セクションのイベントリスナーと関数
 
 // 支払い方法追加フォームのイベントリスナー
