@@ -262,13 +262,12 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     return;
   }
 
-  // 商品のサブカテゴリIDを確認するログを追加
+  // 商品のサブカテゴリIDをログ出力
   salesCart.forEach(item => {
     console.log("販売完了 - 商品ID:", item.product.id, "サブカテゴリID:", item.product.subcategoryId);
   });
 
   try {
-    // 支払い方法情報の取得
     const paymentMethods = await getPaymentMethods();
     const paymentMethod = paymentMethods.find((method) => method.id === paymentMethodId);
     if (!paymentMethod) {
@@ -277,7 +276,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     }
     const feeRate = paymentMethod.feeRate;
 
-    // 在庫のチェックと更新
+    // 在庫チェック
     for (const item of salesCart) {
       const product = item.product;
       const quantity = item.quantity;
@@ -287,12 +286,11 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
       }
     }
 
-    // 手数料の計算
     const totalAmount = Math.round(
       parseFloat(document.getElementById('totalAmount').textContent.replace('合計金額: ¥', ''))
     );
 
-    // ▼▼▼ 割引処理 ▼▼▼
+    // 割引処理
     const discountAmountElement = document.getElementById('discountAmount');
     const discountReasonElement = document.getElementById('discountReason');
     let discountValue = parseFloat(discountAmountElement.value);
@@ -302,13 +300,12 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     if (discountedTotal < 0) {
       discountedTotal = 0;
     }
-    // ▲▲▲ 割引処理ここまで ▲▲▲
 
     // ▼▼▼ 日付入力フィールドから販売日を取得 ▼▼▼
     const saleDateInput = document.getElementById('saleDate');
     let saleTimestamp;
     if (saleDateInput && saleDateInput.value) {
-      // 入力された日付 (yyyy-mm-dd) の午前0時とする
+      // 入力された日付 (yyyy-mm-dd) の午前0時を timestamp とする
       saleTimestamp = new Date(saleDateInput.value + "T00:00");
     } else {
       saleTimestamp = new Date();
@@ -317,8 +314,6 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
 
     const feeAmount = Math.round((discountedTotal * feeRate) / 100);
     const netAmount = discountedTotal - feeAmount;
-
-    // 原価と利益の計算
     let totalCost = 0;
     const transactionItems = [];
     for (const item of salesCart) {
@@ -348,8 +343,8 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     }
 
     const transactionData = {
-      timestamp: saleTimestamp,  // ここを修正：入力された販売日を使用
-      totalAmount: discountedTotal,  // 割引後の合計
+      timestamp: saleTimestamp,  // 修正後：入力された販売日を使用
+      totalAmount: discountedTotal,
       feeAmount: feeAmount,
       netAmount: netAmount,
       paymentMethodId: paymentMethodId,
@@ -376,6 +371,7 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     showError('販売処理に失敗しました');
   }
 });
+
 
 
 // 支払い方法設定セクションのイベントリスナーと関数
