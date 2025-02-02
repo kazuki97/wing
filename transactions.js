@@ -232,17 +232,18 @@ export async function deleteTransaction(transactionId) {
     const docRef = doc(db, 'transactions', transactionId);
     const transaction = await getTransactionById(transactionId);
 
-    // 手動追加でない場合のみ在庫・全体在庫を復旧
+    // 手動追加でない場合のみ在庫・全体在庫を復旧する
     if (transaction && transaction.items && !transaction.manuallyAdded) {
       for (const item of transaction.items) {
-// ▼▼▼ ここで productId があるかチェック ▼▼▼
         if (!item.productId) {
           // productId が無いアイテムは在庫操作をスキップする
           console.warn('productId が存在しないため在庫更新をスキップします:', item);
           continue;
         }
-        // ▲▲▲
+        // 商品ドキュメントの在庫を復元（販売時に -1 だったならここで +1 する）
         await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
+
+        // 全体在庫も同様に復元（販売時に –(数量 × サイズ) だったので、ここで +(数量 × サイズ)）
         const product = await getProductById(item.productId);
         const productSize = product.size || 1;
         const overallQuantityChange = item.quantity * productSize;
@@ -250,6 +251,7 @@ export async function deleteTransaction(transactionId) {
       }
     }
 
+    // 取引ドキュメント自体を削除
     await deleteDoc(docRef);
     console.log('取引が削除されました');
   } catch (error) {
@@ -258,6 +260,7 @@ export async function deleteTransaction(transactionId) {
     throw error;
   }
 }
+
 
 // 消耗品の使用量を記録する関数
 export async function recordConsumableUsage(transactionItems) {
