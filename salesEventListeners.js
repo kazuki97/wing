@@ -50,49 +50,51 @@ export function showMessage(message) {
 // バーコードスキャンセクションのイベントリスナーと関数
 let salesCart = [];
 
-document.getElementById('addBarcodeButton').addEventListener('click', async () => {
-  const user = auth.currentUser;
-  if (!user) {
-    alert('バーコードを追加するにはログインが必要です。');
+// 修正後のコード（salesEventListeners.js 内の該当箇所）
+document.addEventListener('DOMContentLoaded', () => {
+  const addBarcodeButton = document.getElementById('addBarcodeButton');
+  if (!addBarcodeButton) {
+    console.error("addBarcodeButton が見つかりません");
     return;
   }
-  const barcodeInput = document.getElementById('barcodeInput');
-  const barcode = barcodeInput.value.trim();
-  if (!barcode) {
-    showError('バーコードを入力してください');
-    return;
-  }
-  try {
-    const product = await getProductByBarcode(barcode);
-    if (!product) {
-      showError('該当する商品が見つかりません');
+
+  addBarcodeButton.addEventListener('click', async () => {
+    // バーコード追加時の処理
+    const barcodeInput = document.getElementById('barcodeInput');
+    const barcode = barcodeInput.value.trim();
+    if (!barcode) {
+      showError('バーコードを入力してください');
       return;
     }
-    // ここにログを追加
-    console.log("取得した商品情報:", product);
-    addToCart(product);
-    barcodeInput.value = '';
-    
-    // 在庫管理セクションの表示を更新
-    await displayInventoryProducts(); // 在庫管理セクションを再描画
-  } catch (error) {
-    console.error(error);
-    showError('商品の取得に失敗しました');
+    try {
+      const product = await getProductByBarcode(barcode);
+      if (!product) {
+        showError('該当する商品が見つかりません');
+        return;
+      }
+      console.log("取得した商品情報:", product);
+      addToCart(product);
+      barcodeInput.value = '';
+      // 在庫管理セクションの表示を更新
+      await displayInventoryProducts();
+    } catch (error) {
+      console.error(error);
+      showError('商品の取得に失敗しました');
+    }
+  });
+
+  // Enterキーでバーコードを追加する設定
+  const barcodeInput = document.getElementById('barcodeInput');
+  if (barcodeInput) {
+    barcodeInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addBarcodeButton.click();
+      }
+    });
   }
 });
 
-// Enterキーでバーコードを追加
-document.getElementById('barcodeInput').addEventListener('keydown', async (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    const user = auth.currentUser;
-    if (!user) {
-      alert('バーコードを追加するにはログインが必要です。');
-      return;
-    }
-    document.getElementById('addBarcodeButton').click();
-  }
-});
 
 export function addToCart(product, isScanned = false) {
   console.log("カートに追加する商品:", product);
