@@ -227,56 +227,67 @@ export async function updateTransaction(transactionId, updatedData) {
 }
 
 // 取引データの削除（修正後）
+import { runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+
 export async function deleteTransaction(transactionId) {
   try {
-    console.log(`deleteTransaction() が呼ばれました。transactionId: ${transactionId}`);
-    const docRef = doc(db, 'transactions', transactionId);
-    
-    const transaction = await getTransactionById(transactionId);
-    console.log('取得した取引データ:', transaction);
-
-    // 手動追加でない場合のみ在庫・全体在庫を復旧する
-    if (transaction && transaction.items && !transaction.manuallyAdded) {
-      console.log('取引内のアイテムを処理します。');
-      for (const item of transaction.items) {
-        console.log('現在処理中のアイテム:', item);
-        if (!item.productId) {
-          console.warn('productId が存在しないため在庫更新をスキップします:', item);
-          continue;
-        }
-        const quantity = item.quantity;
-        console.log(`商品 ${item.productId} の在庫復旧を開始します。復旧する数量: ${quantity}`);
-
-        // 販売時と同じ関数で在庫を回復する
-        await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
-        console.log(`updateProductQuantity() が成功しました。productId: ${item.productId}, 復旧数量: ${item.quantity}`);
-
-        // 全体在庫の更新
-        const product = await getProductById(item.productId);
-        console.log(`商品ID ${item.productId} の詳細を取得しました:`, product);
-        if (!product) {
-          console.error(`商品ID ${item.productId} が見つかりませんでした`);
-          showError('商品が見つかりませんでした');
-          continue;
-        }
-        const productSize = product.size || 1;
-        const overallQuantityChange = item.quantity * productSize;
-        console.log(`全体在庫復旧: サブカテゴリID ${product.subcategoryId} に対して、${overallQuantityChange} 個分を復元します。`);
-        await updateOverallInventory(product.subcategoryId, overallQuantityChange, `取引削除による全体在庫増加: ${overallQuantityChange}個`);
-        console.log(`updateOverallInventory() が成功しました。サブカテゴリID: ${product.subcategoryId}, 復旧数量: ${overallQuantityChange}`);
+    await runTransaction(db, async (transaction) => {
+      const docRef = doc(db, 'transactions', transactionId);
+      const transactionDoc = await transaction.get(docRef);
+      if (!transactionDoc.exists) {
+        throw new Error('取引ドキュメントが存在しません');
       }
-    } else {
-      console.log('取引に復旧すべきアイテムはありません。手動追加の取引か、items が存在しない。');
-    }
+      const transactionData = transactionDoc.data();
 
-    await deleteDoc(docRef);
-    console.log('取引ドキュメントが削除されました。transactionId:', transactionId);
+      // 手動追加でない場合のみ在庫復元処理を実行
+      if (transactionData && transactionData.items && !transactionData.manuallyAdded) {
+        for (const item of transactionData.items) {
+          if (!item.productId) {
+            console.warn('productId が存在しないため在庫更新をスキップします:', item);
+            continue;
+          }
+          // 商品ドキュメントの在庫復元
+          const productRef = doc(db, 'products', item.productId);
+          const productDoc = await transaction.get(productRef);
+          if (!productDoc.exists) {
+            console.error(`商品ID ${item.productId} が見つかりませんでした`);
+            throw new Error('商品が見つかりませんでした');
+          }
+          const productData = productDoc.data();
+          // 販売時に updateProductQuantity(productId, -quantity, …) を実行しているので、
+          // ここでは同じ数量 (item.quantity) を逆に足し戻す
+          const newProductQuantity = (productData.quantity || 0) + item.quantity;
+          transaction.update(productRef, { quantity: newProductQuantity });
+          console.log(`トランザクション内: 商品ID ${item.productId} の在庫を ${item.quantity} 個戻しました。 新しい在庫: ${newProductQuantity}`);
+
+          // 全体在庫の復元
+          const subcategoryId = productData.subcategoryId;
+          if (!subcategoryId) {
+            console.error(`商品 ${productData.name} のサブカテゴリIDが見つかりません`);
+            throw new Error('サブカテゴリが見つかりませんでした');
+          }
+          const overallRef = doc(db, 'overallInventory', subcategoryId);
+          const overallDoc = await transaction.get(overallRef);
+          let overallData = overallDoc.exists ? overallDoc.data() : { quantity: 0 };
+          const productSize = productData.size || 1;
+          const restoreAmount = item.quantity * productSize;
+          const newOverallQuantity = (overallData.quantity || 0) + restoreAmount;
+          transaction.update(overallRef, { quantity: newOverallQuantity });
+          console.log(`トランザクション内: サブカテゴリID ${subcategoryId} の全体在庫を ${restoreAmount} 個戻しました。 新しい全体在庫: ${newOverallQuantity}`);
+        }
+      }
+      // 取引ドキュメント自体を削除
+      transaction.delete(docRef);
+      console.log('トランザクション内: 取引が削除されました。 transactionId:', transactionId);
+    });
+    console.log('deleteTransaction() がトランザクション内で正常に完了しました');
   } catch (error) {
     console.error('取引の削除エラー:', error);
     alert('取引の削除に失敗しました。');
     throw error;
   }
 }
+
 
 
 // 消耗品の使用量を記録する関数
