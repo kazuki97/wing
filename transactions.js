@@ -236,17 +236,17 @@ export async function deleteTransaction(transactionId) {
     if (transaction && transaction.items && !transaction.manuallyAdded) {
       for (const item of transaction.items) {
         if (!item.productId) {
-          // productId が無いアイテムは在庫操作をスキップする
           console.warn('productId が存在しないため在庫更新をスキップします:', item);
           continue;
         }
-        // 商品ドキュメントの在庫を復元（販売時に -1 だったならここで +1 する）
-        // ※販売時は updateProductQuantity(productId, -quantity, …) を使用しているので
-        // 削除時は同じ関数を呼び出し、item.quantity を正の値で足し戻す
+        // 販売時と同じ関数で在庫を回復する
+        // 販売時に updateProductQuantity(productId, -quantity, …) を呼んでいるので、
+        // 削除時は同じ関数を使い、item.quantity を正の値で足し戻す
         await updateProductQuantity(item.productId, item.quantity, `取引削除による在庫増加: ${item.quantity}個`);
         console.log(`商品ID ${item.productId} の在庫を ${item.quantity} 個戻しました。`);
 
-        // 全体在庫は、販売時に「- (quantity × size)」だったので、ここで「+ (quantity × size)」を行う
+        // 全体在庫は、販売時に - (item.quantity × product.size) だったので、
+        // ここで + (item.quantity × product.size) を行う
         const product = await getProductById(item.productId);
         if (!product) {
           console.error(`商品ID ${item.productId} が見つかりませんでした`);
@@ -256,7 +256,7 @@ export async function deleteTransaction(transactionId) {
         const productSize = product.size || 1;
         const overallQuantityChange = item.quantity * productSize;
         await updateOverallInventory(product.subcategoryId, overallQuantityChange, `取引削除による全体在庫増加: ${overallQuantityChange}個`);
-        console.log(`サブカテゴリID ${product.subcategoryId} の全体在庫を ${overallQuantityChange} 個戻しました。`);
+        console.log(`全体在庫を ${overallQuantityChange} 個戻しました。`);
       }
     }
 
@@ -269,8 +269,6 @@ export async function deleteTransaction(transactionId) {
     throw error;
   }
 }
-
-
 
 // 消耗品の使用量を記録する関数
 export async function recordConsumableUsage(transactionItems) {
