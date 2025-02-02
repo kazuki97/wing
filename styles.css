@@ -115,13 +115,30 @@ main {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* ホームセクションはデフォルトで表示 */
+/* ホームセクションは初期表示用（JS で表示制御するので初期は非表示にしておく） */
 #home {
-  display: block;
+  display: none;
 }
 
 /* ====================================================
-   フォーム & ボタン
+   ログインフォームのスタイル（中央配置）
+   ==================================================== */
+#loginForm {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: #fff;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: none; /* 初期は非表示。ログイン状態に応じて表示 */
+}
+
+/* ====================================================
+   Form & Button Styles
    ==================================================== */
 form {
   margin-bottom: 30px;
@@ -170,7 +187,7 @@ button:hover {
 }
 
 /* ====================================================
-   テーブル & リスト
+   Table & List Styles
    ==================================================== */
 .table-responsive {
   width: 100%;
@@ -196,7 +213,7 @@ table th {
   text-align: left;
 }
 
-/* リスト（ul・li） */
+/* リスト */
 ul {
   list-style: none;
   padding: 0;
@@ -265,7 +282,7 @@ ul li button {
 }
 
 /* ====================================================
-   トランザクション・その他セクション
+   Transaction & Other Sections
    ==================================================== */
 #transactionDetails {
   background-color: #ffffff;
@@ -306,7 +323,7 @@ ul li button {
 }
 
 /* ====================================================
-   モーダル
+   Modal
    ==================================================== */
 .modal {
   display: none;
@@ -347,7 +364,7 @@ ul li button {
 }
 
 /* ====================================================
-   カテゴリ一覧
+   Category List
    ==================================================== */
 #parentCategoryList,
 #parentCategoryList ul {
@@ -372,7 +389,7 @@ ul li button {
 }
 
 /* ====================================================
-   iPhone（狭い画面向け：480px以下）
+   iPhone (480px以下) Responsive Adjustments
    ==================================================== */
 @media only screen and (max-width: 480px) {
   body {
