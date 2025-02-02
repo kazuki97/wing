@@ -281,8 +281,6 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     for (const item of salesCart) {
       const product = item.product;
       const quantity = item.quantity;
-
-      // 商品の在庫チェック（サイズを考慮しない）
       if (product.quantity < quantity) {
         showError(`商品「${product.name}」の在庫が不足しています`);
         return;
@@ -294,65 +292,45 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
       parseFloat(document.getElementById('totalAmount').textContent.replace('合計金額: ¥', ''))
     );
 
-// ▼▼▼ ここから割引の処理を追加 ▼▼▼
-  const discountAmountElement = document.getElementById('discountAmount');
-  const discountReasonElement = document.getElementById('discountReason');
+    // ▼▼▼ 割引処理 ▼▼▼
+    const discountAmountElement = document.getElementById('discountAmount');
+    const discountReasonElement = document.getElementById('discountReason');
+    let discountValue = parseFloat(discountAmountElement.value);
+    if (isNaN(discountValue)) discountValue = 0;
+    const discountReason = discountReasonElement.value;
+    let discountedTotal = totalAmount - discountValue;
+    if (discountedTotal < 0) {
+      discountedTotal = 0;
+    }
+    // ▲▲▲ 割引処理ここまで ▲▲▲
 
-  // 入力された割引額を数値化（未入力・不正値なら0扱い）
-  let discountValue = parseFloat(discountAmountElement.value);
-  if (isNaN(discountValue)) discountValue = 0;
+    // ▼▼▼ 日付入力フィールドから販売日を取得 ▼▼▼
+    const saleDateInput = document.getElementById('saleDate');
+    let saleTimestamp;
+    if (saleDateInput && saleDateInput.value) {
+      // 入力された日付 (yyyy-mm-dd) の午前0時とする
+      saleTimestamp = new Date(saleDateInput.value + "T00:00");
+    } else {
+      saleTimestamp = new Date();
+    }
+    // ▲▲▲ 日付取得ここまで ▲▲▲
 
-  // 割引理由の選択値を取得
-  const discountReason = discountReasonElement.value;
-
-  // 割引後の金額を計算
-  let discountedTotal = totalAmount - discountValue;
-  if (discountedTotal < 0) {
-    discountedTotal = 0; // 合計がマイナスにならないようガード
-  }
-  // ▲▲▲ ここまで割引の処理を追加 ▲▲▲
-
-
-const feeAmount = Math.round((discountedTotal * feeRate) / 100);
-const netAmount = discountedTotal - feeAmount;
+    const feeAmount = Math.round((discountedTotal * feeRate) / 100);
+    const netAmount = discountedTotal - feeAmount;
 
     // 原価と利益の計算
     let totalCost = 0;
-
-    // 販売データの作成
-    const transactionData = {
-      timestamp: new Date(),
-      totalAmount: discountedTotal,  // 割引後の合計を格納
-      feeAmount: feeAmount,
-      netAmount: netAmount,
-      paymentMethodId: paymentMethodId,
-      paymentMethodName: paymentMethod.name,
-      items: [],
-      manuallyAdded: false,
-      cost: 0,
-      profit: 0,
-   // ▼▼▼ 割引情報を新たに追加 ▼▼▼
-    discount: {
-      amount: discountValue,
-      reason: discountReason,
-    },
-    // ▲▲▲
-  };
-
+    const transactionItems = [];
     for (const item of salesCart) {
       const product = item.product;
       const quantity = item.quantity;
-      const requiredQuantity = product.size * quantity; // サイズを考慮した全体数量
+      const requiredQuantity = product.size * quantity;
       const cost = product.cost * requiredQuantity;
       const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
       const subtotal = unitPrice * requiredQuantity;
-
       totalCost += cost;
-
-      // サブカテゴリIDの確認ログを追加
       console.log("商品ID:", product.id, "サブカテゴリID:", product.subcategoryId);
-
-      transactionData.items.push({
+      transactionItems.push({
         productId: product.id,
         productName: product.name,
         quantity: quantity,
@@ -361,39 +339,44 @@ const netAmount = discountedTotal - feeAmount;
         subtotal: subtotal,
         cost: cost,
         profit: subtotal - cost,
-        subcategoryId: product.subcategoryId, // サブカテゴリID
+        subcategoryId: product.subcategoryId,
       });
-
-      // 在庫の更新（サイズを考慮しない）
       console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - quantity });
       await updateProduct(product.id, { quantity: product.quantity - quantity });
-
-      // 全体在庫の更新（サイズを考慮）
       console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
       await updateOverallInventory(product.subcategoryId, -requiredQuantity);
     }
 
-    transactionData.cost = totalCost;
-    transactionData.profit = netAmount - totalCost;
+    const transactionData = {
+      timestamp: saleTimestamp,  // ここを修正：入力された販売日を使用
+      totalAmount: discountedTotal,  // 割引後の合計
+      feeAmount: feeAmount,
+      netAmount: netAmount,
+      paymentMethodId: paymentMethodId,
+      paymentMethodName: paymentMethod.name,
+      items: transactionItems,
+      manuallyAdded: false,
+      cost: totalCost,
+      profit: netAmount - totalCost,
+      discount: {
+        amount: discountValue,
+        reason: discountReason,
+      },
+    };
 
-    // 取引の保存
     await addTransaction(transactionData);
-
-    // カートをクリア
     salesCart = [];
     displaySalesCart();
     alert('販売が完了しました');
-    // 売上管理セクションを更新
     await displayTransactions();
-
-    // 在庫管理セクションと全体在庫の再描画
-    await displayOverallInventory(); // 全体在庫の再描画
-    await displayInventoryProducts(); // 在庫管理セクションの再描画
+    await displayOverallInventory();
+    await displayInventoryProducts();
   } catch (error) {
     console.error(error);
     showError('販売処理に失敗しました');
   }
 });
+
 
 // 支払い方法設定セクションのイベントリスナーと関数
 
