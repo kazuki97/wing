@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 初期表示のセクションを設定
   let defaultSectionId = '#home'; // PC版ではホームセクションを表示
   if (window.innerWidth <= 767) {
-    defaultSectionId = '#barcode'; // スマホ版ではバーコードスキャンセクションを表示
+    defaultSectionId = '#barcode'; // スマホ版ではバーコードセクションを表示
   }
   document.querySelectorAll('.content-section').forEach((section) => {
     section.style.display = 'none';
@@ -134,15 +134,18 @@ function initializeApp() {
 // 役割に応じた UI 制御関数
 function applyRoleBasedUI(role) {
   if (role === 'barcode') {
-    // 役割が "barcode"（アルバイト）の場合、バーコードスキャンセクション以外を非表示にする
+    // 役割が "barcode"（アルバイト）の場合、バーコードセクション以外を非表示にする
     document.querySelectorAll('.content-section').forEach((section) => {
       if (section.id !== 'barcode') {
         section.style.display = 'none';
       }
     });
     // ナビゲーションのリンクも、バーコード関連のもの以外を非表示にする
+    // ※ただし、ログアウトボタンは常に表示する
     document.querySelectorAll('nav ul li a').forEach((link) => {
-      if (!link.getAttribute('href').includes('#barcode')) {
+      if (link.textContent.trim() === "ログアウト") {
+        link.style.display = 'block';
+      } else if (!link.getAttribute('href').includes('#barcode')) {
         link.style.display = 'none';
       }
     });
