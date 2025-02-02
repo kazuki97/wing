@@ -269,75 +269,75 @@
   </div>
 </div>
 
-    <!-- バーコードスキャン -->
-    <section id="barcode" class="content-section" style="display: none;">
-      <h1>バーコードスキャン</h1>
+   <!-- バーコードスキャン -->
+<section id="barcode" class="content-section" style="display: none;">
+  <h1>バーコードスキャン</h1>
 
-      <!-- バーコードスキャン開始ボタンを追加 -->
-      <button id="startBarcodeScanButton">バーコードスキャンを開始</button>
+  <!-- バーコードスキャン開始ボタンを追加 -->
+  <button id="startBarcodeScanButton">バーコードスキャンを開始</button>
 
-      <!-- バーコードスキャン用ビデオフィード -->
-      <div id="barcode-scanner" style="width: 100%; height: 300px;"></div>
+  <!-- バーコードスキャン用ビデオフィード -->
+  <div id="barcode-scanner" style="width: 100%; height: 300px;"></div>
 
-      <!-- 手動でバーコードを入力するための入力フィールドと追加ボタン -->
-      <div id="barcodeScanner">
-        <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
-        <button id="addBarcodeButton">追加</button>
-      </div>
+  <!-- 手動でバーコードを入力するための入力フィールドと追加ボタン -->
+  <div id="barcodeScanner">
+    <input type="text" id="barcodeInput" placeholder="バーコードをスキャンまたは入力" autofocus />
+    <button id="addBarcodeButton">追加</button>
+  </div>
 
-      <!-- 支払い方法の選択 -->
-      <div id="paymentMethodSelection">
-        <label for="paymentMethodSelect">支払い方法:</label>
-        <select id="paymentMethodSelect" required>
-          <!-- 支払い方法がここに表示されます -->
-        </select>
-      </div>
-      <!-- 販売カート -->
-      <div class="table-responsive">
-        <table id="salesCart">
-          <thead>
-            <tr>
-              <th>商品名</th>
-              <th>数量</th>
-              <th>単価</th>
-              <th>小計</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- カート内の商品がここに表示されます -->
-          </tbody>
-        </table>
-      </div>
-      <!-- 合計金額表示と販売完了ボタン -->
-      <div id="totalAmount">合計金額: ¥0</div>
+  <!-- 支払い方法の選択 -->
+  <div id="paymentMethodSelection">
+    <label for="paymentMethodSelect">支払い方法:</label>
+    <select id="paymentMethodSelect" required>
+      <!-- 支払い方法がここに表示されます -->
+    </select>
+  </div>
 
-<!-- ▼▼▼ ここから追加 ▼▼▼ -->
-<div id="saleDateContainer">
-  <label for="saleDate">販売日:</label>
-  <input type="date" id="saleDate" />
-</div>
-<!-- ▲▲▲ ここまで追加 ▲▲▲ -->
+  <!-- 販売カート -->
+  <div class="table-responsive">
+    <table id="salesCart">
+      <thead>
+        <tr>
+          <th>商品名</th>
+          <th>数量</th>
+          <th>単価</th>
+          <th>小計</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- カート内の商品がここに表示されます -->
+      </tbody>
+    </table>
+  </div>
 
+  <!-- 合計金額表示 -->
+  <div id="totalAmount">合計金額: ¥0</div>
 
-<!-- ▼▼▼ ここから追加 ▼▼▼ -->
-<div id="discountSection">
-  <label for="discountAmount">割引額:</label>
-  <input type="number" id="discountAmount" step="any" min="0" value="0" />
+  <!-- ▼▼▼ 販売日入力フィールド ▼▼▼ -->
+  <div id="saleDateContainer">
+    <label for="saleDate">販売日:</label>
+    <input type="date" id="saleDate" />
+  </div>
+  <!-- ▲▲▲ 販売日入力フィールド ▼▲▲ -->
 
-  <label for="discountReason">割引理由:</label>
-  <select id="discountReason">
-    <option value="">選択してください</option>
-    <option value="1">理由1</option>
-    <option value="2">理由2</option>
-    <option value="3">理由3</option>
-    <option value="4">理由4</option>
-  </select>
-</div>
-<!-- ▲▲▲ ここまで追加 ▲▲▲ -->
+  <!-- ▼▼▼ 割引セクション ▼▼▼ -->
+  <div id="discountSection">
+    <label for="discountAmount">割引額:</label>
+    <input type="number" id="discountAmount" step="any" min="0" value="0" />
+    <label for="discountReason">割引理由:</label>
+    <select id="discountReason">
+      <option value="">選択してください</option>
+      <option value="1">理由1</option>
+      <option value="2">理由2</option>
+      <option value="3">理由3</option>
+      <option value="4">理由4</option>
+    </select>
+  </div>
+  <!-- ▲▲▲ 割引セクション ▲▲▲ -->
 
-      <button id="completeSaleButton">販売完了</button>
-    </section>
+  <button id="completeSaleButton">販売完了</button>
+</section>
 
     <!-- 売上管理 -->
     <section id="transactions" class="content-section" style="display: none;" data-requires-auth="true">
