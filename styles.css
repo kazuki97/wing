@@ -306,3 +306,81 @@ table th {
 #parentCategoryList li button {
   margin-left: 5px;
 }
+
+/* ====================================================
+   iPhone（および狭い画面向け）のスタイル調整
+   （画面幅480px以下の場合）
+   ==================================================== */
+@media only screen and (max-width: 480px) {
+  /* 全体のフォントサイズと余白の調整 */
+  body {
+    font-size: 14px;
+    padding: 5px;
+  }
+  
+  main {
+    padding: 10px;
+  }
+  
+  .content-section {
+    padding: 10px;
+  }
+
+  /* ナビゲーションの調整 */
+  .menu-icon {
+    font-size: 32px;    /* タップしやすくするため大きめに */
+    padding: 12px;
+  }
+  /* ハンバーガーメニュー内のリンクのサイズと余白を調整 */
+  nav ul.show li a {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  /* フォームやボタンのタッチターゲットを広くする */
+  form input,
+  form select,
+  button {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  /* テーブルのフォントサイズ・パディングを調整 */
+  table {
+    font-size: 0.85em;
+  }
+  table th,
+  table td {
+    padding: 6px;
+  }
+
+  /* モーダルウィンドウの幅・余白を調整 */
+  .modal-content {
+    width: 95%;
+    margin: 20% auto;
+    padding: 15px;
+  }
+
+  /* ナビゲーション（通常時）の調整（必要に応じて） */
+  nav ul li a {
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  /* 各種セクションの見出しサイズを調整 */
+  h1, h2 {
+    font-size: 1.3em;
+  }
+  
+  /* 例：バーコードスキャン用の入力フィールドの幅を調整 */
+  #barcodeScanner input {
+    width: 90%;
+    font-size: 16px;
+  }
+  
+  /* 追加の細かい調整（必要に応じて各パーツに） */
+  /* 例：ナビゲーションメニューが画面幅に収まるように調整 */
+  nav ul.show li {
+    padding: 10px 0;
+  }
+}
