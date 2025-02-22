@@ -264,6 +264,15 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     return;
   }
 
+// 新たに販売方法の選択チェック
+  const salesMethodSelect = document.getElementById('salesMethodSelect');
+  const salesMethodValue = salesMethodSelect.value;
+  if (!salesMethodValue) {
+    showError('販売方法を選択してください');
+    return;
+  }
+
+
   // 商品のサブカテゴリIDをログ出力
   salesCart.forEach(item => {
     console.log("販売完了 - 商品ID:", item.product.id, "サブカテゴリID:", item.product.subcategoryId);
@@ -345,25 +354,33 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     }
 
     const transactionData = {
-      timestamp: saleTimestamp,  // 修正後：入力された販売日を使用
-      totalAmount: discountedTotal,
-      feeAmount: feeAmount,
-      netAmount: netAmount,
-      paymentMethodId: paymentMethodId,
-      paymentMethodName: paymentMethod.name,
-      items: transactionItems,
-      manuallyAdded: false,
-      cost: totalCost,
-      profit: netAmount - totalCost,
-      discount: {
-        amount: discountValue,
-        reason: discountReason,
-      },
-    };
+    timestamp: saleTimestamp,
+    totalAmount: discountedTotal,
+    feeAmount: feeAmount,
+    netAmount: netAmount,
+    paymentMethodId: paymentMethodId,
+    paymentMethodName: paymentMethod.name,
+    salesMethod: salesMethodValue,  // ← 追加
+    items: transactionItems,
+    manuallyAdded: false,
+    cost: totalCost,
+    profit: netAmount - totalCost,
+    discount: {
+      amount: discountValue,
+      reason: discountReason,
+    },
+  };
 
     await addTransaction(transactionData);
     salesCart = [];
     displaySalesCart();
+
+// 販売完了後、各入力欄をリセットする
+  document.getElementById('discountAmount').value = 0;
+  document.getElementById('discountReason').value = "";
+  document.getElementById('salesMethodSelect').value = "";
+
+
     alert('販売が完了しました');
     await displayTransactions();
     await displayOverallInventory();
