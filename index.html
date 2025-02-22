@@ -322,19 +322,30 @@
   <!-- ▲▲▲ 販売日入力フィールド ▼▲▲ -->
 
   <!-- ▼▼▼ 割引セクション ▼▼▼ -->
-  <div id="discountSection">
-    <label for="discountAmount">割引額:</label>
-    <input type="number" id="discountAmount" step="any" min="0" value="0" />
-    <label for="discountReason">割引理由:</label>
-    <select id="discountReason">
-      <option value="">選択してください</option>
-      <option value="1">理由1</option>
-      <option value="2">理由2</option>
-      <option value="3">理由3</option>
-      <option value="4">理由4</option>
-    </select>
-  </div>
-  <!-- ▲▲▲ 割引セクション ▲▲▲ -->
+<div id="discountSection">
+  <label for="discountAmount">割引額:</label>
+  <input type="number" id="discountAmount" step="any" min="0" value="0" />
+  <label for="discountReason">割引理由:</label>
+  <select id="discountReason">
+    <option value="">選択してください</option>
+    <option value="1">クーポン</option>
+    <option value="2">常連</option>
+    <option value="3">Airレジ側の設定ミス</option>
+    <option value="4">ブリッキーズ</option>
+    <option value="5">特別割引</option>
+  </select>
+  <br>
+  <label for="salesMethodSelect">販売方法:</label>
+  <select id="salesMethodSelect" required>
+    <option value="">選択してください</option>
+    <option value="店舗">店舗</option>
+    <option value="EC">EC</option>
+    <option value="Paypayフリマ">Paypayフリマ</option>
+    <option value="メルカリ">メルカリ</option>
+  </select>
+</div>
+<!-- ▲▲▲ 割引セクション ▲▲▲ -->
+
 
   <button id="completeSaleButton">販売完了</button>
 </section>
@@ -414,21 +425,21 @@
 <div class="table-responsive">
   <table id="transactionList">
     <thead>
-      <tr>
-        <!-- チェックボックス列（全選択用） -->
-        <th><input type="checkbox" id="selectAllTransactions" /></th>
-        <th>取引ID</th>
-        <th>日時</th>
-        <th>支払い方法</th>
-        <th>商品名</th>
-        <th>個数</th>
-        <th>売上金額</th>
-        <th>手数料</th>
-        <th>原価</th>
-        <th>利益</th>
-        <th>詳細</th>
-      </tr>
-    </thead>
+  <tr>
+    <th><input type="checkbox" id="selectAllTransactions" /></th>
+    <th>取引ID</th>
+    <th>日時</th>
+    <th>支払い方法</th>
+    <th>販売方法</th>
+    <th>商品名</th>
+    <th>個数</th>
+    <th>売上金額</th>
+    <th>手数料</th>
+    <th>原価</th>
+    <th>利益</th>
+    <th>詳細</th>
+  </tr>
+</thead>
     <tbody>
       <!-- 取引データがここに表示されます -->
     </tbody>
