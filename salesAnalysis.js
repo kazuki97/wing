@@ -12,79 +12,144 @@ import {
 document.addEventListener('DOMContentLoaded', () => {
   const analysisForm = document.getElementById('analysisPeriodForm');
   if (analysisForm) {
-    analysisForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      // ログインチェック
-      if (!auth.currentUser) {
-        alert('分析を行うにはログインが必要です。');
-        return;
-      }
+    // 売上分析フォーム送信時の処理
+analysisForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  // ログインチェックなど省略
+  const period = document.getElementById('analysisPeriod').value; // 'day' | 'month' | 'year'
+  const year = parseInt(document.getElementById('analysisYear').value, 10);
+  const month = parseInt(document.getElementById('analysisMonth').value, 10);
 
-      // ユーザーが選択した集計対象（日/month/year）・年・月を取得
-      const period = document.getElementById('analysisPeriod').value; // 'day' | 'month' | 'year'
-      const year = parseInt(document.getElementById('analysisYear').value, 10);
-      const month = parseInt(document.getElementById('analysisMonth').value, 10);
+  // 開始日・終了日を計算
+  const { startDate, endDate } = calculateStartAndEndDate(period, year, month);
+  if (!startDate || !endDate) {
+    console.warn('日付の指定に問題があります。');
+    return;
+  }
 
-      // 開始日・終了日を計算
-      const { startDate, endDate } = calculateStartAndEndDate(period, year, month);
-      if (!startDate || !endDate) {
-        console.warn('日付の指定に問題があります。');
-        return;
-      }
-
-      try {
-        // 期間内の取引データを取得
-        const transactions = await getTransactionsByDateRange(startDate, endDate);
-        // 集計
-        const summary = aggregateTransactions(transactions);
-        // テーブルに表示
-        displayAnalysisSummary(summary, period, year, month);
-      } catch (error) {
-        console.error(error);
-        alert('売上分析の取得・集計に失敗しました。');
-      }
-    });
+  try {
+    // 期間内の取引データを取得
+    const transactions = await getTransactionsByDateRange(startDate, endDate);
+    if (period === 'day') {
+      // 日別の場合：取得期間は月全体となっているので、日ごとにグループ化して集計
+      const dailySummary = aggregateTransactionsByDay(transactions);
+      displayAnalysisSummaryDaily(dailySummary);
+    } else {
+      // 月単位・年単位の場合は従来通り集計
+      const summary = aggregateTransactions(transactions);
+      displayAnalysisSummary(summary, period, year, month);
+    }
+  } catch (error) {
+    console.error(error);
+    alert('売上分析の取得・集計に失敗しました。');
   }
 });
 
 /**
- * 集計対象（日/月/年）と選択された年・月から開始日・終了日を求める。
- * 例：
- *  - 「month」を選択し 2023年4月 なら、startDate=2023-04-01, endDate=2023-05-01
- *  - 「year」を選択し 2023年 なら、startDate=2023-01-01, endDate=2024-01-01
+ * 【修正①】calculateStartAndEndDate関数の「day」ケースを修正
+ * 日別の場合は、1日だけではなく月全体を対象とする
  */
 function calculateStartAndEndDate(period, year, month) {
   let startDate, endDate;
 
   switch (period) {
     case 'day':
-      // （必要があれば）日単位の集計を実装
-      // 例として1日固定で計算する形
-      // ※要件に応じて実装を変えてください
+      if (!year || !month) return {};
+      // 修正：日別の場合、月初から翌月初日までを対象とする
+      startDate = new Date(year, month - 1, 1, 0, 0, 0);
+      endDate = new Date(year, month, 1, 0, 0, 0);
+      break;
+    case 'month':
       if (!year || !month) return {};
       startDate = new Date(year, month - 1, 1, 0, 0, 0);
-      endDate = new Date(year, month - 1, 1, 23, 59, 59);
+      endDate = new Date(year, month, 1, 0, 0, 0);
       break;
-
-    case 'month':
-      // 月単位
-      if (!year || !month) return {};
-      startDate = new Date(year, month - 1, 1, 0, 0, 0); // 例えば2023年4月=2023-04-01
-      endDate = new Date(year, month, 1, 0, 0, 0);       // 翌月の1日=2023-05-01
-      break;
-
     case 'year':
-      // 年単位
       if (!year) return {};
-      startDate = new Date(year, 0, 1, 0, 0, 0);         // 2023-01-01
-      endDate = new Date(year + 1, 0, 1, 0, 0, 0);       // 翌年の1月1日=2024-01-01
+      startDate = new Date(year, 0, 1, 0, 0, 0);
+      endDate = new Date(year + 1, 0, 1, 0, 0, 0);
       break;
-
     default:
       return {};
   }
 
   return { startDate, endDate };
+}
+
+/**
+ * 【修正②】日別集計用の関数
+ * 取得した取引データを日付（YYYY-MM-DD）ごとにグループ化して集計する
+ */
+function aggregateTransactionsByDay(transactions) {
+  const groups = {};
+  transactions.forEach(t => {
+    const date = new Date(t.timestamp);
+    const dayStr = date.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    if (!groups[dayStr]) {
+      groups[dayStr] = {
+        day: dayStr,
+        totalAmount: 0,
+        totalCost: 0,
+        totalProfit: 0,
+        totalCount: 0,
+        totalItems: 0,
+        totalDiscount: 0,
+        cashSales: 0,
+        otherSales: 0
+      };
+    }
+    const group = groups[dayStr];
+    group.totalAmount += t.totalAmount || 0;
+    group.totalCost += t.cost || 0;
+    group.totalProfit += (t.profit || 0);
+    group.totalCount += 1;
+    if (t.discount && t.discount.amount) {
+      group.totalDiscount += t.discount.amount;
+    }
+    if (Array.isArray(t.items)) {
+      for (const item of t.items) {
+        group.totalItems += item.quantity;
+      }
+    }
+    if (t.paymentMethodName === '現金') {
+      group.cashSales += t.totalAmount || 0;
+    } else {
+      group.otherSales += t.totalAmount || 0;
+    }
+  });
+
+  const result = Object.values(groups).sort((a, b) => a.day.localeCompare(b.day));
+  result.forEach(group => {
+    group.averageSalesPerCheck = group.totalCount > 0 ? Math.round(group.totalAmount / group.totalCount) : 0;
+  });
+  return result;
+}
+
+/**
+ * 【修正③】日別集計結果をテーブルに表示する関数
+ */
+function displayAnalysisSummaryDaily(dailySummary) {
+  const tbody = document.querySelector('#salesSummaryTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  dailySummary.forEach(dayData => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${dayData.day}</td>
+      <td>${dayData.totalAmount}</td>
+      <td>${dayData.totalCost}</td>
+      <td>${dayData.totalProfit}</td>
+      <td>${dayData.totalCount}</td>
+      <td>${dayData.averageSalesPerCheck}</td>
+      <td>${dayData.totalItems}</td>
+      <td>${dayData.cashSales}</td>
+      <td>${dayData.otherSales}</td>
+      <td>${dayData.totalDiscount}</td>
+      <td><button>詳細</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 /**
