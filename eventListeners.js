@@ -1001,6 +1001,27 @@ async function displayTransactionDetails(transactionId) {
       }
     }
 
+
+// モーダル（詳細画面）とオーバーレイを表示する
+    transactionDetails.style.display = 'block';
+    overlay.style.display = 'block';
+    
+  } catch (error) {
+    console.error('取引の詳細表示に失敗しました:', error);
+    showError('取引の詳細を表示できませんでした');
+  }
+}
+
+// 閉じるボタンのイベントリスナー（修正後）
+const closeTransactionDetailsButton = document.getElementById('closeTransactionDetails');
+if (closeTransactionDetailsButton) {
+  closeTransactionDetailsButton.addEventListener('click', () => {
+    document.getElementById('transactionDetails').style.display = 'none';
+    document.getElementById('modalOverlay').style.display = 'none';
+  });
+}
+
+
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
 
