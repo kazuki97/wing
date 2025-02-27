@@ -925,7 +925,7 @@ document.getElementById('deleteSelectedTransactionsButton').addEventListener('cl
 });
 
 
-// 売上管理セクションの取引詳細を表示する関数
+// 売上管理セクションの取引詳細を表示する関数（修正後）
 async function displayTransactionDetails(transactionId) {
   try {
     const user = auth.currentUser;
@@ -941,11 +941,11 @@ async function displayTransactionDetails(transactionId) {
 
     // 詳細情報を表示するための要素を取得
     const transactionDetails = document.getElementById('transactionDetails');
-    const overlay = document.getElementById('modalOverlay'); // オーバーレイ要素（HTMLに追加してください）
+    const overlay = document.getElementById('modalOverlay'); // HTML側にオーバーレイ要素を追加してください
 
     // 各項目の表示
     document.getElementById('detailTransactionId').textContent = transaction.id;
-    
+
     let timestampText = '日時情報なし';
     if (transaction.timestamp) {
       const date = new Date(transaction.timestamp);
@@ -954,17 +954,17 @@ async function displayTransactionDetails(transactionId) {
       }
     }
     document.getElementById('detailTimestamp').textContent = timestampText;
-    
+
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
     document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${Math.round(transaction.feeAmount)}` : '¥0';
     document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${Math.round(transaction.netAmount)}` : '¥0';
-    
+
     // 新規追加：販売方法、発送方法、送料
     document.getElementById('detailSalesMethod').textContent = transaction.salesMethod || '情報なし';
     document.getElementById('detailShippingMethod').textContent = transaction.shippingMethod || '情報なし';
     document.getElementById('detailShippingFee').textContent =
       transaction.shippingFee !== undefined ? Math.round(transaction.shippingFee) : '0';
-    
+
     // 総原価の計算または取得
     let totalCost;
     if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCost))) {
@@ -973,7 +973,7 @@ async function displayTransactionDetails(transactionId) {
       totalCost = transaction.items.reduce((sum, item) => sum + (item.cost || 0), 0);
     }
     document.getElementById('detailTotalCost').textContent = `¥${Math.round(totalCost)}`;
-    
+
     // 総利益の計算または取得
     let totalProfit;
     if (transaction.profit !== undefined && !isNaN(parseFloat(transaction.profit))) {
@@ -983,7 +983,7 @@ async function displayTransactionDetails(transactionId) {
       totalProfit = totalSubtotal - totalCost - (transaction.feeAmount || 0);
     }
     document.getElementById('detailTotalProfit').textContent = `¥${Math.round(totalProfit)}`;
-    
+
     // 割引情報の表示
     if (transaction.discount) {
       const discountAmount = transaction.discount.amount || 0;
@@ -1001,30 +1001,9 @@ async function displayTransactionDetails(transactionId) {
       }
     }
 
-
-// モーダル（詳細画面）とオーバーレイを表示する
-    transactionDetails.style.display = 'block';
-    overlay.style.display = 'block';
-    
-  } catch (error) {
-    console.error('取引の詳細表示に失敗しました:', error);
-    showError('取引の詳細を表示できませんでした');
-  }
-}
-
-// 閉じるボタンのイベントリスナー（修正後）
-const closeTransactionDetailsButton = document.getElementById('closeTransactionDetails');
-if (closeTransactionDetailsButton) {
-  closeTransactionDetailsButton.addEventListener('click', () => {
-    document.getElementById('transactionDetails').style.display = 'none';
-    document.getElementById('modalOverlay').style.display = 'none';
-  });
-}
-
-
+    // 【新規追加】取引商品リストの表示
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
-
     if (transaction.items && transaction.items.length > 0) {
       const totalFee = transaction.feeAmount || 0;
       const totalSubtotal = transaction.items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
@@ -1034,12 +1013,7 @@ if (closeTransactionDetailsButton) {
 
         // 各商品の手数料を計算
         const itemFee = totalSubtotal > 0 ? ((item.subtotal || 0) / totalSubtotal) * totalFee : 0;
-
-        // 原価はすでに合計原価として保存されていると仮定
-        const itemTotalCost = item.cost || 0;
-
-        // 利益を計算
-        // 利益 = 売上金額 - 原価 - 手数料
+        const itemTotalCost = item.cost || 0; // 既に原価が保存されている前提
         const itemProfit = (item.subtotal || 0) - itemTotalCost - itemFee;
 
         row.innerHTML = `
@@ -1055,14 +1029,12 @@ if (closeTransactionDetailsButton) {
         detailProductList.appendChild(row);
       }
     } else {
-      // 手動追加のため、商品明細が無い
       const row = document.createElement('tr');
       row.innerHTML = '<td colspan="8">商品情報はありません</td>';
       detailProductList.appendChild(row);
     }
 
-
-    // 返品ボタンの表示（手動追加の場合は非表示にする）
+    // 返品ボタンの表示
     const returnButton = document.getElementById('returnTransactionButton');
     if (transaction.isReturned || transaction.manuallyAdded) {
       returnButton.style.display = 'none';
@@ -1081,6 +1053,17 @@ if (closeTransactionDetailsButton) {
     const deleteButton = document.getElementById('deleteTransactionButton');
     deleteButton.style.display = 'block';
     deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
+
+    // 【新規追加】モーダル（詳細画面）とオーバーレイを表示する
+    transactionDetails.style.display = 'block';
+    overlay.style.display = 'block';
+    
+  } catch (error) {
+    console.error('取引の詳細表示に失敗しました:', error);
+    showError('取引の詳細を表示できませんでした');
+  }
+}
+
 
     // 詳細表示エリアを表示
     transactionDetails.style.display = 'block';
