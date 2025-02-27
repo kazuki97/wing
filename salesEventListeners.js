@@ -272,14 +272,16 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     return;
   }
 
-// 【新規追加】 発送方法と送料の処理
-  const shippingMethodSelect = document.getElementById('shippingMethodSelect');
-  const shippingMethodValue = shippingMethodSelect.value;
-  if (!shippingMethodValue) {
-    showError('発送方法を選択してください');
-    return;
-  }
+ // 発送方法は「店舗」以外の場合のみ必須
+  let shippingMethodValue = '';
   let shippingFee = 0;
+  if (salesMethodValue !== '店舗') {
+    const shippingMethodSelect = document.getElementById('shippingMethodSelect');
+    shippingMethodValue = shippingMethodSelect.value;
+    if (!shippingMethodValue) {
+      showError('発送方法を選択してください');
+      return;
+    }
   if (shippingMethodValue === 'クリックポスト') {
     shippingFee = 185;
   } else if (shippingMethodValue === 'ゆうパケットポスト') {
