@@ -941,7 +941,7 @@ async function displayTransactionDetails(transactionId) {
 
     // 詳細情報を表示するための要素を取得
     const transactionDetails = document.getElementById('transactionDetails');
-    const overlay = document.getElementById('modalOverlay'); // HTML側にオーバーレイ要素を追加してください
+    const overlay = document.getElementById('modalOverlay'); // HTMLにオーバーレイ要素を追加してください
 
     // 各項目の表示
     document.getElementById('detailTransactionId').textContent = transaction.id;
@@ -956,14 +956,16 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailTimestamp').textContent = timestampText;
 
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
-    document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${Math.round(transaction.feeAmount)}` : '¥0';
-    document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${Math.round(transaction.netAmount)}` : '¥0';
+    document.getElementById('detailFeeAmount').textContent =
+      (transaction.feeAmount !== undefined) ? `¥${Math.round(transaction.feeAmount)}` : '¥0';
+    document.getElementById('detailNetAmount').textContent =
+      (transaction.netAmount !== undefined) ? `¥${Math.round(transaction.netAmount)}` : '¥0';
 
     // 新規追加：販売方法、発送方法、送料
     document.getElementById('detailSalesMethod').textContent = transaction.salesMethod || '情報なし';
     document.getElementById('detailShippingMethod').textContent = transaction.shippingMethod || '情報なし';
     document.getElementById('detailShippingFee').textContent =
-      transaction.shippingFee !== undefined ? Math.round(transaction.shippingFee) : '0';
+      (transaction.shippingFee !== undefined) ? Math.round(transaction.shippingFee) : '0';
 
     // 総原価の計算または取得
     let totalCost;
@@ -991,7 +993,6 @@ async function displayTransactionDetails(transactionId) {
       const discountInfoText = `割引額: ¥${discountAmount} (理由: ${discountReason})`;
       const discountInfoParagraph = document.createElement('p');
       discountInfoParagraph.textContent = discountInfoText;
-      // 重複表示防止のため、既存の割引情報はクリア
       const discountContainer = document.getElementById('discountInfoContainer');
       if (discountContainer) {
         discountContainer.innerHTML = '';
@@ -1001,30 +1002,26 @@ async function displayTransactionDetails(transactionId) {
       }
     }
 
-    // 【新規追加】取引商品リストの表示
+    // 取引商品リストの表示
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
     if (transaction.items && transaction.items.length > 0) {
       const totalFee = transaction.feeAmount || 0;
       const totalSubtotal = transaction.items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
-
       for (const item of transaction.items) {
         const row = document.createElement('tr');
-
-        // 各商品の手数料を計算
         const itemFee = totalSubtotal > 0 ? ((item.subtotal || 0) / totalSubtotal) * totalFee : 0;
-        const itemTotalCost = item.cost || 0; // 既に原価が保存されている前提
+        const itemTotalCost = item.cost || 0;
         const itemProfit = (item.subtotal || 0) - itemTotalCost - itemFee;
-
         row.innerHTML = `
           <td>${item.productName}</td>
           <td>${item.quantity}</td>
           <td>${item.size}</td>
-          <td>¥${item.unitPrice !== undefined ? Math.round(item.unitPrice) : '情報なし'}</td>
-          <td>¥${item.subtotal !== undefined ? Math.round(item.subtotal) : '情報なし'}</td>
-          <td>¥${!isNaN(itemTotalCost) ? Math.round(itemTotalCost) : '情報なし'}</td>
-          <td>¥${!isNaN(itemFee) ? Math.round(itemFee) : '情報なし'}</td>
-          <td>¥${!isNaN(itemProfit) ? Math.round(itemProfit) : '情報なし'}</td>
+          <td>¥${(item.unitPrice !== undefined) ? Math.round(item.unitPrice) : '情報なし'}</td>
+          <td>¥${(item.subtotal !== undefined) ? Math.round(item.subtotal) : '情報なし'}</td>
+          <td>¥${(!isNaN(itemTotalCost)) ? Math.round(itemTotalCost) : '情報なし'}</td>
+          <td>¥${(!isNaN(itemFee)) ? Math.round(itemFee) : '情報なし'}</td>
+          <td>¥${(!isNaN(itemProfit)) ? Math.round(itemProfit) : '情報なし'}</td>
         `;
         detailProductList.appendChild(row);
       }
@@ -1054,24 +1051,25 @@ async function displayTransactionDetails(transactionId) {
     deleteButton.style.display = 'block';
     deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
 
-    // 【新規追加】モーダル（詳細画面）とオーバーレイを表示する
+    // モーダル（詳細画面）とオーバーレイを表示する
     transactionDetails.style.display = 'block';
     overlay.style.display = 'block';
-    
+
   } catch (error) {
     console.error('取引の詳細表示に失敗しました:', error);
     showError('取引の詳細を表示できませんでした');
   }
 }
 
-
-    // 詳細表示エリアを表示
-    transactionDetails.style.display = 'block';
-  } catch (error) {
-    console.error('取引の詳細表示に失敗しました:', error);
-    showError('取引の詳細を表示できませんでした');
-  }
+// 閉じるボタンのイベントリスナー（修正後）
+const closeTransactionDetailsButton = document.getElementById('closeTransactionDetails');
+if (closeTransactionDetailsButton) {
+  closeTransactionDetailsButton.addEventListener('click', () => {
+    document.getElementById('transactionDetails').style.display = 'none';
+    document.getElementById('modalOverlay').style.display = 'none';
+  });
 }
+
 
 const cancelEditTransactionButton = document.getElementById('cancelEditTransaction');
 if (cancelEditTransactionButton) {
