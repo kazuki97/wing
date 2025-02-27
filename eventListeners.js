@@ -947,60 +947,55 @@ async function displayTransactionDetails(transactionId) {
     let timestampText = '日時情報なし';
     if (transaction.timestamp) {
       const date = new Date(transaction.timestamp);
-      if (!isNaN(date)) {
-        timestampText = date.toLocaleString();
+      if (!isNaN(date.getTime())) {
+        timestampText = date.toLocaleString('ja-JP');
       }
     }
     document.getElementById('detailTimestamp').textContent = timestampText;
 
-    // 支払い方法名を取得（必要なら追加のコードが必要）
+    // 支払い方法の表示
     document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
     document.getElementById('detailFeeAmount').textContent = transaction.feeAmount !== undefined ? `¥${Math.round(transaction.feeAmount)}` : '¥0';
     document.getElementById('detailNetAmount').textContent = transaction.netAmount !== undefined ? `¥${Math.round(transaction.netAmount)}` : '¥0';
 
-    // **総原価を計算または取得**
+    // 新規追加：販売方法の表示
+    document.getElementById('detailSalesMethod').textContent = transaction.salesMethod || '情報なし';
+
+    // 新規追加：発送方法の表示
+    document.getElementById('detailShippingMethod').textContent = transaction.shippingMethod || '情報なし';
+
+    // 新規追加：送料の表示（送料が数値であれば丸めて表示）
+    document.getElementById('detailShippingFee').textContent =
+      transaction.shippingFee !== undefined ? Math.round(transaction.shippingFee) : '0';
+
+    // 総原価の計算または取得
     let totalCost;
     if (transaction.totalCost !== undefined && !isNaN(parseFloat(transaction.totalCost))) {
       totalCost = parseFloat(transaction.totalCost);
     } else {
-      // `totalCost` が存在しない場合、各商品の原価を合計して総原価を計算
-      totalCost = transaction.items.reduce((sum, item) => {
-        // **item.cost が合計原価として保存されていると仮定**
-        return sum + (item.cost || 0);
-      }, 0);
+      totalCost = transaction.items.reduce((sum, item) => sum + (item.cost || 0), 0);
     }
-
     document.getElementById('detailTotalCost').textContent = `¥${Math.round(totalCost)}`;
 
-    // 総利益も同様に確認
+    // 総利益の計算または取得
     let totalProfit;
     if (transaction.profit !== undefined && !isNaN(parseFloat(transaction.profit))) {
       totalProfit = parseFloat(transaction.profit);
     } else {
-      // 総利益を再計算
       const totalSubtotal = transaction.items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
       totalProfit = totalSubtotal - totalCost - (transaction.feeAmount || 0);
     }
-
     document.getElementById('detailTotalProfit').textContent = `¥${Math.round(totalProfit)}`;
 
-// 「総利益」を表示した直後（またはその近く）に挿入
-if (transaction.discount) {
-  // 割引額と理由を取得
-  const discountAmount = transaction.discount.amount || 0;
-  const discountReason = transaction.discount.reason || '不明';
-
-  // 表示用の文言を組み立て
-  const discountInfoText = `割引額: ¥${discountAmount} (理由: ${discountReason})`;
-
-  // <p>要素を作って取引詳細モーダルに追加
-  const discountInfoParagraph = document.createElement('p');
-  discountInfoParagraph.textContent = discountInfoText;
-
-  // "transactionDetails" が取引詳細を包む大枠の要素
-  transactionDetails.appendChild(discountInfoParagraph);
-}
-
+    // 割引情報の表示
+    if (transaction.discount) {
+      const discountAmount = transaction.discount.amount || 0;
+      const discountReason = transaction.discount.reason || '不明';
+      const discountInfoText = `割引額: ¥${discountAmount} (理由: ${discountReason})`;
+      const discountInfoParagraph = document.createElement('p');
+      discountInfoParagraph.textContent = discountInfoText;
+      transactionDetails.appendChild(discountInfoParagraph);
+    }
 
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
