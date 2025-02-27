@@ -276,12 +276,12 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
   let shippingMethodValue = '';
   let shippingFee = 0;
   if (salesMethodValue !== '店舗') {
-    const shippingMethodSelect = document.getElementById('shippingMethodSelect');
-    shippingMethodValue = shippingMethodSelect.value;
-    if (!shippingMethodValue) {
-      showError('発送方法を選択してください');
-      return;
-    }
+  const shippingMethodSelect = document.getElementById('shippingMethodSelect');
+  shippingMethodValue = shippingMethodSelect.value;
+  if (!shippingMethodValue) {
+    showError('発送方法を選択してください');
+    return;
+  }
   if (shippingMethodValue === 'クリックポスト') {
     shippingFee = 185;
   } else if (shippingMethodValue === 'ゆうパケットポスト') {
@@ -294,6 +294,11 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
       return;
     }
   }
+} else {
+  // 店舗購入の場合は発送情報は不要
+  shippingMethodValue = '';
+  shippingFee = 0;
+}
 
   // 商品のサブカテゴリIDをログ出力
   salesCart.forEach(item => {
