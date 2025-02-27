@@ -351,7 +351,8 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     // ▲▲▲ 日付取得ここまで ▲▲▲
 
     // 割引処理や販売日取得後
-let totalCost = 0; // ← 先に totalCost を初期化
+// 先に totalCost を初期化
+let totalCost = 0;
 const transactionItems = [];
 for (const item of salesCart) {
   const product = item.product;
@@ -379,9 +380,11 @@ for (const item of salesCart) {
   await updateOverallInventory(product.subcategoryId, -requiredQuantity);
 }
 
+// その後で計算
 const feeAmount = Math.round((discountedTotal * feeRate) / 100);
 const netAmount = discountedTotal - feeAmount;
 const profitCalculated = netAmount - totalCost - shippingFee;
+
 
      const transactionData = {
     timestamp: saleTimestamp,
