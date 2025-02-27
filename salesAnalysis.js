@@ -85,8 +85,35 @@ function calculateStartAndEndDate(period, year, month) {
 function aggregateTransactionsByDay(transactions) {
   const groups = {};
   transactions.forEach(t => {
-    const date = new Date(t.timestamp);
-    const dayStr = date.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    // timestamp が存在しない場合はスキップ
+    if (!t.timestamp) {
+      console.error("Missing timestamp in transaction:", t);
+      return;
+    }
+    
+    let date;
+    // Firestore の Timestamp オブジェクトの場合は toDate() を利用
+    if (typeof t.timestamp.toDate === 'function') {
+      date = t.timestamp.toDate();
+    } else {
+      date = new Date(t.timestamp);
+    }
+    
+    // 変換した日付が有効かチェック
+    if (isNaN(date.getTime())) {
+      console.error("Invalid date encountered:", t.timestamp);
+      return; // このループはスキップ
+    }
+    
+    // 日付を ISO 文字列に変換し、YYYY-MM-DD 部分を抽出
+    let dayStr;
+    try {
+      dayStr = date.toISOString().slice(0, 10); // "YYYY-MM-DD"
+    } catch (err) {
+      console.error("Error converting date to ISO string:", date, err);
+      return;
+    }
+    
     if (!groups[dayStr]) {
       groups[dayStr] = {
         day: dayStr,
