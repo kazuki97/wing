@@ -555,7 +555,13 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     await updatePaymentMethodSelect(); // 支払い方法セレクトボックスを更新
-    await displayTransactions(); // 売上管理セクションの初期表示
+    
+    // 現在の年・月を取得し、フィルタとして渡す
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    await displayTransactions({ year: currentYear, month: currentMonth });
+    
     await displayPaymentMethods(); // 支払い方法の初期表示
     await displayOverallInventory(); // 全体在庫の初期表示
     await displayInventoryProducts(); // 在庫管理セクションの初期表示
