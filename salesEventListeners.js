@@ -272,6 +272,26 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     return;
   }
 
+// 【新規追加】 発送方法と送料の処理
+  const shippingMethodSelect = document.getElementById('shippingMethodSelect');
+  const shippingMethodValue = shippingMethodSelect.value;
+  if (!shippingMethodValue) {
+    showError('発送方法を選択してください');
+    return;
+  }
+  let shippingFee = 0;
+  if (shippingMethodValue === 'クリックポスト') {
+    shippingFee = 185;
+  } else if (shippingMethodValue === 'ゆうパケットポスト') {
+    shippingFee = 200;
+  } else if (shippingMethodValue === 'ヤマト運輸') {
+    const shippingFeeInput = document.getElementById('shippingFeeInput');
+    shippingFee = parseFloat(shippingFeeInput.value);
+    if (isNaN(shippingFee) || shippingFee < 0) {
+      showError('有効な送料を入力してください');
+      return;
+    }
+  }
 
   // 商品のサブカテゴリIDをログ出力
   salesCart.forEach(item => {
@@ -325,6 +345,8 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
 
     const feeAmount = Math.round((discountedTotal * feeRate) / 100);
     const netAmount = discountedTotal - feeAmount;
+const profitCalculated = netAmount - totalCost - shippingFee;
+
     let totalCost = 0;
     const transactionItems = [];
     for (const item of salesCart) {
@@ -353,18 +375,20 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
       await updateOverallInventory(product.subcategoryId, -requiredQuantity);
     }
 
-    const transactionData = {
+     const transactionData = {
     timestamp: saleTimestamp,
     totalAmount: discountedTotal,
     feeAmount: feeAmount,
     netAmount: netAmount,
     paymentMethodId: paymentMethodId,
     paymentMethodName: paymentMethod.name,
-    salesMethod: salesMethodValue,  // ← 追加
+    salesMethod: salesMethodValue,
+    shippingMethod: shippingMethodValue,    // 発送方法を記録
+    shippingFee: shippingFee,                 // 送料を記録
     items: transactionItems,
     manuallyAdded: false,
     cost: totalCost,
-    profit: netAmount - totalCost,
+    profit: profitCalculated,
     discount: {
       amount: discountValue,
       reason: discountReason,
@@ -379,6 +403,9 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
   document.getElementById('discountAmount').value = 0;
   document.getElementById('discountReason').value = "";
   document.getElementById('salesMethodSelect').value = "";
+  document.getElementById('shippingMethodSelect').value = "";
+  document.getElementById('shippingFeeInput').value = 0;
+  document.getElementById('shippingFeeInputContainer').style.display = 'none';
 
 
     alert('販売が完了しました');
