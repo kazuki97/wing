@@ -350,37 +350,38 @@ document.getElementById('completeSaleButton').addEventListener('click', async ()
     }
     // ▲▲▲ 日付取得ここまで ▲▲▲
 
-    const feeAmount = Math.round((discountedTotal * feeRate) / 100);
-    const netAmount = discountedTotal - feeAmount;
-const profitCalculated = netAmount - totalCost - shippingFee;
+    // 割引処理や販売日取得後
+let totalCost = 0; // ← 先に totalCost を初期化
+const transactionItems = [];
+for (const item of salesCart) {
+  const product = item.product;
+  const quantity = item.quantity;
+  const requiredQuantity = product.size * quantity;
+  const cost = product.cost * requiredQuantity;
+  const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
+  const subtotal = unitPrice * requiredQuantity;
+  totalCost += cost;
+  console.log("商品ID:", product.id, "サブカテゴリID:", product.subcategoryId);
+  transactionItems.push({
+    productId: product.id,
+    productName: product.name,
+    quantity: quantity,
+    unitPrice: unitPrice,
+    size: product.size,
+    subtotal: subtotal,
+    cost: cost,
+    profit: subtotal - cost,
+    subcategoryId: product.subcategoryId,
+  });
+  console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - quantity });
+  await updateProduct(product.id, { quantity: product.quantity - quantity });
+  console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
+  await updateOverallInventory(product.subcategoryId, -requiredQuantity);
+}
 
-    let totalCost = 0;
-    const transactionItems = [];
-    for (const item of salesCart) {
-      const product = item.product;
-      const quantity = item.quantity;
-      const requiredQuantity = product.size * quantity;
-      const cost = product.cost * requiredQuantity;
-      const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
-      const subtotal = unitPrice * requiredQuantity;
-      totalCost += cost;
-      console.log("商品ID:", product.id, "サブカテゴリID:", product.subcategoryId);
-      transactionItems.push({
-        productId: product.id,
-        productName: product.name,
-        quantity: quantity,
-        unitPrice: unitPrice,
-        size: product.size,
-        subtotal: subtotal,
-        cost: cost,
-        profit: subtotal - cost,
-        subcategoryId: product.subcategoryId,
-      });
-      console.log("在庫更新 - 商品ID:", product.id, "更新するデータ:", { quantity: product.quantity - quantity });
-      await updateProduct(product.id, { quantity: product.quantity - quantity });
-      console.log("全体在庫の更新 - サブカテゴリID:", product.subcategoryId, "更新する数量:", -requiredQuantity);
-      await updateOverallInventory(product.subcategoryId, -requiredQuantity);
-    }
+const feeAmount = Math.round((discountedTotal * feeRate) / 100);
+const netAmount = discountedTotal - feeAmount;
+const profitCalculated = netAmount - totalCost - shippingFee;
 
      const transactionData = {
     timestamp: saleTimestamp,
