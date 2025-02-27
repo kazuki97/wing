@@ -1079,13 +1079,6 @@ if (cancelEditTransactionButton) {
   });
 }
 
-const closeTransactionDetailsButton = document.getElementById('closeTransactionDetails');
-if (closeTransactionDetailsButton) {
-  closeTransactionDetailsButton.addEventListener('click', () => {
-    document.getElementById('transactionDetails').style.display = 'none';
-  });
-}
-
 async function handleReturnTransaction(transaction) {
   const user = auth.currentUser;
   if (!user) {
