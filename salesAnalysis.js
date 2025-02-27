@@ -13,37 +13,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const analysisForm = document.getElementById('analysisPeriodForm');
   if (analysisForm) {
     // 売上分析フォーム送信時の処理
-analysisForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  // ログインチェックなど省略
-  const period = document.getElementById('analysisPeriod').value; // 'day' | 'month' | 'year'
-  const year = parseInt(document.getElementById('analysisYear').value, 10);
-  const month = parseInt(document.getElementById('analysisMonth').value, 10);
+    analysisForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      // ログインチェックなど省略
+      const period = document.getElementById('analysisPeriod').value; // 'day' | 'month' | 'year'
+      const year = parseInt(document.getElementById('analysisYear').value, 10);
+      const month = parseInt(document.getElementById('analysisMonth').value, 10);
 
-  // 開始日・終了日を計算
-  const { startDate, endDate } = calculateStartAndEndDate(period, year, month);
-  if (!startDate || !endDate) {
-    console.warn('日付の指定に問題があります。');
-    return;
-  }
+      // 開始日・終了日を計算
+      const { startDate, endDate } = calculateStartAndEndDate(period, year, month);
+      if (!startDate || !endDate) {
+        console.warn('日付の指定に問題があります。');
+        return;
+      }
 
-  try {
-    // 期間内の取引データを取得
-    const transactions = await getTransactionsByDateRange(startDate, endDate);
-    if (period === 'day') {
-      // 日別の場合：取得期間は月全体となっているので、日ごとにグループ化して集計
-      const dailySummary = aggregateTransactionsByDay(transactions);
-      displayAnalysisSummaryDaily(dailySummary);
-    } else {
-      // 月単位・年単位の場合は従来通り集計
-      const summary = aggregateTransactions(transactions);
-      displayAnalysisSummary(summary, period, year, month);
-    }
-  } catch (error) {
-    console.error(error);
-    alert('売上分析の取得・集計に失敗しました。');
-  }
-});
+      try {
+        // 期間内の取引データを取得
+        const transactions = await getTransactionsByDateRange(startDate, endDate);
+        if (period === 'day') {
+          // 日別の場合：取得期間は月全体となっているので、日ごとにグループ化して集計
+          const dailySummary = aggregateTransactionsByDay(transactions);
+          displayAnalysisSummaryDaily(dailySummary);
+        } else {
+          // 月単位・年単位の場合は従来通り集計
+          const summary = aggregateTransactions(transactions);
+          displayAnalysisSummary(summary, period, year, month);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('売上分析の取得・集計に失敗しました。');
+      }
+    }); // ← ここで submit イベントリスナーの閉じ
+  } // ← ここで if (analysisForm) ブロックを閉じる
+}); // ← ここで DOMContentLoaded のコールバックを閉じる
 
 /**
  * 【修正①】calculateStartAndEndDate関数の「day」ケースを修正
@@ -193,19 +195,16 @@ function aggregateTransactions(transactions) {
     totalProfit += (t.profit || 0);
     totalCount += 1;
 
-    // 割引
     if (t.discount && t.discount.amount) {
       totalDiscount += t.discount.amount;
     }
 
-    // 商品数（取引内の items 配列で quantity を合計する例）
     if (Array.isArray(t.items)) {
       for (const item of t.items) {
         totalItems += item.quantity;
       }
     }
 
-    // 支払方法別
     if (t.paymentMethodName === '現金') {
       cashSales += t.totalAmount || 0;
     } else {
@@ -213,7 +212,6 @@ function aggregateTransactions(transactions) {
     }
   }
 
-  // 客単価 (平均売上)
   let averageSalesPerCheck = 0;
   if (totalCount > 0) {
     averageSalesPerCheck = Math.round(totalAmount / totalCount);
@@ -239,11 +237,8 @@ function aggregateTransactions(transactions) {
 function displayAnalysisSummary(summary, period, year, month) {
   const tbody = document.querySelector('#salesSummaryTable tbody');
   if (!tbody) return;
-
-  // テーブルの内容を一旦クリア
   tbody.innerHTML = '';
 
-  // 表示用の期間ラベルを作成
   let periodLabel = '指定期間';
   if (period === 'month' && year && month) {
     periodLabel = `${year}年${month}月`;
@@ -251,7 +246,6 @@ function displayAnalysisSummary(summary, period, year, month) {
     periodLabel = `${year}年`;
   }
 
-  // テーブル行を作成
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${periodLabel}</td>
