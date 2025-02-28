@@ -85,35 +85,32 @@ function calculateStartAndEndDate(period, year, month) {
 function aggregateTransactionsByDay(transactions) {
   const groups = {};
   transactions.forEach(t => {
-    // timestamp が存在しない場合はスキップ
     if (!t.timestamp) {
       console.error("Missing timestamp in transaction:", t);
       return;
     }
     
     let date;
-    // Firestore の Timestamp オブジェクトの場合は toDate() を利用
     if (typeof t.timestamp.toDate === 'function') {
       date = t.timestamp.toDate();
     } else {
       date = new Date(t.timestamp);
     }
     
-    // 変換した日付が有効かチェック
     if (isNaN(date.getTime())) {
       console.error("Invalid date encountered:", t.timestamp);
-      return; // このループはスキップ
+      return;
     }
     
-    // 日付を ISO 文字列に変換し、YYYY-MM-DD 部分を抽出
     let dayStr;
     try {
-      dayStr = date.toISOString().slice(0, 10); // "YYYY-MM-DD"
+      dayStr = date.toISOString().slice(0, 10);
     } catch (err) {
       console.error("Error converting date to ISO string:", date, err);
       return;
     }
     
+    // 初回の場合、グループオブジェクトに rawTransactions プロパティも追加
     if (!groups[dayStr]) {
       groups[dayStr] = {
         day: dayStr,
@@ -124,9 +121,13 @@ function aggregateTransactionsByDay(transactions) {
         totalItems: 0,
         totalDiscount: 0,
         cashSales: 0,
-        otherSales: 0
+        otherSales: 0,
+        transactions: [] // ここにその日の生データを格納
       };
     }
+    // この取引を生データとして保存
+    groups[dayStr].transactions.push(t);
+    
     const group = groups[dayStr];
     group.totalAmount += t.totalAmount || 0;
     group.totalCost += t.cost || 0;
@@ -153,6 +154,7 @@ function aggregateTransactionsByDay(transactions) {
   });
   return result;
 }
+
 
 /**
  * 【修正③】日別集計結果をテーブルに表示する関数
