@@ -357,8 +357,6 @@ function aggregateBySubcategory(transactions) {
   });
 }
 
-import { getSubcategoryById } from './categories.js'; // サブカテゴリ名取得用にインポート
-
 async function showDailyDetail(dayGroup) {
   // 1. サブカテゴリごとに取引データを集計
   const subcategoryData = aggregateBySubcategory(dayGroup.transactions);
