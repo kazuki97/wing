@@ -160,28 +160,46 @@ function aggregateTransactionsByDay(transactions) {
 /**
  * 【修正③】日別集計結果をテーブルに表示する関数
  */
-function displayAnalysisSummaryDaily(dailySummary) {
+function displayAnalysisSummary(summary, period, year, month) {
   const tbody = document.querySelector('#salesSummaryTable tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  dailySummary.forEach(dayData => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${dayData.day}</td>
-      <td>${dayData.totalAmount}</td>
-      <td>${dayData.totalCost}</td>
-      <td>${dayData.totalProfit}</td>
-      <td>${dayData.totalCount}</td>
-      <td>${dayData.averageSalesPerCheck}</td>
-      <td>${dayData.totalItems}</td>
-      <td>${dayData.cashSales}</td>
-      <td>${dayData.otherSales}</td>
-      <td>${dayData.totalDiscount}</td>
-      <td><button class="daily-detail-btn" data-day="${dayData.day}">詳細</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
+  let periodLabel = '指定期間';
+  if (period === 'month' && year && month) {
+    periodLabel = `${year}年${month}月`;
+  } else if (period === 'year' && year) {
+    periodLabel = `${year}年`;
+  }
+
+  // ここで、月別の場合、summary に生データ（その月の全取引）も含めるようにしておくか、
+  // 後でフィルタして再集計するようにします。ここでは、summary.rawTransactions と仮定。
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${periodLabel}</td>
+    <td>${summary.totalAmount}</td>
+    <td>${summary.totalCost}</td>
+    <td>${summary.totalProfit}</td>
+    <td>${summary.totalCount}</td>
+    <td>${summary.averageSalesPerCheck}</td>
+    <td>${summary.totalItems}</td>
+    <td>${summary.cashSales}</td>
+    <td>${summary.otherSales}</td>
+    <td>${summary.totalDiscount}</td>
+    <td><button class="monthly-detail-btn">詳細</button></td>
+  `;
+  tbody.appendChild(tr);
+  
+  if (period === 'month') {
+    // 月別の場合、summary.rawTransactions にその月の生データが格納されているとするか、
+    // ここで、改めて getTransactionsByDateRange を呼んでデータを取得する
+    // ここでは summary.rawTransactions を使う例とします
+    const rawTransactions = summary.rawTransactions;
+    document.querySelector('.monthly-detail-btn').addEventListener('click', () => {
+      showMonthlyDetail(rawTransactions);
+    });
+  }
+}
   
   // 詳細ボタンのイベント登録
   document.querySelectorAll('.daily-detail-btn').forEach(button => {
@@ -339,18 +357,27 @@ function aggregateBySubcategory(transactions) {
   });
 }
 
+import { getSubcategoryById } from './categories.js'; // サブカテゴリ名取得用にインポート
+
 async function showDailyDetail(dayGroup) {
+  // 1. サブカテゴリごとに取引データを集計
   const subcategoryData = aggregateBySubcategory(dayGroup.transactions);
   
-  // 各グループについて、サブカテゴリ名を取得
+  // 2. 各グループごとにサブカテゴリ名を取得
   const updatedGroups = await Promise.all(
     subcategoryData.map(async group => {
-      const subcat = await getSubcategoryById(group.subcategoryId);
-      group.subcategoryName = subcat ? subcat.name : group.subcategoryId;
+      try {
+        const subcat = await getSubcategoryById(group.subcategoryId);
+        group.subcategoryName = (subcat && subcat.name) ? subcat.name : '不明なサブカテゴリ';
+      } catch (e) {
+        console.error("サブカテゴリの取得に失敗しました:", group.subcategoryId, e);
+        group.subcategoryName = '不明なサブカテゴリ';
+      }
       return group;
     })
   );
   
+  // 3. 集計結果のテーブル HTML を作成
   let html = '<table class="daily-detail-table"><thead><tr><th>サブカテゴリ名</th><th>合計売上</th><th>詳細</th></tr></thead><tbody>';
   
   updatedGroups.forEach(group => {
@@ -369,22 +396,19 @@ async function showDailyDetail(dayGroup) {
   });
   html += '</tbody></table>';
   
+  // 4. ポップアップのコンテンツにセットして表示
   const contentDiv = document.getElementById('dailyDetailContent');
   contentDiv.innerHTML = html;
   
+  // 5. 各「▼」ボタンのイベントを設定（クリックで詳細の展開・非表示）
   document.querySelectorAll('.expand-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const subcatId = e.target.dataset.subcat;
       const detailDiv = document.getElementById('subcat-detail-' + subcatId);
-      if (detailDiv.style.display === 'none') {
-        detailDiv.style.display = 'block';
-      } else {
-        detailDiv.style.display = 'none';
-      }
+      detailDiv.style.display = (detailDiv.style.display === 'none') ? 'block' : 'none';
     });
   });
   
+  // 6. モーダルを表示
   document.getElementById('dailyDetailModal').style.display = 'block';
 }
-
-
