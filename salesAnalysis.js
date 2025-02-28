@@ -9,6 +9,7 @@ import {
 /**
  * DOMContentLoaded 時に売上分析フォームの送信処理を設定
  */
+// 分析フォームの送信イベント（修正後の一部抜粋）
 document.addEventListener('DOMContentLoaded', () => {
   const analysisForm = document.getElementById('analysisPeriodForm');
   if (analysisForm) {
@@ -31,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
           displayAnalysisSummaryDaily(dailySummary);
         } else {
           const summary = aggregateTransactions(transactions);
+          // 修正後：月別詳細表示のために transactions を summary にセット
+          summary.transactions = transactions;
           displayAnalysisSummary(summary, period, year, month);
         }
       } catch (error) {
@@ -359,45 +362,76 @@ function displayAnalysisSummary(summary, period, year, month) {
   `;
   tbody.appendChild(tr);
 
-  // 修正後：ボタンがクリックされたら showMonthlyDetail を呼び出す
+  // 詳細ボタンのイベント登録
   const detailBtn = tr.querySelector('.monthly-detail-btn');
   detailBtn.addEventListener('click', () => {
     showMonthlyDetail(summary, year, month);
   });
 }
 
+// 月別詳細を日別詳細と同様にサブカテゴリごとに展開する関数（修正後）
 async function showMonthlyDetail(summary, year, month) {
-  // 月別詳細表示用のポップアップ内容を作成
-  let html = `<h3>${year}年${month}月の詳細</h3>`;
-  html += `<p>総売上: ${summary.totalAmount}</p>`;
-  html += `<p>総コスト: ${summary.totalCost}</p>`;
-  html += `<p>総利益: ${summary.totalProfit}</p>`;
-  html += `<p>取引数: ${summary.totalCount}</p>`;
-  html += `<p>平均チェックあたり売上: ${summary.averageSalesPerCheck}</p>`;
-  html += `<p>総商品数: ${summary.totalItems}</p>`;
-  html += `<p>現金売上: ${summary.cashSales}</p>`;
-  html += `<p>その他売上: ${summary.otherSales}</p>`;
-  html += `<p>割引合計: ${summary.totalDiscount}</p>`;
+  // summary.transactions に対象の取引データが含まれている前提
+  if (!summary.transactions) {
+    console.error('Monthly transactions data is missing in summary.');
+    return;
+  }
   
-  // モーダル内に内容を挿入（HTML 側に <div id="monthlyDetailContent"></div> と
-  // モーダル全体を囲む <div id="monthlyDetailModal"></div> が必要です）
+  // サブカテゴリごとに集計する（既存の aggregateBySubcategory を再利用）
+  const subcategoryData = aggregateBySubcategory(summary.transactions);
+  const updatedGroups = await Promise.all(
+    subcategoryData.map(async group => {
+      try {
+        const subcat = await getSubcategoryById(group.subcategoryId);
+        group.subcategoryName = (subcat && subcat.name) ? subcat.name : '不明なサブカテゴリ';
+      } catch (e) {
+        console.error("サブカテゴリの取得に失敗しました:", group.subcategoryId, e);
+        group.subcategoryName = '不明なサブカテゴリ';
+      }
+      return group;
+    })
+  );
+  
+  // 日別詳細と同様のテーブル形式で表示
+  let html = `<h3>${year}年${month}月の詳細</h3>`;
+  html += '<table class="monthly-detail-table"><thead><tr><th>サブカテゴリ名</th><th>合計売上</th><th>詳細</th></tr></thead><tbody>';
+  updatedGroups.forEach(group => {
+    html += `<tr>
+      <td>${group.subcategoryName}</td>
+      <td>${group.totalAmount}</td>
+      <td>
+        <button class="expand-btn" data-subcat="${group.subcategoryId}">▼</button>
+        <div class="subcat-detail" id="subcat-detail-${group.subcategoryId}" style="display:none; margin-top:5px;">`;
+    group.itemDetails.forEach(item => {
+      html += `<p>${item.productName}: ${item.quantity}個 (売上: ${item.subtotal})</p>`;
+    });
+    html += `</div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  
   const contentDiv = document.getElementById('monthlyDetailContent');
   if (contentDiv) {
     contentDiv.innerHTML = html;
-  } else {
-    // モーダル要素がなければアラートで表示
-    alert(html);
-    return;
   }
   
   const modal = document.getElementById('monthlyDetailModal');
   if (modal) {
     modal.style.display = 'block';
-  } else {
-    console.error('monthlyDetailModal が見つかりません');
   }
+  
+  // ▼ボタンのクリックで詳細の表示／非表示を切り替え
+  document.querySelectorAll('.expand-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const subcatId = e.target.dataset.subcat;
+      const detailDiv = document.getElementById('subcat-detail-' + subcatId);
+      if (detailDiv) {
+        detailDiv.style.display = (detailDiv.style.display === 'none') ? 'block' : 'none';
+      }
+    });
+  });
 }
-
 
 
 
