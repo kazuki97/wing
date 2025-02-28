@@ -781,9 +781,7 @@
 
 <!-- 新規で追加する売上分析ロジック -->
 <!-- （以下、既存の HTML の最後の部分に追加） -->
-  <script type="module" src="salesAnalysis.js"></script>
-
-  <!-- 年のオプションを追加するスクリプト -->
+    <script type="module" src="salesAnalysis.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const yearSelect = document.getElementById('analysisYear');
@@ -797,19 +795,19 @@
     });
   </script>
   
-  <!-- 日別詳細ポップアップモーダルの追加 -->
+  <!-- 日別／月別詳細ポップアップモーダル -->
   <div id="dailyDetailModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close" id="closeDailyDetailModal">&times;</span>
-      <h2>日別詳細</h2>
+      <h2>詳細</h2>
       <div id="dailyDetailContent">
-        <!-- ここに日別詳細の集計結果が表示されます -->
+        <!-- 日別または月別詳細の集計結果がここに表示されます -->
       </div>
     </div>
   </div>
   
   <script>
-    // 日別詳細モーダルを閉じる処理
+    // モーダルを閉じる処理
     document.getElementById('closeDailyDetailModal').addEventListener('click', function() {
       document.getElementById('dailyDetailModal').style.display = 'none';
     });
@@ -824,3 +822,4 @@
   </script>
 </body>
 </html>
+
