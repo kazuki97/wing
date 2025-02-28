@@ -820,6 +820,35 @@
       }
     });
   </script>
+
+<!-- 月別詳細用ポップアップモーダル -->
+<div id="monthlyDetailModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" id="closeMonthlyDetailModal">&times;</span>
+    <h2>月別詳細</h2>
+    <div id="monthlyDetailContent">
+      <!-- 月別詳細の集計結果がここに表示されます -->
+    </div>
+    <button onclick="document.getElementById('monthlyDetailModal').style.display='none';">閉じる</button>
+  </div>
+</div>
+
+<script>
+  // 月別モーダルを閉じる処理（閉じるボタン以外の方法も追加可能）
+  document.getElementById('closeMonthlyDetailModal').addEventListener('click', function() {
+    document.getElementById('monthlyDetailModal').style.display = 'none';
+  });
+  
+  // 必要に応じて、モーダル外クリックで閉じる処理も追加可能です
+  window.addEventListener('click', function(event) {
+    const modal = document.getElementById('monthlyDetailModal');
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+</script>
+
+
 </body>
 </html>
 
