@@ -359,16 +359,45 @@ function displayAnalysisSummary(summary, period, year, month) {
   `;
   tbody.appendChild(tr);
 
-  // イベントリスナーの追加（ここでは showMonthlyDetail 関数を呼び出す例）
+  // 修正後：ボタンがクリックされたら showMonthlyDetail を呼び出す
   const detailBtn = tr.querySelector('.monthly-detail-btn');
   detailBtn.addEventListener('click', () => {
-    // ここで月別詳細を表示する処理を実装する
-    // 例: showMonthlyDetail(summary, year, month);
-    // もし日別詳細と同様の内容であれば、適宜関数を再利用する
-    console.log('月別詳細ボタンがクリックされました', { year, month, summary });
-    // ここにポップアップ表示処理を追加
+    showMonthlyDetail(summary, year, month);
   });
 }
+
+async function showMonthlyDetail(summary, year, month) {
+  // 月別詳細表示用のポップアップ内容を作成
+  let html = `<h3>${year}年${month}月の詳細</h3>`;
+  html += `<p>総売上: ${summary.totalAmount}</p>`;
+  html += `<p>総コスト: ${summary.totalCost}</p>`;
+  html += `<p>総利益: ${summary.totalProfit}</p>`;
+  html += `<p>取引数: ${summary.totalCount}</p>`;
+  html += `<p>平均チェックあたり売上: ${summary.averageSalesPerCheck}</p>`;
+  html += `<p>総商品数: ${summary.totalItems}</p>`;
+  html += `<p>現金売上: ${summary.cashSales}</p>`;
+  html += `<p>その他売上: ${summary.otherSales}</p>`;
+  html += `<p>割引合計: ${summary.totalDiscount}</p>`;
+  
+  // モーダル内に内容を挿入（HTML 側に <div id="monthlyDetailContent"></div> と
+  // モーダル全体を囲む <div id="monthlyDetailModal"></div> が必要です）
+  const contentDiv = document.getElementById('monthlyDetailContent');
+  if (contentDiv) {
+    contentDiv.innerHTML = html;
+  } else {
+    // モーダル要素がなければアラートで表示
+    alert(html);
+    return;
+  }
+  
+  const modal = document.getElementById('monthlyDetailModal');
+  if (modal) {
+    modal.style.display = 'block';
+  } else {
+    console.error('monthlyDetailModal が見つかりません');
+  }
+}
+
 
 
 
