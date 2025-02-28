@@ -177,11 +177,24 @@ function displayAnalysisSummaryDaily(dailySummary) {
       <td>${dayData.cashSales}</td>
       <td>${dayData.otherSales}</td>
       <td>${dayData.totalDiscount}</td>
-      <td><button>詳細</button></td>
+      <td><button class="daily-detail-btn" data-day="${dayData.day}">詳細</button></td>
     `;
     tbody.appendChild(tr);
   });
+  
+  // 詳細ボタンのイベント登録
+  document.querySelectorAll('.daily-detail-btn').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const day = e.target.dataset.day;
+      // dailySummary から該当するグループを探す
+      const group = dailySummary.find(g => g.day === day);
+      if (group) {
+        showDailyDetail(group);
+      }
+    });
+  });
 }
+
 
 /**
  * 指定した開始日～終了日の範囲で、Firestore の "transactions" コレクションから
@@ -291,3 +304,83 @@ function displayAnalysisSummary(summary, period, year, month) {
   `;
   tbody.appendChild(tr);
 }
+
+// サブカテゴリごとに集計する関数
+function aggregateBySubcategory(transactions) {
+  const groups = {};
+  // 各取引の items を走査してグループ化
+  transactions.forEach(t => {
+    if (Array.isArray(t.items)) {
+      t.items.forEach(item => {
+        const subcatId = item.subcategoryId;
+        if (!subcatId) return;
+        if (!groups[subcatId]) {
+          groups[subcatId] = {
+            subcategoryId: subcatId,
+            totalAmount: 0,
+            items: {} // 商品ごとの詳細を保持
+          };
+        }
+        groups[subcatId].totalAmount += item.subtotal || 0;
+        const productName = item.productName;
+        if (!groups[subcatId].items[productName]) {
+          groups[subcatId].items[productName] = { productName: productName, quantity: 0, subtotal: 0 };
+        }
+        groups[subcatId].items[productName].quantity += item.quantity;
+        groups[subcatId].items[productName].subtotal += item.subtotal || 0;
+      });
+    }
+  });
+  
+  // 各グループの items を配列に変換
+  return Object.values(groups).map(group => {
+    group.itemDetails = Object.values(group.items);
+    delete group.items;
+    return group;
+  });
+}
+
+// 日別詳細ポップアップを表示する関数
+function showDailyDetail(dayGroup) {
+  // dayGroup.transactions はその日の全取引の生データ
+  const subcategoryData = aggregateBySubcategory(dayGroup.transactions);
+  let html = '<table class="daily-detail-table"><thead><tr><th>サブカテゴリID</th><th>合計売上</th><th>詳細</th></tr></thead><tbody>';
+  
+  subcategoryData.forEach(group => {
+    html += `<tr>
+      <td>${group.subcategoryId}</td>
+      <td>${group.totalAmount}</td>
+      <td>
+        <button class="expand-btn" data-subcat="${group.subcategoryId}">▼</button>
+        <div class="subcat-detail" id="subcat-detail-${group.subcategoryId}" style="display:none; margin-top:5px;">`;
+    group.itemDetails.forEach(item => {
+      html += `<p>${item.productName}: ${item.quantity}個 (売上: ${item.subtotal})</p>`;
+    });
+    html += `</div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  
+  // ポップアップのコンテンツ領域にセット
+  const contentDiv = document.getElementById('dailyDetailContent');
+  contentDiv.innerHTML = html;
+  
+  // 展開ボタンのイベント設定
+  document.querySelectorAll('.expand-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const subcatId = e.target.dataset.subcat;
+      const detailDiv = document.getElementById('subcat-detail-' + subcatId);
+      if (detailDiv.style.display === 'none') {
+        detailDiv.style.display = 'block';
+      } else {
+        detailDiv.style.display = 'none';
+      }
+    });
+  });
+  
+  // モーダルを表示
+  document.getElementById('dailyDetailModal').style.display = 'block';
+}
+
+
