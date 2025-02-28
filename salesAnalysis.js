@@ -355,9 +355,20 @@ function displayAnalysisSummary(summary, period, year, month) {
     <td>${summary.cashSales}</td>
     <td>${summary.otherSales}</td>
     <td>${summary.totalDiscount}</td>
-    <td><button>詳細</button></td>
+    <td><button class="monthly-detail-btn" data-year="${year}" data-month="${month}">詳細</button></td>
   `;
   tbody.appendChild(tr);
+
+  // イベントリスナーの追加（ここでは showMonthlyDetail 関数を呼び出す例）
+  const detailBtn = tr.querySelector('.monthly-detail-btn');
+  detailBtn.addEventListener('click', () => {
+    // ここで月別詳細を表示する処理を実装する
+    // 例: showMonthlyDetail(summary, year, month);
+    // もし日別詳細と同様の内容であれば、適宜関数を再利用する
+    console.log('月別詳細ボタンがクリックされました', { year, month, summary });
+    // ここにポップアップ表示処理を追加
+  });
 }
+
 
 
