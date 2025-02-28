@@ -1,6 +1,7 @@
 // salesAnalysis.js
 
 import { db, auth } from './db.js'; 
+import { getSubcategoryById } from './categories.js';
 import { 
   collection, query, where, orderBy, getDocs 
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
@@ -308,7 +309,6 @@ function displayAnalysisSummary(summary, period, year, month) {
 // サブカテゴリごとに集計する関数
 function aggregateBySubcategory(transactions) {
   const groups = {};
-  // 各取引の items を走査してグループ化
   transactions.forEach(t => {
     if (Array.isArray(t.items)) {
       t.items.forEach(item => {
@@ -318,7 +318,7 @@ function aggregateBySubcategory(transactions) {
           groups[subcatId] = {
             subcategoryId: subcatId,
             totalAmount: 0,
-            items: {} // 商品ごとの詳細を保持
+            items: {}
           };
         }
         groups[subcatId].totalAmount += item.subtotal || 0;
@@ -332,7 +332,6 @@ function aggregateBySubcategory(transactions) {
     }
   });
   
-  // 各グループの items を配列に変換
   return Object.values(groups).map(group => {
     group.itemDetails = Object.values(group.items);
     delete group.items;
@@ -340,15 +339,23 @@ function aggregateBySubcategory(transactions) {
   });
 }
 
-// 日別詳細ポップアップを表示する関数
-function showDailyDetail(dayGroup) {
-  // dayGroup.transactions はその日の全取引の生データ
+async function showDailyDetail(dayGroup) {
   const subcategoryData = aggregateBySubcategory(dayGroup.transactions);
-  let html = '<table class="daily-detail-table"><thead><tr><th>サブカテゴリID</th><th>合計売上</th><th>詳細</th></tr></thead><tbody>';
   
-  subcategoryData.forEach(group => {
+  // 各グループについて、サブカテゴリ名を取得
+  const updatedGroups = await Promise.all(
+    subcategoryData.map(async group => {
+      const subcat = await getSubcategoryById(group.subcategoryId);
+      group.subcategoryName = subcat ? subcat.name : group.subcategoryId;
+      return group;
+    })
+  );
+  
+  let html = '<table class="daily-detail-table"><thead><tr><th>サブカテゴリ名</th><th>合計売上</th><th>詳細</th></tr></thead><tbody>';
+  
+  updatedGroups.forEach(group => {
     html += `<tr>
-      <td>${group.subcategoryId}</td>
+      <td>${group.subcategoryName}</td>
       <td>${group.totalAmount}</td>
       <td>
         <button class="expand-btn" data-subcat="${group.subcategoryId}">▼</button>
@@ -362,11 +369,9 @@ function showDailyDetail(dayGroup) {
   });
   html += '</tbody></table>';
   
-  // ポップアップのコンテンツ領域にセット
   const contentDiv = document.getElementById('dailyDetailContent');
   contentDiv.innerHTML = html;
   
-  // 展開ボタンのイベント設定
   document.querySelectorAll('.expand-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const subcatId = e.target.dataset.subcat;
@@ -379,7 +384,6 @@ function showDailyDetail(dayGroup) {
     });
   });
   
-  // モーダルを表示
   document.getElementById('dailyDetailModal').style.display = 'block';
 }
 
