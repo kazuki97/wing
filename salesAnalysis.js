@@ -428,7 +428,15 @@ async function showMonthlyDetail(summary, year, month) {
   if (modal) {
     modal.style.display = 'block';
   }
-  
+
+// 以下、情報アイコン（Iボタン）のクリックイベント設定
+  document.querySelectorAll('.info-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const infoText = e.target.getAttribute('data-info');
+      alert(infoText);
+    });
+  });
+
   // ▼ボタンのクリックで詳細の表示／非表示を切り替え
   document.querySelectorAll('.expand-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -440,6 +448,7 @@ async function showMonthlyDetail(summary, year, month) {
     });
   });
 }
+
 
 
 
