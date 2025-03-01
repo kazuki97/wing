@@ -1,9 +1,13 @@
+/* pos.css - iPhone用エアレジ風UIのスタイル */
+
 body {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  background: #fafafa;
 }
 
+/* ログインセクション */
 #loginSection {
   text-align: center;
   margin: 2rem;
@@ -20,8 +24,10 @@ body {
 #loginSection button {
   font-size: 1rem;
   padding: 0.5rem 1rem;
+  cursor: pointer;
 }
 
+/* 大きなボタン */
 .big-button {
   display: inline-block;
   margin: 1rem;
@@ -39,7 +45,7 @@ body {
   background: #0056bf;
 }
 
-/* Grid layout forカテゴリ/商品ボタン */
+/* Grid layout forカテゴリ・商品ボタン */
 .grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -76,7 +82,8 @@ body {
   border-collapse: collapse;
 }
 
-#cartTable th, #cartTable td {
+#cartTable th,
+#cartTable td {
   border: 1px solid #ccc;
   text-align: center;
   padding: 0.5rem;
