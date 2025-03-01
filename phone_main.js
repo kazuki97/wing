@@ -1,34 +1,109 @@
-// phone_main.js - iPhone用UIのロジック（ES6 モジュール形式）
+// phone_main.js - iPhone用エアレジ風UIのロジック（ES6 モジュール形式）
 
+import { getParentCategories, getSubcategories } from './categories.js';
 import { getProducts } from './products.js';
 import { addTransaction } from './transactions.js';
 import { auth } from './db.js';
 
-// --- カート状態管理 ---
+// --- グローバル変数 ---
 let phoneCart = [];
+let selectedParentCategory = null;
+let selectedSubcategory = null;
 
 /**
- * カゴ表示を更新する関数
+ * 画面切替用の関数
+ * 全ての .screen を非表示にし、指定したIDの画面を表示する
  */
-function updatePhoneCartUI() {
-  const cartItemsDiv = document.getElementById('cart-items');
-  cartItemsDiv.innerHTML = '';
-  let total = 0;
-  phoneCart.forEach(item => {
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'cart-item';
-    itemDiv.innerHTML = `<span>${item.product.name} x ${item.quantity}</span>
-                         <span>¥${item.product.price * item.quantity}</span>`;
-    cartItemsDiv.appendChild(itemDiv);
-    total += item.product.price * item.quantity;
-  });
-  document.getElementById('cart-total').textContent = `合計: ¥${total}`;
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
 }
 
-/**
- * 商品をカゴに追加する関数
- * 既にカゴに存在する場合は数量を加算する
- */
+// --- ホーム画面 ---
+document.getElementById('btn-sales-registration').addEventListener('click', () => {
+  showScreen('screen-parent');
+  loadParentCategories();
+});
+
+// --- 親カテゴリ選択画面 ---
+async function loadParentCategories() {
+  try {
+    const parentCategories = await getParentCategories();
+    const container = document.getElementById('parent-category-list');
+    container.innerHTML = '';
+    parentCategories.forEach(category => {
+      const btn = document.createElement('button');
+      btn.textContent = category.name;
+      btn.addEventListener('click', () => {
+        selectedParentCategory = category;
+        showScreen('screen-subcategory');
+        loadSubcategories(category.id);
+      });
+      container.appendChild(btn);
+    });
+  } catch (error) {
+    console.error('親カテゴリの読み込みに失敗:', error);
+    alert('親カテゴリの読み込みに失敗しました');
+  }
+}
+
+document.getElementById('btn-back-home').addEventListener('click', () => {
+  showScreen('screen-home');
+});
+
+// --- サブカテゴリ選択画面 ---
+async function loadSubcategories(parentId) {
+  try {
+    const subcategories = await getSubcategories(parentId);
+    const container = document.getElementById('subcategory-list');
+    container.innerHTML = '';
+    subcategories.forEach(subcat => {
+      const btn = document.createElement('button');
+      btn.textContent = subcat.name;
+      btn.addEventListener('click', () => {
+        selectedSubcategory = subcat;
+        showScreen('screen-product');
+        loadProducts(subcat.id);
+      });
+      container.appendChild(btn);
+    });
+  } catch (error) {
+    console.error('サブカテゴリの読み込みに失敗:', error);
+    alert('サブカテゴリの読み込みに失敗しました');
+  }
+}
+
+document.getElementById('btn-back-parent').addEventListener('click', () => {
+  showScreen('screen-parent');
+});
+
+// --- 商品選択画面 ---
+async function loadProducts(subcatId) {
+  try {
+    // getProducts(parentCategory, subcategory) としてサブカテゴリフィルタをかける
+    const products = await getProducts(null, subcatId);
+    const container = document.getElementById('product-tiles');
+    container.innerHTML = '';
+    products.forEach(product => {
+      const tile = document.createElement('div');
+      tile.className = 'product-tile';
+      tile.textContent = product.name;
+      tile.addEventListener('click', () => {
+        addProductToCart(product);
+      });
+      container.appendChild(tile);
+    });
+  } catch (error) {
+    console.error('商品の読み込みに失敗:', error);
+    alert('商品の読み込みに失敗しました');
+  }
+}
+
+document.getElementById('btn-back-subcategory').addEventListener('click', () => {
+  showScreen('screen-subcategory');
+});
+
+// --- カゴ（会計）画面 ---
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -36,45 +111,50 @@ function addProductToCart(product) {
   } else {
     phoneCart.push({ product, quantity: 1 });
   }
-  updatePhoneCartUI();
+  updateCartUI();
 }
 
-/**
- * 商品タイルを動的に生成して表示する関数
- */
-async function renderProductTiles() {
-  try {
-    // getProducts は、すべての商品を返すものとする（フィルタ無し）
-    const products = await getProducts();
-    const productTilesDiv = document.getElementById('product-tiles');
-    productTilesDiv.innerHTML = '';
-    products.forEach(product => {
-      const tile = document.createElement('div');
-      tile.className = 'product-tile';
-      tile.textContent = product.name;
-      // タイルをタップしたらカゴに追加
-      tile.addEventListener('click', () => {
-        addProductToCart(product);
-      });
-      productTilesDiv.appendChild(tile);
-    });
-  } catch (error) {
-    console.error('Error loading products:', error);
-    alert('商品の読み込みに失敗しました');
+function updateCartUI() {
+  const cartItemsDiv = document.getElementById('cart-items');
+  cartItemsDiv.innerHTML = '';
+  let total = 0;
+  phoneCart.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `<span>${item.product.name} x ${item.quantity}</span>
+                     <span>¥${item.product.price * item.quantity}</span>`;
+    cartItemsDiv.appendChild(div);
+    total += item.product.price * item.quantity;
+  });
+  document.getElementById('cart-total').textContent = `合計: ¥${total}`;
+}
+
+document.getElementById('btn-go-checkout').addEventListener('click', () => {
+  showScreen('screen-checkout');
+  updateCartUI();
+});
+
+document.getElementById('btn-back-product').addEventListener('click', () => {
+  showScreen('screen-product');
+});
+
+// 発送方法選択で送料入力欄の表示切替
+document.getElementById('shippingMethodSelect').addEventListener('change', function() {
+  const feeContainer = document.getElementById('shippingFeeInputContainer');
+  if (this.value === 'ヤマト運輸') {
+    feeContainer.style.display = 'block';
+  } else {
+    feeContainer.style.display = 'none';
   }
-}
+});
 
-/**
- * 会計処理（チェックアウト）を実行する関数  
- * カゴの内容から取引データを作成し、共通の取引登録ロジック（addTransaction）を呼び出す
- */
-async function processCheckout() {
+// --- 会計処理 ---
+document.getElementById('btn-checkout').addEventListener('click', async () => {
   if (phoneCart.length === 0) {
     alert('カゴに商品がありません');
     return;
   }
   
-  // 取引データの作成
   let totalAmount = 0;
   let totalCost = 0;
   let items = [];
@@ -94,36 +174,58 @@ async function processCheckout() {
     });
   });
   
+  // 追加の入力項目
+  const saleDate = document.getElementById('saleDate').value;
+  if (!saleDate) {
+    alert('販売日を入力してください');
+    return;
+  }
+  
+  const shippingMethod = document.getElementById('shippingMethodSelect').value;
+  let shippingFee = 0;
+  if (shippingMethod === 'クリックポスト') {
+    shippingFee = 185;
+  } else if (shippingMethod === 'ゆうパケットポスト') {
+    shippingFee = 200;
+  } else if (shippingMethod === 'ヤマト運輸') {
+    shippingFee = parseFloat(document.getElementById('shippingFeeInput').value) || 0;
+  }
+  
+  const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+  const discountReason = document.getElementById('discountReason').value;
+  
   const transactionData = {
     items,
-    totalAmount,
+    totalAmount: totalAmount - discountAmount,
     totalCost,
-    profit: totalAmount - totalCost,
-    paymentMethodId: "",  // ※ 支払い方法の選択機能が必要なら追加してください
-    timestamp: new Date().toISOString(),
+    profit: (totalAmount - totalCost - discountAmount) - shippingFee,
+    paymentMethodId: "", // 支払い方法選択を追加する場合はここを実装
+    timestamp: new Date(saleDate).toISOString(),
     feeAmount: 0,
-    netAmount: totalAmount,
+    netAmount: totalAmount - discountAmount,
+    discount: {
+      amount: discountAmount,
+      reason: discountReason
+    },
+    shippingMethod: shippingMethod,
+    shippingFee: shippingFee,
     manuallyAdded: false,
   };
   
   try {
     const transactionId = await addTransaction(transactionData);
-    alert('販売が完了しました。取引ID: ' + transactionId);
-    // カゴをクリアする
+    alert('売上登録が完了しました。取引ID: ' + transactionId);
+    // カゴをクリアし、ホーム画面へ戻る
     phoneCart = [];
-    updatePhoneCartUI();
+    updateCartUI();
+    showScreen('screen-home');
   } catch (error) {
-    console.error('Checkout failed:', error);
-    alert('販売処理に失敗しました');
+    console.error('会計処理に失敗:', error);
+    alert('売上登録に失敗しました');
   }
-}
+});
 
 // --- 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
-  // 商品タイルを表示
-  renderProductTiles();
-  
-  // 会計ボタンのイベントリスナーを設定
-  const checkoutBtn = document.getElementById('checkout');
-  checkoutBtn.addEventListener('click', processCheckout);
+  showScreen('screen-home');
 });
