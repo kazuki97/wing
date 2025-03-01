@@ -1,6 +1,6 @@
 // pos.js
 import { auth, db } from './db.js';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 import { 
   getParentCategories, 
   getSubcategories, 
