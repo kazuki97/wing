@@ -1,4 +1,5 @@
 // pos.js (修正後)
+// Firebase のインポートはすべて完全なURLを使用（db.js 内は既存のものと仮定）
 import { auth, db } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 import { getParentCategories, getSubcategories } from './categories.js';
@@ -18,7 +19,7 @@ document.getElementById('loginButton').addEventListener('click', async () => {
   }
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    // ログイン成功は onAuthStateChanged で処理
+    // ログイン成功後は onAuthStateChanged で処理
   } catch (error) {
     alert('ログイン失敗: ' + error.message);
   }
@@ -35,7 +36,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // ---------------------------------
-// ② 画面切り替え
+// ② 画面切り替え関数
 // ---------------------------------
 function showScreen(screen) {
   const screens = ['topScreen', 'parentCategoryScreen', 'subCategoryScreen', 'productScreen'];
@@ -44,10 +45,10 @@ function showScreen(screen) {
     if (el) el.style.display = (s === screen) ? 'block' : 'none';
   });
 }
-showScreen('topScreen');  // 初期はトップ画面
+showScreen('topScreen');  // 初期状態はトップ画面
 
 // ---------------------------------
-// ③ カテゴリ・商品選択画面
+// ③ カテゴリ・商品選択処理
 // ---------------------------------
 document.getElementById('orderInputBtn').addEventListener('click', async () => {
   showScreen('parentCategoryScreen');
@@ -178,7 +179,7 @@ document.querySelector('#cartTable tbody').addEventListener('click', (e) => {
 });
 
 // ---------------------------------
-// ⑤ 売上登録処理（会計処理相当）
+// ⑤ 売上登録処理（会計相当）
 // ---------------------------------
 document.getElementById('registerSaleBtn').addEventListener('click', async () => {
   if (cartItems.length === 0) {
@@ -206,7 +207,7 @@ document.getElementById('registerSaleBtn').addEventListener('click', async () =>
 
   try {
     const txId = await addTransaction(transactionData);
-    // 在庫更新を並列で実行
+    // 在庫更新を並列実行
     await Promise.all(cartItems.map(item =>
       updateProductQuantity(item.productId, -item.quantity, '売上登録による在庫減少')
     ));
