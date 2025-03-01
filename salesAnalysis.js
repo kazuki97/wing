@@ -287,6 +287,8 @@ function aggregateTransactions(transactions) {
   let totalAmount = 0;
   let totalCost = 0;
   let totalProfit = 0;
+  let totalFee = 0;
+  let totalShippingFee = 0;
   let totalCount = 0;
   let totalItems = 0;
   let totalDiscount = 0;
@@ -297,6 +299,8 @@ function aggregateTransactions(transactions) {
     totalAmount += t.totalAmount || 0;
     totalCost += t.cost || 0;
     totalProfit += (t.profit || 0);
+    totalFee += t.feeAmount || 0;
+    totalShippingFee += t.shippingFee || 0;
     totalCount += 1;
     if (t.discount && t.discount.amount) {
       totalDiscount += t.discount.amount;
@@ -313,15 +317,14 @@ function aggregateTransactions(transactions) {
     }
   }
 
-  let averageSalesPerCheck = 0;
-  if (totalCount > 0) {
-    averageSalesPerCheck = Math.round(totalAmount / totalCount);
-  }
+  let averageSalesPerCheck = totalCount > 0 ? Math.round(totalAmount / totalCount) : 0;
 
   return {
     totalAmount,
     totalCost,
     totalProfit,
+    totalFee,         // ← 手数料の合計
+    totalShippingFee, // ← 送料の合計
     totalCount,
     totalItems,
     totalDiscount,
@@ -330,6 +333,7 @@ function aggregateTransactions(transactions) {
     averageSalesPerCheck,
   };
 }
+
 
 /**
  * 集計したデータを #salesSummaryTable に表示する関数
@@ -346,11 +350,14 @@ function displayAnalysisSummary(summary, period, year, month) {
     periodLabel = `${year}年`;
   }
 
+  // ヘッダーに手数料と送料の列が必要であれば、HTML側の <th> も更新してください
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${periodLabel}</td>
     <td>${summary.totalAmount}</td>
     <td>${summary.totalCost}</td>
+    <td>${summary.totalFee}</td>
+    <td>${summary.totalShippingFee}</td>
     <td>${summary.totalProfit}</td>
     <td>${summary.totalCount}</td>
     <td>${summary.averageSalesPerCheck}</td>
@@ -368,6 +375,7 @@ function displayAnalysisSummary(summary, period, year, month) {
     showMonthlyDetail(summary, year, month);
   });
 }
+
 
 // 月別詳細を日別詳細と同様にサブカテゴリごとに展開する関数（修正後）
 async function showMonthlyDetail(summary, year, month) {
