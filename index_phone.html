@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- iPhoneなどモバイル端末向けに最適化 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>エアレジ風 iPhone UI</title>
+  <link rel="stylesheet" href="styles_phone.css">
+</head>
+<body>
+  <header>
+    <h1>エアレジ風 iPhone UI</h1>
+  </header>
+  <main>
+    <!-- 商品タイル表示エリア -->
+    <section id="product-tiles">
+      <!-- 商品タイルは phone_main.js で動的に生成 -->
+    </section>
+    <!-- カゴ（注文リスト）表示エリア -->
+    <section id="cart">
+      <h2>カゴ</h2>
+      <div id="cart-items">
+        <!-- 選択された商品がここに表示 -->
+      </div>
+      <div id="cart-total">合計: ¥0</div>
+      <!-- 会計ボタン -->
+      <button id="checkout">会計</button>
+    </section>
+  </main>
+  <!-- iPhone用のメインスクリプト（ES6 モジュール形式） -->
+  <script type="module" src="phone_main.js"></script>
+</body>
+</html>
