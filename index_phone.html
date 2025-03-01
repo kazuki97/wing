@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <!-- iPhoneなどモバイル端末向けに最適化 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>エアレジ風 iPhone UI</title>
+  <title>エアレジ風 売上登録（iPhone版）</title>
   <link rel="stylesheet" href="styles_phone.css">
 </head>
 <body>
   <header>
-    <h1>エアレジ風 iPhone UI</h1>
+    <h1>エアレジ風 売上登録</h1>
   </header>
   <main>
     <!-- ホーム画面 -->
@@ -45,15 +45,15 @@
       <button id="btn-go-checkout">カゴを見る</button>
     </section>
 
-    <!-- カゴ（会計）画面 -->
+    <!-- カゴ（売上登録）画面 -->
     <section id="screen-checkout" class="screen">
-      <h2>カゴ</h2>
+      <h2>カゴ（注文内容）</h2>
       <div id="cart-items">
         <!-- カゴ内の商品が表示されます -->
       </div>
       <div id="cart-total">合計: ¥0</div>
       
-      <!-- PC用と同様の入力フォーム -->
+      <!-- PC用と同様の入力フォーム（売上登録用） -->
       <div id="checkout-form">
         <label for="saleDate">販売日:</label>
         <input type="date" id="saleDate" required>
@@ -77,14 +77,13 @@
           <option value="">選択してください</option>
           <option value="クーポン">クーポン</option>
           <option value="常連">常連</option>
-          <option value="Airレジ側の設定ミス">Airレジ側の設定ミス</option>
-          <option value="ブリッキーズ">ブリッキーズ</option>
+          <option value="設定ミス">設定ミス</option>
           <option value="特別割引">特別割引</option>
         </select>
       </div>
       
       <button id="btn-back-product">戻る</button>
-      <button id="btn-checkout">会計</button>
+      <button id="btn-checkout">売上登録完了</button>
     </section>
   </main>
   <script type="module" src="phone_main.js"></script>
