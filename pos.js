@@ -6,9 +6,9 @@ import { getProducts } from './products.js';
 import { addTransaction } from './transactions.js';
 import { updateProductQuantity } from './inventoryManagement.js';
 
-// -------------------------
-// ログイン処理
-// -------------------------
+// ---------------------------------
+// ① ログイン処理
+// ---------------------------------
 document.getElementById('loginButton').addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -18,13 +18,12 @@ document.getElementById('loginButton').addEventListener('click', async () => {
   }
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    // ログイン成功後は onAuthStateChanged で処理される
+    // ログイン成功は onAuthStateChanged で処理
   } catch (error) {
     alert('ログイン失敗: ' + error.message);
   }
 });
 
-// 認証状態の監視
 onAuthStateChanged(auth, (user) => {
   if (user) {
     document.getElementById('loginSection').style.display = 'none';
@@ -35,9 +34,9 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// -------------------------
-// 画面切り替え関数
-// -------------------------
+// ---------------------------------
+// ② 画面切り替え
+// ---------------------------------
 function showScreen(screen) {
   const screens = ['topScreen', 'parentCategoryScreen', 'subCategoryScreen', 'productScreen'];
   screens.forEach(s => {
@@ -45,13 +44,11 @@ function showScreen(screen) {
     if (el) el.style.display = (s === screen) ? 'block' : 'none';
   });
 }
+showScreen('topScreen');  // 初期はトップ画面
 
-// 初期状態はトップ画面を表示
-showScreen('topScreen');
-
-// -------------------------
-// 親カテゴリ・サブカテゴリ・商品表示
-// -------------------------
+// ---------------------------------
+// ③ カテゴリ・商品選択画面
+// ---------------------------------
 document.getElementById('orderInputBtn').addEventListener('click', async () => {
   showScreen('parentCategoryScreen');
   try {
@@ -96,7 +93,7 @@ function renderSubCategories(subs) {
     btn.addEventListener('click', async () => {
       showScreen('productScreen');
       try {
-        const products = await getProducts(sc.id); // サブカテゴリフィルター
+        const products = await getProducts(sc.id);
         renderProducts(products);
       } catch (error) {
         alert('商品の取得に失敗しました。');
@@ -132,9 +129,9 @@ function renderProducts(products) {
   });
 }
 
-// -------------------------
-// カゴ管理
-// -------------------------
+// ---------------------------------
+// ④ カゴ管理
+// ---------------------------------
 let cartItems = [];
 
 function addToCart(item) {
@@ -147,7 +144,6 @@ function addToCart(item) {
   renderCart();
 }
 
-// renderCart: 内部でテーブル全体を再描画し、イベントデリゲーションを使用
 function renderCart() {
   const cartSection = document.getElementById('cartSection');
   cartSection.style.display = cartItems.length > 0 ? 'block' : 'none';
@@ -181,9 +177,9 @@ document.querySelector('#cartTable tbody').addEventListener('click', (e) => {
   }
 });
 
-// -------------------------
-// 売上登録処理
-// -------------------------
+// ---------------------------------
+// ⑤ 売上登録処理（会計処理相当）
+// ---------------------------------
 document.getElementById('registerSaleBtn').addEventListener('click', async () => {
   if (cartItems.length === 0) {
     alert('カゴが空です');
