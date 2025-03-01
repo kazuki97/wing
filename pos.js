@@ -1,21 +1,23 @@
-// pos.js
+// pos.js (修正後)
 import { auth, db } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-import { 
-  getParentCategories, 
-  getSubcategories, 
-  getProducts 
-} from './categoriesAndProducts.js'; // 既存の関数群（適宜名前を合わせてください）
+import { getParentCategories, getSubcategories, getProducts } from './categoriesAndProducts.js'; // 既存の関数群
 import { addTransaction } from './transactions.js';
 import { updateProductQuantity } from './inventoryManagement.js';
 
+// -------------------------
 // ログイン処理
+// -------------------------
 document.getElementById('loginButton').addEventListener('click', async () => {
-  const email = document.getElementById('email').value;
+  const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
+  if (!email || !password) {
+    alert('メールアドレスとパスワードを入力してください。');
+    return;
+  }
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    // ログイン成功後は自動的に onAuthStateChanged で処理される
+    // ログイン成功後は onAuthStateChanged で処理される
   } catch (error) {
     alert('ログイン失敗: ' + error.message);
   }
@@ -32,30 +34,37 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// 画面切り替えのための関数
+// -------------------------
+// 画面切り替え関数
+// -------------------------
 function showScreen(screen) {
   const screens = ['topScreen', 'parentCategoryScreen', 'subCategoryScreen', 'productScreen'];
   screens.forEach(s => {
-    document.getElementById(s).style.display = (s === screen) ? 'block' : 'none';
+    const el = document.getElementById(s);
+    if (el) el.style.display = (s === screen) ? 'block' : 'none';
   });
 }
 
-// 初期状態はトップ画面表示
+// 初期状態はトップ画面を表示
 showScreen('topScreen');
 
-// イベントリスナー: 「注文入力」ボタン
+// -------------------------
+// 親カテゴリ・サブカテゴリ・商品表示
+// -------------------------
 document.getElementById('orderInputBtn').addEventListener('click', async () => {
   showScreen('parentCategoryScreen');
-  const parents = await getParentCategories();
-  renderParentCategories(parents);
+  try {
+    const parents = await getParentCategories();
+    renderParentCategories(parents);
+  } catch (error) {
+    alert('親カテゴリの取得に失敗しました。');
+  }
 });
 
-// イベントリスナー: 「会計」ボタン（トップ画面の会計ボタン）
 document.getElementById('checkoutBtn').addEventListener('click', () => {
   alert('売上登録はカゴ画面の「売上登録」ボタンから行ってください。');
 });
 
-// カテゴリ、サブカテゴリ、商品を表示する関数
 function renderParentCategories(parents) {
   const container = document.getElementById('parentCategoryContainer');
   container.innerHTML = '';
@@ -65,8 +74,12 @@ function renderParentCategories(parents) {
     btn.textContent = pc.name;
     btn.addEventListener('click', async () => {
       showScreen('subCategoryScreen');
-      const subs = await getSubcategories(pc.id);
-      renderSubCategories(subs);
+      try {
+        const subs = await getSubcategories(pc.id);
+        renderSubCategories(subs);
+      } catch (error) {
+        alert('サブカテゴリの取得に失敗しました。');
+      }
     });
     container.appendChild(btn);
   });
@@ -81,8 +94,12 @@ function renderSubCategories(subs) {
     btn.textContent = sc.name;
     btn.addEventListener('click', async () => {
       showScreen('productScreen');
-      const products = await getProducts(sc.id); // サブカテゴリでフィルター
-      renderProducts(products);
+      try {
+        const products = await getProducts(sc.id); // サブカテゴリフィルター
+        renderProducts(products);
+      } catch (error) {
+        alert('商品の取得に失敗しました。');
+      }
     });
     container.appendChild(btn);
   });
@@ -96,7 +113,6 @@ function renderProducts(products) {
     btn.className = 'grid-button';
     btn.innerHTML = `<div>${prod.name}</div><div>¥${prod.price}</div>`;
     btn.addEventListener('click', () => {
-      // 重量入力が必要なら、ここで表示。シンプルな例としてprompt()を使用
       let quantity = 1;
       if (prod.priceType === 'weight') {
         const grams = prompt(`${prod.name}の重量(g)を入力してください:`, '100');
@@ -115,7 +131,9 @@ function renderProducts(products) {
   });
 }
 
+// -------------------------
 // カゴ管理
+// -------------------------
 let cartItems = [];
 
 function addToCart(item) {
@@ -128,9 +146,10 @@ function addToCart(item) {
   renderCart();
 }
 
+// renderCart: 内部でテーブル全体を再描画し、イベントデリゲーションを使用
 function renderCart() {
-  // カゴが空でなければ表示
-  document.getElementById('cartSection').style.display = cartItems.length > 0 ? 'block' : 'none';
+  const cartSection = document.getElementById('cartSection');
+  cartSection.style.display = cartItems.length > 0 ? 'block' : 'none';
   const tbody = document.querySelector('#cartTable tbody');
   tbody.innerHTML = '';
   let total = 0;
@@ -143,23 +162,27 @@ function renderCart() {
       <td>${item.quantity}</td>
       <td>¥${item.unitPrice}</td>
       <td>¥${sub}</td>
-      <td><button data-index="${idx}">削除</button></td>
+      <td><button class="remove-btn" data-index="${idx}">削除</button></td>
     `;
     tbody.appendChild(row);
   });
   document.getElementById('cartTotal').textContent = `合計: ¥${total}`;
-
-  // 削除ボタンイベント
-  tbody.querySelectorAll('button').forEach(btn => {
-    const idx = parseInt(btn.dataset.index);
-    btn.addEventListener('click', () => {
-      cartItems.splice(idx, 1);
-      renderCart();
-    });
-  });
 }
 
-// 売上登録ボタンの処理
+// イベントデリゲーションで削除ボタンの処理
+document.querySelector('#cartTable tbody').addEventListener('click', (e) => {
+  if (e.target && e.target.matches('button.remove-btn')) {
+    const idx = parseInt(e.target.getAttribute('data-index'));
+    if (!isNaN(idx)) {
+      cartItems.splice(idx, 1);
+      renderCart();
+    }
+  }
+});
+
+// -------------------------
+// 売上登録処理
+// -------------------------
 document.getElementById('registerSaleBtn').addEventListener('click', async () => {
   if (cartItems.length === 0) {
     alert('カゴが空です');
@@ -186,10 +209,10 @@ document.getElementById('registerSaleBtn').addEventListener('click', async () =>
 
   try {
     const txId = await addTransaction(transactionData);
-    // 在庫を更新する処理（各商品の在庫からカゴの数量分を減算）
-    for (const item of cartItems) {
-      await updateProductQuantity(item.productId, -item.quantity, '売上登録による在庫減少');
-    }
+    // 在庫更新を並列で実行
+    await Promise.all(cartItems.map(item =>
+      updateProductQuantity(item.productId, -item.quantity, '売上登録による在庫減少')
+    ));
     alert('売上登録が完了しました。取引ID: ' + txId);
     cartItems = [];
     renderCart();
