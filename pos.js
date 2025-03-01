@@ -1,7 +1,8 @@
 // pos.js (修正後)
 import { auth, db } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-import { getParentCategories, getSubcategories, getProducts } from './categoriesAndProducts.js'; // 既存の関数群
+import { getParentCategories, getSubcategories } from './categories.js';
+import { getProducts } from './products.js';
 import { addTransaction } from './transactions.js';
 import { updateProductQuantity } from './inventoryManagement.js';
 
