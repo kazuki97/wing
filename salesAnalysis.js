@@ -287,8 +287,8 @@ function aggregateTransactions(transactions) {
   let totalAmount = 0;
   let totalCost = 0;
   let totalProfit = 0;
-  let totalFee = 0;
-  let totalShippingFee = 0;
+  let totalFee = 0;          // 手数料合計
+  let totalShippingFee = 0;  // 送料合計
   let totalCount = 0;
   let totalItems = 0;
   let totalDiscount = 0;
@@ -322,9 +322,9 @@ function aggregateTransactions(transactions) {
   return {
     totalAmount,
     totalCost,
+    totalFee,
+    totalShippingFee,
     totalProfit,
-    totalFee,         // ← 手数料の合計
-    totalShippingFee, // ← 送料の合計
     totalCount,
     totalItems,
     totalDiscount,
