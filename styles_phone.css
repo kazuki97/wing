@@ -19,7 +19,32 @@ main {
   padding: 1rem;
 }
 
-/* 商品タイル表示エリア */
+/* 各画面（セクション）の表示制御 */
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* ボタン */
+button {
+  width: 100%;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* 商品タイル表示 */
 #product-tiles {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -43,24 +68,8 @@ main {
   background-color: #0051a8;
 }
 
-/* カゴ（注文リスト） */
-#cart {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-#cart h2 {
-  margin-top: 0;
-  font-size: 1.2rem;
-}
-
-#cart-items {
-  margin: 0.5rem 0;
-}
-
-.cart-item {
+/* カゴ（注文リスト）のスタイル */
+#cart-items .cart-item {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
@@ -74,18 +83,17 @@ main {
   margin-bottom: 1rem;
 }
 
-#checkout {
-  width: 100%;
-  padding: 1rem;
-  background-color: #34c759;
-  border: none;
-  color: #fff;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+/* 追加フォーム */
+#checkout-form label {
+  display: block;
+  margin-top: 0.5rem;
 }
 
-#checkout:hover {
-  background-color: #28a745;
+#checkout-form input,
+#checkout-form select {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
