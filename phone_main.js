@@ -103,7 +103,7 @@ document.getElementById('btn-back-subcategory').addEventListener('click', () => 
   showScreen('screen-subcategory');
 });
 
-// --- カゴ（会計）画面 ---
+// --- カゴ（売上登録）画面 ---
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -148,7 +148,7 @@ document.getElementById('shippingMethodSelect').addEventListener('change', funct
   }
 });
 
-// --- 会計処理 ---
+// --- 売上登録処理 ---
 document.getElementById('btn-checkout').addEventListener('click', async () => {
   if (phoneCart.length === 0) {
     alert('カゴに商品がありません');
@@ -174,7 +174,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     });
   });
   
-  // 追加の入力項目
+  // 入力項目の取得
   const saleDate = document.getElementById('saleDate').value;
   if (!saleDate) {
     alert('販売日を入力してください');
@@ -194,12 +194,13 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
   const discountReason = document.getElementById('discountReason').value;
   
+  // 売上登録のための取引データ作成
   const transactionData = {
     items,
     totalAmount: totalAmount - discountAmount,
     totalCost,
     profit: (totalAmount - totalCost - discountAmount) - shippingFee,
-    paymentMethodId: "", // 支払い方法選択を追加する場合はここを実装
+    paymentMethodId: "", // 今回は支払い方法入力は不要（空欄）
     timestamp: new Date(saleDate).toISOString(),
     feeAmount: 0,
     netAmount: totalAmount - discountAmount,
@@ -220,7 +221,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     updateCartUI();
     showScreen('screen-home');
   } catch (error) {
-    console.error('会計処理に失敗:', error);
+    console.error('売上登録処理に失敗:', error);
     alert('売上登録に失敗しました');
   }
 });
