@@ -43,6 +43,7 @@ export async function getConsumableUsageById(usageId) {
   }
 }
 
+
 // 消耗品リストの取得
 export async function getConsumables() {
   try {
@@ -81,51 +82,39 @@ export async function getConsumableUsage(year, month) {
   }
 }
 
-// -----【ここから修正部分】-----
 // 消耗品の追加フォームイベントリスナー
 const addConsumableForm = document.getElementById('addConsumableForm');
-if (addConsumableForm) {
-  addConsumableForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+addConsumableForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    const consumableName = document.getElementById('consumableName').value.trim();
-    const consumableCost = parseFloat(document.getElementById('consumableCost').value);
+  const consumableName = document.getElementById('consumableName').value.trim();
+  const consumableCost = parseFloat(document.getElementById('consumableCost').value);
 
-    if (!consumableName || isNaN(consumableCost) || consumableCost < 0) {
-      showError('消耗品名と有効な原価を入力してください');
-      return;
-    }
+  if (!consumableName || isNaN(consumableCost) || consumableCost < 0) {
+    showError('消耗品名と有効な原価を入力してください');
+    return;
+  }
 
-    try {
-      // Firestoreに新しい消耗品を追加
-      await addDoc(consumablesCollection, {
-        name: consumableName,
-        cost: consumableCost,
-      });
-      console.log('消耗品が追加されました:', { consumableName, consumableCost });
-      addConsumableForm.reset();
-      await displayConsumables(); // 消耗品リストを再表示
-    } catch (error) {
-      console.error('消耗品の追加に失敗しました:', error);
-      showError('消耗品の追加に失敗しました');
-    }
-  });
-} else {
-  console.warn('addConsumableForm 要素が存在しないため、消耗品追加のイベント登録はスキップされました。');
-}
-// -----【ここまで修正部分】-----
+  try {
+    // Firestoreに新しい消耗品を追加
+    await addDoc(consumablesCollection, {
+      name: consumableName,
+      cost: consumableCost,
+    });
+    console.log('消耗品が追加されました:', { consumableName, consumableCost });
+    addConsumableForm.reset();
+    await displayConsumables(); // 消耗品リストを再表示
+  } catch (error) {
+    console.error('消耗品の追加に失敗しました:', error);
+    showError('消耗品の追加に失敗しました');
+  }
+});
 
 // 消耗品一覧の表示
 export async function displayConsumables() {
   try {
     const snapshot = await getDocs(consumablesCollection);
-    // PC版の消耗品管理画面に存在する要素を取得
-    const consumableListContainer = document.getElementById('consumableList');
-    if (!consumableListContainer) {
-      console.warn('consumableList 要素が存在しません。');
-      return;
-    }
-    const consumableList = consumableListContainer.querySelector('tbody');
+    const consumableList = document.getElementById('consumableList').querySelector('tbody');
     consumableList.innerHTML = '';
 
     snapshot.forEach((doc) => {
@@ -133,7 +122,7 @@ export async function displayConsumables() {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${consumable.name}</td>
-        <td>¥${Math.floor(consumable.cost)}</td>
+        <td>¥${Math.floor(consumable.cost)}</td> <!-- 小数点以下を切り捨てて表示 -->
         <td><button class="delete-consumable" data-id="${consumable.id}">削除</button></td>
       `;
       consumableList.appendChild(row);
@@ -162,6 +151,7 @@ export async function updateConsumable(consumableId, updatedData) {
     throw error;
   }
 }
+
 
 // 消耗品を削除する関数
 export async function deleteConsumable(consumableId) {
@@ -197,13 +187,11 @@ export async function deleteConsumableUsage(usageId) {
   }
 }
 
+
+
 // エラーメッセージ表示関数
 function showError(message) {
   const errorDiv = document.getElementById('error-message');
-  if (!errorDiv) {
-    console.error('error-message 要素が存在しません。');
-    return;
-  }
   errorDiv.textContent = message;
   errorDiv.style.display = 'block';
   setTimeout(() => {
