@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <title>iPhone版 売上登録（エアレジ風UI）</title>
-  <!-- iPhone向けに表示調整 -->
+  <!-- iPhone向け表示設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!-- favicon（必要なら） -->
+  <link rel="icon" href="favicon.ico">
   <!-- pos.css を読み込む -->
   <link rel="stylesheet" href="pos.css">
 </head>
 <body>
-
-  <!-- ログインセクション（必要なら簡易なログインフォームを配置） -->
+  <!-- ログインセクション -->
   <div id="loginSection">
     <h2>ログイン</h2>
-    <input type="email" id="email" placeholder="メールアドレス">
-    <input type="password" id="password" placeholder="パスワード">
+    <input type="email" id="email" placeholder="メールアドレス" required>
+    <input type="password" id="password" placeholder="パスワード" required>
     <button id="loginButton">ログイン</button>
   </div>
 
-  <!-- ログイン後に表示するメインUI -->
+  <!-- ログイン後のメインUI -->
   <div id="posMain" style="display:none;">
     <h1>エアレジ風 売上登録</h1>
 
@@ -51,7 +52,7 @@
       </div>
     </div>
 
-    <!-- カゴ画面（常に画面下部に固定表示） -->
+    <!-- カゴ画面（固定表示） -->
     <div id="cartSection" style="display:none;">
       <table id="cartTable">
         <thead>
@@ -70,7 +71,7 @@
     </div>
   </div>
 
-  <!-- pos.js を読み込む -->
+  <!-- pos.js のみを読み込む（不要なスクリプトは含まない） -->
   <script type="module" src="pos.js"></script>
 </body>
 </html>
