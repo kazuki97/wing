@@ -350,7 +350,7 @@ function displayAnalysisSummary(summary, period, year, month) {
     periodLabel = `${year}年`;
   }
 
-  // ヘッダーに手数料と送料の列が必要であれば、HTML側の <th> も更新してください
+  // ヘッダーに合わせた順番（13列）
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${periodLabel}</td>
@@ -369,12 +369,12 @@ function displayAnalysisSummary(summary, period, year, month) {
   `;
   tbody.appendChild(tr);
 
-  // 詳細ボタンのイベント登録
   const detailBtn = tr.querySelector('.monthly-detail-btn');
   detailBtn.addEventListener('click', () => {
     showMonthlyDetail(summary, year, month);
   });
 }
+
 
 
 // 月別詳細を日別詳細と同様にサブカテゴリごとに展開する関数（修正後）
