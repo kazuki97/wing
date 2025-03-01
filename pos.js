@@ -1,5 +1,6 @@
 // pos.js (修正後)
-// Firebase のインポートはすべて完全なURLを使用（db.js 内は既存のものと仮定）
+// Firebase の初期化は既存の db.js を利用し、Firebase Auth は完全な URL を使用
+
 import { auth, db } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 import { getParentCategories, getSubcategories } from './categories.js';
@@ -19,7 +20,7 @@ document.getElementById('loginButton').addEventListener('click', async () => {
   }
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    // ログイン成功後は onAuthStateChanged で処理
+    // ログイン成功は onAuthStateChanged で処理される
   } catch (error) {
     alert('ログイン失敗: ' + error.message);
   }
