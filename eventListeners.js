@@ -1201,36 +1201,44 @@ async function handleDeleteTransaction(transactionId) {
 }
 
 
-// モーダル要素の取得
-const addParentCategoryModal = document.getElementById('addParentCategoryModal');
-const addSubcategoryModal = document.getElementById('addSubcategoryModal');
+document.addEventListener('DOMContentLoaded', () => {
+  // モーダル要素の取得
+  const addParentCategoryModal = document.getElementById('addParentCategoryModal');
+  const addSubcategoryModal = document.getElementById('addSubcategoryModal');
 
-// モーダルを開くボタンの取得
-const openAddParentCategoryModalBtn = document.getElementById('openAddParentCategoryModal');
-const openAddSubcategoryModalBtn = document.getElementById('openAddSubcategoryModal');
+  // モーダルを開くボタンの取得
+  const openAddParentCategoryModalBtn = document.getElementById('openAddParentCategoryModal');
+  const openAddSubcategoryModalBtn = document.getElementById('openAddSubcategoryModal');
 
-// モーダルを閉じるボタンの取得
-const closeParentCategoryModalBtn = document.getElementById('closeParentCategoryModal');
-const closeSubcategoryModalBtn = document.getElementById('closeSubcategoryModal');
+  // モーダルを閉じるボタンの取得
+  const closeParentCategoryModalBtn = document.getElementById('closeParentCategoryModal');
+  const closeSubcategoryModalBtn = document.getElementById('closeSubcategoryModal');
 
-// モーダルを開くイベントリスナー
-openAddParentCategoryModalBtn.addEventListener('click', () => {
-  addParentCategoryModal.style.display = 'block';
-  updateAllParentCategorySelects();
-});
+  // モーダルを開くイベントリスナー
+  if (openAddParentCategoryModalBtn && addParentCategoryModal) {
+    openAddParentCategoryModalBtn.addEventListener('click', () => {
+      addParentCategoryModal.style.display = 'block';
+      updateAllParentCategorySelects();
+    });
+  }
+  if (openAddSubcategoryModalBtn && addSubcategoryModal) {
+    openAddSubcategoryModalBtn.addEventListener('click', () => {
+      addSubcategoryModal.style.display = 'block';
+      updateAllParentCategorySelects();
+    });
+  }
 
-openAddSubcategoryModalBtn.addEventListener('click', () => {
-  addSubcategoryModal.style.display = 'block';
-  updateAllParentCategorySelects();
-});
-
-// モーダルを閉じるイベントリスナー
-closeParentCategoryModalBtn.addEventListener('click', () => {
-  addParentCategoryModal.style.display = 'none';
-});
-
-closeSubcategoryModalBtn.addEventListener('click', () => {
-  addSubcategoryModal.style.display = 'none';
+  // モーダルを閉じるイベントリスナー
+  if (closeParentCategoryModalBtn && addParentCategoryModal) {
+    closeParentCategoryModalBtn.addEventListener('click', () => {
+      addParentCategoryModal.style.display = 'none';
+    });
+  }
+  if (closeSubcategoryModalBtn && addSubcategoryModal) {
+    closeSubcategoryModalBtn.addEventListener('click', () => {
+      addSubcategoryModal.style.display = 'none';
+    });
+  }
 });
 
 // モーダル外をクリックしたときにモーダルを閉じる
