@@ -14,25 +14,31 @@ let selectedSubcategory = null;
 const productTileMap = new Map();
 
 /**
- * タイル表示を更新する関数
- * 商品がカートに入っていれば、タイルに「数量」と「合計金額」を表示する
- */
-function updateTileDisplay(product, tile) {
-  const cartItem = phoneCart.find(item => item.product.id === product.id);
-  if (cartItem) {
-    tile.innerHTML = `${product.name}<br><span>${cartItem.quantity}点 ¥${(product.price * cartItem.quantity).toLocaleString()}</span>`;
-  } else {
-    tile.textContent = product.name;
-  }
-}
-
-/**
  * 画面切替用の関数
  * 全ての .screen を非表示にし、指定したIDの画面を表示する
  */
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+}
+
+/**
+ * 「かごを見る」ボタンのテキストを更新する関数
+ * カート内の合計数量と合計金額を表示する
+ */
+function updateViewCartButton() {
+  let totalQuantity = 0;
+  let totalPrice = 0;
+  phoneCart.forEach(item => {
+    totalQuantity += item.quantity;
+    totalPrice += item.product.price * item.quantity;
+  });
+  const btn = document.getElementById('btn-go-checkout');
+  if (totalQuantity > 0) {
+    btn.textContent = `${totalQuantity}点 ¥${totalPrice.toLocaleString()}`;
+  } else {
+    btn.textContent = 'カゴを見る';
+  }
 }
 
 // --- ログイン処理 ---
@@ -135,7 +141,8 @@ async function loadProducts(subcatId) {
     products.forEach(product => {
       const tile = document.createElement('div');
       tile.className = 'product-tile';
-      updateTileDisplay(product, tile);
+      // 商品タイルには商品名のみを表示
+      tile.textContent = product.name;
       tile.addEventListener('click', () => {
         addProductToCart(product);
       });
@@ -153,6 +160,7 @@ document.getElementById('btn-back-subcategory').addEventListener('click', () => 
 });
 
 // --- カゴ（売上登録）画面 ---
+// カゴへの商品追加処理
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -160,13 +168,27 @@ function addProductToCart(product) {
   } else {
     phoneCart.push({ product, quantity: 1 });
   }
-  const tile = productTileMap.get(product.id);
-  if (tile) {
-    updateTileDisplay(product, tile);
-  }
+  updateViewCartButton();
   updateCartUI();
 }
 
+// 「かごを見る」ボタンのテキストを更新する関数
+function updateViewCartButton() {
+  let totalQuantity = 0;
+  let totalPrice = 0;
+  phoneCart.forEach(item => {
+    totalQuantity += item.quantity;
+    totalPrice += item.product.price * item.quantity;
+  });
+  const btn = document.getElementById('btn-go-checkout');
+  if (totalQuantity > 0) {
+    btn.textContent = `${totalQuantity}点 ¥${totalPrice.toLocaleString()}`;
+  } else {
+    btn.textContent = 'カゴを見る';
+  }
+}
+
+// カゴUI更新関数
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -180,6 +202,7 @@ function updateCartUI() {
     total += item.product.price * item.quantity;
   });
   document.getElementById('cart-total').textContent = `合計: ¥${total}`;
+  updateViewCartButton();
 }
 
 document.getElementById('btn-go-checkout').addEventListener('click', () => {
@@ -277,7 +300,10 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
 });
 
 // --- 消耗品管理 ---
-// ホーム画面から消耗品管理画面に切り替えたときに呼ばれる
+document.getElementById('btn-back-from-consumables').addEventListener('click', () => {
+  showScreen('screen-home');
+});
+
 async function loadConsumables() {
   try {
     const consumables = await getConsumables();
@@ -295,24 +321,17 @@ async function loadConsumables() {
       `;
       tbody.appendChild(tr);
     });
-    // ※ 編集、削除のイベントリスナーの設定はここで追加可能
   } catch (error) {
     console.error('消耗品の読み込みに失敗:', error);
     alert('消耗品の読み込みに失敗しました');
   }
 }
 
-document.getElementById('btn-back-from-consumables').addEventListener('click', () => {
-  showScreen('screen-home');
-});
-
 // --- 消耗品使用量編集用モーダル ---
-// 「×」ボタンでモーダルを閉じる
 document.getElementById('closeEditConsumableUsageModal').addEventListener('click', () => {
   document.getElementById('editConsumableUsageModal').style.display = 'none';
 });
 
-// モーダルのフォーム送信処理
 document.getElementById('editConsumableUsageForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const usageId = document.getElementById('editConsumableUsageId').value;
