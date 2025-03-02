@@ -1,28 +1,25 @@
-// phone_main.js - iPhone用エアレジ風UIのロジック（ログイン機能追加版、ES6 モジュール形式）
+// phone_main.js - iPhone用エアレジ風UIのロジック（ログイン機能・消耗品管理含む）
 
 import { getParentCategories, getSubcategories } from './categories.js';
 import { getProducts } from './products.js';
 import { addTransaction } from './transactions.js';
 import { auth } from './db.js';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
+import { getConsumables } from './consumables.js'; // 消耗品取得用
 
 // --- グローバル変数 ---
 let phoneCart = [];
 let selectedParentCategory = null;
 let selectedSubcategory = null;
-// 各商品タイルの参照を保持するMap
 const productTileMap = new Map();
 
 /**
  * タイル表示を更新する関数
  * 商品がカートに入っていれば、タイルに「数量」と「合計金額」を表示する
- * @param {Object} product - 商品情報
- * @param {HTMLElement} tile - 対象のタイル要素
  */
 function updateTileDisplay(product, tile) {
   const cartItem = phoneCart.find(item => item.product.id === product.id);
   if (cartItem) {
-    // 例: 「商品名」+ 改行 + 「2点 ¥2000」
     tile.innerHTML = `${product.name}<br><span>${cartItem.quantity}点 ¥${(product.price * cartItem.quantity).toLocaleString()}</span>`;
   } else {
     tile.textContent = product.name;
@@ -39,18 +36,15 @@ function showScreen(screenId) {
 }
 
 // --- ログイン処理 ---
-// ログインフォームの表示・非表示を制御（index_phone.html に追加済み）
 const loginFormDiv = document.getElementById('loginForm');
 const loginFormElement = document.getElementById('loginFormElement');
 
-// ログインフォーム送信時の処理
 loginFormElement.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    // ログイン成功時はログインフォームを非表示
     loginFormDiv.style.display = 'none';
     showScreen('screen-home');
   } catch (error) {
@@ -58,7 +52,6 @@ loginFormElement.addEventListener('submit', async (e) => {
   }
 });
 
-// 認証状態の監視
 onAuthStateChanged(auth, (user) => {
   if (user) {
     loginFormDiv.style.display = 'none';
@@ -72,6 +65,12 @@ onAuthStateChanged(auth, (user) => {
 document.getElementById('btn-sales-registration').addEventListener('click', () => {
   showScreen('screen-parent');
   loadParentCategories();
+});
+
+// 消耗品管理ボタン
+document.getElementById('btn-consumables').addEventListener('click', () => {
+  showScreen('screen-consumables');
+  loadConsumables();
 });
 
 // --- 親カテゴリ選択画面 ---
@@ -132,12 +131,10 @@ async function loadProducts(subcatId) {
     const products = await getProducts(null, subcatId);
     const container = document.getElementById('product-tiles');
     container.innerHTML = '';
-    // 初期化：Mapをクリア
     productTileMap.clear();
     products.forEach(product => {
       const tile = document.createElement('div');
       tile.className = 'product-tile';
-      // 初回は、カゴに入っているかどうかを確認して表示を更新
       updateTileDisplay(product, tile);
       tile.addEventListener('click', () => {
         addProductToCart(product);
@@ -156,7 +153,6 @@ document.getElementById('btn-back-subcategory').addEventListener('click', () => 
 });
 
 // --- カゴ（売上登録）画面 ---
-// カゴへの商品追加処理
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -164,7 +160,6 @@ function addProductToCart(product) {
   } else {
     phoneCart.push({ product, quantity: 1 });
   }
-  // 対応するタイルの表示を更新
   const tile = productTileMap.get(product.id);
   if (tile) {
     updateTileDisplay(product, tile);
@@ -172,7 +167,6 @@ function addProductToCart(product) {
   updateCartUI();
 }
 
-// カゴUI更新関数
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -233,7 +227,6 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     });
   });
   
-  // 入力項目の取得
   const saleDate = document.getElementById('saleDate').value;
   if (!saleDate) {
     alert('販売日を入力してください');
@@ -253,13 +246,12 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
   const discountReason = document.getElementById('discountReason').value;
   
-  // 売上登録のための取引データ作成
   const transactionData = {
     items,
     totalAmount: totalAmount - discountAmount,
     totalCost,
     profit: (totalAmount - totalCost - discountAmount) - shippingFee,
-    paymentMethodId: "", // 今回は支払い方法入力は不要
+    paymentMethodId: "",
     timestamp: new Date(saleDate).toISOString(),
     feeAmount: 0,
     netAmount: totalAmount - discountAmount,
@@ -275,7 +267,6 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   try {
     const transactionId = await addTransaction(transactionData);
     alert('売上登録が完了しました。取引ID: ' + transactionId);
-    // カゴをクリアし、ホーム画面へ戻る
     phoneCart = [];
     updateCartUI();
     showScreen('screen-home');
@@ -285,7 +276,66 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   }
 });
 
+// --- 消耗品管理 ---
+// ホーム画面から消耗品管理画面に切り替えたときに呼ばれる
+async function loadConsumables() {
+  try {
+    const consumables = await getConsumables();
+    const tbody = document.querySelector('#consumableList table tbody');
+    tbody.innerHTML = '';
+    consumables.forEach(consumable => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${consumable.name}</td>
+        <td>${consumable.cost}</td>
+        <td>
+          <button class="edit-consumable" data-id="${consumable.id}">編集</button>
+          <button class="delete-consumable" data-id="${consumable.id}">削除</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    // ※ 編集、削除のイベントリスナーの設定はここで追加可能
+  } catch (error) {
+    console.error('消耗品の読み込みに失敗:', error);
+    alert('消耗品の読み込みに失敗しました');
+  }
+}
+
+document.getElementById('btn-back-from-consumables').addEventListener('click', () => {
+  showScreen('screen-home');
+});
+
+// --- 消耗品使用量編集用モーダル ---
+// 「×」ボタンでモーダルを閉じる
+document.getElementById('closeEditConsumableUsageModal').addEventListener('click', () => {
+  document.getElementById('editConsumableUsageModal').style.display = 'none';
+});
+
+// モーダルのフォーム送信処理
+document.getElementById('editConsumableUsageForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const usageId = document.getElementById('editConsumableUsageId').value;
+  const consumableId = document.getElementById('editConsumableSelect').value;
+  const quantityUsed = parseFloat(document.getElementById('editQuantityUsed').value);
+  const usageTimestamp = document.getElementById('editUsageTimestamp').value;
+  
+  try {
+    await updateConsumableUsage(usageId, {
+      consumableId,
+      quantityUsed,
+      timestamp: new Date(usageTimestamp).toISOString()
+    });
+    alert('消耗品使用量が更新されました');
+    document.getElementById('editConsumableUsageModal').style.display = 'none';
+    loadConsumables();
+  } catch (error) {
+    console.error('消耗品使用量の更新に失敗:', error);
+    alert('消耗品使用量の更新に失敗しました');
+  }
+});
+
 // --- 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
-  // 初回はログインフォームが表示される状態（認証状態の監視によりホーム画面へ遷移）
+  // 初回はログインフォームが表示され、認証状態の監視によりホーム画面へ遷移
 });
