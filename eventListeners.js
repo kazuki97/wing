@@ -2126,10 +2126,16 @@ export async function displayProductInventoryHistory(productId) {
   }
 }
 
-// モーダルを閉じるボタンのイベントリスナー
-document.getElementById('closeProductInventoryHistoryModal').addEventListener('click', () => {
-  document.getElementById('productInventoryHistoryModal').style.display = 'none';
-});
+// モーダルを閉じるボタンのイベントリスナー（要素が存在する場合のみ設定）
+const closeProductInventoryHistoryModalBtn = document.getElementById('closeProductInventoryHistoryModal');
+if (closeProductInventoryHistoryModalBtn) {
+  closeProductInventoryHistoryModalBtn.addEventListener('click', () => {
+    const modal = document.getElementById('productInventoryHistoryModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  });
+}
 
 // **修正**: 全体在庫更新フォームのイベントリスナー
 document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
