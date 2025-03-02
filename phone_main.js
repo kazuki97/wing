@@ -115,18 +115,22 @@ document.getElementById('btn-back-parent').addEventListener('click', () => {
 // --- 商品選択画面 ---
 async function loadProducts(subcatId) {
   try {
-    // getProducts(parentCategory, subcategory) としてサブカテゴリフィルタをかける
     const products = await getProducts(null, subcatId);
     const container = document.getElementById('product-tiles');
     container.innerHTML = '';
+    // 初期化：Mapをクリア
+    productTileMap.clear();
     products.forEach(product => {
       const tile = document.createElement('div');
       tile.className = 'product-tile';
+      // 初回は商品名のみ表示
       tile.textContent = product.name;
       tile.addEventListener('click', () => {
         addProductToCart(product);
       });
       container.appendChild(tile);
+      // 保存しておく
+      productTileMap.set(product.id, tile);
     });
   } catch (error) {
     console.error('商品の読み込みに失敗:', error);
@@ -145,6 +149,11 @@ function addProductToCart(product) {
     existing.quantity += 1;
   } else {
     phoneCart.push({ product, quantity: 1 });
+  }
+  // 対応するタイルの表示を更新
+  const tile = productTileMap.get(product.id);
+  if (tile) {
+    updateTileDisplay(product, tile);
   }
   updateCartUI();
 }
