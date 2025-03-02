@@ -737,27 +737,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 消耗品の更新フォームの送信イベントリスナー
-document.getElementById('editConsumableForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const consumableId = document.getElementById('editConsumableId').value;
-  const updatedName = document.getElementById('editConsumableName').value.trim();
-  const updatedCost = parseFloat(document.getElementById('editConsumableCost').value);
+document.addEventListener('DOMContentLoaded', () => {
+  const editConsumableForm = document.getElementById('editConsumableForm');
+  if (editConsumableForm) {  // 対象要素が存在する場合のみ
+    editConsumableForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const consumableId = document.getElementById('editConsumableId').value;
+      const updatedName = document.getElementById('editConsumableName').value.trim();
+      const updatedCost = parseFloat(document.getElementById('editConsumableCost').value);
 
-  if (!updatedName || isNaN(updatedCost) || updatedCost < 0) {
-    showError('消耗品名と有効な原価を入力してください');
-    return;
-  }
+      if (!updatedName || isNaN(updatedCost) || updatedCost < 0) {
+        showError('消耗品名と有効な原価を入力してください');
+        return;
+      }
 
-  try {
-    await updateConsumable(consumableId, { name: updatedName, cost: updatedCost });
-    alert('消耗品が更新されました');
-    document.getElementById('editConsumableModal').style.display = 'none';
-    await displayConsumables();
-  } catch (error) {
-    console.error('消耗品の更新に失敗しました:', error);
-    showError('消耗品の更新に失敗しました');
+      try {
+        await updateConsumable(consumableId, { name: updatedName, cost: updatedCost });
+        alert('消耗品が更新されました');
+        const modal = document.getElementById('editConsumableModal');
+        if (modal) {
+          modal.style.display = 'none';
+        }
+        await displayConsumables();
+      } catch (error) {
+        console.error('消耗品の更新に失敗しました:', error);
+        showError('消耗品の更新に失敗しました');
+      }
+    });
   }
 });
+
 
 
 // 売上管理セクションの取引データ表示関数
