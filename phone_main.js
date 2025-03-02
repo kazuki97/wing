@@ -71,6 +71,13 @@ onAuthStateChanged(auth, (user) => {
     loginFormDiv.style.display = 'none';
     document.getElementById('btn-logout').style.display = 'block';
     showScreen('screen-home');
+    // ログインユーザーが kazuma@icloud.com の場合、消耗品管理ボタンを隠す
+    if (user.email === "kazuma@icloud.com") {
+      const btnCons = document.getElementById('btn-consumables');
+      if (btnCons) {
+        btnCons.style.display = 'none';
+      }
+    }
   } else {
     loginFormDiv.style.display = 'flex';
     document.getElementById('btn-logout').style.display = 'none';
@@ -95,6 +102,7 @@ document.getElementById('btn-sales-registration').addEventListener('click', () =
   loadParentCategories();
 });
 
+// ※ 消耗品管理ボタンはホーム画面にありますが、上記 onAuthStateChanged で条件に応じて非表示になります
 document.getElementById('btn-consumables').addEventListener('click', () => {
   showScreen('screen-consumables');
   loadConsumables();
@@ -304,7 +312,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     return;
   }
   
-  // 販売方法と支払方法の選択を追加
+  // --- 販売方法と支払方法の選択 ---
   const salesMethod = document.getElementById('salesMethodSelect').value;
   if (!salesMethod) {
     alert('販売方法を選択してください');
@@ -316,6 +324,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     alert('支払方法を選択してください');
     return;
   }
+  // -------------------------------
   
   const shippingMethod = document.getElementById('shippingMethodSelect').value;
   let shippingFee = 0;
