@@ -1843,23 +1843,28 @@ const overallInventoryHistoryModal = document.getElementById('overallInventoryHi
 const closeOverallInventoryHistoryModalBtn = document.getElementById('closeOverallInventoryHistoryModal');
 
 // モーダルを閉じるイベントリスナー（グローバルスコープで一度だけ設定）
-closeInventoryHistoryModalBtn.addEventListener('click', () => {
-  inventoryHistoryModal.style.display = 'none';
-});
+if (closeInventoryHistoryModalBtn) {
+  closeInventoryHistoryModalBtn.addEventListener('click', () => {
+    inventoryHistoryModal.style.display = 'none';
+  });
+}
 
-closeOverallInventoryHistoryModalBtn.addEventListener('click', () => {
-  overallInventoryHistoryModal.style.display = 'none';
-});
+if (closeOverallInventoryHistoryModalBtn) {
+  closeOverallInventoryHistoryModalBtn.addEventListener('click', () => {
+    overallInventoryHistoryModal.style.display = 'none';
+  });
+}
 
 // モーダル外をクリックしたときにモーダルを閉じる
 window.addEventListener('click', (event) => {
-  if (event.target === overallInventoryHistoryModal) {
+  if (overallInventoryHistoryModal && event.target === overallInventoryHistoryModal) {
     overallInventoryHistoryModal.style.display = 'none';
   }
-  if (event.target === inventoryHistoryModal) {
+  if (inventoryHistoryModal && event.target === inventoryHistoryModal) {
     inventoryHistoryModal.style.display = 'none';
   }
 });
+
 
 // **viewInventoryHistory 関数の宣言（グローバルスコープ）**
 async function viewInventoryHistory(productId) {
