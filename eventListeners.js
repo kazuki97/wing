@@ -1322,18 +1322,30 @@ const openAddProductModalBtn = document.getElementById('openAddProductModal');
 // モーダルを閉じるボタンの取得
 const closeAddProductModalBtn = document.getElementById('closeAddProductModal');
 
-// モーダルを開くイベントリスナー
-openAddProductModalBtn.addEventListener('click', async () => {
-  addProductModal.style.display = 'block';
-  await updateAllParentCategorySelects(); // カテゴリセレクトボックスを更新
-  await updateConsumableCheckboxes(); // 消耗品チェックボックスを更新
+document.addEventListener('DOMContentLoaded', () => {
+  const openAddProductModalBtn = document.getElementById('openAddProductModal');
+  const closeAddProductModalBtn = document.getElementById('closeAddProductModal');
+  const addProductModal = document.getElementById('addProductModal');
+
+  if (openAddProductModalBtn && addProductModal) {
+    openAddProductModalBtn.addEventListener('click', async () => {
+      addProductModal.style.display = 'block';
+      await updateAllParentCategorySelects(); // カテゴリセレクトボックスを更新
+      await updateConsumableCheckboxes(); // 消耗品チェックボックスを更新
+    });
+  }
+
+  if (closeAddProductModalBtn && addProductModal) {
+    closeAddProductModalBtn.addEventListener('click', () => {
+      addProductModal.style.display = 'none';
+      const addProductForm = document.getElementById('addProductForm');
+      if (addProductForm) {
+        addProductForm.reset();
+      }
+    });
+  }
 });
 
-// モーダルを閉じるイベントリスナー
-closeAddProductModalBtn.addEventListener('click', () => {
-  addProductModal.style.display = 'none';
-  document.getElementById('addProductForm').reset();
-});
 
 // モーダル外をクリックしたときにモーダルを閉じる
 window.addEventListener('click', (event) => {
