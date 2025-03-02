@@ -1241,15 +1241,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// モーダル外をクリックしたときにモーダルを閉じる
-window.addEventListener('click', (event) => {
-  if (event.target === addParentCategoryModal) {
-    addParentCategoryModal.style.display = 'none';
-  }
-  if (event.target === addSubcategoryModal) {
-    addSubcategoryModal.style.display = 'none';
-  }
-});
+// ここに、モーダル外クリック時の処理も含める
+  window.addEventListener('click', (event) => {
+    if (addParentCategoryModal && event.target === addParentCategoryModal) {
+      addParentCategoryModal.style.display = 'none';
+    }
+    if (addSubcategoryModal && event.target === addSubcategoryModal) {
+      addSubcategoryModal.style.display = 'none';
+    }
+  });
 
 // モーダル内の親カテゴリ追加フォームの送信イベントリスナー
 document.addEventListener('DOMContentLoaded', () => {
