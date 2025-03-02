@@ -195,6 +195,14 @@ function addProductToCart(product) {
 }
 
 // カート一覧の更新
+// カートから指定商品を削除する関数
+function removeFromCart(productId) {
+  // phoneCart から該当商品を削除
+  phoneCart = phoneCart.filter(item => item.product.id !== productId);
+  updateCartUI();
+}
+
+// カートUI更新関数（修正後）
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -202,13 +210,23 @@ function updateCartUI() {
   phoneCart.forEach(item => {
     const div = document.createElement('div');
     div.className = 'cart-item';
+    // 商品名、数量、合計金額の表示と共に削除ボタンを追加
     div.innerHTML = `<span>${item.product.name} x ${item.quantity}</span>
-                     <span>¥${(item.product.price * item.quantity).toLocaleString()}</span>`;
+                     <span>¥${(item.product.price * item.quantity).toLocaleString()}</span>
+                     <button class="btn-delete" data-id="${item.product.id}">削除</button>`;
     cartItemsDiv.appendChild(div);
     total += item.product.price * item.quantity;
   });
   document.getElementById('cart-total').textContent = `合計: ¥${total}`;
   updateViewCartButton();
+
+  // 各削除ボタンにクリックイベントを設定
+  document.querySelectorAll('.btn-delete').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const productId = e.target.dataset.id;
+      removeFromCart(productId);
+    });
+  });
 }
 
 document.getElementById('btn-go-checkout').addEventListener('click', () => {
