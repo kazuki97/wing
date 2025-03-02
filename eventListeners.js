@@ -1252,26 +1252,35 @@ window.addEventListener('click', (event) => {
 });
 
 // モーダル内の親カテゴリ追加フォームの送信イベントリスナー
-document.getElementById('modalAddParentCategoryForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const user = auth.currentUser;
-  if (!user) {
-    alert('親カテゴリを追加するにはログインが必要です。');
-    return;
-  }
-  const name = document.getElementById('modalParentCategoryName').value;
-  try {
-    await addParentCategory(name);
-    document.getElementById('modalParentCategoryName').value = '';
-    addParentCategoryModal.style.display = 'none';
-    await updateAllParentCategorySelects();
-    await displayParentCategories();
-    alert('親カテゴリが追加されました');
-  } catch (error) {
-    console.error(error);
-    showError('親カテゴリの追加に失敗しました');
+document.addEventListener('DOMContentLoaded', () => {
+  const modalAddParentCategoryForm = document.getElementById('modalAddParentCategoryForm');
+  if (modalAddParentCategoryForm) { // フォームが存在する場合のみ登録
+    modalAddParentCategoryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) {
+        alert('親カテゴリを追加するにはログインが必要です。');
+        return;
+      }
+      const name = document.getElementById('modalParentCategoryName').value;
+      try {
+        await addParentCategory(name);
+        document.getElementById('modalParentCategoryName').value = '';
+        const addParentCategoryModal = document.getElementById('addParentCategoryModal');
+        if (addParentCategoryModal) {
+          addParentCategoryModal.style.display = 'none';
+        }
+        await updateAllParentCategorySelects();
+        await displayParentCategories();
+        alert('親カテゴリが追加されました');
+      } catch (error) {
+        console.error(error);
+        showError('親カテゴリの追加に失敗しました');
+      }
+    });
   }
 });
+
 
 // モーダル内のサブカテゴリ追加フォームの送信イベントリスナー
 document.getElementById('modalAddSubcategoryForm').addEventListener('submit', async (e) => {
