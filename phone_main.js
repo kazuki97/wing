@@ -14,6 +14,21 @@ let selectedSubcategory = null;
 const productTileMap = new Map();
 
 /**
+ * タイル表示を更新する関数
+ * @param {Object} product - 商品情報
+ * @param {HTMLElement} tile - 対象のタイル要素
+ */
+function updateTileDisplay(product, tile) {
+  const cartItem = phoneCart.find(item => item.product.id === product.id);
+  if (cartItem) {
+    // 商品名の下に、"n点 ¥xxx" を表示
+    tile.innerHTML = `${product.name}<br><span>${cartItem.quantity}点 ¥${(product.price * cartItem.quantity).toLocaleString()}</span>`;
+  } else {
+    tile.textContent = product.name;
+  }
+}
+
+/**
  * 画面切替用の関数
  * 全ての .screen を非表示にし、指定したIDの画面を表示する
  */
