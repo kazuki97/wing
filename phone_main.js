@@ -4,7 +4,7 @@ import { getParentCategories, getSubcategories } from './categories.js';
 import { getProducts } from './products.js';
 import { addTransaction } from './transactions.js';
 import { auth } from './db.js';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 import { getConsumables } from './consumables.js'; // 消耗品取得用
 
 // --- グローバル変数 ---
@@ -14,18 +14,17 @@ let selectedSubcategory = null;
 const productTileMap = new Map();
 
 /**
- * タイル表示を更新する関数
- * 商品がカートに入っていれば、タイル内には通常表示はそのままとします
- * （本仕様では、タイルは商品名のみ表示し、カート情報は「かごを見る」ボタンに表示する）
+ * 画面切替用の関数
+ * 全ての .screen を非表示にし、指定したIDの画面を表示する
  */
-function updateTileDisplay(product, tile) {
-  // ここではタイルに商品名のみを表示
-  tile.textContent = product.name;
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
 }
 
 /**
  * 「かごを見る」ボタンのテキストを更新する関数
- * カート内の合計数量と合計金額をボタンに表示します
+ * カート内の合計数量と合計金額を表示します
  */
 function updateViewCartButton() {
   let totalQuantity = 0;
@@ -43,12 +42,10 @@ function updateViewCartButton() {
 }
 
 /**
- * 画面切替用の関数
- * 全ての .screen を非表示にし、指定したIDの画面を表示する
+ * 商品タイルは商品名のみを表示する
  */
-function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+function updateTileDisplay(product, tile) {
+  tile.textContent = product.name;
 }
 
 // --- ログイン処理 ---
@@ -62,6 +59,7 @@ loginFormElement.addEventListener('submit', async (e) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
     loginFormDiv.style.display = 'none';
+    document.getElementById('btn-logout').style.display = 'block';
     showScreen('screen-home');
   } catch (error) {
     alert('ログインに失敗しました: ' + error.message);
@@ -71,9 +69,23 @@ loginFormElement.addEventListener('submit', async (e) => {
 onAuthStateChanged(auth, (user) => {
   if (user) {
     loginFormDiv.style.display = 'none';
+    document.getElementById('btn-logout').style.display = 'block';
     showScreen('screen-home');
   } else {
     loginFormDiv.style.display = 'flex';
+    document.getElementById('btn-logout').style.display = 'none';
+  }
+});
+
+// --- ログアウト処理 ---
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+    loginFormDiv.style.display = 'flex';
+    document.getElementById('btn-logout').style.display = 'none';
+    showScreen('screen-home');
+  } catch (error) {
+    alert('ログアウトに失敗しました: ' + error.message);
   }
 });
 
@@ -151,7 +163,7 @@ async function loadProducts(subcatId) {
     products.forEach(product => {
       const tile = document.createElement('div');
       tile.className = 'product-tile';
-      // タイルには商品名のみ表示
+      // 商品タイルは商品名のみを表示
       updateTileDisplay(product, tile);
       tile.addEventListener('click', () => {
         addProductToCart(product);
@@ -170,6 +182,7 @@ document.getElementById('btn-back-subcategory').addEventListener('click', () => 
 });
 
 // --- カゴ（売上登録）画面 ---
+// 商品をカートに追加する関数
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -177,11 +190,11 @@ function addProductToCart(product) {
   } else {
     phoneCart.push({ product, quantity: 1 });
   }
-  // 「かごを見る」ボタンの更新でカート情報を表示
   updateViewCartButton();
   updateCartUI();
 }
 
+// カート一覧の更新
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -195,7 +208,6 @@ function updateCartUI() {
     total += item.product.price * item.quantity;
   });
   document.getElementById('cart-total').textContent = `合計: ¥${total}`;
-  // かごを見るボタンも更新
   updateViewCartButton();
 }
 
