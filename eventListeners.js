@@ -2336,32 +2336,35 @@ if (!user) {
   }
 }
 
-// **単価ルールを更新するイベントリスナーを追加**
-document.getElementById('editPricingRuleForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const ruleId = document.getElementById('editPricingRuleId').value;
-  const minQuantity = parseFloat(document.getElementById('editMinQuantity').value);
-  const maxQuantity = parseFloat(document.getElementById('editMaxQuantity').value);
-  const unitPrice = parseFloat(document.getElementById('editUnitPrice').value);
-
-  if (minQuantity > maxQuantity) {
-    showError('最小数量は最大数量以下である必要があります');
-    return;
-  }
-
-  try {
-    await updatePricingRule(ruleId, { minQuantity, maxQuantity, unitPrice });
-    alert('単価ルールが更新されました');
-    document.getElementById('editPricingRuleModal').style.display = 'none';
-    await displayPricingRules();
-  } catch (error) {
-    console.error(error);
-    showError('単価ルールの更新に失敗しました');
-  }
-});
-
-// **モーダルを閉じるボタンのイベントリスナーを追加**
 document.addEventListener('DOMContentLoaded', () => {
+  // **単価ルールを更新するイベントリスナーを追加**
+  const editPricingRuleForm = document.getElementById('editPricingRuleForm');
+  if (editPricingRuleForm) {
+    editPricingRuleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const ruleId = document.getElementById('editPricingRuleId').value;
+      const minQuantity = parseFloat(document.getElementById('editMinQuantity').value);
+      const maxQuantity = parseFloat(document.getElementById('editMaxQuantity').value);
+      const unitPrice = parseFloat(document.getElementById('editUnitPrice').value);
+
+      if (minQuantity > maxQuantity) {
+        showError('最小数量は最大数量以下である必要があります');
+        return;
+      }
+
+      try {
+        await updatePricingRule(ruleId, { minQuantity, maxQuantity, unitPrice });
+        alert('単価ルールが更新されました');
+        document.getElementById('editPricingRuleModal').style.display = 'none';
+        await displayPricingRules();
+      } catch (error) {
+        console.error(error);
+        showError('単価ルールの更新に失敗しました');
+      }
+    });
+  }
+
+  // **モーダルを閉じるボタンのイベントリスナーを追加**
   const closeEditModal = document.getElementById('closeEditConsumableUsageModal');
   if (closeEditModal) {
     closeEditModal.addEventListener('click', () => {
@@ -2371,12 +2374,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
 
-
-// 単価設定セクションのサブカテゴリセレクトボックスのイベントリスナー
-document.getElementById('pricingSubcategorySelect').addEventListener('change', async () => {
-  await displayPricingRules();
+  // 単価設定セクションのサブカテゴリセレクトボックスのイベントリスナー
+  const pricingSubcategorySelect = document.getElementById('pricingSubcategorySelect');
+  if (pricingSubcategorySelect) {
+    pricingSubcategorySelect.addEventListener('change', async () => {
+      await displayPricingRules();
+    });
+  }
 });
 
 // 手動で売上を追加するボタンのイベントリスナー
