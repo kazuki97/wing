@@ -2137,27 +2137,31 @@ if (closeProductInventoryHistoryModalBtn) {
   });
 }
 
-// **修正**: 全体在庫更新フォームのイベントリスナー
-document.getElementById('updateOverallInventoryForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const user = auth.currentUser;
-  if (!user) {
-    alert('全体在庫を更新するにはログインが必要です。');
-    return;
-  }
-  const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
-  const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
-  const reason = document.getElementById('overallInventoryReason').value || '在庫数の手動更新';
+// **修正後（存在チェックを追加）**
+const updateOverallInventoryForm = document.getElementById('updateOverallInventoryForm');
+if (updateOverallInventoryForm) {
+  updateOverallInventoryForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) {
+      alert('全体在庫を更新するにはログインが必要です。');
+      return;
+    }
+    const subcategoryId = document.getElementById('overallInventorySubcategorySelect').value;
+    const quantity = parseFloat(document.getElementById('overallInventoryQuantity').value);
+    const reason = document.getElementById('overallInventoryReason').value || '在庫数の手動更新';
+  
+    try {
+      await updateOverallInventory(subcategoryId, quantity, reason);
+      alert('全体在庫が更新されました');
+      await displayOverallInventory();
+    } catch (error) {
+      console.error(error);
+      showError('全体在庫の更新に失敗しました');
+    }
+  });
+}
 
-  try {
-    await updateOverallInventory(subcategoryId, quantity, reason);
-    alert('全体在庫が更新されました');
-    await displayOverallInventory();
-  } catch (error) {
-    console.error(error);
-    showError('全体在庫の更新に失敗しました');
-  }
-}); // **addEventListener の終了**
 
 // 全体在庫を表示する関数をエクスポート
 export async function displayOverallInventory() {
