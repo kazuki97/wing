@@ -1241,7 +1241,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ここに、モーダル外クリック時の処理も含める
+document.addEventListener('DOMContentLoaded', () => {
+  // モーダル要素の取得（ここで定義しておく）
+  const addParentCategoryModal = document.getElementById('addParentCategoryModal');
+  const addSubcategoryModal = document.getElementById('addSubcategoryModal');
+
+  // モーダル外クリック時の処理も DOMContentLoaded 内で定義する
   window.addEventListener('click', (event) => {
     if (addParentCategoryModal && event.target === addParentCategoryModal) {
       addParentCategoryModal.style.display = 'none';
@@ -1250,6 +1255,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addSubcategoryModal.style.display = 'none';
     }
   });
+});
 
 // モーダル内の親カテゴリ追加フォームの送信イベントリスナー
 document.addEventListener('DOMContentLoaded', () => {
