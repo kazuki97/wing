@@ -9,7 +9,7 @@
 </head>
 <body>
 
- <!-- ログインフォーム（オーバーレイ） -->
+  <!-- ログインフォーム（オーバーレイ） -->
   <div id="loginForm" class="login-form">
     <form id="loginFormElement">
       <h2>ログイン</h2>
@@ -26,6 +26,7 @@
     <!-- ホーム画面 -->
     <section id="screen-home" class="screen active">
       <button id="btn-sales-registration">売上登録</button>
+      <button id="btn-consumables">消耗品管理</button>
     </section>
 
     <!-- 親カテゴリ選択画面 -->
@@ -64,7 +65,7 @@
       </div>
       <div id="cart-total">合計: ¥0</div>
       
-      <!-- PC用と同様の入力フォーム（売上登録用） -->
+      <!-- 売上登録用入力フォーム -->
       <div id="checkout-form">
         <label for="saleDate">販売日:</label>
         <input type="date" id="saleDate" required>
@@ -97,7 +98,7 @@
       <button id="btn-checkout">売上登録完了</button>
     </section>
 
-<!-- 新規：消耗品管理画面 -->
+    <!-- 消耗品管理画面 -->
     <section id="screen-consumables" class="screen">
       <h2>消耗品管理</h2>
       <form id="addConsumableForm">
@@ -122,23 +123,23 @@
       <button id="btn-back-from-consumables">戻る</button>
     </section>
 
-<!-- 修正後：消耗品使用量編集用モーダルの追加 -->
-<div id="editConsumableUsageModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close" id="closeEditConsumableUsageModal">&times;</span>
-    <h2>消耗品使用量の編集</h2>
-    <form id="editConsumableUsageForm">
-      <input type="hidden" id="editConsumableUsageId">
-      <label for="editConsumableSelect">消耗品名:</label>
-      <select id="editConsumableSelect" required>
-        <!-- オプションが動的に追加されます -->
-      </select>
-      <input type="number" id="editQuantityUsed" placeholder="使用量" required>
-      <input type="datetime-local" id="editUsageTimestamp" required>
-      <button type="submit">更新</button>
-    </form>
-  </div>
-</div>
+    <!-- 消耗品使用量編集用モーダル -->
+    <div id="editConsumableUsageModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" id="closeEditConsumableUsageModal">&times;</span>
+        <h2>消耗品使用量の編集</h2>
+        <form id="editConsumableUsageForm">
+          <input type="hidden" id="editConsumableUsageId">
+          <label for="editConsumableSelect">消耗品名:</label>
+          <select id="editConsumableSelect" required>
+            <!-- オプションが動的に追加されます -->
+          </select>
+          <input type="number" id="editQuantityUsed" placeholder="使用量" required>
+          <input type="datetime-local" id="editUsageTimestamp" required>
+          <button type="submit">更新</button>
+        </form>
+      </div>
+    </div>
   </main>
   <script type="module" src="phone_main.js"></script>
 </body>
