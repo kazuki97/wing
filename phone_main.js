@@ -162,7 +162,6 @@ async function loadProducts(subcatId) {
     products.forEach(product => {
       const tile = document.createElement('div');
       tile.className = 'product-tile';
-      // 商品タイルは商品名のみを表示
       updateTileDisplay(product, tile);
       tile.addEventListener('click', () => {
         addProductToCart(product);
@@ -305,6 +304,19 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     return;
   }
   
+  // 販売方法と支払方法の選択を追加
+  const salesMethod = document.getElementById('salesMethodSelect').value;
+  if (!salesMethod) {
+    alert('販売方法を選択してください');
+    return;
+  }
+  
+  const paymentMethod = document.getElementById('paymentMethodSelect').value;
+  if (!paymentMethod) {
+    alert('支払方法を選択してください');
+    return;
+  }
+  
   const shippingMethod = document.getElementById('shippingMethodSelect').value;
   let shippingFee = 0;
   if (shippingMethod === 'クリックポスト') {
@@ -323,7 +335,8 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     totalAmount: totalAmount - discountAmount,
     totalCost,
     profit: (totalAmount - totalCost - discountAmount) - shippingFee,
-    paymentMethodId: "",
+    paymentMethodId: paymentMethod,
+    salesMethod: salesMethod,
     timestamp: new Date(saleDate).toISOString(),
     feeAmount: 0,
     netAmount: totalAmount - discountAmount,
@@ -403,6 +416,7 @@ document.getElementById('editConsumableUsageForm').addEventListener('submit', as
   }
 });
 
+// --- 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
   // 初回はログインフォームが表示され、認証状態の監視によりホーム画面へ遷移
 });
