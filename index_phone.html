@@ -46,50 +46,6 @@
       <button id="btn-back-parent">戻る</button>
     </section>
 
-<!-- 既存のセクションに追加するか、別セクションとして配置 -->
-<section id="consumables-section" class="content-section">
-  <h2>消耗品管理</h2>
-  <form id="addConsumableForm">
-    <input type="text" id="consumableName" placeholder="消耗品名" required>
-    <input type="number" id="consumableCost" placeholder="原価" required>
-    <button type="submit">追加</button>
-  </form>
-  <div id="consumableList">
-    <table>
-      <thead>
-        <tr>
-          <th>消耗品名</th>
-          <th>原価</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- 消耗品情報がここに表示されます -->
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<!-- 修正後：消耗品使用量編集用モーダルの追加 -->
-<div id="editConsumableUsageModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close" id="closeEditConsumableUsageModal">&times;</span>
-    <h2>消耗品使用量の編集</h2>
-    <form id="editConsumableUsageForm">
-      <input type="hidden" id="editConsumableUsageId">
-      <label for="editConsumableSelect">消耗品名:</label>
-      <select id="editConsumableSelect" required>
-        <!-- オプションが動的に追加されます -->
-      </select>
-      <input type="number" id="editQuantityUsed" placeholder="使用量" required>
-      <input type="datetime-local" id="editUsageTimestamp" required>
-      <button type="submit">更新</button>
-    </form>
-  </div>
-</div>
-
-
-
     <!-- 商品選択画面 -->
     <section id="screen-product" class="screen">
       <h2>商品を選択</h2>
@@ -140,6 +96,49 @@
       <button id="btn-back-product">戻る</button>
       <button id="btn-checkout">売上登録完了</button>
     </section>
+
+<!-- 新規：消耗品管理画面 -->
+    <section id="screen-consumables" class="screen">
+      <h2>消耗品管理</h2>
+      <form id="addConsumableForm">
+        <input type="text" id="consumableName" placeholder="消耗品名" required>
+        <input type="number" id="consumableCost" placeholder="原価" required>
+        <button type="submit">追加</button>
+      </form>
+      <div id="consumableList">
+        <table>
+          <thead>
+            <tr>
+              <th>消耗品名</th>
+              <th>原価</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 消耗品情報が動的に表示されます -->
+          </tbody>
+        </table>
+      </div>
+      <button id="btn-back-from-consumables">戻る</button>
+    </section>
+
+<!-- 修正後：消耗品使用量編集用モーダルの追加 -->
+<div id="editConsumableUsageModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" id="closeEditConsumableUsageModal">&times;</span>
+    <h2>消耗品使用量の編集</h2>
+    <form id="editConsumableUsageForm">
+      <input type="hidden" id="editConsumableUsageId">
+      <label for="editConsumableSelect">消耗品名:</label>
+      <select id="editConsumableSelect" required>
+        <!-- オプションが動的に追加されます -->
+      </select>
+      <input type="number" id="editQuantityUsed" placeholder="使用量" required>
+      <input type="datetime-local" id="editUsageTimestamp" required>
+      <button type="submit">更新</button>
+    </form>
+  </div>
+</div>
   </main>
   <script type="module" src="phone_main.js"></script>
 </body>
