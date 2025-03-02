@@ -1283,25 +1283,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // モーダル内のサブカテゴリ追加フォームの送信イベントリスナー
-document.getElementById('modalAddSubcategoryForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const user = auth.currentUser;
-  if (!user) {
-    alert('サブカテゴリを追加するにはログインが必要です。');
-    return;
-  }
-  const parentCategoryId = document.getElementById('modalSubcategoryParentCategorySelect').value;
-  const name = document.getElementById('modalSubcategoryName').value;
-  try {
-    await addSubcategory(name, parentCategoryId);
-    document.getElementById('modalSubcategoryName').value = '';
-    addSubcategoryModal.style.display = 'none';
-    await displayParentCategories();
-    await updateAllParentCategorySelects();
-    alert('サブカテゴリが追加されました');
-  } catch (error) {
-    console.error(error);
-    showError('サブカテゴリの追加に失敗しました');
+document.addEventListener('DOMContentLoaded', () => {
+  const modalAddSubcategoryForm = document.getElementById('modalAddSubcategoryForm');
+  if (modalAddSubcategoryForm) {  // 要素が存在する場合のみイベントリスナーを登録
+    modalAddSubcategoryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) {
+        alert('サブカテゴリを追加するにはログインが必要です。');
+        return;
+      }
+      const parentCategoryId = document.getElementById('modalSubcategoryParentCategorySelect').value;
+      const name = document.getElementById('modalSubcategoryName').value;
+      try {
+        await addSubcategory(name, parentCategoryId);
+        document.getElementById('modalSubcategoryName').value = '';
+        const addSubcategoryModal = document.getElementById('addSubcategoryModal');
+        if (addSubcategoryModal) {
+          addSubcategoryModal.style.display = 'none';
+        }
+        await displayParentCategories();
+        await updateAllParentCategorySelects();
+        alert('サブカテゴリが追加されました');
+      } catch (error) {
+        console.error(error);
+        showError('サブカテゴリの追加に失敗しました');
+      }
+    });
   }
 });
 
