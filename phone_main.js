@@ -1,9 +1,10 @@
-// phone_main.js - iPhone用エアレジ風UIのロジック（ES6 モジュール形式）
+// phone_main.js - iPhone用エアレジ風UIのロジック（ログイン機能追加版、ES6 モジュール形式）
 
 import { getParentCategories, getSubcategories } from './categories.js';
 import { getProducts } from './products.js';
 import { addTransaction } from './transactions.js';
 import { auth } from './db.js';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 
 // --- グローバル変数 ---
 let phoneCart = [];
@@ -18,6 +19,40 @@ function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
 }
+
+// --- ログイン処理 ---
+// ログインフォームの表示・非表示を制御
+const loginFormDiv = document.getElementById('loginForm');
+const loginFormElement = document.getElementById('loginFormElement');
+
+// ログインフォーム送信時の処理
+loginFormElement.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // ログイン成功時はログインフォームを非表示
+    loginFormDiv.style.display = 'none';
+    // ホーム画面へ遷移
+    showScreen('screen-home');
+  } catch (error) {
+    alert('ログインに失敗しました: ' + error.message);
+  }
+});
+
+// 認証状態の監視
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // ログイン済みの場合はログインフォームを非表示に
+    loginFormDiv.style.display = 'none';
+    // 初期画面としてホーム画面を表示
+    showScreen('screen-home');
+  } else {
+    // 未認証の場合はログインフォームを表示
+    loginFormDiv.style.display = 'flex';
+  }
+});
 
 // --- ホーム画面 ---
 document.getElementById('btn-sales-registration').addEventListener('click', () => {
@@ -228,5 +263,6 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
 
 // --- 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
-  showScreen('screen-home');
+  // 初回はログインフォームが表示される状態
+  // 認証状態の監視により適宜ホーム画面が表示される
 });
