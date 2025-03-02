@@ -35,6 +35,31 @@
       <button id="btn-back-parent">戻る</button>
     </section>
 
+<!-- 既存のセクションに追加するか、別セクションとして配置 -->
+<section id="consumables-section" class="content-section">
+  <h2>消耗品管理</h2>
+  <form id="addConsumableForm">
+    <input type="text" id="consumableName" placeholder="消耗品名" required>
+    <input type="number" id="consumableCost" placeholder="原価" required>
+    <button type="submit">追加</button>
+  </form>
+  <div id="consumableList">
+    <table>
+      <thead>
+        <tr>
+          <th>消耗品名</th>
+          <th>原価</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 消耗品情報がここに表示されます -->
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
     <!-- 商品選択画面 -->
     <section id="screen-product" class="screen">
       <h2>商品を選択</h2>
