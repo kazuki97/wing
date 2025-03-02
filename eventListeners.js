@@ -723,10 +723,18 @@ if (!user) {
   }
 }
 
-// モーダルを閉じるボタンのイベントリスナー
-document.getElementById('closeEditConsumableModal').addEventListener('click', () => {
-  document.getElementById('editConsumableModal').style.display = 'none';
+document.addEventListener('DOMContentLoaded', () => {
+  const closeEditConsumableModal = document.getElementById('closeEditConsumableModal');
+  if (closeEditConsumableModal) { // 要素が存在する場合のみイベントリスナーを登録
+    closeEditConsumableModal.addEventListener('click', () => {
+      const modal = document.getElementById('editConsumableModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
 });
+
 
 // 消耗品の更新フォームの送信イベントリスナー
 document.getElementById('editConsumableForm').addEventListener('submit', async (e) => {
