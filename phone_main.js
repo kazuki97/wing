@@ -14,17 +14,18 @@ let selectedSubcategory = null;
 const productTileMap = new Map();
 
 /**
- * 画面切替用の関数
- * 全ての .screen を非表示にし、指定したIDの画面を表示する
+ * タイル表示を更新する関数
+ * 商品がカートに入っていれば、タイル内には通常表示はそのままとします
+ * （本仕様では、タイルは商品名のみ表示し、カート情報は「かごを見る」ボタンに表示する）
  */
-function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+function updateTileDisplay(product, tile) {
+  // ここではタイルに商品名のみを表示
+  tile.textContent = product.name;
 }
 
 /**
  * 「かごを見る」ボタンのテキストを更新する関数
- * カート内の合計数量と合計金額を表示する
+ * カート内の合計数量と合計金額をボタンに表示します
  */
 function updateViewCartButton() {
   let totalQuantity = 0;
@@ -39,6 +40,15 @@ function updateViewCartButton() {
   } else {
     btn.textContent = 'カゴを見る';
   }
+}
+
+/**
+ * 画面切替用の関数
+ * 全ての .screen を非表示にし、指定したIDの画面を表示する
+ */
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
 }
 
 // --- ログイン処理 ---
@@ -141,8 +151,8 @@ async function loadProducts(subcatId) {
     products.forEach(product => {
       const tile = document.createElement('div');
       tile.className = 'product-tile';
-      // 商品タイルには商品名のみを表示
-      tile.textContent = product.name;
+      // タイルには商品名のみ表示
+      updateTileDisplay(product, tile);
       tile.addEventListener('click', () => {
         addProductToCart(product);
       });
@@ -160,7 +170,6 @@ document.getElementById('btn-back-subcategory').addEventListener('click', () => 
 });
 
 // --- カゴ（売上登録）画面 ---
-// カゴへの商品追加処理
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -168,27 +177,11 @@ function addProductToCart(product) {
   } else {
     phoneCart.push({ product, quantity: 1 });
   }
+  // 「かごを見る」ボタンの更新でカート情報を表示
   updateViewCartButton();
   updateCartUI();
 }
 
-// 「かごを見る」ボタンのテキストを更新する関数
-function updateViewCartButton() {
-  let totalQuantity = 0;
-  let totalPrice = 0;
-  phoneCart.forEach(item => {
-    totalQuantity += item.quantity;
-    totalPrice += item.product.price * item.quantity;
-  });
-  const btn = document.getElementById('btn-go-checkout');
-  if (totalQuantity > 0) {
-    btn.textContent = `${totalQuantity}点 ¥${totalPrice.toLocaleString()}`;
-  } else {
-    btn.textContent = 'カゴを見る';
-  }
-}
-
-// カゴUI更新関数
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -197,11 +190,12 @@ function updateCartUI() {
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `<span>${item.product.name} x ${item.quantity}</span>
-                     <span>¥${item.product.price * item.quantity}</span>`;
+                     <span>¥${(item.product.price * item.quantity).toLocaleString()}</span>`;
     cartItemsDiv.appendChild(div);
     total += item.product.price * item.quantity;
   });
   document.getElementById('cart-total').textContent = `合計: ¥${total}`;
+  // かごを見るボタンも更新
   updateViewCartButton();
 }
 
