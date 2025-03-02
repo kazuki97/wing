@@ -18,10 +18,12 @@ const productTileMap = new Map();
  * @param {Object} product - 商品情報
  * @param {HTMLElement} tile - 対象のタイル要素
  */
+// --- 商品タイル表示更新用の関数 ---
+// すでにカゴに追加されている商品があれば、タイルに「数量」と「合計金額」を表示
 function updateTileDisplay(product, tile) {
   const cartItem = phoneCart.find(item => item.product.id === product.id);
   if (cartItem) {
-    // 商品名の下に、"n点 ¥xxx" を表示
+    // 例: 「商品名」+ 改行 + 「2点 ¥2000」
     tile.innerHTML = `${product.name}<br><span>${cartItem.quantity}点 ¥${(product.price * cartItem.quantity).toLocaleString()}</span>`;
   } else {
     tile.textContent = product.name;
@@ -129,17 +131,6 @@ document.getElementById('btn-back-parent').addEventListener('click', () => {
   showScreen('screen-parent');
 });
 
-// --- 商品タイル表示更新用の関数 ---
-// すでにカゴに追加されている商品があれば、タイルに「数量」と「合計金額」を表示
-function updateTileDisplay(product, tile) {
-  const cartItem = phoneCart.find(item => item.product.id === product.id);
-  if (cartItem) {
-    // 例: 「商品名」+ 改行 + 「2点 ¥2000」
-    tile.innerHTML = `${product.name}<br><span>${cartItem.quantity}点 ¥${(product.price * cartItem.quantity).toLocaleString()}</span>`;
-  } else {
-    tile.textContent = product.name;
-  }
-}
 
 // --- 商品選択画面 ---（修正後）
 async function loadProducts(subcatId) {
