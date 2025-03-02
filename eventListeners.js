@@ -920,13 +920,20 @@ export async function displayTransactions(filter = {}) {
 }
 
 // ▼▼▼ 全選択チェックボックスの処理 ▼▼▼
-document.getElementById('selectAllTransactions').addEventListener('change', (e) => {
-  const checked = e.target.checked;
-  const checkboxes = document.querySelectorAll('.transaction-checkbox');
-  checkboxes.forEach((cb) => {
-    cb.checked = checked;
-  });
+// 修正後（eventListeners.js 約923行目付近）
+document.addEventListener('DOMContentLoaded', () => {
+  const selectAllTransactions = document.getElementById('selectAllTransactions');
+  if (selectAllTransactions) {  // 要素が存在する場合のみ処理する
+    selectAllTransactions.addEventListener('change', (e) => {
+      const checked = e.target.checked;
+      const checkboxes = document.querySelectorAll('.transaction-checkbox');
+      checkboxes.forEach((cb) => {
+        cb.checked = checked;
+      });
+    });
+  }
 });
+
 
 // ▼▼▼ 一括削除ボタンの処理 ▼▼▼
 document.getElementById('deleteSelectedTransactionsButton').addEventListener('click', async () => {
