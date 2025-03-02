@@ -84,8 +84,9 @@ export async function getConsumableUsage(year, month) {
 
 // 消耗品の追加フォームイベントリスナー
 const addConsumableForm = document.getElementById('addConsumableForm');
-addConsumableForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+if (addConsumableForm) {  // 要素が存在する場合のみイベントリスナーを登録
+  addConsumableForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
   const consumableName = document.getElementById('consumableName').value.trim();
   const consumableCost = parseFloat(document.getElementById('consumableCost').value);
