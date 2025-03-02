@@ -129,7 +129,19 @@ document.getElementById('btn-back-parent').addEventListener('click', () => {
   showScreen('screen-parent');
 });
 
-// --- 商品選択画面 ---
+// --- 商品タイル表示更新用の関数 ---
+// すでにカゴに追加されている商品があれば、タイルに「数量」と「合計金額」を表示
+function updateTileDisplay(product, tile) {
+  const cartItem = phoneCart.find(item => item.product.id === product.id);
+  if (cartItem) {
+    // 例: 「商品名」+ 改行 + 「2点 ¥2000」
+    tile.innerHTML = `${product.name}<br><span>${cartItem.quantity}点 ¥${(product.price * cartItem.quantity).toLocaleString()}</span>`;
+  } else {
+    tile.textContent = product.name;
+  }
+}
+
+// --- 商品選択画面 ---（修正後）
 async function loadProducts(subcatId) {
   try {
     const products = await getProducts(null, subcatId);
@@ -140,8 +152,8 @@ async function loadProducts(subcatId) {
     products.forEach(product => {
       const tile = document.createElement('div');
       tile.className = 'product-tile';
-      // 初回は商品名のみ表示
-      tile.textContent = product.name;
+      // 初回は、カゴに入っているかどうかを確認して表示を更新
+      updateTileDisplay(product, tile);
       tile.addEventListener('click', () => {
         addProductToCart(product);
       });
@@ -153,6 +165,22 @@ async function loadProducts(subcatId) {
     console.error('商品の読み込みに失敗:', error);
     alert('商品の読み込みに失敗しました');
   }
+}
+
+// --- カゴへの追加処理 ---（修正後）
+function addProductToCart(product) {
+  const existing = phoneCart.find(item => item.product.id === product.id);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    phoneCart.push({ product, quantity: 1 });
+  }
+  // 対応するタイルの表示を更新
+  const tile = productTileMap.get(product.id);
+  if (tile) {
+    updateTileDisplay(product, tile);
+  }
+  updateCartUI();
 }
 
 document.getElementById('btn-back-subcategory').addEventListener('click', () => {
