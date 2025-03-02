@@ -10,6 +10,8 @@ import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gsta
 let phoneCart = [];
 let selectedParentCategory = null;
 let selectedSubcategory = null;
+// 各商品タイルの参照を保持するMapを定義（これが不足していた可能性があります）
+const productTileMap = new Map();
 
 /**
  * 画面切替用の関数
