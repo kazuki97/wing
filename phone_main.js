@@ -10,16 +10,15 @@ import { signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gsta
 let phoneCart = [];
 let selectedParentCategory = null;
 let selectedSubcategory = null;
-// 各商品タイルの参照を保持するMapを定義（これが不足していた可能性があります）
+// 各商品タイルの参照を保持するMap
 const productTileMap = new Map();
 
 /**
  * タイル表示を更新する関数
+ * 商品がカートに入っていれば、タイルに「数量」と「合計金額」を表示する
  * @param {Object} product - 商品情報
  * @param {HTMLElement} tile - 対象のタイル要素
  */
-// --- 商品タイル表示更新用の関数 ---
-// すでにカゴに追加されている商品があれば、タイルに「数量」と「合計金額」を表示
 function updateTileDisplay(product, tile) {
   const cartItem = phoneCart.find(item => item.product.id === product.id);
   if (cartItem) {
@@ -40,7 +39,7 @@ function showScreen(screenId) {
 }
 
 // --- ログイン処理 ---
-// ログインフォームの表示・非表示を制御
+// ログインフォームの表示・非表示を制御（index_phone.html に追加済み）
 const loginFormDiv = document.getElementById('loginForm');
 const loginFormElement = document.getElementById('loginFormElement');
 
@@ -53,7 +52,6 @@ loginFormElement.addEventListener('submit', async (e) => {
     await signInWithEmailAndPassword(auth, email, password);
     // ログイン成功時はログインフォームを非表示
     loginFormDiv.style.display = 'none';
-    // ホーム画面へ遷移
     showScreen('screen-home');
   } catch (error) {
     alert('ログインに失敗しました: ' + error.message);
@@ -63,12 +61,9 @@ loginFormElement.addEventListener('submit', async (e) => {
 // 認証状態の監視
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // ログイン済みの場合はログインフォームを非表示に
     loginFormDiv.style.display = 'none';
-    // 初期画面としてホーム画面を表示
     showScreen('screen-home');
   } else {
-    // 未認証の場合はログインフォームを表示
     loginFormDiv.style.display = 'flex';
   }
 });
@@ -131,8 +126,7 @@ document.getElementById('btn-back-parent').addEventListener('click', () => {
   showScreen('screen-parent');
 });
 
-
-// --- 商品選択画面 ---（修正後）
+// --- 商品選択画面 ---
 async function loadProducts(subcatId) {
   try {
     const products = await getProducts(null, subcatId);
@@ -149,7 +143,6 @@ async function loadProducts(subcatId) {
         addProductToCart(product);
       });
       container.appendChild(tile);
-      // 保存しておく
       productTileMap.set(product.id, tile);
     });
   } catch (error) {
@@ -158,27 +151,12 @@ async function loadProducts(subcatId) {
   }
 }
 
-// --- カゴへの追加処理 ---（修正後）
-function addProductToCart(product) {
-  const existing = phoneCart.find(item => item.product.id === product.id);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    phoneCart.push({ product, quantity: 1 });
-  }
-  // 対応するタイルの表示を更新
-  const tile = productTileMap.get(product.id);
-  if (tile) {
-    updateTileDisplay(product, tile);
-  }
-  updateCartUI();
-}
-
 document.getElementById('btn-back-subcategory').addEventListener('click', () => {
   showScreen('screen-subcategory');
 });
 
 // --- カゴ（売上登録）画面 ---
+// カゴへの商品追加処理
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -194,6 +172,7 @@ function addProductToCart(product) {
   updateCartUI();
 }
 
+// カゴUI更新関数
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -280,7 +259,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     totalAmount: totalAmount - discountAmount,
     totalCost,
     profit: (totalAmount - totalCost - discountAmount) - shippingFee,
-    paymentMethodId: "", // 今回は支払い方法入力は不要（空欄）
+    paymentMethodId: "", // 今回は支払い方法入力は不要
     timestamp: new Date(saleDate).toISOString(),
     feeAmount: 0,
     netAmount: totalAmount - discountAmount,
@@ -308,6 +287,5 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
 
 // --- 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
-  // 初回はログインフォームが表示される状態
-  // 認証状態の監視により適宜ホーム画面が表示される
+  // 初回はログインフォームが表示される状態（認証状態の監視によりホーム画面へ遷移）
 });
