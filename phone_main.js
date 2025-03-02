@@ -95,7 +95,6 @@ document.getElementById('btn-sales-registration').addEventListener('click', () =
   loadParentCategories();
 });
 
-// 消耗品管理ボタン
 document.getElementById('btn-consumables').addEventListener('click', () => {
   showScreen('screen-consumables');
   loadConsumables();
@@ -194,15 +193,13 @@ function addProductToCart(product) {
   updateCartUI();
 }
 
-// カート一覧の更新
-// カートから指定商品を削除する関数
+// カートから指定の商品を削除する関数
 function removeFromCart(productId) {
-  // phoneCart から該当商品を削除
   phoneCart = phoneCart.filter(item => item.product.id !== productId);
   updateCartUI();
 }
 
-// カートUI更新関数（修正後）
+// カートUI更新関数（数量変更・削除ボタン付き）
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -210,23 +207,51 @@ function updateCartUI() {
   phoneCart.forEach(item => {
     const div = document.createElement('div');
     div.className = 'cart-item';
-    // 商品名、数量、合計金額の表示と共に削除ボタンを追加
-    div.innerHTML = `<span>${item.product.name} x ${item.quantity}</span>
-                     <span>¥${(item.product.price * item.quantity).toLocaleString()}</span>
-                     <button class="btn-delete" data-id="${item.product.id}">削除</button>`;
-    cartItemsDiv.appendChild(div);
-    total += item.product.price * item.quantity;
-  });
-  document.getElementById('cart-total').textContent = `合計: ¥${total}`;
-  updateViewCartButton();
 
-  // 各削除ボタンにクリックイベントを設定
-  document.querySelectorAll('.btn-delete').forEach(button => {
-    button.addEventListener('click', (e) => {
+    // 商品名表示
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = item.product.name;
+    div.appendChild(nameSpan);
+
+    // 数量入力フィールド
+    const quantityInput = document.createElement('input');
+    quantityInput.type = 'number';
+    quantityInput.min = 1;
+    quantityInput.value = item.quantity;
+    quantityInput.style.width = '60px';
+    quantityInput.addEventListener('change', (e) => {
+      const newQuantity = parseInt(e.target.value, 10);
+      if (isNaN(newQuantity) || newQuantity < 1) {
+        e.target.value = item.quantity;
+        return;
+      }
+      item.quantity = newQuantity;
+      updateCartUI();
+    });
+    div.appendChild(quantityInput);
+
+    // 金額表示
+    const priceSpan = document.createElement('span');
+    const itemTotal = item.product.price * item.quantity;
+    priceSpan.textContent = `¥${itemTotal.toLocaleString()}`;
+    div.appendChild(priceSpan);
+
+    // 削除ボタン
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = '削除';
+    deleteButton.className = 'btn-delete';
+    deleteButton.dataset.id = item.product.id;
+    deleteButton.addEventListener('click', (e) => {
       const productId = e.target.dataset.id;
       removeFromCart(productId);
     });
+    div.appendChild(deleteButton);
+
+    cartItemsDiv.appendChild(div);
+    total += itemTotal;
   });
+  document.getElementById('cart-total').textContent = `合計: ¥${total.toLocaleString()}`;
+  updateViewCartButton();
 }
 
 document.getElementById('btn-go-checkout').addEventListener('click', () => {
@@ -378,7 +403,6 @@ document.getElementById('editConsumableUsageForm').addEventListener('submit', as
   }
 });
 
-// --- 初期化 ---
 document.addEventListener('DOMContentLoaded', () => {
   // 初回はログインフォームが表示され、認証状態の監視によりホーム画面へ遷移
 });
