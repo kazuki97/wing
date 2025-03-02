@@ -2260,9 +2260,18 @@ document.getElementById('editPricingRuleForm').addEventListener('submit', async 
 });
 
 // **モーダルを閉じるボタンのイベントリスナーを追加**
-document.getElementById('closeEditPricingRuleModal').addEventListener('click', () => {
-  document.getElementById('editPricingRuleModal').style.display = 'none';
+document.addEventListener('DOMContentLoaded', () => {
+  const closeEditModal = document.getElementById('closeEditConsumableUsageModal');
+  if (closeEditModal) {
+    closeEditModal.addEventListener('click', () => {
+      const modal = document.getElementById('editConsumableUsageModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
 });
+
 
 // 単価設定セクションのサブカテゴリセレクトボックスのイベントリスナー
 document.getElementById('pricingSubcategorySelect').addEventListener('change', async () => {
