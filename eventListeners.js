@@ -1466,27 +1466,30 @@ async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
 
 
 
-// 各親カテゴリセレクトボックスのイベントリスナー
+// 各親カテゴリセレクトボックスのイベントリスナー（修正後）
 ['productParentCategorySelect', 'filterParentCategorySelect', 'inventoryParentCategorySelect', 'overallInventoryParentCategorySelect', 'pricingParentCategorySelect'].forEach((id) => {
-  document.getElementById(id).addEventListener('change', async () => {
-    const parentCategoryId = document.getElementById(id).value;
-    const subcategorySelectId = {
-      productParentCategorySelect: 'productSubcategorySelect',
-      filterParentCategorySelect: 'filterSubcategorySelect',
-      inventoryParentCategorySelect: 'inventorySubcategorySelect',
-      overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
-      pricingParentCategorySelect: 'pricingSubcategorySelect',
-    }[id];
-    await updateSubcategorySelect(parentCategoryId, subcategorySelectId);
-    // 追加: カテゴリ変更時に関連する商品や在庫情報を更新
-    if (id === 'inventoryParentCategorySelect') {
-      await displayInventoryProducts();
-    } else if (id === 'filterParentCategorySelect') {
-      await displayProducts();
-    } else if (id === 'pricingParentCategorySelect') {
-      await displayPricingRules();
-    }
-  });
+  const selectElement = document.getElementById(id);
+  if (selectElement) {  // 要素が存在する場合のみイベントリスナーを登録する
+    selectElement.addEventListener('change', async () => {
+      const parentCategoryId = selectElement.value; // 既に取得済みの要素を使用
+      const subcategorySelectId = {
+        productParentCategorySelect: 'productSubcategorySelect',
+        filterParentCategorySelect: 'filterSubcategorySelect',
+        inventoryParentCategorySelect: 'inventorySubcategorySelect',
+        overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
+        pricingParentCategorySelect: 'pricingSubcategorySelect',
+      }[id];
+      await updateSubcategorySelect(parentCategoryId, subcategorySelectId);
+      // 追加: カテゴリ変更時に関連する商品や在庫情報を更新
+      if (id === 'inventoryParentCategorySelect') {
+        await displayInventoryProducts();
+      } else if (id === 'filterParentCategorySelect') {
+        await displayProducts();
+      } else if (id === 'pricingParentCategorySelect') {
+        await displayPricingRules();
+      }
+    });
+  }
 });
 
 // イベントリスナーの重複登録を防ぐためのフラグ
