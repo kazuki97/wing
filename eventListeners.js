@@ -936,27 +936,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // ▼▼▼ 一括削除ボタンの処理 ▼▼▼
-document.getElementById('deleteSelectedTransactionsButton').addEventListener('click', async () => {
-  const selectedCheckboxes = document.querySelectorAll('.transaction-checkbox:checked');
-  if (selectedCheckboxes.length === 0) {
-    alert('削除する取引を選択してください。');
-    return;
-  }
-  if (!confirm(`選択された ${selectedCheckboxes.length} 件の取引を削除してよろしいですか？`)) {
-    return;
-  }
-  const transactionIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-  try {
-    for (const id of transactionIds) {
-      await deleteTransaction(id);
-    }
-    alert('選択された取引が削除されました。');
-    await displayTransactions();
-  } catch (error) {
-    console.error(error);
-    showError('取引の一括削除に失敗しました');
+document.addEventListener('DOMContentLoaded', () => {
+  const deleteSelectedTransactionsButton = document.getElementById('deleteSelectedTransactionsButton');
+  if (deleteSelectedTransactionsButton) {  // 対象要素が存在する場合のみ
+    deleteSelectedTransactionsButton.addEventListener('click', async () => {
+      const selectedCheckboxes = document.querySelectorAll('.transaction-checkbox:checked');
+      if (selectedCheckboxes.length === 0) {
+        alert('削除する取引を選択してください。');
+        return;
+      }
+      if (!confirm(`選択された ${selectedCheckboxes.length} 件の取引を削除してよろしいですか？`)) {
+        return;
+      }
+      const transactionIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+      try {
+        for (const id of transactionIds) {
+          await deleteTransaction(id);
+        }
+        alert('選択された取引が削除されました。');
+        await displayTransactions();
+      } catch (error) {
+        console.error(error);
+        showError('取引の一括削除に失敗しました');
+      }
+    });
   }
 });
+
 
 
 // 売上管理セクションの取引詳細を表示する関数（修正後）
