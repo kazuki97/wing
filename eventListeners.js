@@ -2220,31 +2220,35 @@ export async function displayOverallInventory() {
   }
 }
 
-// 単価ルール追加フォームのイベントリスナー
-document
-  .getElementById('addPricingRuleForm')
-  .addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const subcategoryId = document.getElementById('pricingSubcategorySelect').value;
-    const minQuantity = parseFloat(document.getElementById('minQuantity').value);
-    const maxQuantity = parseFloat(document.getElementById('maxQuantity').value);
-    const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+// 修正後：DOMContentLoaded イベント内で要素の存在を確認してからイベントリスナーを登録
+document.addEventListener('DOMContentLoaded', () => {
+  const addPricingRuleForm = document.getElementById('addPricingRuleForm');
+  if (addPricingRuleForm) {
+    addPricingRuleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const subcategoryId = document.getElementById('pricingSubcategorySelect').value;
+      const minQuantity = parseFloat(document.getElementById('minQuantity').value);
+      const maxQuantity = parseFloat(document.getElementById('maxQuantity').value);
+      const unitPrice = parseFloat(document.getElementById('unitPrice').value);
 
-    if (minQuantity > maxQuantity) {
-      showError('最小数量は最大数量以下である必要があります');
-      return;
-    }
+      if (minQuantity > maxQuantity) {
+        showError('最小数量は最大数量以下である必要があります');
+        return;
+      }
 
-    try {
-      await addPricingRule(subcategoryId, minQuantity, maxQuantity, unitPrice);
-      alert('単価ルールが追加されました');
-      await displayPricingRules();
-      document.getElementById('addPricingRuleForm').reset();
-    } catch (error) {
-      console.error(error);
-      showError('単価ルールの追加に失敗しました');
-    }
-  });
+      try {
+        await addPricingRule(subcategoryId, minQuantity, maxQuantity, unitPrice);
+        alert('単価ルールが追加されました');
+        await displayPricingRules();
+        addPricingRuleForm.reset();
+      } catch (error) {
+        console.error(error);
+        showError('単価ルールの追加に失敗しました');
+      }
+    });
+  }
+});
+
 
 // 単価ルールの表示
 async function displayPricingRules() {
