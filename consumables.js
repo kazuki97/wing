@@ -82,35 +82,38 @@ export async function getConsumableUsage(year, month) {
   }
 }
 
-// 消耗品の追加フォームイベントリスナー
+// DOMContentLoaded 後にイベント登録を実施（修正後）
 document.addEventListener('DOMContentLoaded', () => {
   const addConsumableForm = document.getElementById('addConsumableForm');
-  if (addConsumableForm) {
+  if (addConsumableForm) {  // 要素が存在する場合のみイベントリスナーを登録
     addConsumableForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-  const consumableName = document.getElementById('consumableName').value.trim();
-  const consumableCost = parseFloat(document.getElementById('consumableCost').value);
+      const consumableName = document.getElementById('consumableName').value.trim();
+      const consumableCost = parseFloat(document.getElementById('consumableCost').value);
 
-  if (!consumableName || isNaN(consumableCost) || consumableCost < 0) {
-    showError('消耗品名と有効な原価を入力してください');
-    return;
-  }
+      if (!consumableName || isNaN(consumableCost) || consumableCost < 0) {
+        showError('消耗品名と有効な原価を入力してください');
+        return;
+      }
 
-  try {
-    // Firestoreに新しい消耗品を追加
-    await addDoc(consumablesCollection, {
-      name: consumableName,
-      cost: consumableCost,
+      try {
+        // Firestoreに新しい消耗品を追加
+        await addDoc(consumablesCollection, {
+          name: consumableName,
+          cost: consumableCost,
+        });
+        console.log('消耗品が追加されました:', { consumableName, consumableCost });
+        addConsumableForm.reset();
+        await displayConsumables(); // 消耗品リストを再表示
+      } catch (error) {
+        console.error('消耗品の追加に失敗しました:', error);
+        showError('消耗品の追加に失敗しました');
+      }
     });
-    console.log('消耗品が追加されました:', { consumableName, consumableCost });
-    addConsumableForm.reset();
-    await displayConsumables(); // 消耗品リストを再表示
-  } catch (error) {
-    console.error('消耗品の追加に失敗しました:', error);
-    showError('消耗品の追加に失敗しました');
   }
 });
+
 
 // 消耗品一覧の表示
 export async function displayConsumables() {
