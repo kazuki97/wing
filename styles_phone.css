@@ -19,6 +19,13 @@ main {
   padding: 1rem;
 }
 
+/* フッターのスタイル */
+footer {
+  background-color: #f5f5f5;
+  text-align: center;
+  padding: 1rem;
+}
+
 /* 各画面（セクション）の表示制御 */
 .screen {
   display: none;
@@ -28,7 +35,7 @@ main {
   display: block;
 }
 
-/* ボタン */
+/* ボタンの基本スタイル */
 button {
   width: 100%;
   padding: 1rem;
@@ -72,6 +79,7 @@ button:hover {
 #cart-items .cart-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0.5rem 0;
   border-bottom: 1px solid #eee;
 }
@@ -168,8 +176,8 @@ button[id^="btn-back"]:hover {
   background-color: #d32f2f; /* さらに濃い赤 */
 }
 
-/* 売上登録（チェックアウト）画面の下部に「かごを見る」ボタンを固定表示 */
-#screen-checkout #btn-go-checkout {
+/* 売上登録プロセス中（商品選択画面）の下部に「かごを見る」ボタンを固定表示 */
+#screen-product #btn-go-checkout {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -177,14 +185,17 @@ button[id^="btn-back"]:hover {
   width: 100%;
   z-index: 100;
   padding: 1rem;
-  background-color: #007aff; /* ボタンの背景色（必要に応じて変更） */
+  background-color: #007aff;
   color: #fff;
   border: none;
   border-radius: 0;
   text-align: center;
 }
 
-/* チェックアウト画面の内容が固定ボタンに隠れないように下部に余白を追加 */
+/* 売上登録プロセス中の各画面の下部に余白を追加（内容が固定ボタンに隠れないように） */
+#screen-parent,
+#screen-subcategory,
+#screen-product,
 #screen-checkout {
-  padding-bottom: 70px; /* ボタンの高さ＋余白分、調整可能 */
+  padding-bottom: 80px; /* 必要に応じて調整 */
 }
