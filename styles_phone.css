@@ -150,3 +150,20 @@ button:hover {
   width: 90%;
   max-width: 400px;
 }
+
+/* 戻るボタン専用のスタイル（IDが "btn-back" で始まるボタン） */
+button[id^="btn-back"] {
+  background-color: #f44336; /* 鮮やかな赤 */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button[id^="btn-back"]:hover {
+  background-color: #d32f2f; /* さらに濃い赤 */
+}
