@@ -15,16 +15,22 @@ const productTileMap = new Map();
 
 /**
  * 画面切替用の関数
- * 全ての .screen を非表示にし、指定したIDの画面を表示する
  */
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+  // 売上登録プロセスに入っている場合、固定のかごボタンを表示、それ以外は非表示
+  const salesScreens = ['screen-parent', 'screen-subcategory', 'screen-product', 'screen-checkout'];
+  const fixedCart = document.getElementById('fixed-cart-button');
+  if (salesScreens.includes(screenId)) {
+    fixedCart.style.display = 'block';
+  } else {
+    fixedCart.style.display = 'none';
+  }
 }
 
 /**
  * 「かごを見る」ボタンのテキストを更新する関数
- * カート内の合計数量と合計金額を表示します
  */
 function updateViewCartButton() {
   let totalQuantity = 0;
@@ -71,13 +77,7 @@ onAuthStateChanged(auth, (user) => {
     loginFormDiv.style.display = 'none';
     document.getElementById('btn-logout').style.display = 'block';
     showScreen('screen-home');
-    // ログインユーザーが kazuma@icloud.com の場合、消耗品管理ボタンを隠す
-    if (user.email === "kazuma@icloud.com") {
-      const btnCons = document.getElementById('btn-consumables');
-      if (btnCons) {
-        btnCons.style.display = 'none';
-      }
-    }
+    // 必要に応じて特定ユーザー向けの制御もここで実施
   } else {
     loginFormDiv.style.display = 'flex';
     document.getElementById('btn-logout').style.display = 'none';
@@ -102,7 +102,6 @@ document.getElementById('btn-sales-registration').addEventListener('click', () =
   loadParentCategories();
 });
 
-// ※ 消耗品管理ボタンはホーム画面にありますが、上記 onAuthStateChanged で条件に応じて非表示になります
 document.getElementById('btn-consumables').addEventListener('click', () => {
   showScreen('screen-consumables');
   loadConsumables();
@@ -261,6 +260,9 @@ function updateCartUI() {
   updateViewCartButton();
 }
 
+// --- 固定表示の「かごを見る」ボタン更新は updateViewCartButton() で行う ---
+
+// 売上登録画面への遷移（固定ボタンは常に表示）
 document.getElementById('btn-go-checkout').addEventListener('click', () => {
   showScreen('screen-checkout');
   updateCartUI();
