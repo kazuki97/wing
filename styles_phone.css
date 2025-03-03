@@ -161,7 +161,7 @@ button:hover {
 
 /* 戻るボタン専用のスタイル（IDが "btn-back" で始まるボタン） */
 button[id^="btn-back"] {
-  background-color: #f44336; /* 鮮やかな赤 */
+  background-color: #f44336;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -173,11 +173,19 @@ button[id^="btn-back"] {
 }
 
 button[id^="btn-back"]:hover {
-  background-color: #d32f2f; /* さらに濃い赤 */
+  background-color: #d32f2f;
 }
 
-/* 売上登録プロセス中（商品選択画面）の下部に「かごを見る」ボタンを固定表示 */
-#screen-product #btn-go-checkout {
+/* 売上登録プロセス中の各画面に下部余白を追加 */
+#screen-parent,
+#screen-subcategory,
+#screen-product,
+#screen-checkout {
+  padding-bottom: 80px;
+}
+
+/* 売上登録プロセスに入った後、かごを見るボタンを常に画面下部に固定表示する */
+#btn-go-checkout {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -190,12 +198,4 @@ button[id^="btn-back"]:hover {
   border: none;
   border-radius: 0;
   text-align: center;
-}
-
-/* 売上登録プロセス中の各画面の下部に余白を追加（内容が固定ボタンに隠れないように） */
-#screen-parent,
-#screen-subcategory,
-#screen-product,
-#screen-checkout {
-  padding-bottom: 80px; /* 必要に応じて調整 */
 }
