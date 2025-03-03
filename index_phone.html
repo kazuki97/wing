@@ -19,9 +19,10 @@
     </form>
   </div>
 
-   <header>
+  <header>
     <h1>エアレジ風 売上登録</h1>
   </header>
+
   <main>
     <!-- ホーム画面 -->
     <section id="screen-home" class="screen active">
@@ -32,85 +33,74 @@
     <!-- 親カテゴリ選択画面 -->
     <section id="screen-parent" class="screen">
       <h2>親カテゴリを選択</h2>
-      <div id="parent-category-list">
-        <!-- 親カテゴリが動的に表示されます -->
-      </div>
+      <div id="parent-category-list"></div>
       <button id="btn-back-home">戻る</button>
     </section>
 
     <!-- サブカテゴリ選択画面 -->
     <section id="screen-subcategory" class="screen">
       <h2>サブカテゴリを選択</h2>
-      <div id="subcategory-list">
-        <!-- サブカテゴリが動的に表示されます -->
-      </div>
+      <div id="subcategory-list"></div>
       <button id="btn-back-parent">戻る</button>
     </section>
 
     <!-- 商品選択画面 -->
     <section id="screen-product" class="screen">
       <h2>商品を選択</h2>
-      <div id="product-tiles">
-        <!-- 商品タイルが動的に生成されます -->
-      </div>
+      <div id="product-tiles"></div>
       <button id="btn-back-subcategory">戻る</button>
-      <!-- かごを見るボタン。ここにカートの合計情報が表示される -->
-      <button id="btn-go-checkout">カゴを見る</button>
     </section>
 
     <!-- カゴ（売上登録）画面 -->
     <section id="screen-checkout" class="screen">
       <h2>カゴ（注文内容）</h2>
-      <div id="cart-items">
-        <!-- カゴ内の商品が表示されます -->
-      </div>
+      <div id="cart-items"></div>
       <div id="cart-total">合計: ¥0</div>
       
-     <!-- 売上登録用入力フォーム -->
-<div id="checkout-form">
-  <label for="saleDate">販売日:</label>
-  <input type="date" id="saleDate" required>
-  
-  <label for="salesMethodSelect">販売方法:</label>
-  <select id="salesMethodSelect" required>
-    <option value="">選択してください</option>
-    <option value="店舗">店舗</option>
-    <option value="EC">EC</option>
-    <option value="Paypayフリマ">Paypayフリマ</option>
-  </select>
-  
-  <label for="paymentMethodSelect">支払方法:</label>
-  <select id="paymentMethodSelect" required>
-    <option value="">選択してください</option>
-    <option value="現金">現金</option>
-    <option value="クレジットカード">クレジットカード</option>
-    <option value="電子マネー">電子マネー</option>
-  </select>
-  
-  <label for="shippingMethodSelect">発送方法:</label>
-  <select id="shippingMethodSelect" required>
-    <option value="">選択してください</option>
-    <option value="クリックポスト">クリックポスト (185円)</option>
-    <option value="ゆうパケットポスト">ゆうパケットポスト (200円)</option>
-    <option value="ヤマト運輸">ヤマト運輸</option>
-  </select>
-  <div id="shippingFeeInputContainer" style="display:none;">
-    <label for="shippingFeeInput">送料 (円):</label>
-    <input type="number" id="shippingFeeInput" step="any" min="0" value="0">
-  </div>
-  
-  <label for="discountAmount">割引額:</label>
-  <input type="number" id="discountAmount" step="any" min="0" value="0">
-  <label for="discountReason">割引理由:</label>
-  <select id="discountReason">
-    <option value="">選択してください</option>
-    <option value="クーポン">クーポン</option>
-    <option value="常連">常連</option>
-    <option value="設定ミス">設定ミス</option>
-    <option value="特別割引">特別割引</option>
-  </select>
-</div>
-
+      <!-- 売上登録用入力フォーム -->
+      <div id="checkout-form">
+        <label for="saleDate">販売日:</label>
+        <input type="date" id="saleDate" required>
+        
+        <label for="salesMethodSelect">販売方法:</label>
+        <select id="salesMethodSelect" required>
+          <option value="">選択してください</option>
+          <option value="店舗">店舗</option>
+          <option value="EC">EC</option>
+          <option value="Paypayフリマ">Paypayフリマ</option>
+        </select>
+        
+        <label for="paymentMethodSelect">支払方法:</label>
+        <select id="paymentMethodSelect" required>
+          <option value="">選択してください</option>
+          <option value="現金">現金</option>
+          <option value="クレジットカード">クレジットカード</option>
+          <option value="電子マネー">電子マネー</option>
+        </select>
+        
+        <label for="shippingMethodSelect">発送方法:</label>
+        <select id="shippingMethodSelect" required>
+          <option value="">選択してください</option>
+          <option value="クリックポスト">クリックポスト (185円)</option>
+          <option value="ゆうパケットポスト">ゆうパケットポスト (200円)</option>
+          <option value="ヤマト運輸">ヤマト運輸</option>
+        </select>
+        <div id="shippingFeeInputContainer" style="display:none;">
+          <label for="shippingFeeInput">送料 (円):</label>
+          <input type="number" id="shippingFeeInput" step="any" min="0" value="0">
+        </div>
+        
+        <label for="discountAmount">割引額:</label>
+        <input type="number" id="discountAmount" step="any" min="0" value="0">
+        <label for="discountReason">割引理由:</label>
+        <select id="discountReason">
+          <option value="">選択してください</option>
+          <option value="クーポン">クーポン</option>
+          <option value="常連">常連</option>
+          <option value="設定ミス">設定ミス</option>
+          <option value="特別割引">特別割引</option>
+        </select>
+      </div>
       
       <button id="btn-back-product">戻る</button>
       <button id="btn-checkout">売上登録完了</button>
@@ -159,9 +149,16 @@
       </div>
     </div>
   </main>
-<footer>
-  <button id="btn-logout" style="display:none;">ログアウト</button>
-</footer>
+
+  <!-- 固定表示の「かごを見る」ボタン（売上登録プロセス中のみ表示する） -->
+  <div id="fixed-cart-button">
+    <button id="btn-go-checkout">カゴを見る</button>
+  </div>
+
+  <footer>
+    <button id="btn-logout" style="display:none;">ログアウト</button>
+  </footer>
+
   <script type="module" src="phone_main.js"></script>
 </body>
 </html>
