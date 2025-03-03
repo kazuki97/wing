@@ -184,14 +184,18 @@ button[id^="btn-back"]:hover {
   padding-bottom: 80px;
 }
 
-/* 売上登録プロセスに入った後、かごを見るボタンを常に画面下部に固定表示する */
-#btn-go-checkout {
+/* 固定表示の「かごを見る」ボタン */
+#fixed-cart-button {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   width: 100%;
   z-index: 100;
+}
+
+#fixed-cart-button button {
+  width: 100%;
   padding: 1rem;
   background-color: #007aff;
   color: #fff;
