@@ -167,3 +167,24 @@ button[id^="btn-back"] {
 button[id^="btn-back"]:hover {
   background-color: #d32f2f; /* さらに濃い赤 */
 }
+
+/* 売上登録（チェックアウト）画面の下部に「かごを見る」ボタンを固定表示 */
+#screen-checkout #btn-go-checkout {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 1rem;
+  background-color: #007aff; /* ボタンの背景色（必要に応じて変更） */
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  text-align: center;
+}
+
+/* チェックアウト画面の内容が固定ボタンに隠れないように下部に余白を追加 */
+#screen-checkout {
+  padding-bottom: 70px; /* ボタンの高さ＋余白分、調整可能 */
+}
