@@ -1,10 +1,16 @@
 // phone_main.js - iPhone用エアレジ風UIのロジック（ログイン機能・消耗品管理含む）
 
 import { getParentCategories, getSubcategories } from './categories.js';
-import { getProducts } from './products.js';
+import { getProducts, updateProduct } from './products.js';
 import { addTransaction } from './transactions.js';
+import { updateOverallInventory } from './inventoryManagement.js';
+import { getUnitPrice } from './pricing.js';
 import { auth } from './db.js';
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
+import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 import { getConsumables } from './consumables.js'; // 消耗品取得用
 
 // --- グローバル変数 ---
@@ -15,11 +21,13 @@ const productTileMap = new Map();
 
 /**
  * 画面切替用の関数
+ * 売上登録プロセス（screen-parent, screen-subcategory, screen-product, screen-checkout）の場合、
+ * 固定のかごを見るボタンを表示する。
  */
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
-  // 売上登録プロセスに入っている場合、固定のかごボタンを表示、それ以外は非表示
+  // 売上登録プロセスに入った場合は固定ボタンを表示
   const salesScreens = ['screen-parent', 'screen-subcategory', 'screen-product', 'screen-checkout'];
   const fixedCart = document.getElementById('fixed-cart-button');
   if (salesScreens.includes(screenId)) {
@@ -31,13 +39,15 @@ function showScreen(screenId) {
 
 /**
  * 「かごを見る」ボタンのテキストを更新する関数
+ * カート内の合計数量と合計金額（単価×数量×サイズ）を表示する
  */
 function updateViewCartButton() {
   let totalQuantity = 0;
   let totalPrice = 0;
   phoneCart.forEach(item => {
+    const size = item.product.size || 1;
     totalQuantity += item.quantity;
-    totalPrice += item.product.price * item.quantity;
+    totalPrice += item.product.price * item.quantity * size;
   });
   const btn = document.getElementById('btn-go-checkout');
   if (totalQuantity > 0) {
@@ -77,7 +87,6 @@ onAuthStateChanged(auth, (user) => {
     loginFormDiv.style.display = 'none';
     document.getElementById('btn-logout').style.display = 'block';
     showScreen('screen-home');
-    // 必要に応じて特定ユーザー向けの制御もここで実施
   } else {
     loginFormDiv.style.display = 'flex';
     document.getElementById('btn-logout').style.display = 'none';
@@ -187,7 +196,7 @@ document.getElementById('btn-back-subcategory').addEventListener('click', () => 
 });
 
 // --- カゴ（売上登録）画面 ---
-// 商品をカートに追加する関数
+// 商品をカートに追加する関数（数量加算）
 function addProductToCart(product) {
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
@@ -206,11 +215,13 @@ function removeFromCart(productId) {
 }
 
 // カートUI更新関数（数量変更・削除ボタン付き）
+// 各商品の合計金額は「単価×数量×サイズ」で計算
 function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
   let total = 0;
   phoneCart.forEach(item => {
+    const size = item.product.size || 1;
     const div = document.createElement('div');
     div.className = 'cart-item';
 
@@ -236,9 +247,9 @@ function updateCartUI() {
     });
     div.appendChild(quantityInput);
 
-    // 金額表示
+    // 金額表示（単価×数量×サイズ）
     const priceSpan = document.createElement('span');
-    const itemTotal = item.product.price * item.quantity;
+    const itemTotal = item.product.price * item.quantity * size;
     priceSpan.textContent = `¥${itemTotal.toLocaleString()}`;
     div.appendChild(priceSpan);
 
@@ -259,8 +270,6 @@ function updateCartUI() {
   document.getElementById('cart-total').textContent = `合計: ¥${total.toLocaleString()}`;
   updateViewCartButton();
 }
-
-// --- 固定表示の「かごを見る」ボタン更新は updateViewCartButton() で行う ---
 
 // 売上登録画面への遷移（固定ボタンは常に表示）
 document.getElementById('btn-go-checkout').addEventListener('click', () => {
@@ -292,27 +301,38 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   let totalAmount = 0;
   let totalCost = 0;
   let items = [];
-  phoneCart.forEach(item => {
-    const { product, quantity } = item;
-    totalAmount += product.price * quantity;
-    totalCost += product.cost * quantity;
+  
+  // 各カート商品の計算（単価×数量×サイズ）と、PC版と同様の単価ルールを反映
+  for (const item of phoneCart) {
+    const product = item.product;
+    const quantity = item.quantity;
+    const size = product.size || 1;
+    const requiredQuantity = size * quantity;
+    // PC版と同じ計算を行うために getUnitPrice() を呼び出す
+    const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
+    const subtotal = unitPrice * requiredQuantity;
+    totalAmount += subtotal;
+    const cost = product.cost * requiredQuantity;
+    totalCost += cost;
     items.push({
       productId: product.id,
       productName: product.name,
       quantity: quantity,
-      unitPrice: product.price,
+      unitPrice: unitPrice,
       cost: product.cost,
-      subtotal: product.price * quantity,
-      profit: (product.price - product.cost) * quantity,
-      size: product.size || 1
+      subtotal: subtotal,
+      profit: subtotal - cost,
+      size: size,
+      subcategoryId: product.subcategoryId,
     });
-  });
+  }
   
   const saleDate = document.getElementById('saleDate').value;
   if (!saleDate) {
     alert('販売日を入力してください');
     return;
   }
+  const saleTimestamp = new Date(saleDate + "T00:00");
   
   // --- 販売方法と支払方法の選択 ---
   const salesMethod = document.getElementById('salesMethodSelect').value;
@@ -341,24 +361,42 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
   const discountReason = document.getElementById('discountReason').value;
   
+  // 手数料はここでは0とする
+  const feeAmount = 0;
+  const netAmount = totalAmount - feeAmount;
+  const profitCalculated = netAmount - totalCost - shippingFee;
+  
   const transactionData = {
-    items,
+    timestamp: saleTimestamp.toISOString(),
     totalAmount: totalAmount - discountAmount,
-    totalCost,
-    profit: (totalAmount - totalCost - discountAmount) - shippingFee,
+    totalCost: totalCost,
+    feeAmount: feeAmount,
+    netAmount: netAmount,
     paymentMethodId: paymentMethod,
     salesMethod: salesMethod,
-    timestamp: new Date(saleDate).toISOString(),
-    feeAmount: 0,
-    netAmount: totalAmount - discountAmount,
-    discount: {
-      amount: discountAmount,
-      reason: discountReason
-    },
     shippingMethod: shippingMethod,
     shippingFee: shippingFee,
+    items: items,
     manuallyAdded: false,
+    cost: totalCost,
+    profit: profitCalculated,
+    discount: {
+      amount: discountAmount,
+      reason: discountReason,
+    },
   };
+  
+  // 在庫更新：各商品について、在庫数量を減少させ、全体在庫を更新する
+  for (const item of phoneCart) {
+    const product = item.product;
+    const quantity = item.quantity;
+    const size = product.size || 1;
+    const requiredQuantity = size * quantity;
+    // 商品ごとの在庫は販売数量分だけ減少（製品管理の在庫は「個数」で管理されている前提）
+    await updateProduct(product.id, { quantity: product.quantity - quantity });
+    // 全体在庫は「サイズ×数量」分を減少
+    await updateOverallInventory(product.subcategoryId, -requiredQuantity);
+  }
   
   try {
     const transactionId = await addTransaction(transactionData);
