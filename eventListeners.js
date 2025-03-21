@@ -864,22 +864,23 @@ export async function displayTransactions(filter = {}) {
 
       // チェックボックスを先頭セルに追加
        row.innerHTML = `
-      <td><input type="checkbox" class="transaction-checkbox" value="${transaction.id}" /></td>
-      <td>${transaction.id}</td>
-      <td>${formattedTimestamp}</td>
-      <td>${paymentMethodName}</td>
-      <td>${transaction.salesMethod ? transaction.salesMethod : ''}</td>
-      <td>${productNames}</td>
-      <td>${totalQuantity}</td>
-      <td>¥${Math.round(netAmount)}</td>
-      <td>¥${Math.round(feeAmount)}</td>
-      <td>¥${Math.round(totalCost)}</td>
-      <td>¥${Math.round(profit)}</td>
-      <td>
-        <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
-        <button class="edit-transaction" data-id="${transaction.id}">編集</button>
-      </td>
-    `;
+  <td><input type="checkbox" class="transaction-checkbox" value="${transaction.id}" /></td>
+  <td>${transaction.id}</td>
+  <td>${formattedTimestamp}</td>
+  <td>${paymentMethodName}</td>
+  <td>${transaction.salesMethod || ''}</td>
+  <td>${productNames}</td>
+  <td>${totalQuantity}</td>
+  <td>¥${Math.round(netAmount)}</td>
+  <td>¥${Math.round(feeAmount)}</td>
+  <td>¥${Math.round(totalCost)}</td>
+  <td>¥${Math.round(profit)}</td>
+  <td>¥${transaction.discount?.amount ? Math.round(transaction.discount.amount) : '0'}</td>
+  <td>
+    <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
+    <button class="edit-transaction" data-id="${transaction.id}">編集</button>
+  </td>
+`;
     transactionList.appendChild(row);
     }
 
