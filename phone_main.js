@@ -338,6 +338,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
     const subtotal = unitPrice * requiredQuantity;
     totalAmount += subtotal;
+    // 原価は数量×サイズで計算
     const cost = product.cost * requiredQuantity;
     totalCost += cost;
     items.push({
@@ -345,7 +346,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
       productName: product.name,
       quantity: quantity,
       unitPrice: unitPrice,
-      cost: product.cost,
+      cost: cost, // 修正: 原価にサイズ×数量した値
       subtotal: subtotal,
       profit: subtotal - cost,
       size: size,
