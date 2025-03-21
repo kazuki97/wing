@@ -41,23 +41,104 @@ function showScreen(screenId) {
 }
 
 // -------------------------
-// 「かごを見る」ボタン更新関数
-// カート内の合計数量と合計金額（単価×数量×サイズ）を表示する
+// 「かごを見る」ボタン更新関数（非同期処理に対応）
+// カート内の合計数量と合計金額（getUnitPrice を用いて計算）を表示する
 // -------------------------
-function updateViewCartButton() {
+async function updateViewCartButton() {
   let totalQuantity = 0;
   let totalPrice = 0;
-  phoneCart.forEach(item => {
+  for (const item of phoneCart) {
     const size = item.product.size || 1;
+    const requiredQuantity = size * item.quantity;
+    const unitPrice = await getUnitPrice(item.product.subcategoryId, requiredQuantity, item.product.price);
     totalQuantity += item.quantity;
-    totalPrice += item.product.price * item.quantity * size;
-  });
+    totalPrice += unitPrice * requiredQuantity;
+  }
   const btn = document.getElementById('btn-go-checkout');
   if (totalQuantity > 0) {
     btn.textContent = `${totalQuantity}点 ¥${totalPrice.toLocaleString()}`;
   } else {
     btn.textContent = 'カゴを見る';
   }
+}
+
+// -------------------------
+// カゴ内更新関数（非同期処理に対応）
+// -------------------------
+async function updateCartUI() {
+  const cartItemsDiv = document.getElementById('cart-items');
+  cartItemsDiv.innerHTML = '';
+  let total = 0;
+  for (const item of phoneCart) {
+    const size = item.product.size || 1;
+    const requiredQuantity = size * item.quantity;
+    const unitPrice = await getUnitPrice(item.product.subcategoryId, requiredQuantity, item.product.price);
+    const itemTotal = unitPrice * requiredQuantity;
+    total += itemTotal;
+
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+
+    // 商品名表示
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = item.product.name;
+    div.appendChild(nameSpan);
+
+    // 数量入力フィールド
+    const quantityInput = document.createElement('input');
+    quantityInput.type = 'number';
+    quantityInput.min = 1;
+    quantityInput.value = item.quantity;
+    quantityInput.style.width = '60px';
+    quantityInput.addEventListener('change', async (e) => {
+      const newQuantity = parseInt(e.target.value, 10);
+      if (isNaN(newQuantity) || newQuantity < 1) {
+        e.target.value = item.quantity;
+        return;
+      }
+      item.quantity = newQuantity;
+      await updateCartUI();
+    });
+    div.appendChild(quantityInput);
+
+    // 金額表示（単価×数量×サイズ、getUnitPriceの結果を反映）
+    const priceSpan = document.createElement('span');
+    priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unitPrice.toLocaleString()})`;
+    div.appendChild(priceSpan);
+
+    // 削除ボタン
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = '削除';
+    deleteButton.className = 'btn-delete';
+    deleteButton.dataset.id = item.product.id;
+    deleteButton.addEventListener('click', (e) => {
+      const productId = e.target.dataset.id;
+      removeFromCart(productId);
+    });
+    div.appendChild(deleteButton);
+
+    cartItemsDiv.appendChild(div);
+  }
+  document.getElementById('cart-total').textContent = `合計: ¥${total.toLocaleString()}`;
+  await updateViewCartButton();
+}
+
+// -------------------------
+// 商品追加関数（非同期処理に対応）
+// -------------------------
+async function addProductToCart(product) {
+  const existing = phoneCart.find(item => item.product.id === product.id);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    phoneCart.push({ product, quantity: 1 });
+  }
+  await updateCartUI();
+}
+
+async function removeFromCart(productId) {
+  phoneCart = phoneCart.filter(item => item.product.id !== productId);
+  await updateCartUI();
 }
 
 // -------------------------
@@ -216,81 +297,9 @@ document.getElementById('btn-back-subcategory').addEventListener('click', () => 
 // -------------------------
 // カゴ（売上登録）画面
 // -------------------------
-function addProductToCart(product) {
-  const existing = phoneCart.find(item => item.product.id === product.id);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    phoneCart.push({ product, quantity: 1 });
-  }
-  updateViewCartButton();
-  updateCartUI();
-}
-
-function removeFromCart(productId) {
-  phoneCart = phoneCart.filter(item => item.product.id !== productId);
-  updateCartUI();
-}
-
-function updateCartUI() {
-  const cartItemsDiv = document.getElementById('cart-items');
-  cartItemsDiv.innerHTML = '';
-  let total = 0;
-  phoneCart.forEach(item => {
-    const size = item.product.size || 1;
-    const div = document.createElement('div');
-    div.className = 'cart-item';
-
-    // 商品名表示
-    const nameSpan = document.createElement('span');
-    nameSpan.textContent = item.product.name;
-    div.appendChild(nameSpan);
-
-    // 数量入力フィールド
-    const quantityInput = document.createElement('input');
-    quantityInput.type = 'number';
-    quantityInput.min = 1;
-    quantityInput.value = item.quantity;
-    quantityInput.style.width = '60px';
-    quantityInput.addEventListener('change', (e) => {
-      const newQuantity = parseInt(e.target.value, 10);
-      if (isNaN(newQuantity) || newQuantity < 1) {
-        e.target.value = item.quantity;
-        return;
-      }
-      item.quantity = newQuantity;
-      updateCartUI();
-    });
-    div.appendChild(quantityInput);
-
-    // 金額表示（単価×数量×サイズ）
-    const priceSpan = document.createElement('span');
-    const itemTotal = item.product.price * item.quantity * size;
-    priceSpan.textContent = `¥${itemTotal.toLocaleString()}`;
-    div.appendChild(priceSpan);
-
-    // 削除ボタン
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = '削除';
-    deleteButton.className = 'btn-delete';
-    deleteButton.dataset.id = item.product.id;
-    deleteButton.addEventListener('click', (e) => {
-      const productId = e.target.dataset.id;
-      removeFromCart(productId);
-    });
-    div.appendChild(deleteButton);
-
-    cartItemsDiv.appendChild(div);
-    total += itemTotal;
-  });
-  document.getElementById('cart-total').textContent = `合計: ¥${total.toLocaleString()}`;
-  updateViewCartButton();
-}
-
-// 売上登録画面への遷移（固定の「かごを見る」ボタンは常に表示される）
-document.getElementById('btn-go-checkout').addEventListener('click', () => {
+document.getElementById('btn-go-checkout').addEventListener('click', async () => {
   showScreen('screen-checkout');
-  updateCartUI();
+  await updateCartUI();
 });
 
 document.getElementById('btn-back-product').addEventListener('click', () => {
@@ -417,7 +426,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     const transactionId = await addTransaction(transactionData);
     alert('売上登録が完了しました。取引ID: ' + transactionId);
     phoneCart = [];
-    updateCartUI();
+    await updateCartUI();
     showScreen('screen-home');
   } catch (error) {
     console.error('売上登録処理に失敗:', error);
@@ -503,7 +512,6 @@ document.getElementById('editConsumableUsageForm').addEventListener('submit', as
 
 // -------------------------
 // 以下、PC版と同様のその他のイベントリスナー（取引編集・在庫管理など）
-// （ここは必要に応じてPC版と同じロジックを流用）
 // ※ 以下、割愛せず全体が続く部分となりますが、今回は支払方法の不具合解消が主な修正箇所なので
 // PC版と同様のロジックは eventListeners.js 側にあるため、ここでの変更は支払い方法の更新処理の追加に留めています。
 
