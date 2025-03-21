@@ -488,43 +488,49 @@
 <!-- ▲▲▲ -->
 
       <!-- 取引の詳細表示エリア -->
-      <div id="transactionDetails" style="display: none;">
-        <h2>取引詳細</h2>
-        <p>取引ID: <span id="detailTransactionId"></span></p>
-        <p>日時: <span id="detailTimestamp"></span></p>
-        <p>支払い方法: <span id="detailPaymentMethod"></span></p>
-        <p>販売方法: <span id="detailSalesMethod"></span></p>
-        <p>発送方法: <span id="detailShippingMethod"></span></p>
-        <p>送料: ¥<span id="detailShippingFee"></span></p>
-        <p>手数料: ¥<span id="detailFeeAmount"></span></p>
-        <p>純売上金額: ¥<span id="detailNetAmount"></span></p>
-        <p>総原価: ¥<span id="detailTotalCost"></span></p>
-        <p>総利益: ¥<span id="detailTotalProfit"></span></p>
-        <!-- 返品情報 -->
-        <p id="returnInfo"></p>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>商品名</th>
-                <th>数量</th>
-                <th>サイズ</th>
-                <th>単価</th>
-                <th>売上金額</th>
-                <th>原価</th>
-                <th>手数料</th>
-                <th>利益</th>
-              </tr>
-            </thead>
-            <tbody id="detailProductList">
-              <!-- 商品詳細がここに表示されます -->
-            </tbody>
-          </table>
-        </div>
-        <button id="returnTransactionButton">返品</button>
-        <button id="deleteTransactionButton">取引を削除する</button>
-        <button id="closeTransactionDetails">閉じる</button>
-      </div>
+<div id="transactionDetails" style="display: none;">
+  <h2>取引詳細</h2>
+  <p>取引ID: <span id="detailTransactionId"></span></p>
+  <p>日時: <span id="detailTimestamp"></span></p>
+  <p>支払い方法: <span id="detailPaymentMethod"></span></p>
+  <p>販売方法: <span id="detailSalesMethod"></span></p>
+  <p>発送方法: <span id="detailShippingMethod"></span></p>
+  <p>送料: ¥<span id="detailShippingFee"></span></p>
+  <p>手数料: ¥<span id="detailFeeAmount"></span></p>
+  <p>純売上金額: ¥<span id="detailNetAmount"></span></p>
+  <p>総原価: ¥<span id="detailTotalCost"></span></p>
+  <p>総利益: ¥<span id="detailTotalProfit"></span></p>
+
+  <!-- ▼▼▼【割引情報表示エリアをここに追加】▼▼▼ -->
+  <div id="discountInfoContainer"></div>
+  <!-- ▲▲▲ 割引情報表示エリア追加終了 ▲▲▲ -->
+
+  <!-- 返品情報 -->
+  <p id="returnInfo"></p>
+
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>商品名</th>
+          <th>数量</th>
+          <th>サイズ</th>
+          <th>単価</th>
+          <th>売上金額</th>
+          <th>原価</th>
+          <th>手数料</th>
+          <th>利益</th>
+        </tr>
+      </thead>
+      <tbody id="detailProductList">
+        <!-- 商品詳細がここに表示されます -->
+      </tbody>
+    </table>
+  </div>
+  <button id="returnTransactionButton">返品</button>
+  <button id="deleteTransactionButton">取引を削除する</button>
+  <button id="closeTransactionDetails">閉じる</button>
+</div>
     </section>
 
     <!-- 単価設定 -->
