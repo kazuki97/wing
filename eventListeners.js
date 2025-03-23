@@ -856,14 +856,13 @@ export async function displayTransactions(filter = {}) {
       }
 
       const netAmount = parseFloat(transaction.netAmount) || 0;
-      const feeAmount = parseFloat(transaction.feeAmount) || 0;
-      const profit =
-        transaction.profit !== undefined
-          ? parseFloat(transaction.profit) || 0
-          : netAmount - totalCost - feeAmount;
+const feeAmount = parseFloat(transaction.feeAmount) || 0;
+const discountAmount = transaction.discount?.amount || 0;  // ←追加
+const adjustedNetAmount = netAmount - discountAmount;      // ←追加（割引適用後の純売上）
+const adjustedProfit = (transaction.profit !== undefined ? parseFloat(transaction.profit) : netAmount - totalCost - feeAmount) - discountAmount; // ←修正
 
-      // チェックボックスを先頭セルに追加
-       row.innerHTML = `
+// チェックボックスを先頭セルに追加
+row.innerHTML = `
   <td><input type="checkbox" class="transaction-checkbox" value="${transaction.id}" /></td>
   <td>${transaction.id}</td>
   <td>${formattedTimestamp}</td>
@@ -871,16 +870,17 @@ export async function displayTransactions(filter = {}) {
   <td>${transaction.salesMethod || ''}</td>
   <td>${productNames}</td>
   <td>${totalQuantity}</td>
-  <td>¥${Math.round(netAmount)}</td>
+  <td>¥${Math.round(adjustedNetAmount)}</td> <!-- 割引後の売上 -->
   <td>¥${Math.round(feeAmount)}</td>
   <td>¥${Math.round(totalCost)}</td>
-  <td>¥${Math.round(profit)}</td>
-  <td>¥${transaction.discount?.amount ? Math.round(transaction.discount.amount) : '0'}</td>
+  <td>¥${Math.round(adjustedProfit)}</td>   <!-- 割引後の利益 -->
+  <td>¥${Math.round(discountAmount)}</td>
   <td>
     <button class="view-transaction-details" data-id="${transaction.id}">詳細</button>
     <button class="edit-transaction" data-id="${transaction.id}">編集</button>
   </td>
 `;
+
     transactionList.appendChild(row);
     }
 
