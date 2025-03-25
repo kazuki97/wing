@@ -715,6 +715,49 @@
           </div>
         </div>
 
+<!-- 入荷セクション（新規追加） -->
+  <section id="receiving" class="content-section" style="display: none;" data-requires-auth="true">
+    <h1>入荷セクション</h1>
+    <!-- サブカテゴリ選択 -->
+    <div>
+      <label for="receivingSubcategorySelect">サブカテゴリを選択:</label>
+      <select id="receivingSubcategorySelect" required>
+        <option value="">サブカテゴリを選択</option>
+        <!-- ※サブカテゴリは既存のカテゴリ更新処理と連携して動的に埋める -->
+      </select>
+      <button id="loadReceivingProducts">商品一覧を読み込む</button>
+    </div>
+    
+    <!-- 商品一覧テーブル -->
+    <div class="table-responsive">
+      <table id="receivingProductList">
+        <thead>
+          <tr>
+            <th>商品名</th>
+            <th>現在の数量</th>
+            <th>入荷数量</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 選択したサブカテゴリの商品一覧がここに表示されます -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- 全体在庫更新エリア -->
+    <div>
+      <h2>全体在庫更新</h2>
+      <label for="receivingOverallQuantity">全体在庫追加数量:</label>
+      <input type="number" id="receivingOverallQuantity" placeholder="追加数量" required />
+      <label for="receivingOverallReason">理由:</label>
+      <input type="text" id="receivingOverallReason" placeholder="理由を入力" />
+    </div>
+    
+    <!-- 一括更新ボタン -->
+    <button id="updateReceivingStock">一括更新</button>
+  </section>
+
+
     <!-- 売上分析 -->
     <section id="sales-analysis" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>売上分析</h1>
