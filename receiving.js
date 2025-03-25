@@ -1,11 +1,12 @@
 // receiving.js
+import { getParentCategories, getSubcategories } from './categories.js';
 import { updateProductQuantity, updateOverallInventory } from './inventoryManagement.js';
 import { getProducts } from './products.js';
-import { getParentCategories, getSubcategories } from './categories.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // まず、親カテゴリドロップダウンを更新
-  async function loadParentCategories() {
+  
+  // 親カテゴリを読み込む関数
+  async function loadReceivingParentCategories() {
     try {
       const parentCategories = await getParentCategories();
       const parentSelect = document.getElementById('receivingParentCategorySelect');
@@ -22,11 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // 親カテゴリが変更されたら、その親カテゴリに対応するサブカテゴリを更新
-  async function updateSubcategoryDropdown() {
+  // 親カテゴリ変更時にサブカテゴリを更新する関数
+  async function updateReceivingSubcategories() {
     const parentCategoryId = document.getElementById('receivingParentCategorySelect').value;
-    const subcategorySelect = document.getElementById('receivingSubcategorySelect');
-    subcategorySelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
+    const subSelect = document.getElementById('receivingSubcategorySelect');
+    subSelect.innerHTML = '<option value="">サブカテゴリを選択</option>';
     if (!parentCategoryId) return;
     try {
       const subcategories = await getSubcategories(parentCategoryId);
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const option = document.createElement('option');
         option.value = subcat.id;
         option.textContent = subcat.name;
-        subcategorySelect.appendChild(option);
+        subSelect.appendChild(option);
       });
     } catch (error) {
       console.error('サブカテゴリの取得に失敗しました', error);
@@ -43,10 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 初期表示時に親カテゴリを読み込む
-  loadParentCategories();
+  loadReceivingParentCategories();
 
   // 親カテゴリ選択時のイベントリスナーを追加
-  document.getElementById('receivingParentCategorySelect').addEventListener('change', updateSubcategoryDropdown);
+  document.getElementById('receivingParentCategorySelect').addEventListener('change', updateReceivingSubcategories);
 
   // 「商品一覧を読み込む」ボタンのイベントリスナー
   document.getElementById('loadReceivingProducts').addEventListener('click', async () => {
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     try {
+      // 親カテゴリは不要の場合、第一引数を null としてサブカテゴリで絞り込む
       const products = await getProducts(null, subcategoryId);
       const tbody = document.getElementById('receivingProductList').querySelector('tbody');
       tbody.innerHTML = '';
@@ -64,12 +66,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tr.innerHTML = `
           <td>${product.name}</td>
           <td>${product.quantity || 0}</td>
-          <td><input type="number" value="0" min="0" data-product-id="${product.id}" class="receiving-quantity" /></td>
+          <td>
+            <input type="number" value="0" min="0" data-product-id="${product.id}" class="receiving-quantity" />
+          </td>
         `;
         tbody.appendChild(tr);
       });
     } catch (error) {
-      console.error(error);
+      console.error('商品一覧の取得に失敗しました', error);
       alert('商品一覧の取得に失敗しました');
     }
   });
