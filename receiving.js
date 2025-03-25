@@ -3,8 +3,7 @@ import { getParentCategories, getSubcategories } from './categories.js';
 import { updateProductQuantity, updateOverallInventory } from './inventoryManagement.js';
 import { getProducts } from './products.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  
+document.addEventListener('DOMContentLoaded', async () => {
   // 親カテゴリを読み込む関数
   async function loadReceivingParentCategories() {
     try {
@@ -17,12 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
         option.textContent = category.name;
         parentSelect.appendChild(option);
       });
+      console.log("読み込んだ親カテゴリ:", parentCategories);
     } catch (error) {
-      console.error('親カテゴリの取得に失敗しました', error);
-      alert('親カテゴリの取得に失敗しました');
+      console.error("親カテゴリの取得に失敗しました", error);
+      alert("親カテゴリの取得に失敗しました");
     }
   }
-  
+
   // 親カテゴリ変更時にサブカテゴリを更新する関数
   async function updateReceivingSubcategories() {
     const parentCategoryId = document.getElementById('receivingParentCategorySelect').value;
@@ -37,14 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
         option.textContent = subcat.name;
         subSelect.appendChild(option);
       });
+      console.log("読み込んだサブカテゴリ:", subcategories);
     } catch (error) {
-      console.error('サブカテゴリの取得に失敗しました', error);
-      alert('サブカテゴリの取得に失敗しました');
+      console.error("サブカテゴリの取得に失敗しました", error);
+      alert("サブカテゴリの取得に失敗しました");
     }
   }
 
   // 初期表示時に親カテゴリを読み込む
-  loadReceivingParentCategories();
+  await loadReceivingParentCategories();
 
   // 親カテゴリ選択時のイベントリスナーを追加
   document.getElementById('receivingParentCategorySelect').addEventListener('change', updateReceivingSubcategories);
@@ -53,16 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('loadReceivingProducts').addEventListener('click', async () => {
     const subcategoryId = document.getElementById('receivingSubcategorySelect').value;
     if (!subcategoryId) {
-      alert('サブカテゴリを選択してください');
+      alert("サブカテゴリを選択してください");
       return;
     }
     try {
-      // 親カテゴリは不要の場合、第一引数を null としてサブカテゴリで絞り込む
+      // サブカテゴリで絞り込むため、親カテゴリは不要として null を渡す
       const products = await getProducts(null, subcategoryId);
       const tbody = document.getElementById('receivingProductList').querySelector('tbody');
-      tbody.innerHTML = '';
+      tbody.innerHTML = "";
       products.forEach(product => {
-        const tr = document.createElement('tr');
+        const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${product.name}</td>
           <td>${product.quantity || 0}</td>
@@ -72,33 +73,33 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         tbody.appendChild(tr);
       });
+      console.log("読み込んだ商品一覧:", products);
     } catch (error) {
-      console.error('商品一覧の取得に失敗しました', error);
-      alert('商品一覧の取得に失敗しました');
+      console.error("商品一覧の取得に失敗しました", error);
+      alert("商品一覧の取得に失敗しました");
     }
   });
 
   // 「一括更新」ボタンのイベントリスナー
-  document.getElementById('updateReceivingStock').addEventListener('click', async () => {
-    const subcategoryId = document.getElementById('receivingSubcategorySelect').value;
+  document.getElementById("updateReceivingStock").addEventListener("click", async () => {
+    const subcategoryId = document.getElementById("receivingSubcategorySelect").value;
     if (!subcategoryId) {
-      alert('サブカテゴリを選択してください');
+      alert("サブカテゴリを選択してください");
       return;
     }
     
-    // 全体在庫更新の入力値取得
-    const overallQuantityInput = document.getElementById('receivingOverallQuantity');
+    const overallQuantityInput = document.getElementById("receivingOverallQuantity");
     const overallQuantity = parseFloat(overallQuantityInput.value);
-    const overallReason = document.getElementById('receivingOverallReason').value || '入荷による更新';
+    const overallReason = document.getElementById("receivingOverallReason").value || "入荷による更新";
 
     // 個別商品の在庫更新
-    const inputs = document.querySelectorAll('.receiving-quantity');
+    const inputs = document.querySelectorAll(".receiving-quantity");
     for (let input of inputs) {
       const changeAmount = parseFloat(input.value);
       if (isNaN(changeAmount) || changeAmount === 0) continue;
-      const productId = input.getAttribute('data-product-id');
+      const productId = input.getAttribute("data-product-id");
       try {
-        await updateProductQuantity(productId, changeAmount, '入荷');
+        await updateProductQuantity(productId, changeAmount, "入荷");
       } catch (error) {
         console.error(`商品ID ${productId} の在庫更新に失敗しました`, error);
       }
@@ -108,13 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await updateOverallInventory(subcategoryId, overallQuantity, overallReason);
     } catch (error) {
-      console.error('全体在庫の更新に失敗しました', error);
+      console.error("全体在庫の更新に失敗しました", error);
     }
 
-    alert('入荷更新が完了しました');
+    alert("入荷更新が完了しました");
     // 更新後、商品一覧を再読み込み
-    document.getElementById('loadReceivingProducts').click();
-    overallQuantityInput.value = '';
-    document.getElementById('receivingOverallReason').value = '';
+    document.getElementById("loadReceivingProducts").click();
+    overallQuantityInput.value = "";
+    document.getElementById("receivingOverallReason").value = "";
   });
 });
