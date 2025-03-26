@@ -1417,8 +1417,8 @@ async function updateSubcategorySelects() {
   }
 }
 
-// サブカテゴリセレクトボックスの個別更新関数
-async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
+// サブカテゴリセレクトボックスの個別更新関数をエクスポート
+export async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -1427,17 +1427,13 @@ async function updateSubcategorySelect(parentCategoryId, subcategorySelectId) {
     }
     const select = document.getElementById(subcategorySelectId);
     if (select) {
-      // **既存のオプションを削除**
       while (select.firstChild) {
         select.removeChild(select.firstChild);
       }
-
-      // **初期のオプションを追加**
       const defaultOption = document.createElement('option');
       defaultOption.value = '';
       defaultOption.textContent = 'サブカテゴリを選択';
       select.appendChild(defaultOption);
-
       if (!parentCategoryId) {
         return;
       }
