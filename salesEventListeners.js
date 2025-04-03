@@ -537,22 +537,22 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
     alert('取引をフィルタリングするにはログインが必要です。');
     return;
   }
-  const month = parseInt(document.getElementById('filterMonth').value, 10);
-  const year = parseInt(document.getElementById('filterYear').value, 10);
-  const onlyReturned = document.getElementById('filterOnlyReturned').checked;
+  // 例：更新完了後にフィルタフォームの値から currentFilter を再構築
+const month = parseInt(document.getElementById('filterMonth').value, 10);
+const year = parseInt(document.getElementById('filterYear').value, 10);
+const onlyReturned = document.getElementById('filterOnlyReturned').checked;
 
-  const filter = {};
-  if (!isNaN(month)) {
-    filter.month = month;
-  }
-  if (!isNaN(year)) {
-    filter.year = year;
-  }
-  filter.onlyReturned = onlyReturned;
+const filter = {};
+if (!isNaN(month)) {
+  filter.month = month;
+}
+if (!isNaN(year)) {
+  filter.year = year;
+}
+filter.onlyReturned = onlyReturned;
 
-  // ここでグローバル変数 currentFilter に条件を保存
-  currentFilter = filter;
-  await displayTransactions(currentFilter);
+// 再表示時にこのフィルタ条件を使用
+await displayTransactions(filter);
 });
 
 
