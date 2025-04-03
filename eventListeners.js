@@ -1011,31 +1011,31 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailShippingFee').innerHTML =
       `<input type="number" id="detailShippingFeeInput" value="${transaction.shippingFee !== undefined ? Math.round(transaction.shippingFee) : 0}">`;
 
-    // 数値項目：手数料、純売上、原価合計、利益（割引情報も含む）
-    const feeAmount = transaction.feeAmount || 0;
-    const shippingFee = transaction.shippingFee || 0;
-    const originalNetAmount = transaction.netAmount || 0;
-    const totalCost = transaction.totalCost || transaction.items.reduce((sum, item) => sum + (item.cost || 0), 0);
-    let totalProfit = transaction.profit || (originalNetAmount - totalCost - feeAmount - shippingFee);
-    const discountAmount = transaction.discount?.amount || 0;
-    const discountReason = transaction.discount?.reason || '';
-    const discountedNetAmount = originalNetAmount - discountAmount;
-    const discountedProfit = totalProfit - discountAmount;
+    // 売上は、transaction.totalAmount（割引適用後の総額）を使用
+const feeAmount = transaction.feeAmount || 0;
+const shippingFee = transaction.shippingFee || 0;
+const displayedSales = transaction.totalAmount || 0; // 売上は totalAmount で決定
+const totalCost = transaction.totalCost || transaction.items.reduce((sum, item) => sum + (item.cost || 0), 0);
+// 利益は「売上 － 原価 － 手数料 － 送料」で計算
+const displayedProfit = displayedSales - totalCost - feeAmount - shippingFee;
 
-    document.getElementById('detailFeeAmount').innerHTML =
-      `<input type="number" id="detailFeeAmountInput" value="${Math.round(feeAmount)}">`;
-    document.getElementById('detailNetAmount').innerHTML =
-      `<input type="number" id="detailNetAmountInput" value="${Math.round(discountedNetAmount)}">`;
-    document.getElementById('detailTotalCost').innerHTML =
-      `<input type="number" id="detailTotalCostInput" value="${Math.round(totalCost)}">`;
-    document.getElementById('detailTotalProfit').innerHTML =
-      `<input type="number" id="detailTotalProfitInput" value="${Math.round(discountedProfit)}">`;
+const discountAmount = transaction.discount?.amount || 0;
+const discountReason = transaction.discount?.reason || '';
 
-    // 割引情報：割引額と理由
-    document.getElementById('discountInfoContainer').innerHTML = `
-      <label>割引額: </label><input type="number" id="detailDiscountAmountInput" value="${Math.round(discountAmount)}">
-      <label>割引理由: </label><input type="text" id="detailDiscountReasonInput" value="${discountReason}">
-    `;
+document.getElementById('detailFeeAmount').innerHTML =
+  `<input type="number" id="detailFeeAmountInput" value="${Math.round(feeAmount)}">`;
+document.getElementById('detailNetAmount').innerHTML =
+  `<input type="number" id="detailNetAmountInput" value="${Math.round(displayedSales)}">`;
+document.getElementById('detailTotalCost').innerHTML =
+  `<input type="number" id="detailTotalCostInput" value="${Math.round(totalCost)}">`;
+document.getElementById('detailTotalProfit').innerHTML =
+  `<input type="number" id="detailTotalProfitInput" value="${Math.round(displayedProfit)}">`;
+
+// 割引情報：割引額と理由（売上はすでに割引適用済み）
+document.getElementById('discountInfoContainer').innerHTML = `
+  <label>割引額: </label><input type="number" id="detailDiscountAmountInput" value="${Math.round(discountAmount)}">
+  <label>割引理由: </label><input type="text" id="detailDiscountReasonInput" value="${discountReason}">
+`;
 
     // 取引商品リスト（全項目を入力フィールドに変更）
     const detailProductList = document.getElementById('detailProductList');
