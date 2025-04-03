@@ -968,7 +968,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 売上管理セクションの取引詳細を表示する関数（完全版・割引対応済）
 // 取引詳細表示関数（修正後：全ての表示内容を編集可能に）
-// 取引詳細表示関数（修正後：全ての内容を編集可能に）
 async function displayTransactionDetails(transactionId) {
   try {
     const user = auth.currentUser;
@@ -983,7 +982,7 @@ async function displayTransactionDetails(transactionId) {
       return;
     }
 
-    // HTML要素の取得
+    // モーダルとオーバーレイの要素を取得
     const transactionDetails = document.getElementById('transactionDetails');
     const overlay = document.getElementById('modalOverlay');
 
@@ -991,7 +990,7 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailTransactionId').innerHTML =
       `<input type="text" id="detailTransactionIdInput" value="${transaction.id}" readonly>`;
 
-    // 日時（datetime-local）
+    // 日時（datetime-local形式）
     let timestampValue = '';
     if (transaction.timestamp) {
       const date = new Date(transaction.timestamp);
@@ -1002,7 +1001,7 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailTimestamp').innerHTML =
       `<input type="datetime-local" id="detailTimestampInput" value="${timestampValue}">`;
 
-    // 支払方法、販売方法、発送方法
+    // 支払方法、販売方法、発送方法、送料
     document.getElementById('detailPaymentMethod').innerHTML =
       `<input type="text" id="detailPaymentMethodInput" value="${transaction.paymentMethodName || ''}">`;
     document.getElementById('detailSalesMethod').innerHTML =
@@ -1012,7 +1011,7 @@ async function displayTransactionDetails(transactionId) {
     document.getElementById('detailShippingFee').innerHTML =
       `<input type="number" id="detailShippingFeeInput" value="${transaction.shippingFee !== undefined ? Math.round(transaction.shippingFee) : 0}">`;
 
-    // 数値項目：手数料、純売上、原価合計、利益
+    // 数値項目：手数料、純売上、原価合計、利益（割引情報も含む）
     const feeAmount = transaction.feeAmount || 0;
     const shippingFee = transaction.shippingFee || 0;
     const originalNetAmount = transaction.netAmount || 0;
@@ -1038,12 +1037,11 @@ async function displayTransactionDetails(transactionId) {
       <label>割引理由: </label><input type="text" id="detailDiscountReasonInput" value="${discountReason}">
     `;
 
-    // 取引商品リストの表示（すべて入力フィールドに変更）
+    // 取引商品リスト（全項目を入力フィールドに変更）
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
     if (transaction.items && transaction.items.length > 0) {
       transaction.items.forEach((item, index) => {
-        // 各商品の値はそのまま利用（必要に応じて小数点丸め等の調整をしてください）
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><input type="text" class="edit-item-productName" value="${item.productName}"></td>
@@ -1061,7 +1059,7 @@ async function displayTransactionDetails(transactionId) {
       detailProductList.innerHTML = '<tr><td colspan="8">商品情報はありません</td></tr>';
     }
 
-    // 返品、削除ボタンはそのまま
+    // 返品・削除ボタンの設定
     const returnButton = document.getElementById('returnTransactionButton');
     if (transaction.isReturned || transaction.manuallyAdded) {
       returnButton.style.display = 'none';
@@ -1077,16 +1075,95 @@ async function displayTransactionDetails(transactionId) {
     deleteButton.style.display = 'block';
     deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
 
-    // ここで「更新」ボタン（保存ボタン）も表示する
-    // ※ すでに「閉じる」ボタンがある場合は、隣に配置してください
+    // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+    // ここから「更新（保存）」ボタンの設定を追加
     let saveBtn = document.getElementById('saveTransactionButton');
     if (!saveBtn) {
       saveBtn = document.createElement('button');
       saveBtn.id = 'saveTransactionButton';
       saveBtn.textContent = '更新';
+      // 更新ボタンを取引詳細ポップアップ内に追加（例：削除ボタンの直後）
       transactionDetails.appendChild(saveBtn);
     }
     saveBtn.style.display = 'block';
+    saveBtn.addEventListener('click', async () => {
+      // 入力フィールドから値を取得
+      const transactionId = document.getElementById('detailTransactionIdInput').value;
+      const timestamp = new Date(document.getElementById('detailTimestampInput').value).toISOString();
+      const paymentMethodName = document.getElementById('detailPaymentMethodInput').value;
+      const salesMethod = document.getElementById('detailSalesMethodInput').value;
+      const shippingMethod = document.getElementById('detailShippingMethodInput').value;
+      const shippingFee = parseFloat(document.getElementById('detailShippingFeeInput').value) || 0;
+      const feeAmount = parseFloat(document.getElementById('detailFeeAmountInput').value) || 0;
+      const netAmount = parseFloat(document.getElementById('detailNetAmountInput').value) || 0;
+      const totalCost = parseFloat(document.getElementById('detailTotalCostInput').value) || 0;
+      const totalProfit = parseFloat(document.getElementById('detailTotalProfitInput').value) || 0;
+      const discountAmount = parseFloat(document.getElementById('detailDiscountAmountInput').value) || 0;
+      const discountReason = document.getElementById('detailDiscountReasonInput').value;
+
+      // 取引商品の各項目を取得（テーブルの各行ごとに）
+      const itemRows = document.querySelectorAll('#detailProductList tr');
+      const items = [];
+      itemRows.forEach((row) => {
+        const productName = row.querySelector('.edit-item-productName').value;
+        const quantity = parseFloat(row.querySelector('.edit-item-quantity').value) || 0;
+        const size = parseFloat(row.querySelector('.edit-item-size').value) || 1;
+        const unitPrice = parseFloat(row.querySelector('.edit-item-unitPrice').value) || 0;
+        const subtotal = parseFloat(row.querySelector('.edit-item-subtotal').value) || 0;
+        const cost = parseFloat(row.querySelector('.edit-item-cost').value) || 0;
+        const fee = parseFloat(row.querySelector('.edit-item-fee').value) || 0;
+        const profit = parseFloat(row.querySelector('.edit-item-profit').value) || 0;
+
+        items.push({
+          productName,
+          quantity,
+          size,
+          unitPrice,
+          subtotal,
+          cost,
+          fee,
+          profit,
+        });
+      });
+
+      // 更新用オブジェクトの作成
+      const updatedData = {
+        timestamp,
+        paymentMethodName, // 必要に応じて paymentMethodId に変更
+        salesMethod,
+        shippingMethod,
+        shippingFee,
+        feeAmount,
+        netAmount,
+        totalCost,
+        profit: totalProfit,
+        discount: {
+          amount: discountAmount,
+          reason: discountReason,
+        },
+        items,
+      };
+
+      try {
+        await updateTransaction(transactionId, updatedData);
+        alert('取引が更新されました');
+        // 更新後、モーダルを閉じる
+        document.getElementById('transactionDetails').style.display = 'none';
+        document.getElementById('modalOverlay').style.display = 'none';
+        // 売上一覧を再読み込み
+        await displayTransactions();
+      } catch (error) {
+        console.error('取引更新に失敗しました:', error);
+        showError('取引の更新に失敗しました');
+      }
+    });
+    // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+    
+    // 閉じるボタンのイベントリスナー
+    document.getElementById('closeTransactionDetails').addEventListener('click', () => {
+      document.getElementById('transactionDetails').style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'none';
+    });
 
     transactionDetails.style.display = 'block';
     overlay.style.display = 'block';
