@@ -1072,101 +1072,105 @@ document.getElementById('discountInfoContainer').innerHTML = `
     }
 
     const deleteButton = document.getElementById('deleteTransactionButton');
-    deleteButton.style.display = 'block';
-    deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
+deleteButton.style.display = 'block';
+deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
 
-    // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    // ここから「更新（保存）」ボタンの設定を追加
-    let saveBtn = document.getElementById('saveTransactionButton');
-    if (!saveBtn) {
-      saveBtn = document.createElement('button');
-      saveBtn.id = 'saveTransactionButton';
-      saveBtn.textContent = '更新';
-      // 更新ボタンを取引詳細ポップアップ内に追加（例：削除ボタンの直後）
-      transactionDetails.appendChild(saveBtn);
-    }
-    saveBtn.style.display = 'block';
-    saveBtn.addEventListener('click', async () => {
-      // 入力フィールドから値を取得
-      const transactionId = document.getElementById('detailTransactionIdInput').value;
-      const timestamp = new Date(document.getElementById('detailTimestampInput').value).toISOString();
-      const paymentMethodName = document.getElementById('detailPaymentMethodInput').value;
-      const salesMethod = document.getElementById('detailSalesMethodInput').value;
-      const shippingMethod = document.getElementById('detailShippingMethodInput').value;
-      const shippingFee = parseFloat(document.getElementById('detailShippingFeeInput').value) || 0;
-      const feeAmount = parseFloat(document.getElementById('detailFeeAmountInput').value) || 0;
-      const netAmount = parseFloat(document.getElementById('detailNetAmountInput').value) || 0;
-      const totalCost = parseFloat(document.getElementById('detailTotalCostInput').value) || 0;
-      const totalProfit = parseFloat(document.getElementById('detailTotalProfitInput').value) || 0;
-      const discountAmount = parseFloat(document.getElementById('detailDiscountAmountInput').value) || 0;
-      const discountReason = document.getElementById('detailDiscountReasonInput').value;
+// 更新ボタンの取得と重複イベントリスナーの防止
+let saveBtn = document.getElementById('saveTransactionButton');
+if (saveBtn) {
+  // 既存のボタンがある場合は、クローンして置き換えることでイベントリスナーをリセット
+  const newSaveBtn = saveBtn.cloneNode(true);
+  saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+  saveBtn = newSaveBtn;
+} else {
+  // 存在しない場合は新規作成
+  saveBtn = document.createElement('button');
+  saveBtn.id = 'saveTransactionButton';
+  saveBtn.textContent = '更新';
+  transactionDetails.appendChild(saveBtn);
+}
+saveBtn.style.display = 'block';
+saveBtn.addEventListener('click', async () => {
+  // 入力フィールドから値を取得
+  const transactionId = document.getElementById('detailTransactionIdInput').value;
+  const timestamp = new Date(document.getElementById('detailTimestampInput').value).toISOString();
+  const paymentMethodName = document.getElementById('detailPaymentMethodInput').value;
+  const salesMethod = document.getElementById('detailSalesMethodInput').value;
+  const shippingMethod = document.getElementById('detailShippingMethodInput').value;
+  const shippingFee = parseFloat(document.getElementById('detailShippingFeeInput').value) || 0;
+  const feeAmount = parseFloat(document.getElementById('detailFeeAmountInput').value) || 0;
+  const netAmount = parseFloat(document.getElementById('detailNetAmountInput').value) || 0;
+  const totalCost = parseFloat(document.getElementById('detailTotalCostInput').value) || 0;
+  const totalProfit = parseFloat(document.getElementById('detailTotalProfitInput').value) || 0;
+  const discountAmount = parseFloat(document.getElementById('detailDiscountAmountInput').value) || 0;
+  const discountReason = document.getElementById('detailDiscountReasonInput').value;
 
-      // 取引商品の各項目を取得（テーブルの各行ごとに）
-      const itemRows = document.querySelectorAll('#detailProductList tr');
-      const items = [];
-      itemRows.forEach((row) => {
-        const productName = row.querySelector('.edit-item-productName').value;
-        const quantity = parseFloat(row.querySelector('.edit-item-quantity').value) || 0;
-        const size = parseFloat(row.querySelector('.edit-item-size').value) || 1;
-        const unitPrice = parseFloat(row.querySelector('.edit-item-unitPrice').value) || 0;
-        const subtotal = parseFloat(row.querySelector('.edit-item-subtotal').value) || 0;
-        const cost = parseFloat(row.querySelector('.edit-item-cost').value) || 0;
-        const fee = parseFloat(row.querySelector('.edit-item-fee').value) || 0;
-        const profit = parseFloat(row.querySelector('.edit-item-profit').value) || 0;
+  // 取引商品の各項目を取得（テーブルの各行ごとに）
+  const itemRows = document.querySelectorAll('#detailProductList tr');
+  const items = [];
+  itemRows.forEach((row) => {
+    const productName = row.querySelector('.edit-item-productName').value;
+    const quantity = parseFloat(row.querySelector('.edit-item-quantity').value) || 0;
+    const size = parseFloat(row.querySelector('.edit-item-size').value) || 1;
+    const unitPrice = parseFloat(row.querySelector('.edit-item-unitPrice').value) || 0;
+    const subtotal = parseFloat(row.querySelector('.edit-item-subtotal').value) || 0;
+    const cost = parseFloat(row.querySelector('.edit-item-cost').value) || 0;
+    const fee = parseFloat(row.querySelector('.edit-item-fee').value) || 0;
+    const profit = parseFloat(row.querySelector('.edit-item-profit').value) || 0;
 
-        items.push({
-          productName,
-          quantity,
-          size,
-          unitPrice,
-          subtotal,
-          cost,
-          fee,
-          profit,
-        });
-      });
-
-      // 更新用オブジェクトの作成
-      const updatedData = {
-        timestamp,
-        paymentMethodName, // 必要に応じて paymentMethodId に変更
-        salesMethod,
-        shippingMethod,
-        shippingFee,
-        feeAmount,
-        netAmount,
-        totalCost,
-        profit: totalProfit,
-        discount: {
-          amount: discountAmount,
-          reason: discountReason,
-        },
-        items,
-      };
-
-      try {
-        await updateTransaction(transactionId, updatedData);
-        alert('取引が更新されました');
-        // 更新後、モーダルを閉じる
-        document.getElementById('transactionDetails').style.display = 'none';
-        document.getElementById('modalOverlay').style.display = 'none';
-        // 売上一覧を再読み込み
-        await displayTransactions();
-      } catch (error) {
-        console.error('取引更新に失敗しました:', error);
-        showError('取引の更新に失敗しました');
-      }
+    items.push({
+      productName,
+      quantity,
+      size,
+      unitPrice,
+      subtotal,
+      cost,
+      fee,
+      profit,
     });
-    // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    
-    // 閉じるボタンのイベントリスナー
-    document.getElementById('closeTransactionDetails').addEventListener('click', () => {
-      document.getElementById('transactionDetails').style.display = 'none';
-      document.getElementById('modalOverlay').style.display = 'none';
-    });
+  });
 
-    transactionDetails.style.display = 'block';
-    overlay.style.display = 'block';
+  // 更新用オブジェクトの作成
+  const updatedData = {
+    timestamp,
+    paymentMethodName, // 必要に応じて paymentMethodId に変更
+    salesMethod,
+    shippingMethod,
+    shippingFee,
+    feeAmount,
+    netAmount,
+    totalCost,
+    profit: totalProfit,
+    discount: {
+      amount: discountAmount,
+      reason: discountReason,
+    },
+    items,
+  };
+
+  try {
+    await updateTransaction(transactionId, updatedData);
+    alert('取引が更新されました');
+    // 更新後、モーダルを閉じる
+    document.getElementById('transactionDetails').style.display = 'none';
+    document.getElementById('modalOverlay').style.display = 'none';
+    // 売上一覧を再読み込み
+    await displayTransactions();
+  } catch (error) {
+    console.error('取引更新に失敗しました:', error);
+    showError('取引の更新に失敗しました');
+  }
+});
+
+// 閉じるボタンのイベントリスナー
+document.getElementById('closeTransactionDetails').addEventListener('click', () => {
+  document.getElementById('transactionDetails').style.display = 'none';
+  document.getElementById('modalOverlay').style.display = 'none';
+});
+
+transactionDetails.style.display = 'block';
+overlay.style.display = 'block';
+
 
   } catch (error) {
     console.error('取引の詳細表示に失敗しました:', error);
