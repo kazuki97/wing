@@ -968,6 +968,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 売上管理セクションの取引詳細を表示する関数（完全版・割引対応済）
 // 取引詳細表示関数（修正後：全ての表示内容を編集可能に）
+// 取引詳細表示関数（修正後：全ての内容を編集可能に）
 async function displayTransactionDetails(transactionId) {
   try {
     const user = auth.currentUser;
@@ -986,16 +987,16 @@ async function displayTransactionDetails(transactionId) {
     const transactionDetails = document.getElementById('transactionDetails');
     const overlay = document.getElementById('modalOverlay');
 
-    // 取引ID（識別用、編集不可）
+    // 取引ID（編集不可）
     document.getElementById('detailTransactionId').innerHTML =
       `<input type="text" id="detailTransactionIdInput" value="${transaction.id}" readonly>`;
 
-    // タイムスタンプ（datetime-localに変換）
+    // 日時（datetime-local）
     let timestampValue = '';
     if (transaction.timestamp) {
       const date = new Date(transaction.timestamp);
       if (!isNaN(date.getTime())) {
-        timestampValue = date.toISOString().slice(0,16);
+        timestampValue = date.toISOString().slice(0,16); // "YYYY-MM-DDTHH:MM"
       }
     }
     document.getElementById('detailTimestamp').innerHTML =
@@ -1037,28 +1038,22 @@ async function displayTransactionDetails(transactionId) {
       <label>割引理由: </label><input type="text" id="detailDiscountReasonInput" value="${discountReason}">
     `;
 
-    // 取引商品リスト（全項目を入力フィールド化）
+    // 取引商品リストの表示（すべて入力フィールドに変更）
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
     if (transaction.items && transaction.items.length > 0) {
-      const totalSubtotal = transaction.items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
       transaction.items.forEach((item, index) => {
-        const itemFee = totalSubtotal > 0 ? ((item.subtotal || 0) / totalSubtotal) * feeAmount : 0;
-        const itemDiscount = totalSubtotal > 0 ? ((item.subtotal || 0) / totalSubtotal) * discountAmount : 0;
-        const itemTotalCost = item.cost || 0;
-        const itemSubtotalAfterDiscount = (item.subtotal || 0) - itemDiscount;
-        const itemProfit = itemSubtotalAfterDiscount - itemTotalCost - itemFee;
-
+        // 各商品の値はそのまま利用（必要に応じて小数点丸め等の調整をしてください）
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><input type="text" class="edit-item-productName" value="${item.productName}"></td>
           <td><input type="number" class="edit-item-quantity" value="${item.quantity}"></td>
           <td><input type="number" class="edit-item-size" value="${item.size}"></td>
           <td><input type="number" class="edit-item-unitPrice" value="${Math.round(item.unitPrice || 0)}"></td>
-          <td><input type="number" class="edit-item-subtotal" value="${Math.round(itemSubtotalAfterDiscount)}"></td>
-          <td><input type="number" class="edit-item-cost" value="${Math.round(itemTotalCost)}"></td>
-          <td><input type="number" class="edit-item-fee" value="${Math.round(itemFee)}"></td>
-          <td><input type="number" class="edit-item-profit" value="${Math.round(itemProfit)}"></td>
+          <td><input type="number" class="edit-item-subtotal" value="${Math.round(item.subtotal || 0)}"></td>
+          <td><input type="number" class="edit-item-cost" value="${Math.round(item.cost || 0)}"></td>
+          <td><input type="number" class="edit-item-fee" value="${Math.round(item.fee || 0)}"></td>
+          <td><input type="number" class="edit-item-profit" value="${Math.round(item.profit || 0)}"></td>
         `;
         detailProductList.appendChild(row);
       });
@@ -1082,7 +1077,17 @@ async function displayTransactionDetails(transactionId) {
     deleteButton.style.display = 'block';
     deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
 
-    // モーダルを表示
+    // ここで「更新」ボタン（保存ボタン）も表示する
+    // ※ すでに「閉じる」ボタンがある場合は、隣に配置してください
+    let saveBtn = document.getElementById('saveTransactionButton');
+    if (!saveBtn) {
+      saveBtn = document.createElement('button');
+      saveBtn.id = 'saveTransactionButton';
+      saveBtn.textContent = '更新';
+      transactionDetails.appendChild(saveBtn);
+    }
+    saveBtn.style.display = 'block';
+
     transactionDetails.style.display = 'block';
     overlay.style.display = 'block';
 
