@@ -967,6 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 売上管理セクションの取引詳細を表示する関数（完全版・割引対応済）
+// 取引詳細表示関数（修正後：全ての表示内容を編集可能に）
 async function displayTransactionDetails(transactionId) {
   try {
     const user = auth.currentUser;
@@ -981,98 +982,102 @@ async function displayTransactionDetails(transactionId) {
       return;
     }
 
-    // HTML要素を取得
+    // HTML要素の取得
     const transactionDetails = document.getElementById('transactionDetails');
     const overlay = document.getElementById('modalOverlay');
 
-    document.getElementById('detailTransactionId').textContent = transaction.id;
+    // 取引ID（識別用、編集不可）
+    document.getElementById('detailTransactionId').innerHTML =
+      `<input type="text" id="detailTransactionIdInput" value="${transaction.id}" readonly>`;
 
-    let timestampText = '日時情報なし';
+    // タイムスタンプ（datetime-localに変換）
+    let timestampValue = '';
     if (transaction.timestamp) {
       const date = new Date(transaction.timestamp);
       if (!isNaN(date.getTime())) {
-        timestampText = date.toLocaleString('ja-JP');
+        timestampValue = date.toISOString().slice(0,16);
       }
     }
-    document.getElementById('detailTimestamp').textContent = timestampText;
+    document.getElementById('detailTimestamp').innerHTML =
+      `<input type="datetime-local" id="detailTimestampInput" value="${timestampValue}">`;
 
-    document.getElementById('detailPaymentMethod').textContent = transaction.paymentMethodName || '情報なし';
-    document.getElementById('detailSalesMethod').textContent = transaction.salesMethod || '情報なし';
-    document.getElementById('detailShippingMethod').textContent = transaction.shippingMethod || '情報なし';
-    document.getElementById('detailShippingFee').textContent =
-      transaction.shippingFee !== undefined ? `¥${Math.round(transaction.shippingFee)}` : '¥0';
+    // 支払方法、販売方法、発送方法
+    document.getElementById('detailPaymentMethod').innerHTML =
+      `<input type="text" id="detailPaymentMethodInput" value="${transaction.paymentMethodName || ''}">`;
+    document.getElementById('detailSalesMethod').innerHTML =
+      `<input type="text" id="detailSalesMethodInput" value="${transaction.salesMethod || ''}">`;
+    document.getElementById('detailShippingMethod').innerHTML =
+      `<input type="text" id="detailShippingMethodInput" value="${transaction.shippingMethod || ''}">`;
+    document.getElementById('detailShippingFee').innerHTML =
+      `<input type="number" id="detailShippingFeeInput" value="${transaction.shippingFee !== undefined ? Math.round(transaction.shippingFee) : 0}">`;
 
+    // 数値項目：手数料、純売上、原価合計、利益
     const feeAmount = transaction.feeAmount || 0;
     const shippingFee = transaction.shippingFee || 0;
-
-    // 合計金額（割引前）
     const originalNetAmount = transaction.netAmount || 0;
     const totalCost = transaction.totalCost || transaction.items.reduce((sum, item) => sum + (item.cost || 0), 0);
     let totalProfit = transaction.profit || (originalNetAmount - totalCost - feeAmount - shippingFee);
-
-    // 割引額を計算に反映
     const discountAmount = transaction.discount?.amount || 0;
+    const discountReason = transaction.discount?.reason || '';
     const discountedNetAmount = originalNetAmount - discountAmount;
     const discountedProfit = totalProfit - discountAmount;
 
-    // HTMLに割引後の数値を表示
-    document.getElementById('detailFeeAmount').textContent = `¥${Math.round(feeAmount)}`;
-    document.getElementById('detailNetAmount').textContent = `¥${Math.round(discountedNetAmount)}`; // 割引後純売上
-    document.getElementById('detailTotalCost').textContent = `¥${Math.round(totalCost)}`;
-    document.getElementById('detailTotalProfit').textContent = `¥${Math.round(discountedProfit)}`; // 割引後利益
+    document.getElementById('detailFeeAmount').innerHTML =
+      `<input type="number" id="detailFeeAmountInput" value="${Math.round(feeAmount)}">`;
+    document.getElementById('detailNetAmount').innerHTML =
+      `<input type="number" id="detailNetAmountInput" value="${Math.round(discountedNetAmount)}">`;
+    document.getElementById('detailTotalCost').innerHTML =
+      `<input type="number" id="detailTotalCostInput" value="${Math.round(totalCost)}">`;
+    document.getElementById('detailTotalProfit').innerHTML =
+      `<input type="number" id="detailTotalProfitInput" value="${Math.round(discountedProfit)}">`;
 
-    // 割引情報の表示を明確化
-    const discountContainer = document.getElementById('discountInfoContainer');
-    if (discountAmount > 0) {
-      discountContainer.innerHTML = `<p>割引額: ¥${Math.round(discountAmount)} (理由: ${transaction.discount.reason || '情報なし'})</p>`;
-    } else {
-      discountContainer.innerHTML = '';
-    }
+    // 割引情報：割引額と理由
+    document.getElementById('discountInfoContainer').innerHTML = `
+      <label>割引額: </label><input type="number" id="detailDiscountAmountInput" value="${Math.round(discountAmount)}">
+      <label>割引理由: </label><input type="text" id="detailDiscountReasonInput" value="${discountReason}">
+    `;
 
-    // 取引商品リストの表示
+    // 取引商品リスト（全項目を入力フィールド化）
     const detailProductList = document.getElementById('detailProductList');
     detailProductList.innerHTML = '';
-
     if (transaction.items && transaction.items.length > 0) {
       const totalSubtotal = transaction.items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
-
-      for (const item of transaction.items) {
+      transaction.items.forEach((item, index) => {
         const itemFee = totalSubtotal > 0 ? ((item.subtotal || 0) / totalSubtotal) * feeAmount : 0;
         const itemDiscount = totalSubtotal > 0 ? ((item.subtotal || 0) / totalSubtotal) * discountAmount : 0;
-
         const itemTotalCost = item.cost || 0;
         const itemSubtotalAfterDiscount = (item.subtotal || 0) - itemDiscount;
         const itemProfit = itemSubtotalAfterDiscount - itemTotalCost - itemFee;
 
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${item.productName}</td>
-          <td>${item.quantity}</td>
-          <td>${item.size}</td>
-          <td>¥${Math.round(item.unitPrice || 0)}</td>
-          <td>¥${Math.round(itemSubtotalAfterDiscount)}</td>
-          <td>¥${Math.round(itemTotalCost)}</td>
-          <td>¥${Math.round(itemFee)}</td>
-          <td>¥${Math.round(itemProfit)}</td>
+          <td><input type="text" class="edit-item-productName" value="${item.productName}"></td>
+          <td><input type="number" class="edit-item-quantity" value="${item.quantity}"></td>
+          <td><input type="number" class="edit-item-size" value="${item.size}"></td>
+          <td><input type="number" class="edit-item-unitPrice" value="${Math.round(item.unitPrice || 0)}"></td>
+          <td><input type="number" class="edit-item-subtotal" value="${Math.round(itemSubtotalAfterDiscount)}"></td>
+          <td><input type="number" class="edit-item-cost" value="${Math.round(itemTotalCost)}"></td>
+          <td><input type="number" class="edit-item-fee" value="${Math.round(itemFee)}"></td>
+          <td><input type="number" class="edit-item-profit" value="${Math.round(itemProfit)}"></td>
         `;
         detailProductList.appendChild(row);
-      }
+      });
     } else {
       detailProductList.innerHTML = '<tr><td colspan="8">商品情報はありません</td></tr>';
     }
 
-    // 返品ボタン表示処理
+    // 返品、削除ボタンはそのまま
     const returnButton = document.getElementById('returnTransactionButton');
     if (transaction.isReturned || transaction.manuallyAdded) {
       returnButton.style.display = 'none';
-      document.getElementById('returnInfo').textContent = transaction.isReturned ? `返品理由: ${transaction.returnReason}` : '';
+      document.getElementById('returnInfo').textContent =
+        transaction.isReturned ? `返品理由: ${transaction.returnReason}` : '';
     } else {
       returnButton.style.display = 'block';
       document.getElementById('returnInfo').textContent = '';
       returnButton.onclick = () => handleReturnTransaction(transaction);
     }
 
-    // 削除ボタン表示処理
     const deleteButton = document.getElementById('deleteTransactionButton');
     deleteButton.style.display = 'block';
     deleteButton.onclick = () => handleDeleteTransaction(transaction.id);
