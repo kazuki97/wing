@@ -87,6 +87,10 @@ import {
 
 import { deleteConsumable } from './consumables.js';
 
+// グローバル変数 currentFilter を定義（ここを追加）
+let currentFilter = {};
+
+
 // エラーメッセージ表示関数
 export function showError(message) {
   const errorDiv = document.getElementById('error-message');
