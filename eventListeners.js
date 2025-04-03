@@ -1153,17 +1153,16 @@ saveBtn.addEventListener('click', async () => {
   };
 
   try {
-    await updateTransaction(transactionId, updatedData);
-    alert('取引が更新されました');
-    // 更新後、モーダルを閉じる
-    document.getElementById('transactionDetails').style.display = 'none';
-    document.getElementById('modalOverlay').style.display = 'none';
-    // 売上一覧を再読み込み
-    await displayTransactions();
-  } catch (error) {
-    console.error('取引更新に失敗しました:', error);
-    showError('取引の更新に失敗しました');
-  }
+  await updateTransaction(transactionId, updatedData);
+  alert('取引が更新されました');
+  document.getElementById('transactionDetails').style.display = 'none';
+  document.getElementById('modalOverlay').style.display = 'none';
+  // 更新後、グローバル変数 currentFilter を用いてフィルタ条件を維持
+  await displayTransactions(currentFilter);
+} catch (error) {
+  console.error('取引更新に失敗しました:', error);
+  showError('取引の更新に失敗しました');
+}
 });
 
 // 閉じるボタンのイベントリスナー
