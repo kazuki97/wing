@@ -424,28 +424,30 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   const discountReason = document.getElementById('discountReason').value;
   
   const feeAmount = 0;
-  const netAmount = totalAmount - feeAmount;
-  const profitCalculated = netAmount - totalCost - shippingFee;
+// 売上は、各商品の合計金額から割引額を引いた値として計算
+const displayedSales = totalAmount - discountAmount;
+// 利益は「売上 － 原価 － 手数料 － 送料」
+const profitCalculated = displayedSales - totalCost - feeAmount - shippingFee;
   
-  const transactionData = {
-    timestamp: saleTimestamp.toISOString(),
-    totalAmount: totalAmount - discountAmount,
-    totalCost: totalCost,
-    feeAmount: feeAmount,
-    netAmount: netAmount,
-    paymentMethodId: paymentMethod,
-    salesMethod: salesMethod,
-    shippingMethod: shippingMethod,
-    shippingFee: shippingFee,
-    items: items,
-    manuallyAdded: false,
-    cost: totalCost,
-    profit: profitCalculated,
-    discount: {
-      amount: discountAmount,
-      reason: discountReason,
-    },
-  };
+const transactionData = {
+  timestamp: saleTimestamp.toISOString(),
+  totalAmount: displayedSales,  // 売上は割引適用後の値
+  totalCost: totalCost,
+  feeAmount: feeAmount,
+  paymentMethodId: paymentMethod,
+  salesMethod: salesMethod,
+  shippingMethod: shippingMethod,
+  shippingFee: shippingFee,
+  items: items,
+  manuallyAdded: false,
+  cost: totalCost,
+  profit: profitCalculated,
+  discount: {
+    amount: discountAmount,
+    reason: discountReason,
+  },
+};
+
   
   // 在庫更新（各商品在庫の減少および全体在庫の更新）
   for (const item of phoneCart) {
