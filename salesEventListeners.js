@@ -538,22 +538,26 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
     return;
   }
   // 例：更新完了後にフィルタフォームの値から currentFilter を再構築
-const month = parseInt(document.getElementById('filterMonth').value, 10);
-const year = parseInt(document.getElementById('filterYear').value, 10);
-const onlyReturned = document.getElementById('filterOnlyReturned').checked;
+  const month = parseInt(document.getElementById('filterMonth').value, 10);
+  const year = parseInt(document.getElementById('filterYear').value, 10);
+  const onlyReturned = document.getElementById('filterOnlyReturned').checked;
 
-const filter = {};
-if (!isNaN(month)) {
-  filter.month = month;
-}
-if (!isNaN(year)) {
-  filter.year = year;
-}
-filter.onlyReturned = onlyReturned;
+  const filter = {};
+  if (!isNaN(month)) {
+    filter.month = month;
+  }
+  if (!isNaN(year)) {
+    filter.year = year;
+  }
+  filter.onlyReturned = onlyReturned;
 
-// 再表示時にこのフィルタ条件を使用
-await displayTransactions(filter);
+  // グローバル変数 currentFilter を更新してフィルタ条件を保持する
+  currentFilter = filter;
+
+  // 再表示時にこのフィルタ条件を使用
+  await displayTransactions(filter);
 });
+
 
 
 // 初期化処理
