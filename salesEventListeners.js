@@ -527,7 +527,6 @@ async function displayPaymentMethods() {
   }
 }
 
-// 月次・年次フィルタの実装
 document.getElementById('filterTransactionsForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
@@ -548,8 +547,11 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
   }
   filter.onlyReturned = onlyReturned;
 
-  await displayTransactions(filter);
+  // ここでグローバル変数 currentFilter に条件を保存
+  currentFilter = filter;
+  await displayTransactions(currentFilter);
 });
+
 
 // 初期化処理
 onAuthStateChanged(auth, async (user) => {
