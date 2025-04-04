@@ -1767,6 +1767,9 @@ export async function displayProducts() {
     // サブカテゴリごとに商品をグループ化
     const subcategoryMap = {};
     for (const product of products) {
+      // デバッグログを追加：PC版の商品データ確認
+      console.log("【PC版】取得商品データ:", product);
+      
       const subcategory = await getSubcategoryById(product.subcategoryId);
       const subcategoryName = subcategory ? subcategory.name : '不明なサブカテゴリ';
       if (!subcategoryMap[subcategoryName]) {
@@ -1784,7 +1787,9 @@ export async function displayProducts() {
       const productUl = document.createElement('ul');
 
       subcategoryMap[subcategoryName].forEach((product) => {
-        // 商品に関連付けられた消耗品の名前を取得
+        // デバッグログ：グループ内で各商品を表示する前に確認
+        console.log("【PC版】グループ内の商品データ:", product);
+        
         const consumableNames = product.consumables
           ? product.consumables.map(consumableId => {
               const consumable = consumablesList.find(c => c.id === consumableId);
@@ -1792,7 +1797,6 @@ export async function displayProducts() {
             }).join(', ')
           : 'なし';
 
-        // 商品情報と消耗品情報を表示
         const listItem = document.createElement('li');
         listItem.innerHTML = `
           <strong>商品名:</strong> ${product.name}, <strong>数量:</strong> ${product.quantity || 0}, 
@@ -1805,6 +1809,7 @@ export async function displayProducts() {
         const editButton = document.createElement('button');
         editButton.textContent = '編集';
         editButton.addEventListener('click', () => {
+          console.log("【PC版】editProduct 呼び出し:", product);
           editProduct(product);
         });
 
