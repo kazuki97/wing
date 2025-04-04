@@ -25,6 +25,8 @@ import { displayTransactions, displayOverallInventory, displayInventoryProducts 
 
 import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
+import { getCurrentFilter } from './filterState.js'; 
+
 
 
 // エラーメッセージ表示関数
