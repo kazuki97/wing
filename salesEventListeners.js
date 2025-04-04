@@ -421,9 +421,12 @@ const profitCalculated = netAmount - totalCost - shippingFee;
 
 
     alert('販売が完了しました');
-await displayTransactions(getCurrentFilter());
-await displayOverallInventory();
-await displayInventoryProducts();
+// 少し待ってから再描画を行う
+setTimeout(async () => {
+  await displayTransactions(getCurrentFilter());
+  await displayOverallInventory();
+  await displayInventoryProducts();
+}, 500);
   } catch (error) {
     console.error(error);
     showError('販売処理に失敗しました');
