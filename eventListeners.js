@@ -87,8 +87,7 @@ import {
 
 import { deleteConsumable } from './consumables.js';
 
-// グローバル変数 currentFilter を定義（ここを追加）
-let currentFilter = {};
+import { getCurrentFilter } from './filterState.js'; 
 
 
 // エラーメッセージ表示関数
