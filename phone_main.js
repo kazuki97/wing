@@ -72,76 +72,63 @@ async function updateCartUI() {
   cartItemsDiv.innerHTML = '';
   let total = 0;
   
-  // サブカテゴリごとの合計数量（重量）を計算
-const subcategoryTotals = {};
-phoneCart.forEach((item) => {
-  const subcatId = item.product.subcategoryId;
-  const size = item.product.size || 1;
-  const requiredQuantity = size * item.quantity;
-  if (!subcategoryTotals[subcatId]) {
-    subcategoryTotals[subcatId] = 0;
+  // 個々の商品ごとの必要数量を用いて単価を取得
+  for (const item of phoneCart) {
+    const size = item.product.size || 1;
+    const requiredQuantity = size * item.quantity;
+    const unitPrice = await getUnitPrice(item.product.subcategoryId, requiredQuantity, item.product.price);
+    const itemTotal = unitPrice * requiredQuantity;
+    total += itemTotal;
+    
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    
+    // 商品名表示
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = item.product.name;
+    div.appendChild(nameSpan);
+    
+    // 数量入力フィールド
+    const quantityInput = document.createElement('input');
+    quantityInput.type = 'number';
+    quantityInput.min = 1;
+    quantityInput.value = item.quantity;
+    quantityInput.style.width = '60px';
+    quantityInput.addEventListener('change', async (e) => {
+      const newQuantity = parseInt(e.target.value, 10);
+      if (isNaN(newQuantity) || newQuantity < 1) {
+        e.target.value = item.quantity;
+        return;
+      }
+      item.quantity = newQuantity;
+      await updateCartUI();
+    });
+    div.appendChild(quantityInput);
+    
+    // 金額表示（単価×数量×サイズ）
+    const priceSpan = document.createElement('span');
+    priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unitPrice.toLocaleString()})`;
+    div.appendChild(priceSpan);
+    
+    // 削除ボタン
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = '削除';
+    deleteButton.className = 'btn-delete';
+    deleteButton.dataset.id = item.product.id;
+    deleteButton.addEventListener('click', (e) => {
+      const productId = e.target.dataset.id;
+      removeFromCart(productId);
+    });
+    div.appendChild(deleteButton);
+    
+    cartItemsDiv.appendChild(div);
   }
-  subcategoryTotals[subcatId] += requiredQuantity;
-});
   
-// 各アイテム表示時は、該当サブカテゴリ全体の合計数量を利用して単価を計算
-// 各アイテム表示時は、個々の商品ごとの必要数量を用いて単価を取得
-for (const item of phoneCart) {
-  const size = item.product.size || 1;
-  const requiredQuantity = size * item.quantity;
-  const unitPrice = await getUnitPrice(item.product.subcategoryId, requiredQuantity, item.product.price);
-  const itemTotal = unitPrice * requiredQuantity;
-  total += itemTotal;
-  
-  const div = document.createElement('div');
-  div.className = 'cart-item';
-  
-  // 商品名表示
-  const nameSpan = document.createElement('span');
-  nameSpan.textContent = item.product.name;
-  div.appendChild(nameSpan);
-  
-  // 数量入力フィールド
-  const quantityInput = document.createElement('input');
-  quantityInput.type = 'number';
-  quantityInput.min = 1;
-  quantityInput.value = item.quantity;
-  quantityInput.style.width = '60px';
-  quantityInput.addEventListener('change', async (e) => {
-    const newQuantity = parseInt(e.target.value, 10);
-    if (isNaN(newQuantity) || newQuantity < 1) {
-      e.target.value = item.quantity;
-      return;
-    }
-    item.quantity = newQuantity;
-    await updateCartUI();
-  });
-  div.appendChild(quantityInput);
-  
-  // 金額表示（単価×数量×サイズ）
-  const priceSpan = document.createElement('span');
-  priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unitPrice.toLocaleString()})`;
-  div.appendChild(priceSpan);
-  
-  // 削除ボタン
-  const deleteButton = document.createElement('button');
-  deleteButton.textContent = '削除';
-  deleteButton.className = 'btn-delete';
-  deleteButton.dataset.id = item.product.id;
-  deleteButton.addEventListener('click', (e) => {
-    const productId = e.target.dataset.id;
-    removeFromCart(productId);
-  });
-  div.appendChild(deleteButton);
-  
-  cartItemsDiv.appendChild(div);
-}
-  
-// 割引額を反映して合計金額を表示
-const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
-const finalTotal = total - discountAmount;
-document.getElementById('cart-total').textContent = `合計: ¥${finalTotal.toLocaleString()}`;
-await updateViewCartButton();
+  // 割引額を反映して合計金額を表示
+  const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+  const finalTotal = total - discountAmount;
+  document.getElementById('cart-total').textContent = `合計: ¥${finalTotal.toLocaleString()}`;
+  await updateViewCartButton();
 }
 
 // -------------------------
@@ -350,32 +337,8 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   let totalCost = 0;
   let items = [];
   
-  // ★ サブカテゴリごとの合計数量（重量）を計算 ★
-  const subcategoryTotals = {};
-  phoneCart.forEach((item) => {
-    const subcatId = item.product.subcategoryId;
-    const size = item.product.size || 1;
-    const requiredQuantity = size * item.quantity;
-    if (!subcategoryTotals[subcatId]) {
-      subcategoryTotals[subcatId] = 0;
-    }
-    subcategoryTotals[subcatId] += requiredQuantity;
-  });
-  
-  // 各カート商品の計算（サブカテゴリ全体の合計数量をもとに単価を取得）
-  // ※ 万一 product.price が数値として無効な場合、defaultPrice を使用する
- document.getElementById('btn-checkout').addEventListener('click', async () => {
-  if (phoneCart.length === 0) {
-    alert('カゴに商品がありません');
-    return;
-  }
-  
-  let totalAmount = 0;
-  let totalCost = 0;
-  let items = [];
-  
   // 各カート商品の計算（各商品の必要数量をもとに単価を取得）
-  // ※ PC版と同様に、各商品の requiredQuantity を個別に使用する
+  // PC版と同様に、各商品の requiredQuantity を個別に使用する
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
