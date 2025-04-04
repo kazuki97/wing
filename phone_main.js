@@ -72,7 +72,6 @@ async function updateCartUI() {
   cartItemsDiv.innerHTML = '';
   let total = 0;
   
-  // ★ サブカテゴリごとの合計数量（重量）を計算 ★
   // サブカテゴリごとの合計数量（重量）を計算
 const subcategoryTotals = {};
 phoneCart.forEach((item) => {
@@ -367,15 +366,30 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     subcategoryTotals[subcatId] += requiredQuantity;
   });
   
-  // 各カート商品の計算（合計数量をもとに単価を取得）
+  // 各カート商品の計算（サブカテゴリ全体の合計数量をもとに単価を取得）
+  // ※ 万一 product.price が数値として無効な場合、defaultPrice を使用する
+  const defaultPrice = 1000; // ※ 適切なデフォルト単価に変更してください
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
     const size = product.size || 1;
     const requiredQuantity = size * quantity;
-    // 該当サブカテゴリ全体の合計数量を使用
-    const totalQuantity = subcategoryTotals[product.subcategoryId];
-    const unitPrice = await getUnitPrice(product.subcategoryId, totalQuantity, product.price);
+    
+    // 該当サブカテゴリ ID のチェック
+    const subcatId = product.subcategoryId;
+    if (!subcatId) {
+      console.error("product.subcategoryId is missing for product:", product);
+      continue; // サブカテゴリ ID がない商品はスキップ
+    }
+    
+    // サブカテゴリ全体の合計数量を取得
+    const totalQuantity = subcategoryTotals[subcatId];
+    
+    // product.price を数値に変換、無効な場合は defaultPrice を利用
+    const basePrice = Number(product.price);
+    const validPrice = (!isNaN(basePrice) && basePrice > 0) ? basePrice : defaultPrice;
+    
+    const unitPrice = await getUnitPrice(subcatId, totalQuantity, validPrice);
     const subtotal = unitPrice * requiredQuantity;
     totalAmount += subtotal;
     const cost = product.cost * requiredQuantity;
@@ -389,7 +403,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
       subtotal: subtotal,
       profit: subtotal - cost,
       size: size,
-      subcategoryId: product.subcategoryId,
+      subcategoryId: subcatId,
     });
   }
   
@@ -428,32 +442,31 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   const discountReason = document.getElementById('discountReason').value;
   
   const feeAmount = 0;
-// 売上は、各商品の合計金額から割引額を引いた値として計算
-const displayedSales = totalAmount - discountAmount;
-// 利益は「売上 － 原価 － 手数料 － 送料」
-const profitCalculated = displayedSales - totalCost - feeAmount - shippingFee;
+  // 売上は、各商品の合計金額から割引額を引いた値として計算
+  const displayedSales = totalAmount - discountAmount;
+  // 利益は「売上 － 原価 － 手数料 － 送料」で計算
+  const profitCalculated = displayedSales - totalCost - feeAmount - shippingFee;
   
-const transactionData = {
-  timestamp: saleTimestamp.toISOString(),
-  totalAmount: displayedSales,  // 売上は割引適用後の値
-  totalCost: totalCost,
-  feeAmount: feeAmount,
-  paymentMethodId: paymentMethod,
-  salesMethod: salesMethod,
-  shippingMethod: shippingMethod,
-  shippingFee: shippingFee,
-  items: items,
-  manuallyAdded: false,
-  cost: totalCost,
-  profit: profitCalculated,
-  discount: {
-    amount: discountAmount,
-    reason: discountReason,
-  },
-};
-
+  const transactionData = {
+    timestamp: saleTimestamp.toISOString(),
+    totalAmount: displayedSales,  // 売上は割引適用後の値
+    totalCost: totalCost,
+    feeAmount: feeAmount,
+    paymentMethodId: paymentMethod,
+    salesMethod: salesMethod,
+    shippingMethod: shippingMethod,
+    shippingFee: shippingFee,
+    items: items,
+    manuallyAdded: false,
+    cost: totalCost,
+    profit: profitCalculated,
+    discount: {
+      amount: discountAmount,
+      reason: discountReason,
+    },
+  };
   
-  // 在庫更新（各商品在庫の減少および全体在庫の更新）
+  // 在庫更新（各商品の在庫の減少および全体在庫の更新）
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
@@ -474,6 +487,7 @@ const transactionData = {
     alert('売上登録に失敗しました');
   }
 });
+
 
 
 // -------------------------
