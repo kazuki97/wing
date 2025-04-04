@@ -26,8 +26,6 @@ import { displayTransactions, displayOverallInventory, displayInventoryProducts 
 import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
 
-let currentFilter = {};
-
 
 // エラーメッセージ表示関数
 export function showError(message) {
