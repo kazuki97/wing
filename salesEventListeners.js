@@ -551,8 +551,8 @@ document.getElementById('filterTransactionsForm').addEventListener('submit', asy
   }
   filter.onlyReturned = onlyReturned;
 
-  // グローバル変数 currentFilter を更新してフィルタ条件を保持する
-  currentFilter = filter;
+  // グローバルなフィルタ状態を更新するために setCurrentFilter を呼び出す
+setCurrentFilter(filter);
 
   // 再表示時にこのフィルタ条件を使用
   await displayTransactions(filter);
