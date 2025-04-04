@@ -406,9 +406,10 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   // 利益は「売上 － 原価 － 手数料 － 送料」で計算
   const profitCalculated = displayedSales - totalCost - feeAmount - shippingFee;
   
+  // 取引データ
   const transactionData = {
     timestamp: saleTimestamp.toISOString(),
-    totalAmount: displayedSales,  // 売上は割引適用後の値
+    totalAmount: displayedSales,
     totalCost: totalCost,
     feeAmount: feeAmount,
     paymentMethodId: paymentMethod,
@@ -423,7 +424,9 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
       amount: discountAmount,
       reason: discountReason,
     },
+   netAmount: displayedSales, // ← ここを追加し、PC版と同様に netAmount もセット
   };
+  
   
   // 在庫更新（各商品の在庫の減少および全体在庫の更新）
   for (const item of phoneCart) {
