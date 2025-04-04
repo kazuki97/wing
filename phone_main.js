@@ -135,6 +135,7 @@ async function updateCartUI() {
 // 商品追加関数（非同期処理に対応）
 // -------------------------
 async function addProductToCart(product) {
+  console.log("【iPhone版】追加される商品オブジェクト:", product);
   const existing = phoneCart.find(item => item.product.id === product.id);
   if (existing) {
     existing.quantity += 1;
