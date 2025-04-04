@@ -85,26 +85,22 @@ phoneCart.forEach((item) => {
 });
   
 // 各アイテム表示時は、該当サブカテゴリ全体の合計数量を利用して単価を計算
+// 各アイテム表示時は、個々の商品ごとの必要数量を用いて単価を取得
 for (const item of phoneCart) {
   const size = item.product.size || 1;
   const requiredQuantity = size * item.quantity;
-  // 該当サブカテゴリ全体の合計数量を取得
-  const totalQuantity = subcategoryTotals[item.product.subcategoryId];
-  // product.price を数値に変換。無効な場合は 0 を設定
-  const basePrice = Number(item.product.price);
-  const validPrice = isNaN(basePrice) || basePrice <= 0 ? 0 : basePrice;
-  const unitPrice = await getUnitPrice(item.product.subcategoryId, totalQuantity, validPrice);
+  const unitPrice = await getUnitPrice(item.product.subcategoryId, requiredQuantity, item.product.price);
   const itemTotal = unitPrice * requiredQuantity;
   total += itemTotal;
-    
+  
   const div = document.createElement('div');
   div.className = 'cart-item';
-    
+  
   // 商品名表示
   const nameSpan = document.createElement('span');
   nameSpan.textContent = item.product.name;
   div.appendChild(nameSpan);
-    
+  
   // 数量入力フィールド
   const quantityInput = document.createElement('input');
   quantityInput.type = 'number';
@@ -121,12 +117,12 @@ for (const item of phoneCart) {
     await updateCartUI();
   });
   div.appendChild(quantityInput);
-    
-  // 金額表示（単価×数量×サイズ、getUnitPrice の結果を反映）
+  
+  // 金額表示（単価×数量×サイズ）
   const priceSpan = document.createElement('span');
   priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unitPrice.toLocaleString()})`;
   div.appendChild(priceSpan);
-    
+  
   // 削除ボタン
   const deleteButton = document.createElement('button');
   deleteButton.textContent = '削除';
@@ -137,11 +133,11 @@ for (const item of phoneCart) {
     removeFromCart(productId);
   });
   div.appendChild(deleteButton);
-    
+  
   cartItemsDiv.appendChild(div);
 }
   
-// ★ 割引額を反映して合計金額を表示 ★
+// 割引額を反映して合計金額を表示
 const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
 const finalTotal = total - discountAmount;
 document.getElementById('cart-total').textContent = `合計: ¥${finalTotal.toLocaleString()}`;
@@ -368,32 +364,31 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   
   // 各カート商品の計算（サブカテゴリ全体の合計数量をもとに単価を取得）
   // ※ 万一 product.price が数値として無効な場合、defaultPrice を使用する
-  const defaultPrice = 1000; // ※ 適切なデフォルト単価に変更してください
+ document.getElementById('btn-checkout').addEventListener('click', async () => {
+  if (phoneCart.length === 0) {
+    alert('カゴに商品がありません');
+    return;
+  }
+  
+  let totalAmount = 0;
+  let totalCost = 0;
+  let items = [];
+  
+  // 各カート商品の計算（各商品の必要数量をもとに単価を取得）
+  // ※ PC版と同様に、各商品の requiredQuantity を個別に使用する
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
     const size = product.size || 1;
     const requiredQuantity = size * quantity;
     
-    // 該当サブカテゴリ ID のチェック
-    const subcatId = product.subcategoryId;
-    if (!subcatId) {
-      console.error("product.subcategoryId is missing for product:", product);
-      continue; // サブカテゴリ ID がない商品はスキップ
-    }
-    
-    // サブカテゴリ全体の合計数量を取得
-    const totalQuantity = subcategoryTotals[subcatId];
-    
-    // product.price を数値に変換、無効な場合は defaultPrice を利用
-    const basePrice = Number(product.price);
-    const validPrice = (!isNaN(basePrice) && basePrice > 0) ? basePrice : defaultPrice;
-    
-    const unitPrice = await getUnitPrice(subcatId, totalQuantity, validPrice);
+    // 個々の requiredQuantity を使用して単価を算出
+    const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
     const subtotal = unitPrice * requiredQuantity;
     totalAmount += subtotal;
     const cost = product.cost * requiredQuantity;
     totalCost += cost;
+    
     items.push({
       productId: product.id,
       productName: product.name,
@@ -403,7 +398,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
       subtotal: subtotal,
       profit: subtotal - cost,
       size: size,
-      subcategoryId: subcatId,
+      subcategoryId: product.subcategoryId,
     });
   }
   
@@ -487,8 +482,6 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     alert('売上登録に失敗しました');
   }
 });
-
-
 
 // -------------------------
 // 消耗品管理
