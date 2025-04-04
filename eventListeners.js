@@ -1157,7 +1157,7 @@ saveBtn.addEventListener('click', async () => {
   document.getElementById('transactionDetails').style.display = 'none';
   document.getElementById('modalOverlay').style.display = 'none';
   // 更新後、グローバル変数 currentFilter を用いてフィルタ条件を維持
-  await displayTransactions(currentFilter);
+ await displayTransactions(getCurrentFilter());
 } catch (error) {
   console.error('取引更新に失敗しました:', error);
   showError('取引の更新に失敗しました');
