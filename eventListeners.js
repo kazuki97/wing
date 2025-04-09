@@ -858,11 +858,15 @@ export async function displayTransactions(filter = {}) {
         totalCost = 0;
       }
 
-      const netAmount = parseFloat(transaction.netAmount) || 0;
+    const netAmount = parseFloat(transaction.netAmount) || 0;
 const feeAmount = parseFloat(transaction.feeAmount) || 0;
-const discountAmount = transaction.discount?.amount || 0;  // ←追加
-const adjustedNetAmount = netAmount - discountAmount;      // ←追加（割引適用後の純売上）
-const adjustedProfit = (transaction.profit !== undefined ? parseFloat(transaction.profit) : netAmount - totalCost - feeAmount) - discountAmount; // ←修正
+const discountAmount = transaction.discount?.amount || 0;  
+
+// 修正点：すでに割引済みのnetAmountをそのまま使う
+const adjustedNetAmount = netAmount;
+
+// 修正点：利益計算は、割引済みnetAmountから原価と手数料を引くだけに修正
+const adjustedProfit = netAmount - totalCost - feeAmount;
 
 // チェックボックスを先頭セルに追加
 row.innerHTML = `
