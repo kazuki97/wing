@@ -13,6 +13,9 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
 import { getConsumables } from './consumables.js'; // 消耗品取得用
 import { updatePaymentMethodSelect } from './eventListeners.js'; // PC版と同様の支払方法更新関数
+import { getPaymentMethods } from './paymentMethods.js'; // ←冒頭で追加が必要
+
+
 
 // --- グローバル変数 ---
 let phoneCart = [];
@@ -333,26 +336,49 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     alert('カゴに商品がありません');
     return;
   }
-  
+
+  const saleDate = document.getElementById('saleDate').value;
+  if (!saleDate) {
+    alert('販売日を入力してください');
+    return;
+  }
+  const saleTimestamp = new Date(saleDate + "T00:00");
+
+  const salesMethod = document.getElementById('salesMethodSelect').value;
+  if (!salesMethod) {
+    alert('販売方法を選択してください');
+    return;
+  }
+
+  const paymentMethodId = document.getElementById('paymentMethodSelect').value;
+  if (!paymentMethodId) {
+    alert('支払方法を選択してください');
+    return;
+  }
+
+  // 支払い方法を取得
+  const paymentMethods = await getPaymentMethods();
+  const paymentMethod = paymentMethods.find(pm => pm.id === paymentMethodId);
+  if (!paymentMethod) {
+    alert('支払い方法が見つかりません');
+    return;
+  }
+
   let totalAmount = 0;
   let totalCost = 0;
   let items = [];
-  
-  // 各カート商品の計算（各商品の必要数量をもとに単価を取得）
-  // PC版と同様に、各商品の requiredQuantity を個別に使用する
+
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
     const size = product.size || 1;
     const requiredQuantity = size * quantity;
-    
-    // 個々の requiredQuantity を使用して単価を算出
     const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
     const subtotal = unitPrice * requiredQuantity;
     totalAmount += subtotal;
     const cost = product.cost * requiredQuantity;
     totalCost += cost;
-    
+
     items.push({
       productId: product.id,
       productName: product.name,
@@ -365,28 +391,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
       subcategoryId: product.subcategoryId,
     });
   }
-  
-  const saleDate = document.getElementById('saleDate').value;
-  if (!saleDate) {
-    alert('販売日を入力してください');
-    return;
-  }
-  const saleTimestamp = new Date(saleDate + "T00:00");
-  
-  // --- 販売方法と支払方法の選択 ---
-  const salesMethod = document.getElementById('salesMethodSelect').value;
-  if (!salesMethod) {
-    alert('販売方法を選択してください');
-    return;
-  }
-  
-  const paymentMethod = document.getElementById('paymentMethodSelect').value;
-  if (!paymentMethod) {
-    alert('支払方法を選択してください');
-    return;
-  }
-  // -------------------------------
-  
+
   const shippingMethod = document.getElementById('shippingMethodSelect').value;
   let shippingFee = 0;
   if (shippingMethod === 'クリックポスト') {
@@ -396,23 +401,24 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   } else if (shippingMethod === 'ヤマト運輸') {
     shippingFee = parseFloat(document.getElementById('shippingFeeInput').value) || 0;
   }
-  
+
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
   const discountReason = document.getElementById('discountReason').value;
-  
-  const feeAmount = 0;
-  // 売上は、各商品の合計金額から割引額を引いた値として計算
+
+  // 支払い方法の手数料を計算
+  const feeRate = paymentMethod.feeRate || 0;
+  const feeAmount = Math.round((totalAmount - discountAmount) * feeRate / 100);
+
   const displayedSales = totalAmount - discountAmount;
-  // 利益は「売上 － 原価 － 手数料 － 送料」で計算
   const profitCalculated = displayedSales - totalCost - feeAmount - shippingFee;
-  
-  // 取引データ
+
   const transactionData = {
     timestamp: saleTimestamp.toISOString(),
     totalAmount: displayedSales,
     totalCost: totalCost,
     feeAmount: feeAmount,
-    paymentMethodId: paymentMethod,
+    paymentMethodId: paymentMethodId,
+    paymentMethodName: paymentMethod.name,
     salesMethod: salesMethod,
     shippingMethod: shippingMethod,
     shippingFee: shippingFee,
@@ -424,11 +430,9 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
       amount: discountAmount,
       reason: discountReason,
     },
-   netAmount: displayedSales, // ← ここを追加し、PC版と同様に netAmount もセット
+    netAmount: displayedSales - feeAmount,
   };
-  
-  
-  // 在庫更新（各商品の在庫の減少および全体在庫の更新）
+
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
@@ -437,7 +441,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     await updateProduct(product.id, { quantity: product.quantity - quantity });
     await updateOverallInventory(product.subcategoryId, -requiredQuantity);
   }
-  
+
   try {
     const transactionId = await addTransaction(transactionData);
     alert('売上登録が完了しました。取引ID: ' + transactionId);
@@ -449,6 +453,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     alert('売上登録に失敗しました');
   }
 });
+
 
 // -------------------------
 // 消耗品管理
