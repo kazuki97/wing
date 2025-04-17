@@ -2423,11 +2423,11 @@ if (!user) {
 // **単価ルール編集用モーダルを開く関数を追加**
 async function openEditPricingRuleModal(ruleId) {
   try {
-const user = auth.currentUser;
-if (!user) {
-  alert('この操作を行うにはログインが必要です。');
-  return;
-}
+    const user = auth.currentUser;
+    if (!user) {
+      alert('この操作を行うにはログインが必要です。');
+      return;
+    }
     const rule = await getPricingRuleById(ruleId);
     if (!rule) {
       showError('単価ルールが見つかりません');
@@ -2435,9 +2435,9 @@ if (!user) {
     }
     // モーダル内のフォームに値をセット
     document.getElementById('editPricingRuleId').value = rule.id;
-    document.getElementById('editMinQuantity').value = rule.minQuantity;
-    document.getElementById('editMaxQuantity').value = rule.maxQuantity;
-    document.getElementById('editUnitPrice').value = rule.unitPrice;
+    document.getElementById('editMinQuantity').value  = rule.minQuantity;
+    document.getElementById('editMaxQuantity').value  = rule.maxQuantity;
+    document.getElementById('editUnitPrice').value   = rule.unitPrice;
     // モーダルを表示
     document.getElementById('editPricingRuleModal').style.display = 'block';
   } catch (error) {
@@ -2447,15 +2447,15 @@ if (!user) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 単価ルール更新
+  // ── 単価ルール編集フォーム送信 ──
   const editPricingRuleForm = document.getElementById('editPricingRuleForm');
   if (editPricingRuleForm) {
     editPricingRuleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const ruleId = document.getElementById('editPricingRuleId').value;
+      const ruleId      = document.getElementById('editPricingRuleId').value;
       const minQuantity = parseFloat(document.getElementById('editMinQuantity').value);
       const maxQuantity = parseFloat(document.getElementById('editMaxQuantity').value);
-      const unitPrice = parseFloat(document.getElementById('editUnitPrice').value);
+      const unitPrice   = parseFloat(document.getElementById('editUnitPrice').value);
       if (minQuantity > maxQuantity) {
         showError('最小数量は最大数量以下である必要があります');
         return;
@@ -2472,16 +2472,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // モーダル閉じるボタン
-  const closeEditModal = document.getElementById('closeEditConsumableUsageModal');
-  if (closeEditModal) {
-    closeEditModal.addEventListener('click', () => {
-      const modal = document.getElementById('editConsumableUsageModal');
-      if (modal) modal.style.display = 'none';
+  // ── モーダル「×」で閉じる ──
+  const closeEditConsumableUsageModalBtn = document.getElementById('closeEditConsumableUsageModal');
+  if (closeEditConsumableUsageModalBtn) {
+    closeEditConsumableUsageModalBtn.addEventListener('click', () => {
+      document.getElementById('editConsumableUsageModal').style.display = 'none';
     });
   }
 
-  // サブカテゴリ変更時に単価ルール表示
+  // ── 単価設定セレクト（サブカテゴリ変更時リロード） ──
   const pricingSubcategorySelect = document.getElementById('pricingSubcategorySelect');
   if (pricingSubcategorySelect) {
     pricingSubcategorySelect.addEventListener('change', async () => {
@@ -2489,30 +2488,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 顧客追加モーダルを開く
+  // ── 顧客追加モーダルを開く／閉じる ──
   const openAddCustomerModalBtn = document.getElementById('openAddCustomerModal');
-  const addEditCustomerModal = document.getElementById('addEditCustomerModal');
+  const addEditCustomerModal    = document.getElementById('addEditCustomerModal');
+  const closeCustomerModalBtn   = document.getElementById('closeCustomerModal');
   if (openAddCustomerModalBtn && addEditCustomerModal) {
     openAddCustomerModalBtn.addEventListener('click', () => {
       addEditCustomerModal.style.display = 'block';
     });
   }
+  if (closeCustomerModalBtn && addEditCustomerModal) {
+    closeCustomerModalBtn.addEventListener('click', () => {
+      addEditCustomerModal.style.display = 'none';
+    });
+  }
 
-// ✕ボタンで閉じる処理
-const closeCustomerModalBtn = document.getElementById('closeCustomerModal');
-if (closeCustomerModalBtn && addEditCustomerModal) {
-  closeCustomerModalBtn.addEventListener('click', () => {
-    addEditCustomerModal.style.display = 'none';
-  });
-}
-
-
-  // 売上処理
+  // ── 売上処理フォーム送信 ──
   const processSaleForm = document.getElementById('processSaleForm');
   if (processSaleForm) {
     processSaleForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const barcode = document.getElementById('saleBarcode').value;
+      const barcode      = document.getElementById('saleBarcode').value;
       const quantitySold = parseFloat(document.getElementById('saleQuantity').value);
       if (!barcode || isNaN(quantitySold) || quantitySold <= 0) {
         showError('有効なバーコードと数量を入力してください');
@@ -2530,23 +2526,21 @@ if (closeCustomerModalBtn && addEditCustomerModal) {
     });
   }
 
-  // — 特別単価モーダル処理 —
-document.addEventListener('DOMContentLoaded', () => {
-  const openBtn  = document.getElementById('openCustomerPricingModal');
-  const modal    = document.getElementById('customerPricingModal');
-  const closeBtn = document.getElementById('closeCustomerPricingModal');
-  const form     = document.getElementById('customerPricingForm');
-  const tbody    = document.getElementById('customerPricingListBody');
-  let rules = [];
+  // ── 特別単価モーダル処理 ──
+  const openCustomerPricingModalBtn = document.getElementById('openCustomerPricingModal');
+  const customerPricingModal        = document.getElementById('customerPricingModal');
+  const closeCustomerPricingModalBtn= document.getElementById('closeCustomerPricingModal');
+  const customerPricingForm         = document.getElementById('customerPricingForm');
+  const customerPricingListBody     = document.getElementById('customerPricingListBody');
+  let customerPricingRules          = [];
 
   // モーダルを開く
-  if (openBtn && modal) {
-    openBtn.addEventListener('click', async () => {
-      // ① モーダル表示＆フォーム初期化
-      modal.style.display = 'block';
-      form.reset();
-
-      // ② 親カテゴリフェッチ & セレクトにセット
+  if (openCustomerPricingModalBtn && customerPricingModal) {
+    openCustomerPricingModalBtn.addEventListener('click', async () => {
+      // モーダル表示＆フォーム初期化
+      customerPricingModal.style.display = 'block';
+      customerPricingForm.reset();
+      // 親カテゴリを取得してセット
       const parentSel = document.getElementById('customerPricingParentCategory');
       parentSel.innerHTML = '<option value="">親カテゴリを選択</option>';
       const parents = await getParentCategories();
@@ -2556,62 +2550,50 @@ document.addEventListener('DOMContentLoaded', () => {
         opt.textContent = cat.name;
         parentSel.appendChild(opt);
       });
-
-      // ③ サブカテゴリセレクトはクリアだけ
+      // サブカテゴリはクリア
       document.getElementById('customerPricingSubCategory')
               .innerHTML = '<option value="">サブカテゴリを選択</option>';
     });
   }
 
-  // 親カテゴリが変わったらサブカテゴリをロード
-  const parentEl = document.getElementById('customerPricingParentCategory');
-  if (parentEl) {
-    parentEl.addEventListener('change', async e => {
-      await updateSubcategorySelect(
-        e.target.value,
-        'customerPricingSubCategory'
-      );
+  // 親カテゴリ変更でサブカテゴリ更新
+  const parentCatElem = document.getElementById('customerPricingParentCategory');
+  if (parentCatElem) {
+    parentCatElem.addEventListener('change', async e => {
+      await updateSubcategorySelect(e.target.value, 'customerPricingSubCategory');
     });
   }
 
   // モーダルを閉じる
-  if (closeBtn && modal) {
-    closeBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
+  if (closeCustomerPricingModalBtn && customerPricingModal) {
+    closeCustomerPricingModalBtn.addEventListener('click', () => {
+      customerPricingModal.style.display = 'none';
     });
   }
 
-  // 「追加」ボタンを押されたとき
-  if (form) {
-    form.addEventListener('submit', e => {
+  // 特別単価「追加」ボタン
+  if (customerPricingForm) {
+    customerPricingForm.addEventListener('submit', e => {
       e.preventDefault();
-
-      // 各フィールドを拾う
-      const p = document.getElementById('customerPricingParentCategory');
-      const s = document.getElementById('customerPricingSubCategory');
-      const minQ = parseFloat(document.getElementById('customerPricingMinQuantity').value);
-      const maxQ = parseFloat(document.getElementById('customerPricingMaxQuantity').value);
-      const up   = parseFloat(document.getElementById('customerPricingUnitPrice').value);
-
-      // バリデーション
-      if (!p.value || !s.value || isNaN(minQ) || isNaN(maxQ) || isNaN(up)) {
+      const p   = document.getElementById('customerPricingParentCategory');
+      const s   = document.getElementById('customerPricingSubCategory');
+      const min = parseFloat(document.getElementById('customerPricingMinQuantity').value);
+      const max = parseFloat(document.getElementById('customerPricingMaxQuantity').value);
+      const up  = parseFloat(document.getElementById('customerPricingUnitPrice').value);
+      if (!p.value || !s.value || isNaN(min) || isNaN(max) || isNaN(up)) {
         alert('すべての項目を正しく入力してください');
         return;
       }
-
-      // ルールを配列に追加
       const rule = {
         parentCategoryId:   p.value,
         parentCategoryName: p.selectedOptions[0].text,
         subcategoryId:      s.value,
         subcategoryName:    s.selectedOptions[0].text,
-        minQuantity:        minQ,
-        maxQuantity:        maxQ,
+        minQuantity:        min,
+        maxQuantity:        max,
         unitPrice:          up
       };
-      rules.push(rule);
-
-      // テーブルに行を追加
+      customerPricingRules.push(rule);
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${rule.parentCategoryName}</td>
@@ -2621,38 +2603,34 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${rule.unitPrice}</td>
         <td><button class="delete-pricing-rule-temp">削除</button></td>
       `;
-      tbody.appendChild(tr);
-
-      // リセットしてモーダルを閉じる
-      form.reset();
-      modal.style.display = 'none';
+      customerPricingListBody.appendChild(tr);
+      customerPricingForm.reset();
+      customerPricingModal.style.display = 'none';
     });
 
-    // 「削除」ボタン
-    tbody.addEventListener('click', e => {
+    // 特別単価「削除」ボタン
+    customerPricingListBody.addEventListener('click', e => {
       if (e.target.classList.contains('delete-pricing-rule-temp')) {
         const idx = e.target.closest('tr').rowIndex - 1;
-        rules.splice(idx, 1);
+        customerPricingRules.splice(idx, 1);
         e.target.closest('tr').remove();
       }
     });
   }
 
-
+  // ── 顧客保存フォーム送信 ──
   const customerForm = document.getElementById('customerForm');
   if (customerForm) {
-    customerForm.addEventListener('submit', async (e) => {
+    customerForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const customerId = document.getElementById('customerId').value;
+      const customerId   = document.getElementById('customerId').value;
       const customerName = document.getElementById('customerName').value;
       const customerNote = document.getElementById('customerNote').value;
-
       const customerData = {
-        name: customerName,
-        note: customerNote,
-        pricingRules: customerPricingRules,
+        name:        customerName,
+        note:        customerNote,
+        pricingRules: customerPricingRules
       };
-
       try {
         if (customerId) {
           await updateCustomer(customerId, customerData);
@@ -2661,7 +2639,6 @@ document.addEventListener('DOMContentLoaded', () => {
           await createCustomer(customerData);
           alert('顧客が追加されました');
         }
-
         customerForm.reset();
         customerPricingListBody.innerHTML = '';
         customerPricingRules = [];
@@ -2673,9 +2650,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});
+});  // ← ここで「DOMContentLoaded」のコールバックを閉じる
 
-// 売上手動追加ボタン（DOMContentLoadedの外）
+// ── 売上手動追加ボタンはコールバック外で登録 ──
 const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
 if (manualAddTransactionButton) {
   manualAddTransactionButton.addEventListener('click', async () => {
@@ -2683,10 +2660,10 @@ if (manualAddTransactionButton) {
     await updatePaymentMethodSelect();
   });
 }
-
 const cancelAddTransactionButton = document.getElementById('cancelAddTransaction');
 if (cancelAddTransactionButton) {
   cancelAddTransactionButton.addEventListener('click', () => {
     document.getElementById('manualAddTransactionForm').style.display = 'none';
   });
 }
+
