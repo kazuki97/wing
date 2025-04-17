@@ -50,13 +50,27 @@ function showScreen(screenId) {
 async function updateViewCartButton() {
   let totalQuantity = 0;
   let totalPrice = 0;
+
+  // サブカテゴリごとに必要数量を集計
+  const qtyBySubcat = {};
   for (const item of phoneCart) {
     const size = item.product.size || 1;
     const requiredQuantity = size * item.quantity;
-    const unitPrice = await getUnitPrice(item.product.subcategoryId, requiredQuantity, item.product.price);
+    const subcatId = item.product.subcategoryId;
+    qtyBySubcat[subcatId] = (qtyBySubcat[subcatId] || 0) + requiredQuantity;
     totalQuantity += item.quantity;
-    totalPrice += unitPrice * requiredQuantity;
   }
+
+  // サブカテゴリごとに単価を一度だけ取得
+  const priceBySubcat = {};
+  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
+    // 同じサブカテゴリの最初のアイテムから basePrice を取る
+    const basePrice = phoneCart.find(item => item.product.subcategoryId === subcatId)
+                             .product.price;
+    priceBySubcat[subcatId] = await getUnitPrice(subcatId, reqQty, basePrice);
+    totalPrice += priceBySubcat[subcatId] * reqQty;
+  }
+
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
   const finalPrice = totalPrice - discountAmount;
   const btn = document.getElementById('btn-go-checkout');
@@ -67,6 +81,7 @@ async function updateViewCartButton() {
   }
 }
 
+
 // -------------------------
 // カゴ内更新関数（非同期処理に対応）
 // -------------------------
@@ -74,23 +89,41 @@ async function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
   let total = 0;
-  
-  // 個々の商品ごとの必要数量を用いて単価を取得
+
+  // ① サブカテゴリごとに必要数量を集計
+  const qtyBySubcat = {};
+  phoneCart.forEach(item => {
+    const size = item.product.size || 1;
+    const requiredQuantity = size * item.quantity;
+    const subcatId = item.product.subcategoryId;
+    qtyBySubcat[subcatId] = (qtyBySubcat[subcatId] || 0) + requiredQuantity;
+  });
+
+  // ② サブカテゴリごとに単価を一度だけ取得
+  const priceBySubcat = {};
+  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
+    const basePrice = phoneCart.find(
+      item => item.product.subcategoryId === subcatId
+    ).product.price;
+    priceBySubcat[subcatId] = await getUnitPrice(subcatId, reqQty, basePrice);
+  }
+
+  // ③ 各行に同じサブカテゴリの単価を適用してUIを構築
   for (const item of phoneCart) {
     const size = item.product.size || 1;
     const requiredQuantity = size * item.quantity;
-    const unitPrice = await getUnitPrice(item.product.subcategoryId, requiredQuantity, item.product.price);
+    const unitPrice = priceBySubcat[item.product.subcategoryId];
     const itemTotal = unitPrice * requiredQuantity;
     total += itemTotal;
-    
+
     const div = document.createElement('div');
     div.className = 'cart-item';
-    
+
     // 商品名表示
     const nameSpan = document.createElement('span');
     nameSpan.textContent = item.product.name;
     div.appendChild(nameSpan);
-    
+
     // 数量入力フィールド
     const quantityInput = document.createElement('input');
     quantityInput.type = 'number';
@@ -107,12 +140,12 @@ async function updateCartUI() {
       await updateCartUI();
     });
     div.appendChild(quantityInput);
-    
+
     // 金額表示（単価×数量×サイズ）
     const priceSpan = document.createElement('span');
     priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unitPrice.toLocaleString()})`;
     div.appendChild(priceSpan);
-    
+
     // 削除ボタン
     const deleteButton = document.createElement('button');
     deleteButton.textContent = '削除';
@@ -123,16 +156,21 @@ async function updateCartUI() {
       removeFromCart(productId);
     });
     div.appendChild(deleteButton);
-    
+
     cartItemsDiv.appendChild(div);
   }
-  
+
   // 割引額を反映して合計金額を表示
-  const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+  const discountAmount = parseFloat(
+    document.getElementById('discountAmount').value
+  ) || 0;
   const finalTotal = total - discountAmount;
   document.getElementById('cart-total').textContent = `合計: ¥${finalTotal.toLocaleString()}`;
+
+  // ビュー用ボタンも更新
   await updateViewCartButton();
 }
+
 
 // -------------------------
 // 商品追加関数（非同期処理に対応）
