@@ -2497,13 +2497,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-// ✕ボタンで閉じる処理 ← この下に追記
-const closeAddEditCustomerModalBtn = document.getElementById('closeAddEditCustomerModal');
-if (closeAddEditCustomerModalBtn && addEditCustomerModal) {
-  closeAddEditCustomerModalBtn.addEventListener('click', () => {
+// ✕ボタンで閉じる処理
+const closeCustomerModalBtn = document.getElementById('closeCustomerModal');
+if (closeCustomerModalBtn && addEditCustomerModal) {
+  closeCustomerModalBtn.addEventListener('click', () => {
     addEditCustomerModal.style.display = 'none';
   });
 }
+
 
   // 売上処理
   const processSaleForm = document.getElementById('processSaleForm');
@@ -2538,12 +2539,36 @@ if (closeAddEditCustomerModalBtn && addEditCustomerModal) {
   let customerPricingRules = [];
 
   if (openCustomerPricingModalBtn && customerPricingModal) {
-    openCustomerPricingModalBtn.addEventListener('click', async () => {
+   openCustomerPricingModalBtn.addEventListener('click', async () => {
   customerPricingModal.style.display = 'block';
   customerPricingForm.reset();
-  await updateAllParentCategorySelects(); // ← ここを追加
+
+  // ① 親カテゴリセレクトをセット
+  const parentSel = document.getElementById('customerPricingParentCategory');
+  parentSel.innerHTML = '<option value="">親カテゴリを選択</option>';
+  const parents = await getParentCategories(); 
+  parents.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat.id;
+    opt.textContent = cat.name;
+    parentSel.appendChild(opt);
+  });
+
+  // ② サブカテゴリセレクトを初期化
+  const subSel = document.getElementById('customerPricingSubCategory');
+  subSel.innerHTML = '<option value="">サブカテゴリを選択</option>';
 });
-  }
+
+// ③ 親カテゴリ変更時にサブカテゴリを動的に読み込むリスナーを追加
+document
+  .getElementById('customerPricingParentCategory')
+  .addEventListener('change', async (e) => {
+    await updateSubcategorySelect(
+      e.target.value,
+      'customerPricingSubCategory'
+    );
+  });
+
 
   if (closeCustomerPricingModalBtn && customerPricingModal) {
     closeCustomerPricingModalBtn.addEventListener('click', () => {
@@ -2553,42 +2578,52 @@ if (closeAddEditCustomerModalBtn && addEditCustomerModal) {
 
   if (customerPricingForm) {
     customerPricingForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const parentCategorySelect = document.getElementById('pricingParentCategorySelect');
-      const subCategorySelect = document.getElementById('pricingSubcategorySelect');
-      const minQuantity = parseFloat(document.getElementById('minQuantity').value);
-      const maxQuantity = parseFloat(document.getElementById('maxQuantity').value);
-      const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+  e.preventDefault();
 
-      if (!parentCategorySelect.value || !subCategorySelect.value || isNaN(minQuantity) || isNaN(maxQuantity) || isNaN(unitPrice)) {
-        alert('すべての項目を正しく入力してください');
-        return;
-      }
+  // モーダル側の select ID に合わせる
+  const parentCategorySelect = document.getElementById('customerPricingParentCategory');
+  const subCategorySelect    = document.getElementById('customerPricingSubCategory');
+  const minQuantity          = parseFloat(document.getElementById('customerPricingMinQuantity').value);
+  const maxQuantity          = parseFloat(document.getElementById('customerPricingMaxQuantity').value);
+  const unitPrice            = parseFloat(document.getElementById('customerPricingUnitPrice').value);
 
-      const rule = {
-        parentCategoryId: parentCategorySelect.value,
-        parentCategoryName: parentCategorySelect.options[parentCategorySelect.selectedIndex].text,
-        subcategoryId: subCategorySelect.value,
-        subcategoryName: subCategorySelect.options[subCategorySelect.selectedIndex].text,
-        minQuantity,
-        maxQuantity,
-        unitPrice
-      };
-      customerPricingRules.push(rule);
+  if (!parentCategorySelect.value
+    || !subCategorySelect.value
+    || isNaN(minQuantity)
+    || isNaN(maxQuantity)
+    || isNaN(unitPrice)
+  ) {
+    alert('すべての項目を正しく入力してください');
+    return;
+  }
 
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${rule.parentCategoryName}</td>
-        <td>${rule.subcategoryName}</td>
-        <td>${rule.minQuantity}</td>
-        <td>${rule.maxQuantity}</td>
-        <td>${rule.unitPrice}</td>
-        <td><button class="delete-pricing-rule-temp">削除</button></td>
-      `;
-      customerPricingListBody.appendChild(row);
-      customerPricingForm.reset();
-      customerPricingModal.style.display = 'none';
-    });
+  const rule = {
+    parentCategoryId:   parentCategorySelect.value,
+    parentCategoryName: parentCategorySelect.selectedOptions[0].text,
+    subcategoryId:      subCategorySelect.value,
+    subcategoryName:    subCategorySelect.selectedOptions[0].text,
+    minQuantity,
+    maxQuantity,
+    unitPrice
+  };
+  customerPricingRules.push(rule);
+
+  // UI への追加はそのままで OK
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${rule.parentCategoryName}</td>
+    <td>${rule.subcategoryName}</td>
+    <td>${rule.minQuantity}</td>
+    <td>${rule.maxQuantity}</td>
+    <td>${rule.unitPrice}</td>
+    <td><button class="delete-pricing-rule-temp">削除</button></td>
+  `;
+  customerPricingListBody.appendChild(row);
+
+  customerPricingForm.reset();
+  customerPricingModal.style.display = 'none';
+});
+
 
     customerPricingListBody.addEventListener('click', (e) => {
       if (e.target.classList.contains('delete-pricing-rule-temp')) {
