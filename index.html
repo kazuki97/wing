@@ -54,6 +54,31 @@
       <h1>ホーム</h1>
     </section>
 
+<!-- 顧客管理 -->
+<section id="customers" class="content-section" style="display: none;" data-requires-auth="true">
+  <h1>顧客管理</h1>
+  <button id="openAddCustomerModal">顧客を追加</button>
+  <div id="customerList">
+    <ul id="customerListItems">
+      <!-- 顧客一覧をここに動的に表示 -->
+    </ul>
+  </div>
+  <div id="addEditCustomerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeCustomerModal">&times;</span>
+      <h2 id="customerModalTitle">顧客追加</h2>
+      <form id="customerForm">
+        <input type="hidden" id="customerId" />
+        <label for="customerName">顧客名</label>
+        <input type="text" id="customerName" placeholder="顧客名を入力" required />
+        <label for="customerNote">備考</label>
+        <input type="text" id="customerNote" placeholder="例：特別単価顧客" />
+        <button type="submit" id="saveCustomerButton">保存</button>
+      </form>
+    </div>
+  </div>
+</section>
+
     <!-- カテゴリ設定セクション -->
     <section id="categories" class="content-section" style="display: none;" data-requires-auth="true">
       <h1>カテゴリ設定</h1>
