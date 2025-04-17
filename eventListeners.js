@@ -2526,3 +2526,130 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// --- 特別単価登録モーダル処理の追加 ---
+
+document.addEventListener('DOMContentLoaded', () => {
+  const openCustomerPricingModalBtn = document.getElementById('openCustomerPricingModal');
+  const customerPricingModal = document.getElementById('customerPricingModal');
+  const closeCustomerPricingModalBtn = document.getElementById('closeCustomerPricingModal');
+  const customerPricingForm = document.getElementById('customerPricingForm');
+  const customerPricingListBody = document.getElementById('customerPricingListBody');
+
+  let customerPricingRules = [];
+
+  // 特別単価モーダルを開く処理
+  if (openCustomerPricingModalBtn && customerPricingModal) {
+    openCustomerPricingModalBtn.addEventListener('click', () => {
+      customerPricingModal.style.display = 'block';
+      customerPricingForm.reset();
+    });
+  }
+
+  // 特別単価モーダルを閉じる処理
+  if (closeCustomerPricingModalBtn && customerPricingModal) {
+    closeCustomerPricingModalBtn.addEventListener('click', () => {
+      customerPricingModal.style.display = 'none';
+    });
+  }
+
+  // 特別単価を追加する処理
+  if (customerPricingForm) {
+    customerPricingForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const parentCategorySelect = document.getElementById('pricingParentCategorySelect');
+      const subCategorySelect = document.getElementById('pricingSubcategorySelect');
+      const minQuantity = parseFloat(document.getElementById('minQuantity').value);
+      const maxQuantity = parseFloat(document.getElementById('maxQuantity').value);
+      const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+
+      // 有効性チェック
+      if (!parentCategorySelect.value || !subCategorySelect.value || isNaN(minQuantity) || isNaN(maxQuantity) || isNaN(unitPrice)) {
+        alert('すべての項目を正しく入力してください');
+        return;
+      }
+
+      // ローカル配列に追加
+      const rule = {
+        parentCategoryId: parentCategorySelect.value,
+        parentCategoryName: parentCategorySelect.options[parentCategorySelect.selectedIndex].text,
+        subcategoryId: subCategorySelect.value,
+        subcategoryName: subCategorySelect.options[subCategorySelect.selectedIndex].text,
+        minQuantity,
+        maxQuantity,
+        unitPrice
+      };
+      customerPricingRules.push(rule);
+
+      // UIに追加
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${rule.parentCategoryName}</td>
+        <td>${rule.subcategoryName}</td>
+        <td>${rule.minQuantity}</td>
+        <td>${rule.maxQuantity}</td>
+        <td>${rule.unitPrice}</td>
+        <td><button class="delete-pricing-rule-temp">削除</button></td>
+      `;
+      customerPricingListBody.appendChild(row);
+
+      // フォームをリセット
+      customerPricingForm.reset();
+
+      // 特別単価モーダルを閉じる
+      customerPricingModal.style.display = 'none';
+    });
+
+    // 特別単価の一時削除処理（イベント委譲）
+    customerPricingListBody.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete-pricing-rule-temp')) {
+        const rowIndex = e.target.closest('tr').rowIndex - 1; // ヘッダー分を引く
+        customerPricingRules.splice(rowIndex, 1);
+        e.target.closest('tr').remove();
+      }
+    });
+  }
+
+  // 顧客保存フォームに特別単価データを含めてFirestoreに保存する処理を追加
+  const customerForm = document.getElementById('customerForm');
+  if (customerForm) {
+    customerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const customerId = document.getElementById('customerId').value;
+      const customerName = document.getElementById('customerName').value;
+      const customerNote = document.getElementById('customerNote').value;
+
+      const customerData = {
+        name: customerName,
+        note: customerNote,
+        pricingRules: customerPricingRules,
+      };
+
+      try {
+        if (customerId) {
+          await updateCustomer(customerId, customerData);
+          alert('顧客情報が更新されました');
+        } else {
+          await createCustomer(customerData);
+          alert('顧客が追加されました');
+        }
+
+        // リセット
+        customerForm.reset();
+        customerPricingListBody.innerHTML = '';
+        customerPricingRules = [];
+
+        // 顧客一覧の再表示
+        await fetchCustomers();
+
+        // モーダルを閉じる
+        document.getElementById('addEditCustomerModal').style.display = 'none';
+      } catch (error) {
+        console.error('顧客情報の保存に失敗しました:', error);
+        showError('顧客情報の保存に失敗しました');
+      }
+    });
+  }
+});
