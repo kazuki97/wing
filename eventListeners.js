@@ -1594,13 +1594,15 @@ function addSubcategorySelectEventListeners() {
     return; // すでにイベントリスナーが登録されている場合は何もしない
   }
 
-  const subcategorySelectIds = [
-    'productSubcategorySelect',
-    'filterSubcategorySelect',
-    'inventorySubcategorySelect',
-    'overallInventorySubcategorySelect',
-    'pricingSubcategorySelect',
-  ];
+  const parentCategorySelectIds = {
+  productParentCategorySelect: 'productSubcategorySelect',
+  filterParentCategorySelect: 'filterSubcategorySelect',
+  inventoryParentCategorySelect: 'inventorySubcategorySelect',
+  overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
+  pricingParentCategorySelect: 'pricingSubcategorySelect',
+  modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // ← これを追加！
+};
+
 
   subcategorySelectIds.forEach((id) => {
     const selectElement = document.getElementById(id);
