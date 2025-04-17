@@ -58,27 +58,36 @@
 <section id="customers" class="content-section" style="display: none;" data-requires-auth="true">
   <h1>顧客管理</h1>
   <button id="openAddCustomerModal">顧客を追加</button>
+
   <div id="customerList">
     <ul id="customerListItems">
       <!-- 顧客一覧をここに動的に表示 -->
     </ul>
   </div>
-  <div id="addEditCustomerModal" class="modal">
+
+  <!-- 顧客追加／編集モーダル -->
+  <div id="addEditCustomerModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close" id="closeCustomerModal">&times;</span>
       <h2 id="customerModalTitle">顧客追加</h2>
       <form id="customerForm">
         <input type="hidden" id="customerId" />
-        <label for="customerName">顧客名</label>
-        <input type="text" id="customerName" placeholder="顧客名を入力" required />
-        <label for="customerNote">備考</label>
-        <input type="text" id="customerNote" placeholder="例：特別単価顧客" />
 
-        <!-- ▼ 特別単価追加ボタン -->
-        <button type="button" id="openCustomerPricingModal">特別単価を追加</button>
+        <div class="form-group">
+          <label for="customerName">顧客名</label>
+          <input type="text" id="customerName" placeholder="顧客名を入力" required />
+        </div>
 
-        <!-- ▼ 特別単価一覧表示 -->
-        <div id="customerPricingList">
+        <div class="form-group">
+          <label for="customerNote">備考</label>
+          <input type="text" id="customerNote" placeholder="例：特別単価顧客" />
+        </div>
+
+        <div class="form-group">
+          <button type="button" id="openCustomerPricingModal">特別単価を追加</button>
+        </div>
+
+        <div id="customerPricingList" class="form-group">
           <h3>登録済みの特別単価</h3>
           <table>
             <thead>
@@ -96,48 +105,51 @@
           </table>
         </div>
 
-        <button type="submit" id="saveCustomerButton">保存</button>
+        <div class="form-group">
+          <button type="submit" id="saveCustomerButton">保存</button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- ▼ 特別単価登録モーダル -->
+  <!-- 特別単価登録モーダル -->
   <div id="customerPricingModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close" id="closeCustomerPricingModal">&times;</span>
       <h2>特別単価の追加</h2>
       <form id="customerPricingForm">
-  <div class="form-group">
-    <label for="customerPricingParentCategory">親カテゴリ</label>
-    <select id="customerPricingParentCategory" required>
-      <option value="">親カテゴリを選択</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label for="customerPricingSubCategory">サブカテゴリ</label>
-    <select id="customerPricingSubCategory" required>
-      <option value="">サブカテゴリを選択</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label for="customerPricingMinQuantity">最小数量</label>
-    <input type="number" id="customerPricingMinQuantity" required min="0" step="any" />
-  </div>
-  <div class="form-group">
-    <label for="customerPricingMaxQuantity">最大数量</label>
-    <input type="number" id="customerPricingMaxQuantity" required min="0" step="any" />
-  </div>
-  <div class="form-group">
-    <label for="customerPricingUnitPrice">単価 (円)</label>
-    <input type="number" id="customerPricingUnitPrice" required min="0" step="any" />
-  </div>
-  <div class="form-group">
-    <button type="submit">追加</button>
-  </div>
-</form>
+        <div class="form-group">
+          <label for="customerPricingParentCategory">親カテゴリ</label>
+          <select id="customerPricingParentCategory" required>
+            <option value="">親カテゴリを選択</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="customerPricingSubCategory">サブカテゴリ</label>
+          <select id="customerPricingSubCategory" required>
+            <option value="">サブカテゴリを選択</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="customerPricingMinQuantity">最小数量</label>
+          <input type="number" id="customerPricingMinQuantity" required min="0" step="any" />
+        </div>
+        <div class="form-group">
+          <label for="customerPricingMaxQuantity">最大数量</label>
+          <input type="number" id="customerPricingMaxQuantity" required min="0" step="any" />
+        </div>
+        <div class="form-group">
+          <label for="customerPricingUnitPrice">単価 (円)</label>
+          <input type="number" id="customerPricingUnitPrice" required min="0" step="any" />
+        </div>
+        <div class="form-group">
+          <button type="submit">追加</button>
+        </div>
+      </form>
     </div>
   </div>
 </section>
+
 
     <!-- カテゴリ設定セクション -->
     <section id="categories" class="content-section" style="display: none;" data-requires-auth="true">
