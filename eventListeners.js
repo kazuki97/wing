@@ -2520,10 +2520,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let customerPricingRules = [];
 
   if (openCustomerPricingModalBtn && customerPricingModal) {
-    openCustomerPricingModalBtn.addEventListener('click', () => {
-      customerPricingModal.style.display = 'block';
-      customerPricingForm.reset();
-    });
+    openCustomerPricingModalBtn.addEventListener('click', async () => {
+  customerPricingModal.style.display = 'block';
+  customerPricingForm.reset();
+  await updateAllParentCategorySelects(); // ← ここを追加
+});
   }
 
   if (closeCustomerPricingModalBtn && customerPricingModal) {
