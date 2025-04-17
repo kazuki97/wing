@@ -1,5 +1,6 @@
 // eventListeners.js
 
+
 // Firebase Firestore の関数を CDN からインポート
 import {
   collection,
