@@ -73,7 +73,56 @@
         <input type="text" id="customerName" placeholder="顧客名を入力" required />
         <label for="customerNote">備考</label>
         <input type="text" id="customerNote" placeholder="例：特別単価顧客" />
+
+        <!-- ▼ 特別単価追加ボタン -->
+        <button type="button" id="openCustomerPricingModal">特別単価を追加</button>
+
+        <!-- ▼ 特別単価一覧表示 -->
+        <div id="customerPricingList">
+          <h3>登録済みの特別単価</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>親カテゴリ</th>
+                <th>サブカテゴリ</th>
+                <th>数量範囲</th>
+                <th>単価</th>
+                <th>削除</th>
+              </tr>
+            </thead>
+            <tbody id="customerPricingListBody">
+              <!-- JSで顧客の単価情報を動的に追加 -->
+            </tbody>
+          </table>
+        </div>
+
         <button type="submit" id="saveCustomerButton">保存</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ▼ 特別単価登録モーダル -->
+  <div id="customerPricingModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close" id="closeCustomerPricingModal">&times;</span>
+      <h2>特別単価の追加</h2>
+      <form id="customerPricingForm">
+        <label>親カテゴリ:</label>
+        <select id="customerPricingParentCategory" required></select>
+
+        <label>サブカテゴリ:</label>
+        <select id="customerPricingSubCategory" required></select>
+
+        <label>最小数量:</label>
+        <input type="number" id="customerPricingMinQuantity" required min="0" step="any" />
+
+        <label>最大数量:</label>
+        <input type="number" id="customerPricingMaxQuantity" required min="0" step="any" />
+
+        <label>単価 (円):</label>
+        <input type="number" id="customerPricingUnitPrice" required min="0" step="any" />
+
+        <button type="submit">追加</button>
       </form>
     </div>
   </div>
