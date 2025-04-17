@@ -2508,8 +2508,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-// ── 顧客保存フォーム送信 ──
+  // ── 顧客保存フォーム送信 ──
   const customerForm = document.getElementById('customerForm');
+  const customerPricingListBody = document.getElementById('customerPricingListBody');
   let customerPricingRules = [];
   if (customerForm) {
     customerForm.addEventListener('submit', async (e) => {
@@ -2518,8 +2519,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const customerName = document.getElementById('customerName').value;
       const customerNote = document.getElementById('customerNote').value;
       const customerData = {
-        name: customerName,
-        note: customerNote,
+        name:        customerName,
+        note:        customerNote,
         pricingRules: customerPricingRules
       };
       try {
@@ -2566,14 +2567,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-
   // ── 特別単価モーダル処理 ──
   const openCustomerPricingModalBtn = document.getElementById('openCustomerPricingModal');
   const customerPricingModal        = document.getElementById('customerPricingModal');
   const closeCustomerPricingModalBtn= document.getElementById('closeCustomerPricingModal');
   const customerPricingFormElm      = document.getElementById('customerPricingForm');
-  const customerPricingListBody     = document.getElementById('customerPricingListBody');
-
   if (openCustomerPricingModalBtn && customerPricingModal) {
     openCustomerPricingModalBtn.addEventListener('click', async () => {
       customerPricingModal.style.display = 'block';
@@ -2593,7 +2591,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               .innerHTML = '<option value="">サブカテゴリを選択</option>';
     });
   }
-
   // 親カテゴリ変更でサブカテゴリ更新
   const parentCatElem = document.getElementById('customerPricingParentCategory');
   if (parentCatElem) {
@@ -2601,14 +2598,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       await updateSubcategorySelect(e.target.value, 'customerPricingSubCategory');
     });
   }
-
   // モーダルを閉じる
   if (closeCustomerPricingModalBtn && customerPricingModal) {
     closeCustomerPricingModalBtn.addEventListener('click', () => {
       customerPricingModal.style.display = 'none';
     });
   }
-
   // 特別単価「追加」ボタン
   if (customerPricingFormElm) {
     customerPricingFormElm.addEventListener('submit', e => {
@@ -2641,18 +2636,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td>${rule.unitPrice}</td>
         <td><button class="delete-pricing-rule-temp">削除</button></td>
       `;
-      customerPricingListBody.appendChild(tr);
+      document.getElementById('customerPricingListBody').appendChild(tr);
       customerPricingFormElm.reset();
       customerPricingModal.style.display = 'none';
     });
-
     // 特別単価「削除」ボタン
-    customerPricingListBody.addEventListener('click', e => {
+    document.getElementById('customerPricingListBody').addEventListener('click', e => {
       if (e.target.classList.contains('delete-pricing-rule-temp')) {
         const idx = e.target.closest('tr').rowIndex - 1;
         customerPricingRules.splice(idx, 1);
         e.target.closest('tr').remove();
-     }
+      }
     });
   }
 });
@@ -2671,3 +2665,4 @@ if (cancelAddTransactionButton) {
     document.getElementById('manualAddTransactionForm').style.display = 'none';
   });
 }
+
