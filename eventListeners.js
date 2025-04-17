@@ -2500,6 +2500,18 @@ if (cancelAddTransactionButton) {
   });
 }
 
+// ✅ 顧客追加モーダルを開く処理
+document.addEventListener('DOMContentLoaded', () => {
+  const openAddCustomerModalBtn = document.getElementById('openAddCustomerModal');
+  const addEditCustomerModal = document.getElementById('addEditCustomerModal');
+
+  if (openAddCustomerModalBtn && addEditCustomerModal) {
+    openAddCustomerModalBtn.addEventListener('click', () => {
+      addEditCustomerModal.style.display = 'block';
+    });
+  }
+});
+
 // 売上処理のイベントリスナーを設定
 document.addEventListener('DOMContentLoaded', () => {
   const processSaleForm = document.getElementById('processSaleForm');
