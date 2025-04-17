@@ -1590,19 +1590,26 @@ export async function updateSubcategorySelect(parentCategoryId, subcategorySelec
 let subcategoryEventListenersAdded = false;
 
 function addSubcategorySelectEventListeners() {
-  if (subcategoryEventListenersAdded) {
-    return; // すでにイベントリスナーが登録されている場合は何もしない
-  }
+  if (subcategoryEventListenersAdded) return;
 
   const parentCategorySelectIds = {
-  productParentCategorySelect: 'productSubcategorySelect',
-  filterParentCategorySelect: 'filterSubcategorySelect',
-  inventoryParentCategorySelect: 'inventorySubcategorySelect',
-  overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
-  pricingParentCategorySelect: 'pricingSubcategorySelect',
-  modalSubcategoryParentCategorySelect: 'modalSubcategorySelect', // ← これを追加！
-};
+    productParentCategorySelect: 'productSubcategorySelect',
+    filterParentCategorySelect: 'filterSubcategorySelect',
+    inventoryParentCategorySelect: 'inventorySubcategorySelect',
+    overallInventoryParentCategorySelect: 'overallInventorySubcategorySelect',
+    pricingParentCategorySelect: 'pricingSubcategorySelect',
+    modalSubcategoryParentCategorySelect: 'modalSubcategorySelect',
+  };
 
+  // 👇 これが抜けていた！（定義を追加）
+  const subcategorySelectIds = [
+    'productSubcategorySelect',
+    'filterSubcategorySelect',
+    'inventorySubcategorySelect',
+    'overallInventorySubcategorySelect',
+    'pricingSubcategorySelect',
+    'modalSubcategorySelect',
+  ];
 
   subcategorySelectIds.forEach((id) => {
     const selectElement = document.getElementById(id);
@@ -1619,8 +1626,9 @@ function addSubcategorySelectEventListeners() {
     }
   });
 
-  subcategoryEventListenersAdded = true; // フラグを立てる
+  subcategoryEventListenersAdded = true;
 }
+
 
 // アプリケーションの初期化時に一度だけ呼び出す
 addSubcategorySelectEventListeners();
