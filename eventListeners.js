@@ -2489,6 +2489,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+// ✕ボタンで閉じる処理 ← この下に追記
+const closeAddEditCustomerModalBtn = document.getElementById('closeAddEditCustomerModal');
+if (closeAddEditCustomerModalBtn && addEditCustomerModal) {
+  closeAddEditCustomerModalBtn.addEventListener('click', () => {
+    addEditCustomerModal.style.display = 'none';
+  });
+}
+
   // 売上処理
   const processSaleForm = document.getElementById('processSaleForm');
   if (processSaleForm) {
