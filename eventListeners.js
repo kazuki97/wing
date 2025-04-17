@@ -2448,7 +2448,10 @@ async function openEditPricingRuleModal(ruleId) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // ── 初回：顧客一覧を表示 ──
+  await displayCustomers();
+
   // ── 単価ルール編集フォーム送信 ──
   const editPricingRuleForm = document.getElementById('editPricingRuleForm');
   if (editPricingRuleForm) {
@@ -2505,6 +2508,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+// ── 顧客保存フォーム送信 ──
+  const customerForm = document.getElementById('customerForm');
+  let customerPricingRules = [];
+  if (customerForm) {
+    customerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const customerId   = document.getElementById('customerId').value;
+      const customerName = document.getElementById('customerName').value;
+      const customerNote = document.getElementById('customerNote').value;
+      const customerData = {
+        name: customerName,
+        note: customerNote,
+        pricingRules: customerPricingRules
+      };
+      try {
+        if (customerId) {
+          await updateCustomer(customerId, customerData);
+          alert('顧客情報が更新されました');
+        } else {
+          await createCustomer(customerData);
+          alert('顧客が追加されました');
+        }
+        customerForm.reset();
+        customerPricingListBody.innerHTML = '';
+        customerPricingRules = [];
+        await fetchCustomers();
+        await displayCustomers();
+        addEditCustomerModal.style.display = 'none';
+      } catch (error) {
+        console.error('顧客情報の保存に失敗しました:', error);
+        showError('顧客情報の保存に失敗しました');
+      }
+    });
+  }
+
   // ── 売上処理フォーム送信 ──
   const processSaleForm = document.getElementById('processSaleForm');
   if (processSaleForm) {
@@ -2528,20 +2566,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
   // ── 特別単価モーダル処理 ──
   const openCustomerPricingModalBtn = document.getElementById('openCustomerPricingModal');
   const customerPricingModal        = document.getElementById('customerPricingModal');
   const closeCustomerPricingModalBtn= document.getElementById('closeCustomerPricingModal');
-  const customerPricingForm         = document.getElementById('customerPricingForm');
+  const customerPricingFormElm      = document.getElementById('customerPricingForm');
   const customerPricingListBody     = document.getElementById('customerPricingListBody');
-  let customerPricingRules          = [];
 
-  // モーダルを開く
   if (openCustomerPricingModalBtn && customerPricingModal) {
     openCustomerPricingModalBtn.addEventListener('click', async () => {
-      // モーダル表示＆フォーム初期化
       customerPricingModal.style.display = 'block';
-      customerPricingForm.reset();
+      customerPricingFormElm.reset();
       // 親カテゴリを取得してセット
       const parentSel = document.getElementById('customerPricingParentCategory');
       parentSel.innerHTML = '<option value="">親カテゴリを選択</option>';
@@ -2574,8 +2610,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 特別単価「追加」ボタン
-  if (customerPricingForm) {
-    customerPricingForm.addEventListener('submit', e => {
+  if (customerPricingFormElm) {
+    customerPricingFormElm.addEventListener('submit', e => {
       e.preventDefault();
       const p   = document.getElementById('customerPricingParentCategory');
       const s   = document.getElementById('customerPricingSubCategory');
@@ -2606,7 +2642,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><button class="delete-pricing-rule-temp">削除</button></td>
       `;
       customerPricingListBody.appendChild(tr);
-      customerPricingForm.reset();
+      customerPricingFormElm.reset();
       customerPricingModal.style.display = 'none';
     });
 
@@ -2616,43 +2652,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const idx = e.target.closest('tr').rowIndex - 1;
         customerPricingRules.splice(idx, 1);
         e.target.closest('tr').remove();
-      }
+     }
     });
   }
-
-  // ── 顧客保存フォーム送信 ──
-  const customerForm = document.getElementById('customerForm');
-  if (customerForm) {
-    customerForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      const customerId   = document.getElementById('customerId').value;
-      const customerName = document.getElementById('customerName').value;
-      const customerNote = document.getElementById('customerNote').value;
-      const customerData = {
-        name:        customerName,
-        note:        customerNote,
-        pricingRules: customerPricingRules
-      };
-      try {
-        if (customerId) {
-          await updateCustomer(customerId, customerData);
-          alert('顧客情報が更新されました');
-        } else {
-          await createCustomer(customerData);
-          alert('顧客が追加されました');
-        }
-        customerForm.reset();
-        customerPricingListBody.innerHTML = '';
-        customerPricingRules = [];
-        await fetchCustomers();
-        document.getElementById('addEditCustomerModal').style.display = 'none';
-      } catch (error) {
-        console.error('顧客情報の保存に失敗しました:', error);
-        showError('顧客情報の保存に失敗しました');
-      }
-    });
-  }
-}); // ← ここでコールバックを閉じる
+});
 
 // ── 売上手動追加ボタンはコールバック外で登録 ──
 const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
