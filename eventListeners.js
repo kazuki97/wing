@@ -40,6 +40,8 @@ import {
   deleteCustomer
 } from './customers.js';
 
+import { displayCustomers } from './customers.js';
+
 
 import {
   addProduct,
@@ -2650,7 +2652,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-});  // ← ここで「DOMContentLoaded」のコールバックを閉じる
+}); // ← ここでコールバックを閉じる
 
 // ── 売上手動追加ボタンはコールバック外で登録 ──
 const manualAddTransactionButton = document.getElementById('manualAddTransactionButton');
@@ -2666,4 +2668,3 @@ if (cancelAddTransactionButton) {
     document.getElementById('manualAddTransactionForm').style.display = 'none';
   });
 }
-
