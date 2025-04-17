@@ -33,6 +33,14 @@ import {
 } from './categories.js';
 
 import {
+  fetchCustomers,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer
+} from './customers.js';
+
+
+import {
   addProduct,
   getProducts,
   getProductById,
