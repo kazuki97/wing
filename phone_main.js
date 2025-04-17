@@ -369,6 +369,8 @@ document.getElementById('shippingMethodSelect').addEventListener('change', funct
 // -------------------------
 // 売上登録処理
 // -------------------------
+// phone_main.js
+// 売上登録処理（サブカテゴリ合計量で単価を一度だけ取得）
 document.getElementById('btn-checkout').addEventListener('click', async () => {
   if (phoneCart.length === 0) {
     alert('カゴに商品がありません');
@@ -402,20 +404,38 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     return;
   }
 
+  // ─── ① サブカテゴリごとに必要数量を集計 ─────────────────
+  const qtyBySubcat = {};
+  phoneCart.forEach(item => {
+    const size = item.product.size || 1;
+    const reqQty = size * item.quantity;
+    const subcatId = item.product.subcategoryId;
+    qtyBySubcat[subcatId] = (qtyBySubcat[subcatId] || 0) + reqQty;
+  });
+
+  // ─── ② 一度だけ getUnitPrice を呼び出して単価を保持 ────────
+  const unitPriceBySubcat = {};
+  for (const [subcatId, totalReqQty] of Object.entries(qtyBySubcat)) {
+    const sampleItem = phoneCart.find(item => item.product.subcategoryId === subcatId);
+    const basePrice  = sampleItem.product.price;
+    unitPriceBySubcat[subcatId] = await getUnitPrice(subcatId, totalReqQty, basePrice);
+  }
+
+  // ─── ③ 各アイテムを再計算し、合計金額・items を構築 ───────
   let totalAmount = 0;
-  let totalCost = 0;
-  let items = [];
+  let totalCost   = 0;
+  const items     = [];
 
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
-    const size = product.size || 1;
+    const size     = product.size || 1;
     const requiredQuantity = size * quantity;
-    const unitPrice = await getUnitPrice(product.subcategoryId, requiredQuantity, product.price);
-    const subtotal = unitPrice * requiredQuantity;
-    totalAmount += subtotal;
-    const cost = product.cost * requiredQuantity;
-    totalCost += cost;
+    const unitPrice = unitPriceBySubcat[product.subcategoryId];
+    const subtotal  = unitPrice * requiredQuantity;
+    totalAmount    += subtotal;
+    const cost     = product.cost * requiredQuantity;
+    totalCost      += cost;
 
     items.push({
       productId: product.id,
@@ -430,6 +450,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     });
   }
 
+  // 送料計算（変更なし）
   const shippingMethod = document.getElementById('shippingMethodSelect').value;
   let shippingFee = 0;
   if (shippingMethod === 'クリックポスト') {
@@ -443,13 +464,14 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
   const discountReason = document.getElementById('discountReason').value;
 
-  // 支払い方法の手数料を計算
-  const feeRate = paymentMethod.feeRate || 0;
+  // 手数料計算（変更なし）
+  const feeRate   = paymentMethod.feeRate || 0;
   const feeAmount = Math.round((totalAmount - discountAmount) * feeRate / 100);
 
-  const displayedSales = totalAmount - discountAmount;
+  const displayedSales   = totalAmount - discountAmount;
   const profitCalculated = displayedSales - totalCost - feeAmount - shippingFee;
 
+  // Firestore に渡す transactionData（変更なし）
   const transactionData = {
     timestamp: saleTimestamp.toISOString(),
     totalAmount: displayedSales,
@@ -471,6 +493,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     netAmount: displayedSales - feeAmount,
   };
 
+  // 在庫更新（変更なし）
   for (const item of phoneCart) {
     const product = item.product;
     const quantity = item.quantity;
@@ -491,6 +514,7 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
     alert('売上登録に失敗しました');
   }
 });
+
 
 
 // -------------------------
