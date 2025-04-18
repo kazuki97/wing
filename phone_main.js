@@ -14,7 +14,7 @@ import {
 import { getConsumables } from './consumables.js'; // 消耗品取得用
 import { updatePaymentMethodSelect } from './eventListeners.js'; // PC版と同様の支払方法更新関数
 import { getPaymentMethods } from './paymentMethods.js'; // ←冒頭で追加が必要
-import { fetchCustomers } from './customers.js';
+import { fetchCustomers, getCustomerById } from './customers.js';
 
 
 
@@ -25,6 +25,8 @@ let phoneCart = [];
 let selectedParentCategory = null;
 let selectedSubcategory = null;
 const productTileMap = new Map();
+let selectedCustomer = null;
+
 
 // -------------------------
 // 画面切替用関数
@@ -605,7 +607,6 @@ document.getElementById('editConsumableUsageForm').addEventListener('submit', as
 // 初期化処理
 // -------------------------
 document.addEventListener('DOMContentLoaded', async () => {
-  // 顧客セレクトボックスを初期化
   const customerSelect = document.getElementById('customerSelect');
   if (customerSelect) {
     customerSelect.innerHTML = '<option value="">（一般）</option>';
@@ -615,6 +616,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       option.value = cust.id;
       option.textContent = cust.name;
       customerSelect.appendChild(option);
+    });
+
+    // セレクト変更時に選択された顧客の情報を取得し保持
+    customerSelect.addEventListener('change', async (e) => {
+      const customerId = e.target.value;
+      if (!customerId) {
+        selectedCustomer = null;
+        console.log('一般客モード');
+        return;
+      }
+      selectedCustomer = await getCustomerById(customerId);
+      console.log('選択された顧客情報:', selectedCustomer);
     });
   }
 });
