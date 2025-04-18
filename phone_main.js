@@ -106,12 +106,29 @@ async function updateCartUI() {
 
   // ② サブカテゴリごとに単価を一度だけ取得
   const priceBySubcat = {};
-  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
-    const basePrice = phoneCart.find(
-      item => item.product.subcategoryId === subcatId
-    ).product.price;
-    priceBySubcat[subcatId] = await getUnitPrice(subcatId, reqQty, basePrice);
+for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
+  const sampleItem = phoneCart.find(item => item.product.subcategoryId === subcatId);
+  const basePrice = sampleItem.product.price;
+
+  // デフォルト単価（通常単価）
+  let finalUnitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
+
+  // 顧客が選択されていて、特別単価ルールがある場合に上書き
+  if (selectedCustomer?.pricingRules?.length) {
+    const matchedRule = selectedCustomer.pricingRules.find(rule => {
+      return rule.subcategoryId === subcatId &&
+             reqQty >= rule.minQuantity &&
+             reqQty <= rule.maxQuantity;
+    });
+    if (matchedRule) {
+      console.log(`特別単価適用: サブカテゴリ ${subcatId} に ¥${matchedRule.unitPrice}`);
+      finalUnitPrice = matchedRule.unitPrice;
+    }
   }
+
+  priceBySubcat[subcatId] = finalUnitPrice;
+}
+
 
   // ③ 各行に同じサブカテゴリの単価を適用してUIを構築
   for (const item of phoneCart) {
@@ -178,16 +195,43 @@ async function updateCartUI() {
 
 
 // -------------------------
-// 商品追加関数（非同期処理に対応）
+// 商品追加関数（特別単価対応 / 非同期処理）
 // -------------------------
 async function addProductToCart(product) {
   console.log("【iPhone版】追加される商品オブジェクト:", product);
   const existing = phoneCart.find(item => item.product.id === product.id);
+
   if (existing) {
     existing.quantity += 1;
   } else {
-    phoneCart.push({ product, quantity: 1 });
+    let customPrice = product.price; // デフォルトは通常単価
+
+    // 特別単価が適用可能かチェック（顧客が選択されていて、ルールがある場合）
+    if (selectedCustomer && Array.isArray(selectedCustomer.pricingRules)) {
+      const rules = selectedCustomer.pricingRules;
+
+      // この商品のサブカテゴリに対応する特別単価ルールを取得
+      const matchedRule = rules.find(rule => {
+        return rule.subcategoryId === product.subcategoryId &&
+               1 >= rule.minQuantity &&
+               1 <= rule.maxQuantity;
+      });
+
+      if (matchedRule) {
+        console.log('適用される特別単価:', matchedRule.unitPrice);
+        customPrice = matchedRule.unitPrice;
+      }
+    }
+
+    // 商品オブジェクトに特別単価をセット（あくまで見かけ上）
+    const productWithCustomPrice = {
+      ...product,
+      price: customPrice  // ← この price を元に getUnitPrice() が呼ばれる
+    };
+
+    phoneCart.push({ product: productWithCustomPrice, quantity: 1 });
   }
+
   await updateCartUI();
 }
 
