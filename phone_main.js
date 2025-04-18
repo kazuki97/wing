@@ -522,25 +522,30 @@ document.getElementById('btn-checkout').addEventListener('click', async () => {
 
   // Firestore に渡す transactionData（変更なし）
   const transactionData = {
-    timestamp: saleTimestamp.toISOString(),
-    totalAmount: displayedSales,
-    totalCost: totalCost,
-    feeAmount: feeAmount,
-    paymentMethodId: paymentMethodId,
-    paymentMethodName: paymentMethod.name,
-    salesMethod: salesMethod,
-    shippingMethod: shippingMethod,
-    shippingFee: shippingFee,
-    items: items,
-    manuallyAdded: false,
-    cost: totalCost,
-    profit: profitCalculated,
-    discount: {
-      amount: discountAmount,
-      reason: discountReason,
-    },
-    netAmount: displayedSales - feeAmount,
-  };
+  timestamp: saleTimestamp.toISOString(),
+  totalAmount: displayedSales,
+  totalCost: totalCost,
+  feeAmount: feeAmount,
+  paymentMethodId: paymentMethodId,
+  paymentMethodName: paymentMethod.name,
+  salesMethod: salesMethod,
+  shippingMethod: shippingMethod,
+  shippingFee: shippingFee,
+  items: items,
+  manuallyAdded: false,
+  cost: totalCost,
+  profit: profitCalculated,
+  discount: {
+    amount: discountAmount,
+    reason: discountReason,
+  },
+  netAmount: displayedSales - feeAmount,
+
+  // ✅ 顧客情報を追加（PC版で表示させるため）
+  customerId: selectedCustomer?.id || null,
+  customerName: selectedCustomer?.name || '一般',
+};
+
 
   // 在庫更新（変更なし）
   for (const item of phoneCart) {
@@ -650,6 +655,8 @@ document.getElementById('editConsumableUsageForm').addEventListener('submit', as
 // -------------------------
 // 初期化処理
 // -------------------------
+// --- 修正後 ---
+// 割引額の入力欄にイベントリスナーを追加して即時反映
 document.addEventListener('DOMContentLoaded', async () => {
   const customerSelect = document.getElementById('customerSelect');
   if (customerSelect) {
@@ -662,7 +669,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       customerSelect.appendChild(option);
     });
 
-    // セレクト変更時に選択された顧客の情報を取得し保持
+    // 顧客選択変更時に顧客情報を保持
     customerSelect.addEventListener('change', async (e) => {
       const customerId = e.target.value;
       if (!customerId) {
@@ -672,6 +679,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       selectedCustomer = await getCustomerById(customerId);
       console.log('選択された顧客情報:', selectedCustomer);
+    });
+  }
+
+  // ★ ここを追加：割引額が変更されたら即座にボタン金額も再計算
+  const discountInput = document.getElementById('discountAmount');
+  if (discountInput) {
+    discountInput.addEventListener('input', () => {
+      updateViewCartButton();
     });
   }
 });
