@@ -14,6 +14,9 @@ import {
 import { getConsumables } from './consumables.js'; // 消耗品取得用
 import { updatePaymentMethodSelect } from './eventListeners.js'; // PC版と同様の支払方法更新関数
 import { getPaymentMethods } from './paymentMethods.js'; // ←冒頭で追加が必要
+import { fetchCustomers } from './customers.js';
+
+
 
 
 
@@ -601,6 +604,17 @@ document.getElementById('editConsumableUsageForm').addEventListener('submit', as
 // -------------------------
 // 初期化処理
 // -------------------------
-document.addEventListener('DOMContentLoaded', () => {
-  // 初回はログインフォームが表示され、認証状態の監視によりホーム画面へ遷移
+document.addEventListener('DOMContentLoaded', async () => {
+  // 顧客セレクトボックスを初期化
+  const customerSelect = document.getElementById('customerSelect');
+  if (customerSelect) {
+    customerSelect.innerHTML = '<option value="">（一般）</option>';
+    const customers = await fetchCustomers();
+    customers.forEach(cust => {
+      const option = document.createElement('option');
+      option.value = cust.id;
+      option.textContent = cust.name;
+      customerSelect.appendChild(option);
+    });
+  }
 });
