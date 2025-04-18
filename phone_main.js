@@ -67,31 +67,28 @@ async function updateViewCartButton() {
   }
 
   // サブカテゴリごとに単価を一度だけ取得
-  const priceBySubcat = {};
-  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
-    // 同じサブカテゴリの最初のアイテムから basePrice を取る
-      const priceBySubcat = {};
-  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
-    const basePrice = phoneCart.find(item => item.product.subcategoryId === subcatId)
-                             .product.price;
-    let finalUnitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
+ // サブカテゴリごとに単価を一度だけ取得
+const priceBySubcat = {};
+for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
+  const basePrice = phoneCart.find(item => item.product.subcategoryId === subcatId)
+                           .product.price;
+  let finalUnitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
 
-    // 特別単価がある場合は上書き
-    if (selectedCustomer?.pricingRules?.length) {
-      const matchedRule = selectedCustomer.pricingRules.find(rule => {
-        return rule.subcategoryId === subcatId &&
-               reqQty >= rule.minQuantity &&
-               reqQty <= rule.maxQuantity;
-      });
-      if (matchedRule) {
-        console.log(`【かごボタン】特別単価適用: サブカテゴリ ${subcatId} → ¥${matchedRule.unitPrice}`);
-        finalUnitPrice = matchedRule.unitPrice;
-      }
+  if (selectedCustomer?.pricingRules?.length) {
+    const matchedRule = selectedCustomer.pricingRules.find(rule => {
+      return rule.subcategoryId === subcatId &&
+             reqQty >= rule.minQuantity &&
+             reqQty <= rule.maxQuantity;
+    });
+    if (matchedRule) {
+      console.log(`【かごボタン】特別単価適用: サブカテゴリ ${subcatId} → ¥${matchedRule.unitPrice}`);
+      finalUnitPrice = matchedRule.unitPrice;
     }
-
-    priceBySubcat[subcatId] = finalUnitPrice;
-    totalPrice += finalUnitPrice * reqQty;
   }
+
+  priceBySubcat[subcatId] = finalUnitPrice;
+  totalPrice += finalUnitPrice * reqQty;
+}
 
 
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
