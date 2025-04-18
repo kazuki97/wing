@@ -210,11 +210,14 @@ async function addProductToCart(product) {
     if (selectedCustomer && Array.isArray(selectedCustomer.pricingRules)) {
       const rules = selectedCustomer.pricingRules;
 
+      const size = product.size || 1;
+      const requiredQuantity = size * 1; // 初回追加時の数量
+
       // この商品のサブカテゴリに対応する特別単価ルールを取得
       const matchedRule = rules.find(rule => {
         return rule.subcategoryId === product.subcategoryId &&
-               1 >= rule.minQuantity &&
-               1 <= rule.maxQuantity;
+               requiredQuantity >= rule.minQuantity &&
+               requiredQuantity <= rule.maxQuantity;
       });
 
       if (matchedRule) {
@@ -226,7 +229,7 @@ async function addProductToCart(product) {
     // 商品オブジェクトに特別単価をセット（あくまで見かけ上）
     const productWithCustomPrice = {
       ...product,
-      price: customPrice  // ← この price を元に getUnitPrice() が呼ばれる
+      price: customPrice
     };
 
     phoneCart.push({ product: productWithCustomPrice, quantity: 1 });
