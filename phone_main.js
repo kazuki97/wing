@@ -691,15 +691,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 顧客選択変更時に顧客情報を保持
     customerSelect.addEventListener('change', async (e) => {
-      const customerId = e.target.value;
-      if (!customerId) {
-        selectedCustomer = null;
-        console.log('一般客モード');
-        return;
-      }
-      selectedCustomer = await getCustomerById(customerId);
-      console.log('選択された顧客情報:', selectedCustomer);
-    });
+  const customerId = e.target.value;
+
+  if (!customerId) {
+    selectedCustomer = null;
+    console.log('一般客モード');
+  } else {
+    selectedCustomer = await getCustomerById(customerId);
+    console.log('選択された顧客情報:', selectedCustomer);
+  }
+
+  // 👇 ここを追加：顧客が変わったら単価を即再計算
+  await updateCartUI();          // カゴ内・合計を再描画
+  await updateViewCartButton();  // 「かごを見る」ボタンも更新
+});
   }
 
   // ★ ここを追加：割引額が変更されたら即座にボタン金額も再計算
