@@ -91,3 +91,19 @@ export async function displayCustomers() {
     list.appendChild(wrapper);
   });
 }
+
+// ────────── 顧客IDから情報取得 ──────────
+export async function getCustomerById(customerId) {
+  try {
+    const ref = doc(db, 'customers', customerId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      return { id: snap.id, ...snap.data() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('顧客情報の取得に失敗:', error);
+    return null;
+  }
+}
