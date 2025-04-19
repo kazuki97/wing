@@ -3,6 +3,7 @@ import { db } from './db.js';
 import {
   collection,
   doc,
+  getDoc,           // ← これを追加
   getDocs,
   addDoc,
   updateDoc,
