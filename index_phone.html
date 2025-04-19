@@ -47,6 +47,16 @@
     <!-- 商品選択画面 -->
     <section id="screen-product" class="screen">
       <h2>商品を選択</h2>
+
+      <!-- 顧客セレクトをここに移動 -->
+      <div id="customer-selection">
+        <label for="customerSelect">顧客（任意）:</label>
+        <select id="customerSelect">
+          <option value="">一般客（選択しない）</option>
+          <!-- 顧客リストをJSから追加 -->
+        </select>
+      </div>
+
       <div id="product-tiles"></div>
       <button id="btn-back-subcategory">戻る</button>
     </section>
@@ -76,12 +86,7 @@
           <option value="">支払い方法を選択</option>
         </select>
 
-        <!-- 顧客セレクト追加 -->
-        <label for="customerSelect">顧客（任意）:</label>
-        <select id="customerSelect">
-          <option value="">一般客（選択しない）</option>
-          <!-- 顧客リストをJSから追加 -->
-        </select>
+        <!-- 顧客セレクト部分を削除 -->
 
         <label for="shippingMethodSelect">発送方法:</label>
         <select id="shippingMethodSelect" required>
@@ -155,7 +160,7 @@
     </div>
   </main>
 
-  <!-- 固定表示の「かごを見る」ボタン（売上登録プロセス中のみ表示する） -->
+  <!-- 固定表示の「かごを見る」ボタン -->
   <div id="fixed-cart-button">
     <button id="btn-go-checkout">カゴを見る</button>
   </div>
