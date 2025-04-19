@@ -52,6 +52,7 @@ function showScreen(screenId) {
 // 「かごを見る」ボタン更新関数（非同期処理に対応）
 // カート内の合計数量と合計金額（getUnitPrice を用いて計算）を表示する
 // -------------------------
+// ── 修正後 ──
 async function updateViewCartButton() {
   let totalQuantity = 0;
   let totalPrice = 0;
@@ -67,31 +68,25 @@ async function updateViewCartButton() {
   }
 
   // サブカテゴリごとに単価を一度だけ取得
- // サブカテゴリごとに単価を一度だけ取得
-// --- 単価マップを 1 回だけ宣言 ---
-const priceBySubcat = {};
+  const priceBySubcat = {};
+  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
+    const basePrice = phoneCart.find(i => i.product.subcategoryId === subcatId)
+                               .product.price;
+    let unitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
 
-for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
+    // 特別単価があれば上書き
+    if (selectedCustomer?.pricingRules?.length) {
+      const rule = selectedCustomer.pricingRules.find(r =>
+        r.subcategoryId == subcatId &&    // ← 比較演算子を == に変更
+        reqQty >= r.minQuantity &&
+        reqQty <= r.maxQuantity
+      );
+      if (rule) unitPrice = rule.unitPrice;
+    }
 
-  const basePrice = phoneCart.find(i => i.product.subcategoryId === subcatId)
-                             .product.price;
-  let unitPrice   = await getUnitPrice(subcatId, reqQty, basePrice);
-
-  // 特別単価があれば上書き
-  if (selectedCustomer?.pricingRules?.length) {
-    const rule = selectedCustomer.pricingRules.find(r =>
-      r.subcategoryId === subcatId &&
-      reqQty >= r.minQuantity &&
-      reqQty <= r.maxQuantity
-    );
-    if (rule) unitPrice = rule.unitPrice;
+    priceBySubcat[subcatId] = unitPrice;
+    totalPrice += unitPrice * reqQty;
   }
-
-  priceBySubcat[subcatId] = unitPrice;
-  totalPrice             += unitPrice * reqQty;
-}
-
-
 
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
   const finalPrice = totalPrice - discountAmount;
@@ -107,6 +102,7 @@ for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
 // -------------------------
 // カゴ内更新関数（非同期処理に対応）
 // -------------------------
+// ── 修正後 ──
 async function updateCartUI() {
   const cartItemsDiv = document.getElementById('cart-items');
   cartItemsDiv.innerHTML = '';
@@ -123,29 +119,28 @@ async function updateCartUI() {
 
   // ② サブカテゴリごとに単価を一度だけ取得
   const priceBySubcat = {};
-for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
-  const sampleItem = phoneCart.find(item => item.product.subcategoryId === subcatId);
-  const basePrice = sampleItem.product.price;
+  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
+    const sampleItem = phoneCart.find(item => item.product.subcategoryId === subcatId);
+    const basePrice = sampleItem.product.price;
 
-  // デフォルト単価（通常単価）
-  let finalUnitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
+    // デフォルト単価（通常単価）
+    let finalUnitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
 
-  // 顧客が選択されていて、特別単価ルールがある場合に上書き
-  if (selectedCustomer?.pricingRules?.length) {
-    const matchedRule = selectedCustomer.pricingRules.find(rule => {
-      return rule.subcategoryId === subcatId &&
-             reqQty >= rule.minQuantity &&
-             reqQty <= rule.maxQuantity;
-    });
-    if (matchedRule) {
-      console.log(`特別単価適用: サブカテゴリ ${subcatId} に ¥${matchedRule.unitPrice}`);
-      finalUnitPrice = matchedRule.unitPrice;
+    // 顧客が選択されていて、特別単価ルールがある場合に上書き
+    if (selectedCustomer?.pricingRules?.length) {
+      const matchedRule = selectedCustomer.pricingRules.find(rule => {
+        return rule.subcategoryId == subcatId &&      // ← 比較演算子を == に変更
+               reqQty >= rule.minQuantity &&
+               reqQty <= rule.maxQuantity;
+      });
+      if (matchedRule) {
+        console.log(`特別単価適用: サブカテゴリ ${subcatId} に ¥${matchedRule.unitPrice}`);
+        finalUnitPrice = matchedRule.unitPrice;
+      }
     }
+
+    priceBySubcat[subcatId] = finalUnitPrice;
   }
-
-  priceBySubcat[subcatId] = finalUnitPrice;
-}
-
 
   // ③ 各行に同じサブカテゴリの単価を適用してUIを構築
   for (const item of phoneCart) {
@@ -214,6 +209,7 @@ for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
 // -------------------------
 // 商品追加関数（特別単価対応 / 非同期処理）
 // -------------------------
+// ── 修正後 ──
 async function addProductToCart(product) {
   console.log("【iPhone版】追加される商品オブジェクト:", product);
   const existing = phoneCart.find(item => item.product.id === product.id);
@@ -232,7 +228,7 @@ async function addProductToCart(product) {
 
       // この商品のサブカテゴリに対応する特別単価ルールを取得
       const matchedRule = rules.find(rule => {
-        return rule.subcategoryId === product.subcategoryId &&
+        return rule.subcategoryId == product.subcategoryId &&   // ← 比較演算子を == に変更
                requiredQuantity >= rule.minQuantity &&
                requiredQuantity <= rule.maxQuantity;
       });
@@ -254,6 +250,7 @@ async function addProductToCart(product) {
 
   await updateCartUI();
 }
+
 
 async function removeFromCart(productId) {
   phoneCart = phoneCart.filter(item => item.product.id !== productId);
