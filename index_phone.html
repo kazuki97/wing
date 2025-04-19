@@ -24,13 +24,8 @@
   </header>
 
   <main>
-    <!-- ホーム画面に顧客セレクトを追加 -->
+    <!-- ホーム画面 -->
     <section id="screen-home" class="screen active">
-      <label for="customerSelect">顧客（任意）:</label>
-      <select id="customerSelect">
-        <option value="">一般客（選択しない）</option>
-        <!-- 顧客リストをJSから追加 -->
-      </select>
       <button id="btn-sales-registration">売上登録</button>
       <button id="btn-consumables">消耗品管理</button>
     </section>
@@ -49,7 +44,7 @@
       <button id="btn-back-parent">戻る</button>
     </section>
 
-    <!-- 商品選択画面（顧客セレクト削除） -->
+    <!-- 商品選択画面 -->
     <section id="screen-product" class="screen">
       <h2>商品を選択</h2>
       <div id="product-tiles"></div>
@@ -79,6 +74,13 @@
         <label for="paymentMethodSelect">支払方法:</label>
         <select id="paymentMethodSelect" required>
           <option value="">支払い方法を選択</option>
+        </select>
+
+        <!-- ここに顧客セレクトを追加 -->
+        <label for="customerSelect">顧客（任意）:</label>
+        <select id="customerSelect">
+          <option value="">一般客（選択しない）</option>
+          <!-- 顧客リストをJSから追加 -->
         </select>
 
         <label for="shippingMethodSelect">発送方法:</label>
