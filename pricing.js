@@ -50,6 +50,28 @@ export async function getPricingRules(subcategoryId) {
   }
 }
 
+// サブカテゴリID一覧から複数のルールを一括取得
+export async function fetchPricingRulesForSubcats(subcategoryIds) {
+  try {
+    if (!Array.isArray(subcategoryIds) || subcategoryIds.length === 0) {
+      return [];
+    }
+    console.log(`fetchPricingRulesForSubcats called with ${subcategoryIds.length} IDs`);
+    // Firestore の where-in クエリで一度に取得
+    const q = query(
+      collection(db, 'pricingRules'),
+      where('subcategoryId', 'in', subcategoryIds)
+    );
+    const snapshot = await getDocs(q);
+    const rules = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    console.log(`fetchPricingRulesForSubcats: retrieved ${rules.length} rules`);
+    return rules;
+  } catch (error) {
+    console.error('fetchPricingRulesForSubcats エラー:', error);
+    throw error;
+  }
+}
+
 export async function getPricingRuleById(id) {
   try {
     console.log(`getPricingRuleById called with id: ${id}`);
