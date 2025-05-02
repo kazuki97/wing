@@ -4,7 +4,7 @@ import { getParentCategories, getSubcategories } from './categories.js';
 import { getProducts, updateProduct } from './products.js';
 import { addTransaction } from './transactions.js';
 import { updateOverallInventory } from './inventoryManagement.js';
-import { getUnitPrice } from './pricing.js';
+import { getUnitPrice, fetchPricingRulesForSubcats } from './pricing.js';
 import { auth } from './db.js';
 import {
   signInWithEmailAndPassword,
@@ -53,49 +53,56 @@ function showScreen(screenId) {
 // カート内の合計数量と合計金額（getUnitPrice を用いて計算）を表示する
 // -------------------------
 // ── 修正後 ──
+// ── phone_main.js より ──
+import { getUnitPrice, fetchPricingRulesForSubcats } from './pricing.js';
+
 async function updateViewCartButton() {
   let totalQuantity = 0;
-  let totalPrice = 0;
+  let totalPrice    = 0;
 
-  // サブカテゴリごとに必要数量を集計
+  // 1) サブカテゴリごとに必要数量を集計
   const qtyBySubcat = {};
   for (const item of phoneCart) {
-    const size = item.product.size || 1;
-    const requiredQuantity = size * item.quantity;
-    const subcatId = item.product.subcategoryId;
-    qtyBySubcat[subcatId] = (qtyBySubcat[subcatId] || 0) + requiredQuantity;
     totalQuantity += item.quantity;
+    const size = item.product.size || 1;
+    const req  = size * item.quantity;
+    const sub  = item.product.subcategoryId;
+    qtyBySubcat[sub] = (qtyBySubcat[sub] || 0) + req;
   }
 
-  // サブカテゴリごとに単価を一度だけ取得
+  // 2) ルールを一括取得
+  const subcatIds = Object.keys(qtyBySubcat);
+  const allRules  = await fetchPricingRulesForSubcats(subcatIds);
+
+  // 3) ルールありのサブカテゴリだけ単価を算出
   const priceBySubcat = {};
   for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
-    const basePrice = phoneCart.find(i => i.product.subcategoryId === subcatId)
-                               .product.price;
-    let unitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
-
-    // 特別単価があれば上書き
-    if (selectedCustomer?.pricingRules?.length) {
-      const rule = selectedCustomer.pricingRules.find(r =>
-        r.subcategoryId == subcatId &&    // ← 比較演算子を == に変更
-        reqQty >= r.minQuantity &&
-        reqQty <= r.maxQuantity
-      );
-      if (rule) unitPrice = rule.unitPrice;
+    const rules = allRules.filter(r => r.subcategoryId === subcatId);
+    if (rules.length > 0) {
+      const basePrice = phoneCart.find(i => i.product.subcategoryId === subcatId).product.price;
+      priceBySubcat[subcatId] = await getUnitPrice(subcatId, reqQty, basePrice);
     }
-
-    priceBySubcat[subcatId] = unitPrice;
-    totalPrice += unitPrice * reqQty;
   }
 
+  // 4) 各アイテムごとに単価を適用して合計
+  for (const item of phoneCart) {
+    const size   = item.product.size || 1;
+    const qty    = item.quantity;
+    const sub    = item.product.subcategoryId;
+    const unit   = priceBySubcat[sub] != null
+                   ? priceBySubcat[sub]
+                   : item.product.price;
+    totalPrice += unit * size * qty;
+  }
+
+  // 5) 割引を差し引いてボタン表示
   const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
-  const finalPrice = totalPrice - discountAmount;
-  const btn = document.getElementById('btn-go-checkout');
-  if (totalQuantity > 0) {
-    btn.textContent = `${totalQuantity}点 ¥${finalPrice.toLocaleString()}`;
-  } else {
-    btn.textContent = 'カゴを見る';
-  }
+  const finalPrice     = totalPrice - discountAmount;
+  const btn            = document.getElementById('btn-go-checkout');
+
+  btn.textContent = totalQuantity > 0
+    ? `${totalQuantity}点 ¥${finalPrice.toLocaleString()}`
+    : 'カゴを見る';
 }
 
 
@@ -108,57 +115,46 @@ async function updateCartUI() {
   cartItemsDiv.innerHTML = '';
   let total = 0;
 
-  // ① サブカテゴリごとに必要数量を集計
+  // 1) サブカテゴリごとに必要重量を集計
   const qtyBySubcat = {};
   phoneCart.forEach(item => {
-    const size = item.product.size || 1;
-    const requiredQuantity = size * item.quantity;
-    const subcatId = item.product.subcategoryId;
-    qtyBySubcat[subcatId] = (qtyBySubcat[subcatId] || 0) + requiredQuantity;
+    const g = item.product.size || 1;
+    qtyBySubcat[item.product.subcategoryId] = (qtyBySubcat[item.product.subcategoryId] || 0) + g * item.quantity;
   });
+  const subcatIds = Object.keys(qtyBySubcat);
 
-  // ② サブカテゴリごとに単価を一度だけ取得
+  // 2) ルールを一括取得
+  const allRules = await fetchPricingRulesForSubcats(subcatIds);
+
+  // 3) ルールありサブカテゴリだけ単価を算出
   const priceBySubcat = {};
-  for (const [subcatId, reqQty] of Object.entries(qtyBySubcat)) {
-    const sampleItem = phoneCart.find(item => item.product.subcategoryId === subcatId);
-    const basePrice = sampleItem.product.price;
-
-    // デフォルト単価（通常単価）
-    let finalUnitPrice = await getUnitPrice(subcatId, reqQty, basePrice);
-
-    // 顧客が選択されていて、特別単価ルールがある場合に上書き
-    if (selectedCustomer?.pricingRules?.length) {
-      const matchedRule = selectedCustomer.pricingRules.find(rule => {
-        return rule.subcategoryId == subcatId &&      // ← 比較演算子を == に変更
-               reqQty >= rule.minQuantity &&
-               reqQty <= rule.maxQuantity;
-      });
-      if (matchedRule) {
-        console.log(`特別単価適用: サブカテゴリ ${subcatId} に ¥${matchedRule.unitPrice}`);
-        finalUnitPrice = matchedRule.unitPrice;
-      }
+  for (const subcatId of subcatIds) {
+    const rules = allRules.filter(r => r.subcategoryId === subcatId);
+    if (rules.length > 0) {
+      const reqQty    = qtyBySubcat[subcatId];
+      const basePrice = phoneCart.find(i => i.product.subcategoryId === subcatId).product.price;
+      priceBySubcat[subcatId] = await getUnitPrice(subcatId, reqQty, basePrice);
     }
-
-    priceBySubcat[subcatId] = finalUnitPrice;
   }
 
-  // ③ 各行に同じサブカテゴリの単価を適用してUIを構築
+  // 4) 各行を個別に描画 ＋ 小計計算
   for (const item of phoneCart) {
     const size = item.product.size || 1;
-    const requiredQuantity = size * item.quantity;
-    const unitPrice = priceBySubcat[item.product.subcategoryId];
-    const itemTotal = unitPrice * requiredQuantity;
+    const qty  = item.quantity;
+    const sub  = item.product.subcategoryId;
+    const unit = priceBySubcat[sub] != null
+                 ? priceBySubcat[sub]
+                 : item.product.price;
+    const itemTotal = unit * size * qty;
     total += itemTotal;
 
     const div = document.createElement('div');
     div.className = 'cart-item';
 
-    // 商品名表示
     const nameSpan = document.createElement('span');
     nameSpan.textContent = item.product.name;
     div.appendChild(nameSpan);
 
-    // 数量入力フィールド
     const quantityInput = document.createElement('input');
     quantityInput.type = 'number';
     quantityInput.min = 1;
@@ -175,12 +171,10 @@ async function updateCartUI() {
     });
     div.appendChild(quantityInput);
 
-    // 金額表示（単価×数量×サイズ）
     const priceSpan = document.createElement('span');
-    priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unitPrice.toLocaleString()})`;
+    priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unit.toLocaleString()})`;
     div.appendChild(priceSpan);
 
-    // 削除ボタン
     const deleteButton = document.createElement('button');
     deleteButton.textContent = '削除';
     deleteButton.className = 'btn-delete';
