@@ -54,7 +54,7 @@ function showScreen(screenId) {
 // -------------------------
 // ── 修正後 ──
 // ── phone_main.js より ──
-import { getUnitPrice, fetchPricingRulesForSubcats } from './pricing.js';
+
 
 async function updateViewCartButton() {
   let totalQuantity = 0;
