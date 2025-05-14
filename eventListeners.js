@@ -86,17 +86,7 @@ import {
   getPaymentMethodById, // **追加**
 } from './paymentMethods.js';
 
-import {
-  getConsumables,
-  getConsumableUsage,
-  getConsumableUsageById,
-  updateConsumableUsage,
-  deleteConsumableUsage,
-  getConsumableById,
-  updateConsumable,
-} from './consumables.js';
 
-import { deleteConsumable } from './consumables.js';
 
 import { getCurrentFilter } from './filterState.js'; 
 
@@ -162,181 +152,7 @@ export async function updatePaymentMethodSelect() {
   }
 }
 
-// 消耗品選択リストの更新関数
-export async function updateConsumableCheckboxes() {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      alert('消耗品リストを取得するにはログインが必要です。');
-      return;
-    }
-    const consumables = await getConsumables();
-    const consumableCheckboxesDiv = document.getElementById('consumableCheckboxes');
-    consumableCheckboxesDiv.innerHTML = '';
 
-    consumables.forEach((consumable) => {
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.id = `consumable-${consumable.id}`;
-      checkbox.value = consumable.id;
-      checkbox.name = 'consumable';
-
-      const label = document.createElement('label');
-      label.htmlFor = `consumable-${consumable.id}`;
-      label.textContent = consumable.name;
-
-      const checkboxContainer = document.createElement('div');
-      checkboxContainer.appendChild(checkbox);
-      checkboxContainer.appendChild(label);
-
-      consumableCheckboxesDiv.appendChild(checkboxContainer);
-    });
-  } catch (error) {
-    console.error('消耗品リストの取得に失敗しました:', error);
-  }
-}
-
-// 消耗品使用量の初期化処理
-export async function initializeConsumableUsage() {
-  try {
-const user = auth.currentUser;
-if (!user) {
-  alert('この操作を行うにはログインが必要です。');
-  return;
-}
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    // 年と月の選択肢をセット
-    const yearSelect = document.getElementById('usageYear');
-    const monthSelect = document.getElementById('usageMonth');
-
-    for (let year = currentYear; year >= currentYear - 5; year--) {
-      const option = document.createElement('option');
-      option.value = year;
-      option.textContent = year;
-      yearSelect.appendChild(option);
-    }
-    
-    for (let month = 1; month <= 12; month++) {
-      const option = document.createElement('option');
-      option.value = month;
-      option.textContent = month;
-      monthSelect.appendChild(option);
-    }
-
-    // フィルタボタンのイベントリスナーを設定
-    document.getElementById('filterUsage').addEventListener('click', async () => {
-      const year = parseInt(yearSelect.value);
-      const month = parseInt(monthSelect.value);
-      await displayConsumableUsage(year, month);
-    });
-
-    // 初期表示として現在の年と月のデータを表示
-    await displayConsumableUsage(currentYear, currentMonth);
-  } catch (error) {
-    console.error('消耗品使用量の初期化に失敗しました:', error);
-  }
-}
-
-// 消耗品使用量の表示
-async function displayConsumableUsage(year, month) {
-  try {
-const user = auth.currentUser;
-if (!user) {
-  alert('この操作を行うにはログインが必要です。');
-  return;
-}
-    const consumableUsageList = await getConsumableUsage(year, month); // 消耗品使用量を取得
-    const consumables = await getConsumables(); // 全ての消耗品を取得
-    const usageTableBody = document.getElementById('consumableUsageList').querySelector('tbody');
-    usageTableBody.innerHTML = '';
-
-    // 消耗品使用量を表示
-    consumableUsageList.forEach((usage) => {
-      const consumable = consumables.find(c => c.id === usage.consumableId);
-      const consumableName = consumable ? consumable.name : '不明な消耗品';
-
-      const row = document.createElement('tr');
-      const date = new Date(usage.timestamp);
-
-      // 日時を表示するフォーマット
-      const formattedDate = date.toLocaleString();
-
-      row.innerHTML = `
-        <td>${consumableName}</td>
-        <td>${usage.quantityUsed}</td>
-        <td>${formattedDate}</td>
-        <td>
-          <button class="edit-consumable-usage" data-id="${usage.id}">編集</button>
-          <button class="delete-consumable-usage" data-id="${usage.id}">削除</button>
-        </td>
-      `;
-      usageTableBody.appendChild(row);
-    });
-
-    // **編集ボタンのイベントリスナーを追加**
-    document.querySelectorAll('.edit-consumable-usage').forEach((button) => {
-      button.addEventListener('click', async (e) => {
-        const usageId = e.target.dataset.id;
-        await openEditConsumableUsageModal(usageId);
-      });
-    });
-
-    // **削除ボタンのイベントリスナーを追加**
-    document.querySelectorAll('.delete-consumable-usage').forEach((button) => {
-      button.addEventListener('click', async (e) => {
-        const usageId = e.target.dataset.id;
-        if (confirm('本当に削除しますか？')) {
-          await deleteConsumableUsage(usageId);
-          alert('消耗品使用量が削除されました');
-          // 選択されている年と月で再表示
-          await displayConsumableUsage(year, month);
-        }
-      });
-    });
-  } catch (error) {
-    console.error('消耗品使用量の表示に失敗しました:', error);
-    showError('消耗品使用量の表示に失敗しました');
-  }
-}
-
-
-// 消耗品使用量編集用モーダルを開く関数
-async function openEditConsumableUsageModal(usageId) {
-  try {
-const user = auth.currentUser;
-if (!user) {
-  alert('この操作を行うにはログインが必要です。');
-  return;
-}
-    const usageData = await getConsumableUsageById(usageId);
-    if (!usageData) {
-      showError('消耗品使用量が見つかりません');
-      return;
-    }
-
-    // 消耗品リストを取得してセレクトボックスを更新
-    const consumables = await getConsumables();
-    const consumableSelect = document.getElementById('editConsumableSelect');
-    consumableSelect.innerHTML = '';
-    consumables.forEach((consumable) => {
-      const option = document.createElement('option');
-      option.value = consumable.id;
-      option.textContent = consumable.name;
-      consumableSelect.appendChild(option);
-    });
-
-    document.getElementById('editConsumableUsageId').value = usageData.id;
-    document.getElementById('editConsumableSelect').value = usageData.consumableId;
-    document.getElementById('editQuantityUsed').value = usageData.quantityUsed;
-    document.getElementById('editUsageTimestamp').value = new Date(usageData.timestamp).toISOString().slice(0, -1);
-    document.getElementById('editConsumableUsageModal').style.display = 'block';
-  } catch (error) {
-    console.error(error);
-    showError('消耗品使用量の取得に失敗しました');
-  }
-}
 
 // モーダルを閉じるボタンのイベントリスナー
 document.getElementById('closeEditConsumableUsageModal').addEventListener('click', () => {
@@ -642,11 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
         size: parseFloat(document.getElementById('productSize').value),
       };
 
-      // 消耗品の選択を取得
-      const selectedConsumables = Array.from(document.querySelectorAll('input[name="consumable"]:checked')).map(
-        (checkbox) => checkbox.value
-      );
-      productData.consumables = selectedConsumables; // 商品に関連付ける消耗品のIDリスト
+      
 
       try {
         await addProduct(productData);
@@ -1432,9 +1244,10 @@ document.addEventListener('DOMContentLoaded', () => {
     openAddProductModalBtn.addEventListener('click', async () => {
       addProductModal.style.display = 'block';
       await updateAllParentCategorySelects(); // カテゴリセレクトボックスを更新
-      await updateConsumableCheckboxes(); // 消耗品チェックボックスを更新
+      // 消耗品関連は削除済みのため、この行を削除
     });
   }
+  
 
   if (closeAddProductModalBtn && addProductModal) {
     closeAddProductModalBtn.addEventListener('click', () => {
