@@ -116,7 +116,7 @@ function initializeApp() {
   displayOverallInventory();
   displayInventoryProducts();
   displayTransactions(); // 売上管理セクションの取引データ表示
-  displayConsumables();    // 消耗品リストの初期表示
+  
   
 }
 
