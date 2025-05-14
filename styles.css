@@ -448,3 +448,171 @@ ul li button {
     padding: 15px;
   }
 }
+
+/* ====================================================
+   🌟 高級感のあるUIスタイル改善 🌟
+   ==================================================== */
+
+/* 背景グラデーションをボディに追加 */
+body {
+  background: linear-gradient(to bottom, #ffffff 0%, #f2f8ff 100%);
+}
+
+/* ナビゲーションバーの高級感を演出 */
+nav {
+  background: linear-gradient(135deg, #ffffff 0%, #e0edff 100%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border: none;
+}
+
+/* ナビゲーションリンクのホバー時のアニメーション強化 */
+nav ul li a {
+  border-radius: 20px;
+  transition: background-color 0.4s, transform 0.2s;
+}
+
+nav ul li a:hover {
+  background-color: #dfeeff;
+  transform: translateY(-3px);
+}
+
+/* ボタンの高級感を演出 */
+button {
+  background: linear-gradient(to bottom, #5aa9ff, #007aff);
+  box-shadow: 0 4px 8px rgba(0, 122, 255, 0.3);
+  border-radius: 20px;
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+button:hover {
+  box-shadow: 0 6px 12px rgba(0, 122, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+/* 入力フォームのフォーカス時の高級感を強化 */
+form input:focus,
+form select:focus {
+  border-color: #007aff;
+  box-shadow: 0 0 10px rgba(0, 122, 255, 0.4);
+}
+
+/* テーブルの洗練 */
+table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+table th {
+  background-color: #edf6ff;
+  color: #555;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f7fbff;
+}
+
+table tbody tr:hover {
+  background-color: #e9f4ff;
+  transition: background-color 0.3s;
+}
+
+/* モーダルスタイルの改善 */
+.modal-content {
+  background: linear-gradient(145deg, #ffffff, #e6f0ff);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  padding: 25px;
+}
+
+/* モーダルのクローズボタン改善 */
+.close {
+  color: #007aff;
+}
+
+.close:hover,
+.close:focus {
+  color: #005bb5;
+}
+
+/* エラーメッセージを見やすくする */
+.error-message {
+  background-color: #ff3b30;
+  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.3);
+  border-radius: 10px;
+}
+
+/* 商品リストとカテゴリリストの改善 */
+#productList ul li,
+#parentCategoryList ul li {
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+#productList ul li:hover,
+#parentCategoryList ul li:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+/* 消耗品リストのテーブルスタイル改善 */
+#consumableList table {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#consumableList tbody tr:hover {
+  background-color: #f0f7ff;
+}
+
+/* 高級感あるセレクトボックス（ドロップダウン） */
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 8px;
+  background: linear-gradient(to bottom, #ffffff, #f0f4f8);
+  color: #333;
+  border: 1px solid #cbd5e1;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* セレクトボックスのフォーカス時 */
+select:focus {
+  outline: none;
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.2);
+}
+
+/* カスタム矢印の追加 */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-wrapper::after {
+  content: '▼';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #888;
+  font-size: 14px;
+}
+
+/* ドロップダウンが開いた時の表示改善 (iOSのみのスタイルを意識した高級感) */
+option {
+  background-color: #ffffff;
+  color: #333;
+}
