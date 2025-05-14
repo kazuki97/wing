@@ -730,57 +730,34 @@
       </div>
     </section>
 
-    <!-- 消耗品管理セクション -->
-    <section id="consumables" class="content-section" style="display: none;" data-requires-auth="true">
-      <h1>消耗品管理</h1>
-      <form id="addConsumableForm">
-        <input type="text" id="consumableName" placeholder="消耗品名" required />
-        <input type="number" id="consumableCost" placeholder="原価" required step="0.01" min="0" />
-        <button type="submit">追加</button>
-      </form>
-      <div class="table-responsive">
-        <table id="consumableList">
-          <thead>
-            <tr>
-              <th>消耗品名</th>
-              <th>原価</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- 消耗品情報がここに表示されます -->
-          </tbody>
-        </table>
-      </div>
+    <!-- 消耗品管理セクション（修正後） -->
+<section id="consumables" class="content-section" style="display: none;" data-requires-auth="true">
+  <h2>消耗品登録</h2>
+  <form id="addConsumableForm">
+    <label>消耗品名:
+      <input type="text" id="consumableName" required />
+    </label>
+    <label>原価:
+      <input type="number" id="consumableCost" required />
+    </label>
+    <button type="submit">登録する</button>
+  </form>
 
-      <!-- 消耗品使用量の表示 -->
-      <h2>消耗品使用量</h2>
-      <div id="consumableUsageFilters">
-        <label for="usageYear">年:</label>
-        <select id="usageYear">
-          <!-- 年の選択肢がここに表示されます -->
-        </select>
-        <label for="usageMonth">月:</label>
-        <select id="usageMonth">
-          <!-- 月の選択肢がここに表示されます -->
-        </select>
-        <button id="filterUsage">フィルタ</button>
-      </div>
-      <div class="table-responsive">
-        <table id="consumableUsageList">
-          <thead>
-            <tr>
-              <th>消耗品名</th>
-              <th>使用量</th>
-              <th>使用日</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- 消耗品使用量がここに表示されます -->
-          </tbody>
-        </table>
-      </div>
-    </section>
+  <!-- 消耗品一覧表示 -->
+  <table id="consumableList">
+    <thead>
+      <tr>
+        <th>消耗品名</th>
+        <th>原価</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- JavaScriptで一覧を動的に生成 -->
+    </tbody>
+  </table>
+</section>
+
 
     <!-- 消耗品編集用モーダルを追加 -->
     <div id="editConsumableModal" class="modal">
@@ -1053,6 +1030,8 @@
 
 <!-- receiving.js の読み込み -->
 <script type="module" src="receiving.js"></script>
+<script type="module" src="consumables.js"></script>
+
 
 
 </body>
