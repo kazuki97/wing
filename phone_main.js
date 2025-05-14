@@ -100,9 +100,10 @@ async function updateViewCartButton() {
   const finalPrice     = totalPrice - discountAmount;
   const btn            = document.getElementById('btn-go-checkout');
 
-  btn.textContent = totalQuantity > 0
-    ? `${totalQuantity}点 ¥${finalPrice.toLocaleString()}`
-    : 'カゴを見る';
+  btn.innerHTML = totalQuantity > 0
+  ? `${totalQuantity}点 ¥${finalPrice.toLocaleString()}<span id="cart-item-count" class="badge">${totalQuantity}</span>`
+  : 'カゴを見る';
+
 }
 
 
@@ -155,21 +156,49 @@ async function updateCartUI() {
     nameSpan.textContent = item.product.name;
     div.appendChild(nameSpan);
 
-    const quantityInput = document.createElement('input');
-    quantityInput.type = 'number';
-    quantityInput.min = 1;
-    quantityInput.value = item.quantity;
-    quantityInput.style.width = '60px';
-    quantityInput.addEventListener('change', async (e) => {
-      const newQuantity = parseInt(e.target.value, 10);
-      if (isNaN(newQuantity) || newQuantity < 1) {
-        e.target.value = item.quantity;
-        return;
-      }
-      item.quantity = newQuantity;
-      await updateCartUI();
-    });
-    div.appendChild(quantityInput);
+    // phone_main.jsのupdateCartUI関数内（＋/−ボタン導入版）
+const quantityControls = document.createElement('div');
+quantityControls.className = 'quantity-controls';
+
+const minusBtn = document.createElement('button');
+minusBtn.textContent = '−';
+minusBtn.className = 'quantity-btn minus';
+minusBtn.addEventListener('click', async () => {
+  if (item.quantity > 1) {
+    item.quantity -= 1;
+    await updateCartUI();
+  }
+});
+
+const quantityInput = document.createElement('input');
+quantityInput.type = 'number';
+quantityInput.min = 1;
+quantityInput.value = item.quantity;
+quantityInput.className = 'quantity-input';
+quantityInput.addEventListener('change', async (e) => {
+  const newQuantity = parseInt(e.target.value, 10);
+  if (isNaN(newQuantity) || newQuantity < 1) {
+    e.target.value = item.quantity;
+    return;
+  }
+  item.quantity = newQuantity;
+  await updateCartUI();
+});
+
+const plusBtn = document.createElement('button');
+plusBtn.textContent = '＋';
+plusBtn.className = 'quantity-btn plus';
+plusBtn.addEventListener('click', async () => {
+  item.quantity += 1;
+  await updateCartUI();
+});
+
+quantityControls.appendChild(minusBtn);
+quantityControls.appendChild(quantityInput);
+quantityControls.appendChild(plusBtn);
+
+div.appendChild(quantityControls);
+
 
     const priceSpan = document.createElement('span');
     priceSpan.textContent = `¥${itemTotal.toLocaleString()} (単価: ¥${unit.toLocaleString()})`;
@@ -197,6 +226,12 @@ async function updateCartUI() {
 
   // ビュー用ボタンも更新
   await updateViewCartButton();
+
+// 「カゴを見る」ボタンにアニメーションクラスを一時的に追加
+const fixedCartButton = document.getElementById('fixed-cart-button');
+fixedCartButton.classList.add('animate');
+setTimeout(() => fixedCartButton.classList.remove('animate'), 300);
+
 }
 
 
