@@ -10,7 +10,6 @@ import {
   displayOverallInventory,
   displayInventoryProducts,
   displayTransactions,
-  updateConsumableCheckboxes,
   initializeConsumableUsage
 } from './eventListeners.js';
 import { displayConsumables } from './consumables.js';
@@ -118,9 +117,9 @@ function initializeApp() {
   displayInventoryProducts();
   displayTransactions(); // 売上管理セクションの取引データ表示
   displayConsumables();    // 消耗品リストの初期表示
-  updateConsumableCheckboxes();
   initializeConsumableUsage();
 }
+
 
 // 役割に応じた UI 制御関数
 function applyRoleBasedUI(role) {
