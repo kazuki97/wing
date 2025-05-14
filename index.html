@@ -120,9 +120,12 @@
       <form id="customerPricingForm">
         <div class="form-group">
           <label for="customerPricingParentCategory">親カテゴリ</label>
-          <select id="customerPricingParentCategory" required>
-            <option value="">親カテゴリを選択</option>
-          </select>
+          <div class="select-wrapper">
+            <select id="customerPricingParentCategory" required>
+              <option value="">親カテゴリを選択</option>
+            </select>
+          </div>
+          
         </div>
         <div class="form-group">
           <label for="customerPricingSubCategory">サブカテゴリ</label>
@@ -183,7 +186,10 @@
         <span class="close" id="closeSubcategoryModal">&times;</span>
         <h2>サブカテゴリの追加</h2>
         <form id="modalAddSubcategoryForm">
-          <select id="modalSubcategoryParentCategorySelect" required></select>
+          <div class="select-wrapper">
+            <select id="modalSubcategoryParentCategorySelect" required></select>
+          </div>
+          
           <input type="text" id="modalSubcategoryName" placeholder="サブカテゴリ名" required />
           <button type="submit">追加</button>
         </form>
@@ -199,12 +205,18 @@
 
       <!-- 商品フィルタリング -->
       <div>
-        <select id="filterParentCategorySelect">
-          <option value="">すべての親カテゴリ</option>
-        </select>
-        <select id="filterSubcategorySelect">
-          <option value="">すべてのサブカテゴリ</option>
-        </select>
+        <div class="select-wrapper">
+          <select id="filterParentCategorySelect">
+            <option value="">すべての親カテゴリ</option>
+          </select>
+        </div>
+        
+        <div class="select-wrapper">
+          <select id="filterSubcategorySelect">
+            <option value="">すべてのサブカテゴリ</option>
+          </select>
+        </div>
+        
       </div>
 
       <!-- 商品一覧表示エリア -->
@@ -250,12 +262,18 @@
       <h1>在庫管理</h1>
       <!-- カテゴリフィルタリング -->
       <div>
-        <select id="inventoryParentCategorySelect" required>
-          <option value="">親カテゴリを選択</option>
-        </select>
-        <select id="inventorySubcategorySelect" required>
-          <option value="">サブカテゴリを選択</option>
-        </select>
+        <div class="select-wrapper">
+          <select id="inventoryParentCategorySelect" required>
+            <option value="">親カテゴリを選択</option>
+          </select>
+        </div>
+        
+        <div class="select-wrapper">
+          <select id="inventorySubcategorySelect" required>
+            <option value="">サブカテゴリを選択</option>
+          </select>
+        </div>
+        
       </div>
       <!-- 商品一覧表示エリア -->
       <div class="table-responsive">
@@ -388,10 +406,11 @@
   <!-- 支払い方法の選択 -->
   <div id="paymentMethodSelection">
     <label for="paymentMethodSelect">支払い方法:</label>
-    <select id="paymentMethodSelect" required>
-      <!-- 支払い方法がここに表示されます -->
-    </select>
-  </div>
+    <div class="select-wrapper">
+      <select id="paymentMethodSelect" required>
+        <!-- 支払い方法がここに表示されます -->
+      </select>
+    </div>
 
   <!-- 販売カート -->
   <div class="table-responsive">
@@ -425,41 +444,52 @@
 <div id="discountSection">
   <label for="discountAmount">割引額:</label>
   <input type="number" id="discountAmount" step="any" min="0" value="0" />
+  
   <label for="discountReason">割引理由:</label>
-  <select id="discountReason">
-    <option value="">選択してください</option>
-    <option value="1">クーポン</option>
-    <option value="2">常連</option>
-    <option value="3">Airレジ側の設定ミス</option>
-    <option value="4">ブリッキーズ</option>
-    <option value="5">特別割引</option>
-  </select>
+  <div class="select-wrapper">
+    <select id="discountReason">
+      <option value="">選択してください</option>
+      <option value="1">クーポン</option>
+      <option value="2">常連</option>
+      <option value="3">Airレジ側の設定ミス</option>
+      <option value="4">ブリッキーズ</option>
+      <option value="5">特別割引</option>
+    </select>
+  </div>
+  
   <br>
+  
   <label for="salesMethodSelect">販売方法:</label>
-  <select id="salesMethodSelect" required>
-    <option value="">選択してください</option>
-    <option value="店舗">店舗</option>
-    <option value="EC">EC</option>
-    <option value="Paypayフリマ">Paypayフリマ</option>
-  </select>
+  <div class="select-wrapper">
+    <select id="salesMethodSelect" required>
+      <option value="">選択してください</option>
+      <option value="店舗">店舗</option>
+      <option value="EC">EC</option>
+      <option value="Paypayフリマ">Paypayフリマ</option>
+    </select>
+  </div>
 </div>
 <!-- ▲▲▲ 割引セクション ▲▲▲ -->
 
 <!-- ▼▼▼ 送料セクション ▼▼▼ -->
 <div id="shippingSection">
   <label for="shippingMethodSelect">発送方法:</label>
- <select id="shippingMethodSelect">
-  <option value="">選択してください</option>
-  <option value="クリックポスト">クリックポスト (185円)</option>
-  <option value="ゆうパケットポスト">ゆうパケットポスト (200円)</option>
-  <option value="ヤマト運輸">ヤマト運輸</option>
-</select>
+  <div class="select-wrapper">
+    <select id="shippingMethodSelect">
+      <option value="">選択してください</option>
+      <option value="クリックポスト">クリックポスト (185円)</option>
+      <option value="ゆうパケットポスト">ゆうパケットポスト (200円)</option>
+      <option value="ヤマト運輸">ヤマト運輸</option>
+    </select>
+  </div>
+  
   <span id="shippingFeeInputContainer" style="display:none;">
     <label for="shippingFeeInput">送料 (円):</label>
     <input type="number" id="shippingFeeInput" step="any" min="0" value="0" />
   </span>
 </div>
 <!-- ▲▲▲ 送料セクション ▲▲▲ -->
+
 
 <!-- ▼▼▼ 簡易な表示切替スクリプト ▼▼▼ -->
 <script>
@@ -870,32 +900,40 @@
       <!-- 集計対象選択フォーム -->
       <form id="analysisPeriodForm">
         <label for="analysisPeriod">集計対象:</label>
-        <select id="analysisPeriod">
-          <option value="day">日別</option>
-          <option value="month">月別</option>
-          <option value="year">年別</option>
-        </select>
-        <label for="analysisYear">年:</label>
-        <select id="analysisYear">
-          <!-- 年のオプションが自動的に追加されます -->
-        </select>
+        <div class="select-wrapper">
+          <select id="analysisPeriod">
+            <option value="day">日別</option>
+            <option value="month">月別</option>
+            <option value="year">年別</option>
+          </select>
+        </div>
+        
+        <div class="select-wrapper">
+          <select id="analysisYear">
+            <!-- 年のオプションが自動的に追加されます -->
+          </select>
+        </div>
+        
         <label for="analysisMonth">月:</label>
-        <select id="analysisMonth">
-          <option value="">選択してください</option>
-          <option value="1">1月</option>
-          <option value="2">2月</option>
-          <option value="3">3月</option>
-          <option value="4">4月</option>
-          <option value="5">5月</option>
-          <option value="6">6月</option>
-          <option value="7">7月</option>
-          <option value="8">8月</option>
-          <option value="9">9月</option>
-          <option value="10">10月</option>
-          <option value="11">11月</option>
-          <option value="12">12月</option>
-        </select>
-        <button type="submit">表示する</button>
+<div class="select-wrapper">
+  <select id="analysisMonth">
+    <option value="">選択してください</option>
+    <option value="1">1月</option>
+    <option value="2">2月</option>
+    <option value="3">3月</option>
+    <option value="4">4月</option>
+    <option value="5">5月</option>
+    <option value="6">6月</option>
+    <option value="7">7月</option>
+    <option value="8">8月</option>
+    <option value="9">9月</option>
+    <option value="10">10月</option>
+    <option value="11">11月</option>
+    <option value="12">12月</option>
+  </select>
+</div>
+<button type="submit">表示する</button>
+
       </form>
       <!-- 売上分析集計テーブル -->
       <div class="table-responsive">
