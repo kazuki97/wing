@@ -1582,16 +1582,8 @@ async function editProduct(product) {
     <input type="text" name="barcode" value="${product.barcode || ''}" />
     <input type="number" name="quantity" value="${product.quantity || 0}" required />
     <input type="number" name="size" value="${product.size || 1}" required />
-    <div id="editConsumables">
-      <label>使用する消耗品:</label>
-      ${consumables.map(consumable => `
-        <div>
-          <input type="checkbox" name="consumable" value="${consumable.id}" id="edit-consumable-${consumable.id}" 
-          ${product.consumables && product.consumables.includes(consumable.id) ? 'checked' : ''} />
-          <label for="edit-consumable-${consumable.id}">${consumable.name}</label>
-        </div>
-      `).join('')}
-    </div>
+  
+   
     <button type="submit">更新</button>
     <button type="button" id="cancelEdit">キャンセル</button>
   `;
