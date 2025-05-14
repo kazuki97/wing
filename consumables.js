@@ -50,7 +50,10 @@ window.editConsumable = (id, name, cost) => {
   alert(`消耗品の編集: ${name}（${cost}円）`);
 };
 
-document.getElementById('addConsumableForm').addEventListener('submit', addConsumable);
+// ページ読み込み時の初期設定
+document.addEventListener('DOMContentLoaded', () => {
+  const addConsumableForm = document.getElementById('addConsumableForm');
+  addConsumableForm.addEventListener('submit', addConsumable);
 
-// 読み込み時に一覧を表示
-window.addEventListener('DOMContentLoaded', displayConsumables);
+  displayConsumables(); // 読み込み時に一覧を表示
+});
