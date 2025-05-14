@@ -10,7 +10,7 @@ import {
   displayOverallInventory,
   displayInventoryProducts,
   displayTransactions,
-  initializeConsumableUsage
+  
 } from './eventListeners.js';
 
 import './barcodeScanner.js'; // 追加
@@ -117,7 +117,7 @@ function initializeApp() {
   displayInventoryProducts();
   displayTransactions(); // 売上管理セクションの取引データ表示
   displayConsumables();    // 消耗品リストの初期表示
-  initializeConsumableUsage();
+  
 }
 
 
