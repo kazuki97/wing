@@ -11,7 +11,6 @@ import {
   onAuthStateChanged,
   signOut
 } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-import { getConsumables } from './consumables.js'; // 消耗品取得用
 import { updatePaymentMethodSelect } from './eventListeners.js'; // PC版と同様の支払方法更新関数
 import { getPaymentMethods } from './paymentMethods.js'; // ←冒頭で追加が必要
 import { fetchCustomers, getCustomerById } from './customers.js';
