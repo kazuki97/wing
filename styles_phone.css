@@ -1,143 +1,147 @@
 /* styles_phone.css - iPhone向けエアレジ風UIスタイル */
 
-/* ベーススタイル */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  background-color: #f5f5f5;
+  background-color: #f9fafb;
   color: #333;
 }
 
 header {
-  background-color: #007aff;
-  color: #fff;
+  background-color: #ffffff;
+  color: #333333;
   text-align: center;
   padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 main {
   padding: 1rem;
 }
 
-/* フッターのスタイル */
 footer {
-  background-color: #f5f5f5;
+  background-color: #f9fafb;
   text-align: center;
   padding: 1rem;
 }
 
-/* 各画面（セクション）の表示制御 */
 .screen {
   display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .screen.active {
   display: block;
+  opacity: 1;
 }
 
-/* ボタンの基本スタイル */
 button {
   width: 100%;
-  padding: 1rem;
+  padding: 0.8rem 1rem;
   margin: 0.5rem 0;
   font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6ab7ff, #007aff);
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,122,255,0.2);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 button:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,122,255,0.25);
 }
 
-/* 商品タイル表示 */
-#product-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  grid-gap: 10px;
-  margin-bottom: 1rem;
+button[id^="btn-back"] {
+  background: linear-gradient(135deg, #ff8a80, #e53935);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 8px rgba(229,57,53,0.2);
+}
+
+button[id^="btn-back"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(229,57,53,0.25);
 }
 
 .product-tile {
-  background-color: #007aff;
-  color: #fff;
-  border-radius: 8px;
+  background-color: #ffffff;
+  color: #333333;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
   padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   text-align: center;
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .product-tile:hover {
-  background-color: #0051a8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
-/* カゴ（注文リスト）のスタイル */
+
+.product-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
 #cart-items .cart-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   border-bottom: 1px solid #eee;
 }
 
 #cart-total {
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #007aff;
   text-align: right;
-  margin-bottom: 1rem;
-}
-
-/* 追加フォーム */
-#checkout-form label {
-  display: block;
-  margin-top: 0.5rem;
 }
 
 #checkout-form input,
 #checkout-form select {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.6rem 1rem;
   margin-bottom: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23999'><polygon points='0,6 10,16 20,6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 12px;
 }
 
-/* ログインフォームのスタイル */
-.login-form {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+#checkout-form select:focus {
+  border-color: #007aff;
+  box-shadow: 0 0 0 2px rgba(0,122,255,0.2);
+  outline: none;
 }
 
-.login-form form {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 300px;
-  text-align: center;
+
+#checkout-form input:focus,
+#checkout-form select:focus {
+  border-color: #007aff;
+  box-shadow: 0 0 0 2px rgba(0,122,255,0.2);
+  outline: none;
 }
 
-.login-form input {
-  width: 100%;
-  padding: 0.5rem;
-  margin: 0.5rem 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* モーダルのスタイル */
 .modal {
   position: fixed;
   top: 0;
@@ -152,39 +156,88 @@ button:hover {
 }
 
 .modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border: 1px solid #e5e7eb;
   width: 90%;
   max-width: 400px;
 }
 
-/* 戻るボタン専用のスタイル（IDが "btn-back" で始まるボタン） */
-button[id^="btn-back"] {
-  background-color: #f44336;
+.login-form form {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  width: 90%;
+  max-width: 300px;
+  text-align: center;
+}
+
+#fixed-cart-button button {
+  width: 100%;
+  padding: 1rem;
+  background-color: #007aff;
+  color: #ffffff;
+  border: none;
+  border-radius: 0;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease;
+}
+
+#fixed-cart-button button:hover {
+  background-color: #005bb5;
+}
+
+
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-btn {
+  width: 32px;
+  height: 32px;
+  background-color: #007aff;
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 1rem;
-  margin: 0.5rem 0;
-  font-size: 1rem;
+  font-size: 1.2rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* 余計なpaddingを削除 */
+  margin: 0 2px; /* マージンを狭くして横幅を確保 */
 }
 
-button[id^="btn-back"]:hover {
-  background-color: #d32f2f;
+.quantity-btn:hover {
+  background-color: #0051a8;
 }
 
-/* 売上登録プロセス中の各画面に下部余白を追加 */
-#screen-parent,
-#screen-subcategory,
-#screen-product,
-#screen-checkout {
-  padding-bottom: 80px;
+.quantity-input {
+  width: 40px; /* 幅を狭める */
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.2rem; /* paddingを小さく調整 */
+  margin: 0 2px; /* marginを狭くして横幅を確保 */
+  font-size: 1rem; /* フォントサイズを調整 */
 }
 
-/* 固定表示の「かごを見る」ボタン */
+body {
+  background: linear-gradient(to bottom, #f0f6fc, #ffffff);
+  min-height: 100vh;
+  background-attachment: fixed;
+}
+
 #fixed-cart-button {
   position: fixed;
   bottom: 0;
@@ -192,14 +245,27 @@ button[id^="btn-back"]:hover {
   right: 0;
   width: 100%;
   z-index: 100;
+  display: flex;
+  justify-content: center;
 }
 
 #fixed-cart-button button {
+  position: relative; /* 追加（相対位置） */
   width: 100%;
-  padding: 1rem;
-  background-color: #007aff;
-  color: #fff;
-  border: none;
-  border-radius: 0;
-  text-align: center;
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background-color: #ff3b30;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
