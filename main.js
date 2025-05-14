@@ -12,7 +12,7 @@ import {
   displayTransactions,
   initializeConsumableUsage
 } from './eventListeners.js';
-import { displayConsumables } from './consumables.js';
+
 import './barcodeScanner.js'; // 追加
 
 document.addEventListener('DOMContentLoaded', () => {
