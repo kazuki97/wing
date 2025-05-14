@@ -1481,7 +1481,7 @@ export async function displayProducts() {
     const parentCategoryId = document.getElementById('filterParentCategorySelect').value;
     const subcategoryId = document.getElementById('filterSubcategorySelect').value;
     const products = await getProducts(parentCategoryId, subcategoryId);
-    const consumablesList = await getConsumables(); // 消耗品リストを取得
+    
     const productList = document.getElementById('productList');
     productList.innerHTML = '';
 
@@ -1571,7 +1571,7 @@ async function editProduct(product) {
     return;
   }
   // 消耗品リストの取得
-  const consumables = await getConsumables();
+  
 
   // 編集用のフォームを作成
   const editForm = document.createElement('form');
