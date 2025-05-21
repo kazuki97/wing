@@ -2,24 +2,11 @@
 
 
 // Firebase Firestore の関数を CDN からインポート
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  serverTimestamp
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
-
-// Firebase Authentication を使用する場合
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-
-// db.js から db と auth をインポート
-import { db, auth } from './db.js';
+import { 
+  db, auth,
+  collection, query, where, orderBy, getDocs, doc, getDoc,
+  addDoc, updateDoc, serverTimestamp
+} from './firebase.js';
 
 import {
   addParentCategory,
@@ -1481,63 +1468,64 @@ export async function displayProducts() {
     const parentCategoryId = document.getElementById('filterParentCategorySelect').value;
     const subcategoryId = document.getElementById('filterSubcategorySelect').value;
     const products = await getProducts(parentCategoryId, subcategoryId);
-    
+
     const productList = document.getElementById('productList');
     productList.innerHTML = '';
 
-    // サブカテゴリごとに商品をグループ化
+    // サブカテゴリごとにグループ化
     const subcategoryMap = {};
     for (const product of products) {
-      // デバッグログを追加：PC版の商品データ確認
-      console.log("【PC版】取得商品データ:", product);
-      
-      const subcategory = await getSubcategoryById(product.subcategoryId);
-      const subcategoryName = subcategory ? subcategory.name : '不明なサブカテゴリ';
+      // サブカテゴリ名を取得
+      let subcategoryName = '不明なサブカテゴリ';
+      if (product.subcategoryId) {
+        const subcategory = await getSubcategoryById(product.subcategoryId);
+        if (subcategory) subcategoryName = subcategory.name;
+      }
       if (!subcategoryMap[subcategoryName]) {
         subcategoryMap[subcategoryName] = [];
       }
       subcategoryMap[subcategoryName].push(product);
     }
 
-    // サブカテゴリごとに商品を表示
+    // サブカテゴリごとに見出し＋カード群で表示
     for (const subcategoryName in subcategoryMap) {
+      // サブカテゴリ見出し
       const subcategoryHeader = document.createElement('h3');
       subcategoryHeader.textContent = subcategoryName;
+      subcategoryHeader.className = 'subcategory-header';
       productList.appendChild(subcategoryHeader);
 
-      const productUl = document.createElement('ul');
+      // カードラッパー
+      const cardWrapper = document.createElement('div');
+      cardWrapper.className = 'product-card-wrapper';
 
       subcategoryMap[subcategoryName].forEach((product) => {
-        // デバッグログ：グループ内で各商品を表示する前に確認
-        console.log("【PC版】グループ内の商品データ:", product);
-        
-        const consumableNames = product.consumables
-          ? product.consumables.map(consumableId => {
-              const consumable = consumablesList.find(c => c.id === consumableId);
-              return consumable ? consumable.name : '不明な消耗品';
-            }).join(', ')
-          : 'なし';
+        const card = document.createElement('div');
+        card.className = 'product-card';
 
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `
-          <strong>商品名:</strong> ${product.name}, <strong>数量:</strong> ${product.quantity || 0}, 
-          <strong>価格:</strong> ${product.price}, <strong>原価:</strong> ${product.cost}, 
-          <strong>バーコード:</strong> ${product.barcode}, <strong>サイズ:</strong> ${product.size}, 
-          <strong>使用する消耗品:</strong> ${consumableNames}
+        card.innerHTML = `
+          <div class="product-card-header">
+            <span class="product-card-title">${product.name}</span>
+          </div>
+          <div class="product-card-body">
+            <div>数量: <strong>${product.quantity || 0}</strong></div>
+            <div>価格: ¥${product.price}</div>
+            <div>原価: ¥${product.cost}</div>
+            <div>バーコード: ${product.barcode}</div>
+            <div>サイズ: ${product.size}</div>
+          </div>
+          <div class="product-card-actions">
+            <button class="product-edit-btn">編集</button>
+            <button class="product-delete-btn">削除</button>
+          </div>
         `;
 
         // 編集ボタン
-        const editButton = document.createElement('button');
-        editButton.textContent = '編集';
-        editButton.addEventListener('click', () => {
-          console.log("【PC版】editProduct 呼び出し:", product);
+        card.querySelector('.product-edit-btn').addEventListener('click', () => {
           editProduct(product);
         });
-
         // 削除ボタン
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = '削除';
-        deleteButton.addEventListener('click', async () => {
+        card.querySelector('.product-delete-btn').addEventListener('click', async () => {
           if (confirm('本当に削除しますか？')) {
             try {
               await deleteProduct(product.id);
@@ -1550,18 +1538,18 @@ export async function displayProducts() {
           }
         });
 
-        listItem.appendChild(editButton);
-        listItem.appendChild(deleteButton);
-        productUl.appendChild(listItem);
+        cardWrapper.appendChild(card);
       });
 
-      productList.appendChild(productUl);
+      productList.appendChild(cardWrapper);
     }
   } catch (error) {
     console.error(error);
     showError('商品の表示に失敗しました');
   }
 }
+
+
 
 // 商品の編集フォーム表示関数
 async function editProduct(product) {
