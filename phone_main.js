@@ -5,12 +5,14 @@ import { getProducts, updateProduct } from './products.js';
 import { addTransaction } from './transactions.js';
 import { updateOverallInventory } from './inventoryManagement.js';
 import { getUnitPrice, fetchPricingRulesForSubcats } from './pricing.js';
-import { auth } from './db.js';
-import {
+// phone_main.js（修正版）
+import { 
+  auth,
   signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
+} from './firebase.js'; // ←firebase.jsに統一（✅）
+
 import { updatePaymentMethodSelect } from './eventListeners.js'; // PC版と同様の支払方法更新関数
 import { getPaymentMethods } from './paymentMethods.js'; // ←冒頭で追加が必要
 import { fetchCustomers, getCustomerById } from './customers.js';
