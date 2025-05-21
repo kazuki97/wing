@@ -616,3 +616,685 @@ option {
   background-color: #ffffff;
   color: #333;
 }
+
+/* 親カテゴリカード風 */
+#parentCategoryList > li {
+  background: linear-gradient(135deg, #f9fbff 80%, #e4f0ff 100%);
+  box-shadow: 0 2px 8px rgba(0, 80, 180, 0.06);
+  border-radius: 16px;
+  padding: 18px 22px 10px 22px;
+  margin-bottom: 22px;
+  min-width: 290px;
+  max-width: 420px;
+  border: 1.2px solid #e3eefa;
+}
+
+/* 親カテゴリ名とボタンの整列 */
+#parentCategoryList > li > strong,
+#parentCategoryList > li > button {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#parentCategoryList > li > strong {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #007aff;
+  margin-right: 10px;
+  letter-spacing: 0.5px;
+}
+
+#parentCategoryList > li > button {
+  margin-right: 6px;
+  margin-bottom: 2px;
+  background: #eaf4ff;
+  color: #007aff;
+  border-radius: 16px;
+  padding: 3px 14px;
+  font-size: 0.98em;
+  font-weight: 600;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+#parentCategoryList > li > button:hover {
+  background: #c6e3ff;
+  color: #005bb5;
+}
+
+/* サブカテゴリリストのインデント・枠 */
+#parentCategoryList ul {
+  margin-left: 12px;
+  padding-left: 16px;
+  border-left: 2.5px solid #b7d7ff;
+  margin-top: 10px;
+}
+
+#parentCategoryList ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f8ff;
+  border-radius: 10px;
+  padding: 6px 10px 6px 14px;
+  margin-bottom: 6px;
+}
+
+#parentCategoryList ul li button {
+  margin-left: 7px;
+  background: #eaf4ff;
+  color: #007aff;
+  border-radius: 16px;
+  padding: 3px 12px;
+  font-size: 0.95em;
+  font-weight: 600;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+#parentCategoryList ul li button:hover {
+  background: #c6e3ff;
+  color: #005bb5;
+}
+
+/* --- 親カテゴリをカード型で横並び（PCのみ） --- */
+#parentCategoryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+/* --- カード型の親カテゴリ --- */
+#parentCategoryList > li {
+  background: linear-gradient(135deg, #f9fbff 80%, #e4f0ff 100%);
+  box-shadow: 0 2px 8px rgba(0, 80, 180, 0.08);
+  border-radius: 16px;
+  padding: 22px 28px 16px 28px;
+  min-width: 310px;
+  max-width: 370px;
+  flex: 1 1 340px;
+  margin-bottom: 20px;
+  border: 1.5px solid #e3eefa;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- 親カテゴリ名とアクションボタン横並び＆上下中央 --- */
+#parentCategoryList > li > strong,
+#parentCategoryList > li > button {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#parentCategoryList > li > strong {
+  font-size: 1.13em;
+  font-weight: bold;
+  color: #007aff;
+  margin-right: 10px;
+  letter-spacing: 0.8px;
+}
+
+#parentCategoryList > li > button {
+  margin-right: 6px;
+  margin-bottom: 2px;
+  background: #eaf4ff;
+  color: #007aff;
+  border-radius: 16px;
+  padding: 5px 16px;
+  font-size: 0.98em;
+  font-weight: 600;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 1px 4px #d2e7ff60;
+}
+#parentCategoryList > li > button:hover {
+  background: #c6e3ff;
+  color: #005bb5;
+}
+
+/* --- サブカテゴリリスト --- */
+#parentCategoryList ul {
+  margin-left: 6px;
+  padding-left: 16px;
+  border-left: 2.5px solid #b7d7ff;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- サブカテゴリ行（li）をより横に広げて間隔も確保 --- */
+#parentCategoryList ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f8ff;
+  border-radius: 10px;
+  padding: 7px 12px 7px 14px;
+  margin-bottom: 3px;
+  box-shadow: 0 1px 3px #c6e8ff25;
+}
+
+/* サブカテゴリ名 */
+#parentCategoryList ul li:first-child {
+  margin-top: 2px;
+}
+#parentCategoryList ul li span,
+#parentCategoryList ul li strong {
+  font-size: 1em;
+  color: #2663a9;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+#parentCategoryList ul li button {
+  margin-left: 8px;
+  background: #eaf4ff;
+  color: #007aff;
+  border-radius: 14px;
+  padding: 4px 12px;
+  font-size: 0.97em;
+  font-weight: 600;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 1px 3px #c6e8ff40;
+}
+#parentCategoryList ul li button:hover {
+  background: #c6e3ff;
+  color: #005bb5;
+}
+
+/* --- モバイル時は1カラム・余白多め --- */
+@media (max-width: 600px) {
+  #parentCategoryList {
+    flex-direction: column;
+    gap: 16px;
+  }
+  #parentCategoryList > li {
+    min-width: 90vw;
+    max-width: 98vw;
+    padding: 14px 8vw 12px 8vw;
+  }
+}
+
+/* --- ナビ全体を上品なシャドウ＋角丸に --- */
+nav {
+  background: linear-gradient(90deg, #e0edff 0%, #ffffff 60%);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 3px 18px #97c7ff1b;
+  padding: 18px 28px 12px 28px;
+  margin-bottom: 18px;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+/* --- ナビリストを中央横並び・余白増やす --- */
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  padding: 0;
+}
+
+/* --- 各メニューアイテムをカード風ボタンに --- */
+nav ul li {
+  margin: 0 5px;
+}
+
+nav ul li a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #f3faff 70%, #d8eaff 100%);
+  color: #2486ff;
+  font-weight: 600;
+  font-size: 1.07em;
+  padding: 9px 18px;
+  border-radius: 18px;
+  box-shadow: 0 1.5px 8px #b3dbff20;
+  transition: background 0.22s, color 0.22s, box-shadow 0.18s;
+  position: relative;
+  text-decoration: none;
+  border: 1px solid #c5e3fd;
+}
+
+/* --- ホバー時／フォーカス時 --- */
+nav ul li a:hover, nav ul li a:focus {
+  background: linear-gradient(135deg, #d8eaff 60%, #b1d2ff 100%);
+  color: #005bb5;
+  box-shadow: 0 5px 18px #74bcff35;
+  border-color: #90c7f3;
+}
+
+/* --- アクティブ（現在表示中）メニューだけ強調 --- */
+/* 例として「active」クラスをaに付与する場合 */
+nav ul li a.active {
+  background: linear-gradient(135deg, #66b6ff 40%, #d4eaff 100%);
+  color: #fff;
+  font-weight: 700;
+  border-color: #3293ed;
+  box-shadow: 0 2px 14px #68b7ff40;
+}
+
+/* --- モバイル時は横スクロールも可に --- */
+@media (max-width: 700px) {
+  nav ul {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  nav ul li {
+    min-width: 110px;
+  }
+}
+
+/* --- アイコン用にスペース作る例 --- */
+nav ul li a .nav-icon {
+  font-size: 1.19em;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+
+#transactions {
+  background: linear-gradient(135deg, #f7fbff 80%, #e4f0ff 100%);
+  box-shadow: 0 6px 32px #7ac3fa17;
+  border-radius: 22px;
+  padding: 38px 42px 28px 42px;
+  margin-bottom: 40px;
+  border: 2px solid #e2eefa;
+  max-width: 1220px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#transactionList {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 3px 24px #7ac3fa1f;
+  overflow: hidden;
+  font-size: 1.03em;
+}
+
+#transactionList thead th {
+  background: linear-gradient(90deg, #e8f4ff 60%, #cbe3fa 100%);
+  color: #2986d2;
+  font-weight: 700;
+  font-size: 1.04em;
+  border-bottom: 2.5px solid #b6dfff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+#transactionList tbody tr {
+  transition: background 0.2s;
+}
+
+#transactionList tbody tr:hover {
+  background: #f2faff;
+}
+
+#transactionList td, #transactionList th {
+  padding: 13px 15px;
+  border: none;
+}
+
+#transactionList td {
+  border-bottom: 1.5px solid #e8f1fa;
+}
+
+#transactionList tbody tr:last-child td {
+  border-bottom: none;
+}
+
+#transactionList td.amount,
+#transactionList td.total,
+#transactionList td.fee,
+#transactionList td.cost,
+#transactionList td.profit {
+  font-weight: 700;
+  color: #2878be;
+}
+
+#transactionList td.negative {
+  color: #ff4040;
+}
+
+#transactionList button,
+#transactionList .action-btn {
+  padding: 7px 17px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eaf4ff 60%, #cbe3fa 100%);
+  color: #2585d2;
+  border: none;
+  font-weight: 600;
+  font-size: 0.97em;
+  margin: 0 3px;
+  box-shadow: 0 2px 8px #a8e0fa25;
+  transition: background 0.22s, color 0.15s;
+}
+
+#transactionList button:hover,
+#transactionList .action-btn:hover {
+  background: linear-gradient(135deg, #6fc4ff 20%, #98dbff 100%);
+  color: #005bb5;
+}
+
+#transactionList .action-btn.delete {
+  background: linear-gradient(135deg, #ffdada 50%, #ffeded 100%);
+  color: #de2e2e;
+}
+#transactionList .action-btn.delete:hover {
+  background: linear-gradient(135deg, #ffa9a9 10%, #ffd6d6 100%);
+  color: #990000;
+}
+
+#filterTransactionsForm {
+  background: #f2f8fe;
+  border-radius: 13px;
+  box-shadow: 0 2px 10px #bee2ff20;
+  padding: 18px 24px 13px 24px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px 22px;
+  align-items: end;
+}
+
+#filterTransactionsForm input,
+#filterTransactionsForm select {
+  border-radius: 8px;
+  border: 1.3px solid #b7dbff;
+  background: #fafdff;
+  font-size: 1em;
+  padding: 8px 12px;
+  margin-right: 8px;
+}
+
+#filterTransactionsForm button {
+  background: linear-gradient(135deg, #61b8ff 60%, #4f93ee 100%);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 9px 20px;
+  font-weight: 600;
+  transition: box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 2px 6px #d6edff45;
+}
+
+#filterTransactionsForm button:hover {
+  background: linear-gradient(135deg, #226fbd 40%, #6ac1fe 100%);
+}
+
+#transactionDetails {
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f9fbff 60%, #e6f0ff 100%);
+  box-shadow: 0 10px 36px #a1d6ff27;
+  padding: 34px 38px 20px 38px;
+  border: 1.8px solid #cbe3fa;
+  min-width: 320px;
+  max-width: 660px;
+}
+#transactionDetails h2 {
+  color: #2585d2;
+  margin-bottom: 20px;
+}
+
+#transactionsSummary {
+  background: #f7fbff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #c6e8ff30;
+  padding: 18px 30px;
+  margin-top: 28px;
+  margin-bottom: 18px;
+  font-size: 1.11em;
+}
+#transactionsSummary .summary-value {
+  font-size: 1.16em;
+  font-weight: bold;
+  color: #1876c1;
+  margin-right: 8px;
+}
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 30px;
+  /* 横スクロール */
+}
+
+#transactionList {
+  min-width: 1100px; /* 最低限これくらい横幅を確保して折り返しを防ぐ */
+}
+
+#transactionList th,
+#transactionList td {
+  padding: 14px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* カラム幅を見やすく調整（例） */
+#transactionList th:nth-child(1),
+#transactionList td:nth-child(1) { width: 50px; }   /* チェックボックス */
+#transactionList th:nth-child(2),
+#transactionList td:nth-child(2) { width: 135px; }  /* 取引ID */
+#transactionList th:nth-child(3),
+#transactionList td:nth-child(3) { width: 125px; }  /* 日時 */
+#transactionList th:nth-child(4),
+#transactionList td:nth-child(4) { width: 90px; }   /* 支払い方法 */
+#transactionList th:nth-child(5),
+#transactionList td:nth-child(5) { width: 90px; }   /* 販売方法 */
+#transactionList th:nth-child(6),
+#transactionList td:nth-child(6) { width: 120px; }  /* 商品名 */
+#transactionList th:nth-child(7),
+#transactionList td:nth-child(7) { width: 60px; }   /* 個数 */
+#transactionList th:nth-child(8),
+#transactionList td:nth-child(8) { width: 100px; }  /* 売上金額 */
+#transactionList th:nth-child(9),
+#transactionList td:nth-child(9) { width: 70px; }   /* 手数料 */
+#transactionList th:nth-child(10),
+#transactionList td:nth-child(10) { width: 90px; }  /* 原価 */
+#transactionList th:nth-child(11),
+#transactionList td:nth-child(11) { width: 90px; }  /* 利益 */
+#transactionList th:nth-child(12),
+#transactionList td:nth-child(12) { width: 60px; }  /* 詳細 */
+
+
+#transactionList tbody tr {
+  height: 46px;
+  vertical-align: middle;
+}
+
+#transactionList td {
+  vertical-align: middle;
+}
+
+#transactionList td .action-btn {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 7px 16px;
+  border-radius: 14px;
+  font-size: 0.97em;
+}
+
+
+#transactionList thead th {
+  background: linear-gradient(90deg, #e8f4ff 60%, #cbe3fa 100%);
+  color: #2986d2;
+  font-weight: 700;
+  font-size: 1.04em;
+  border-bottom: 2.5px solid #b6dfff;
+  border-right: 1.5px solid #d8eaff;
+}
+#transactionList thead th:last-child {
+  border-right: none;
+}
+
+
+#transactionList td.amount, #transactionList td.total, #transactionList td.fee, #transactionList td.cost, #transactionList td.profit {
+  font-weight: bold;
+  color: #2671c4;
+}
+#transactionList td.negative {
+  color: #ff4545;
+}
+
+
+@media (max-width: 900px) {
+  #transactionList {
+    min-width: 950px;
+  }
+  #transactionList th, #transactionList td {
+    font-size: 0.98em;
+    padding: 10px 6px;
+  }
+}
+/* 商品カード全体ラッパー */
+#productList {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 22px 0;
+}
+
+/* 商品1つごとにカード型 */
+.product-card {
+  background: linear-gradient(135deg, #f9fbff 65%, #e7f2fa 100%);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px #d9ecff20;
+  padding: 22px 26px 16px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border: 1.6px solid #d9ecff;
+  position: relative;
+  transition: box-shadow 0.22s, border-color 0.18s;
+}
+.product-card:hover {
+  border-color: #8ac7ff;
+  box-shadow: 0 6px 32px #83b8f63a;
+}
+
+/* 商品名を強調 */
+.product-card .product-name {
+  font-size: 1.18em;
+  font-weight: 700;
+  color: #1767b7;
+  margin-bottom: 3px;
+  letter-spacing: 0.03em;
+}
+
+/* 商品データはグリッド配置で項目が並ぶ */
+.product-card .product-data-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 4px 16px;
+  margin-bottom: 10px;
+  font-size: 1.02em;
+}
+
+.product-card .product-data-label {
+  color: #577b99;
+  font-weight: 500;
+  font-size: 0.95em;
+}
+
+.product-card .product-data-value {
+  color: #222;
+  font-weight: 600;
+}
+
+.product-card .product-actions {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  display: flex;
+  gap: 10px;
+}
+.product-card .action-btn {
+  padding: 8px 15px;
+  border-radius: 13px;
+  font-size: 0.97em;
+  font-weight: 600;
+  background: linear-gradient(135deg, #eaf4ff 60%, #bde5ff 100%);
+  color: #2486ff;
+  border: none;
+  transition: background 0.22s, color 0.13s;
+}
+.product-card .action-btn:hover {
+  background: linear-gradient(135deg, #68b7ff 30%, #d4f0ff 100%);
+  color: #005bb5;
+}
+
+.product-card-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 24px;
+  margin-bottom: 36px;
+}
+.subcategory-header {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #2570b7;
+  margin: 28px 0 8px 0;
+  letter-spacing: 0.05em;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(20,70,120,0.08), 0 1.5px 5px rgba(0,0,0,0.08);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e7ef;
+  transition: box-shadow 0.2s;
+}
+
+.product-card:hover {
+  box-shadow: 0 6px 24px rgba(0,80,140,0.16);
+}
+
+.product-card-header {
+  margin-bottom: 10px;
+}
+.product-card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #22335a;
+  letter-spacing: 0.03em;
+}
+
+.product-card-body {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: #3a3a3a;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+
+.product-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.product-card-actions button {
+  border: none;
+  border-radius: 22px;
+  padding: 6px 18px;
+  background: linear-gradient(90deg, #3db8f5, #6ae4be);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,160,200,0.07);
+  transition: background 0.18s, box-shadow 0.18s;
+}
+.product-card-actions button:hover {
+  background: linear-gradient(90deg, #27a3e6, #4ec9a6);
+  box-shadow: 0 2px 8px rgba(0,130,180,0.16);
+}
