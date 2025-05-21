@@ -1,6 +1,6 @@
-// transactions.js
-import { db, auth } from './db.js';
+// transactions.js（修正版）
 import {
+  db, auth,
   collection,
   addDoc,
   getDocs,
@@ -12,10 +12,15 @@ import {
   where,
   orderBy,
   serverTimestamp,
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+} from './firebase.js';
+
+import { runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js'; // ✅ 修正
+
 import { getProductById, getProductByBarcode } from './products.js';
 import { updateProductQuantity, updateOverallInventory } from './inventoryManagement.js';
-import { showError } from './eventListeners.js'; // エラーメッセージ表示関数
+import { getSubcategoryById } from './categories.js'; // ✅ 修正
+import { showError } from './eventListeners.js'; 
+
 
 // 売上処理関数の追加
 export async function processSale(barcode, quantitySold) {
@@ -227,7 +232,6 @@ export async function updateTransaction(transactionId, updatedData) {
 }
 
 // 取引データの削除（修正後）
-import { runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
 export async function deleteTransaction(transactionId) {
   try {
