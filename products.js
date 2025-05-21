@@ -1,6 +1,5 @@
-// products.js
-import { db, auth } from './db.js';
 import {
+  db, auth,
   collection,
   addDoc,
   updateDoc,
@@ -10,7 +9,8 @@ import {
   getDoc,
   query,
   where,
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+} from './firebase.js';
+
 
 // 商品の追加
 export async function addProduct(productData) {
