@@ -1,14 +1,16 @@
-// paymentMethods.js
-import { db } from './db.js';
+// paymentMethods.js（修正版）
 import {
+  db,
   collection,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
   getDocs,
-  getDoc, // getDocをインポート
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+  getDoc,
+} from './firebase.js';
+
+
 
 // 支払い方法の追加
 export async function addPaymentMethod(name, feeRate) {
