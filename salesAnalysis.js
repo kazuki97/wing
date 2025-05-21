@@ -1,10 +1,11 @@
-// salesAnalysis.js
-
-import { db, auth } from './db.js'; 
-import { getSubcategoryById } from './categories.js';
+// salesAnalysis.js（完全修正版）
 import { 
-  collection, query, where, orderBy, getDocs 
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+  db, auth,
+  collection, query, where, orderBy, getDocs
+} from './firebase.js';  // ✅ firebase.jsに統一
+
+import { getSubcategoryById } from './categories.js'; // これはこのままでOK（✅）
+
 
 /**
  * DOMContentLoaded 時に売上分析フォームの送信処理を設定
