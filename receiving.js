@@ -1,8 +1,10 @@
-// receiving.js
-import { auth } from './db.js';
+import { auth } from './firebase.js';
 import { getParentCategories, getSubcategories } from './categories.js';
 import { updateProductQuantity, updateOverallInventory } from './inventoryManagement.js';
 import { getProducts } from './products.js';
+
+
+
 
 // onAuthStateChanged で認証状態が確定した後に処理を開始する
 auth.onAuthStateChanged(async (user) => {
