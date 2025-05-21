@@ -1,7 +1,9 @@
 // salesEventListeners.js
-import { auth } from './db.js'; // authをインポート
+import {
+  auth, onAuthStateChanged
+} from './firebase.js';
+
 import { updatePaymentMethodSelect } from './eventListeners.js'; // インポート追加
-import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js'; // 修正ポイント
 
 import {
   getProductByBarcode,
@@ -26,6 +28,7 @@ import { displayTransactions, displayOverallInventory, displayInventoryProducts 
 import { getUnitPrice } from './pricing.js';
 import { updateOverallInventory } from './inventoryManagement.js';
 import { setCurrentFilter, getCurrentFilter } from './filterState.js';
+
 
 // エラーメッセージ表示関数
 export function showError(message) {
