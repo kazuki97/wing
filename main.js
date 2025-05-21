@@ -1,7 +1,12 @@
-// main.js
-import { auth, db } from './db.js';
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+// main.js（修正版・最終決定版）
+import { 
+  db, auth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  doc, getDoc
+} from './firebase.js';
+
 import {
   updateAllParentCategorySelects,
   updatePricingParentCategorySelect,
@@ -9,11 +14,16 @@ import {
   displayProducts,
   displayOverallInventory,
   displayInventoryProducts,
-  displayTransactions,
-  
+  displayTransactions
 } from './eventListeners.js';
 
-import './barcodeScanner.js'; // 追加
+// 他のモジュールJSを一括でここに記述して管理
+import './barcodeScanner.js';
+import './salesAnalysis.js';
+import './consumables.js';
+import './receiving.js';
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
   // すべてのコンテンツセクションを非表示にする
