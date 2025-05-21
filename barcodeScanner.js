@@ -3,7 +3,8 @@
 import { getProductByBarcode } from './products.js';
 import { addToCart, showError, showMessage } from './salesEventListeners.js';
 import { displayInventoryProducts } from './eventListeners.js';
-import { auth } from './db.js'; // authをインポート
+import { auth } from './firebase.js';
+
 
 let scannerIsRunning = false; // スキャナーの状態を追跡
 
