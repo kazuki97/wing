@@ -1,6 +1,7 @@
-// inventoryManagement.js
-import { db, auth } from './db.js';
+
+// inventoryManagement.js（修正版）
 import {
+  db, auth,
   collection,
   doc,
   setDoc,
@@ -13,9 +14,12 @@ import {
   orderBy,
   addDoc,
   serverTimestamp,
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+} from './firebase.js';
+
+
 
 // 商品の在庫数量を更新し、変動履歴を記録する関数
+// inventoryManagement.js（修正版）
 export async function updateProductQuantity(productId, quantityChange, reason = '') {
   const user = auth.currentUser;
   if (!user) {
@@ -30,31 +34,26 @@ export async function updateProductQuantity(productId, quantityChange, reason = 
       throw new Error('商品が見つかりません');
     }
     const productData = productDoc.data();
-
-    // **productData.quantity を数値に変換**
     const currentQuantity = Number(productData.quantity) || 0;
     const newQuantity = currentQuantity + quantityChange;
-
     await updateDoc(productRef, { quantity: newQuantity });
-    console.log(`Product quantity updated. New quantity: ${newQuantity}`);
 
-    // 在庫変動履歴を追加
     const inventoryChange = {
-      productId: productIdStr, // 文字列として保存
+      productId: productIdStr,
       changeAmount: quantityChange,
       newQuantity: newQuantity,
-      timestamp: serverTimestamp(), // サーバータイムスタンプを使用
+      timestamp: serverTimestamp(),
       userId: user.uid,
       userName: user.displayName || user.email,
       reason: reason,
     };
     await addDoc(collection(db, 'inventoryChanges'), inventoryChange);
-    console.log('Inventory change recorded:', inventoryChange);
   } catch (error) {
     console.error('在庫数量の更新に失敗しました:', error);
     throw error;
   }
 }
+
 
 // 全体在庫の更新（サブカテゴリごと）
 export async function updateOverallInventory(subcategoryId, quantityChange, reason = '在庫数の手動更新') {
