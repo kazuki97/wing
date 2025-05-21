@@ -1,15 +1,17 @@
-// customers.js
-import { db } from './db.js';
+// customers.js（修正版）
 import {
+  db,
   collection,
   doc,
-  getDoc,           // ← これを追加
+  getDoc,
   getDocs,
   addDoc,
   updateDoc,
   deleteDoc,
   serverTimestamp,
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+} from './firebase.js';
+
+
 
 // ────────── CRUD 基本 ──────────
 export async function fetchCustomers() {
