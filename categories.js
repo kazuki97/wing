@@ -1,6 +1,6 @@
-// categories.js
-import { db, auth } from './db.js';
-import {
+// categories.js（Firebase統一済み ✅）
+import { 
+  db, auth,
   collection,
   addDoc,
   updateDoc,
@@ -9,8 +9,8 @@ import {
   getDocs,
   getDoc,
   query,
-  where,
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+  where
+} from './firebase.js';
 
 // 親カテゴリの追加
 export async function addParentCategory(name) {
@@ -21,9 +21,7 @@ export async function addParentCategory(name) {
       return;
     }
 
-    const docRef = await addDoc(collection(db, 'parentCategories'), {
-      name,
-    });
+    const docRef = await addDoc(collection(db, 'parentCategories'), { name });
     return docRef.id;
   } catch (error) {
     console.error('親カテゴリの追加エラー:', error);
@@ -181,6 +179,29 @@ export async function deleteSubcategory(id) {
     await deleteDoc(docRef);
   } catch (error) {
     console.error('サブカテゴリの削除エラー:', error);
+    throw error;
+  }
+}
+
+// 親カテゴリIDから親カテゴリ情報を取得
+export async function getParentCategoryById(parentCategoryId) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('データを取得するにはログインが必要です。');
+      return null;
+    }
+
+    const docRef = doc(db, 'parentCategories', parentCategoryId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      console.error('親カテゴリが見つかりません');
+      return null;
+    }
+  } catch (error) {
+    console.error('親カテゴリの取得エラー:', error);
     throw error;
   }
 }
