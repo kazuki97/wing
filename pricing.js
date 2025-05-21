@@ -1,7 +1,6 @@
-// pricing.js
-
-import { db } from './db.js';
+// pricing.js（修正版）
 import {
+  db,
   collection,
   addDoc,
   updateDoc,
@@ -11,7 +10,10 @@ import {
   getDocs,
   query,
   where,
-} from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
+} from './firebase.js';
+
+
+
 
 // 単価ルールの追加
 export async function addPricingRule(subcategoryId, minQuantity, maxQuantity, unitPrice) {
