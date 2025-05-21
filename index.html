@@ -220,7 +220,7 @@
       </div>
 
       <!-- 商品一覧表示エリア -->
-      <ul id="productList"></ul>
+      <div id="productList"></div>
     </section>
 
     <!-- 商品追加用モーダル -->
@@ -730,7 +730,7 @@
       </div>
     </section>
 
-    <!-- 消耗品管理セクション（修正後） -->
+    <!-- 消耗品管理セクション（修正版） -->
 <section id="consumables" class="content-section" style="display: none;" data-requires-auth="true">
   <h2>消耗品登録</h2>
   <form id="addConsumableForm">
@@ -742,6 +742,45 @@
     </label>
     <button type="submit">登録する</button>
   </form>
+
+  <!-- ▼▼▼ 消耗品が使われる商品の登録フォーム追加 ▼▼▼ -->
+  <div id="consumableProductsArea" style="margin-top:2rem; display:none;">
+    <h3>この消耗品を使う商品を登録</h3>
+    <form id="addConsumableProductForm">
+      <div>
+        <label>親カテゴリ:
+          <select id="consumableProductParentCategory"></select>
+        </label>
+        <label>サブカテゴリ:
+          <select id="consumableProductSubcategory"></select>
+        </label>
+        <label>商品:
+          <select id="consumableProductName"></select>
+        </label>
+        <label>使用個数:
+          <input type="number" id="consumableProductQuantity" required min="1" value="1" />
+
+        </label>
+        <button type="button" id="addConsumableProductRow">追加</button>
+      </div>
+    </form>
+    <!-- 登録済み商品の一覧 -->
+    <table id="consumableProductList">
+      <thead>
+        <tr>
+          <th>親カテゴリ</th>
+          <th>サブカテゴリ</th>
+          <th>商品名</th>
+          <th>使用個数</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JSで動的追加 -->
+      </tbody>
+    </table>
+  </div>
+  <!-- ▲▲▲ 商品紐付けエリア ▲▲▲ -->
 
   <!-- 消耗品一覧表示 -->
   <table id="consumableList">
@@ -757,6 +796,7 @@
     </tbody>
   </table>
 </section>
+
 
 
     <!-- 消耗品編集用モーダルを追加 -->
@@ -956,12 +996,8 @@
   <!-- QuaggaJS ライブラリの読み込み -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
-  <!-- JavaScript ファイルの読み込み -->
-  <script type="module" src="main.js"></script>
-
-<!-- 新規で追加する売上分析ロジック -->
-<!-- （以下、既存の HTML の最後の部分に追加） -->
-    <script type="module" src="salesAnalysis.js"></script>
+  
+    
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const yearSelect = document.getElementById('analysisYear');
@@ -1027,13 +1063,17 @@
     }
   });
 </script>
+  <!-- 必ず ./firebase.js を最初に読み込む -->
+<script type="module" src="./firebase.js"></script>
 
-<!-- receiving.js の読み込み -->
-<script type="module" src="receiving.js"></script>
-<script type="module" src="consumables.js"></script>
+<!-- 次に ./main.js を読み込む -->
+<script type="module" src="./main.js"></script>
 
-
+<!-- transactions.js を追加 -->
+<script type="module" src="./transactions.js"></script> <!-- ✅ 追加 -->
 
 </body>
 </html>
+
+
 
